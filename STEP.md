@@ -20,11 +20,11 @@ _Trạng thái: Đang thực hiện_
   - [x] Tạo cấu trúc thư mục Monorepo (`client`, `server`).
   - [x] Viết file `docker-compose.yml` (PostgreSQL + Redis).
   - [x] Chạy Docker container (`docker-compose up`).
-- [ ] **1.4. Setup Database Code (Prisma)**
-  - [ ] Khởi tạo NestJS project (`nest new server`).
-  - [ ] Cài đặt Prisma & Kết nối Database (`.env`).
-  - [ ] **Quan trọng:** Copy Schema đã thiết kế vào `schema.prisma`.
-  - [ ] Chạy migration (`npx prisma db push`).
+- [x] **1.4. Setup Database Code (Prisma)**
+  - [x] Khởi tạo NestJS project (`nest new server`).
+  - [x] Cài đặt Prisma & Kết nối Database (`.env`).
+  - [x] **Quan trọng:** Copy Schema đã thiết kế vào `schema.prisma`.
+  - [x] Chạy migration (`npx prisma db push`).
 
 ---
 

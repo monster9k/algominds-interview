@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  #  SERVICE 1: DATABASE (PostgreSQL)
+  postgres:
+    image: postgres:16-alpine # Dùng bản Alpine cho nhẹ (chỉ vài chục MB)
+    container_name: algominds_db # Tên thùng chứa để dễ tìm
+    ports:
+      - "5432:5432" # Mở cổng 5432 để máy thật kết nối được vào máy ảo
+    environment:
+      POSTGRES_USER: admin # Tên đăng nhập DB
+      POSTGRES_PASSWORD: admin123!@# # Mật khẩu DB (Nhớ cái này để cấu hình NestJS)
+      POSTGRES_DB: algominds # Tên Database mặc định sẽ tạo ra
+    volumes:
+      - postgres_data:/var/lib/postgresql/data #  QUAN TRỌNG: Lưu dữ liệu ra ngoài máy thật // nếu ko có dòng này thì khi tắt dữ liệu sẽ mất sạch
+    networks:
+      - algominds-net
+
+  # SERVICE 2: CACHE & QUEUE (Redis)
+  redis:
+    image: redis:7-alpine
+    container_name: algominds_redis
+    ports:
+      - "6379:6379" # Cổng mặc định của Redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - algominds-net
+
+# Khai báo nơi lưu trữ dữ liệu bền vững (Persistent Storage)
+volumes:
+  postgres_data:
+  redis_data:
+
+# Khai báo mạng nội bộ để 2 container nhìn thấy nhau
+networks:
+  algominds-net:

@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Environment variables (Rất quan trọng)
+.env
+.env.local
+.env.*
+
+# IDE & System
+.vscode/
+.idea/
+.DS_Store
+*.log
+Thumbs.db     # File rác của Windows (nên thêm)
+
+# Logs của npm/yarn (khi cài lỗi nó hay sinh ra file này)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing (Sau này chạy test sẽ sinh ra folder này)
+coverage/
+
+# Docker volumes
+postgres_data/
+redis_data/

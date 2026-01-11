@@ -9,7 +9,7 @@ services:
       - "5432:5432" # Mở cổng 5432 để máy thật kết nối được vào máy ảo
     environment:
       POSTGRES_USER: admin # Tên đăng nhập DB
-      POSTGRES_PASSWORD: admin123!@# # Mật khẩu DB (Nhớ cái này để cấu hình NestJS)
+      POSTGRES_PASSWORD: admin123 # Mật khẩu DB (Nhớ cái này để cấu hình NestJS)
       POSTGRES_DB: algominds # Tên Database mặc định sẽ tạo ra
     volumes:
       - postgres_data:/var/lib/postgresql/data #  QUAN TRỌNG: Lưu dữ liệu ra ngoài máy thật // nếu ko có dòng này thì khi tắt dữ liệu sẽ mất sạch

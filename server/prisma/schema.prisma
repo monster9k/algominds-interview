@@ -1,0 +1,250 @@
+// --- CONFIGURATION ---
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ENUMS ---
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum SessionStatus {
+  PHASE_1_STRATEGY
+  PHASE_2_IMPLEMENT
+  COMPLETED
+  ABANDONED
+}
+
+enum SubmissionStatus {
+  ACCEPTED
+  WRONG_ANSWER
+  COMPILE_ERROR
+  RUNTIME_ERROR
+  TLE // Time Limit Exceeded
+}
+
+enum MessageSender {
+  AI
+  USER
+  SYSTEM
+}
+
+enum MessageType {
+  TEXT
+  CODE
+  HINT
+  FEEDBACK
+}
+
+// --- MODELS ---
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  role      UserRole @default(USER)
+
+  // Auth Providers
+  provider   String  @default("email") // "email", "google", "github"
+  providerId String? // ID từ Google/GitHub (có thể null nếu dùng email/pass)
+  password   String? // Password có thể null nếu đăng nhập bằng Google
+
+  // Profile
+  avatarUrl String?
+  bio       String?
+  isPro     Boolean @default(false)
+
+  // Audit
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  stats    UserStats?
+  sessions Session[]
+
+  // Indexes
+  @@index([provider, providerId])
+  @@map("users") // Đổi tên bảng trong DB thành số nhiều (optional, chuẩn REST)
+}
+
+model UserStats {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  totalSessions Int       @default(0)
+  totalSolved   Int       @default(0)
+  averageScore  Float     @default(0)
+  streakDays    Int       @default(0)
+  lastActiveAt  DateTime?
+  credits       Int       @default(10) // 10 lượt free
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+model Problem {
+  id            String     @id @default(uuid())
+  slug          String     @unique
+  title         String
+  difficulty    Difficulty
+  content       String // HTML Description
+  
+  // JSON Flexibility
+  initialCode   Json // {ts: "...", py: "..."}
+  solution      Json?
+  testCases     Json // Full test suite
+  exampleCases  Json?
+  timeLimitMs   Int     @default(1000)
+  memoryLimitMb Int     @default(256)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // Relations
+  tags     ProblemTag[]
+  sessions Session[]
+
+  @@map("problems")
+}
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique // "DP", "Graph"
+  slug String @unique
+
+  // Relations
+  problems ProblemTag[]
+
+  @@map("tags")
+}
+
+// Bảng trung gian Many-to-Many giữa Problem và Tag
+model ProblemTag {
+  problemId String
+  tagId     String
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([problemId, tagId])
+  @@map("problem_tags")
+}
+
+model Session {
+  id        String        @id @default(uuid())
+  userId    String
+  problemId String
+  status    SessionStatus @default(PHASE_1_STRATEGY)
+  
+  // Optimistic Locking
+  version   Int @default(1)
+
+  // Phase 1 Data
+  strategyAnswer   String?
+  strategyFeedback String? // AI Review
+
+  // Phase 2 Data
+  currentCode     String?
+  currentLanguage String  @default("typescript")
+
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  // Relations
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem     Problem        @relation(fields: [problemId], references: [id])
+  messages    Message[]
+  submissions Submission[]
+  events      SessionEvent[]
+  evaluation  Evaluation?
+
+  @@index([userId, status])
+  @@map("sessions")
+}
+
+model SessionEvent {
+  id          String        @id @default(uuid())
+  sessionId   String
+  status      SessionStatus
+  event       String // "START", "SUBMIT"...
+  triggeredBy MessageSender
+  createdAt   DateTime      @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("session_events")
+}
+
+model Message {
+  id            String        @id @default(uuid())
+  sessionId     String
+  sender        MessageSender
+  type          MessageType   @default(TEXT)
+  content       String
+  
+  // AI Info
+  tokenUsage    Int?
+  aiModel       String? // "gpt-4o"
+  promptVersion String?
+  
+  phaseContext  SessionStatus?
+  metaData      Json?
+
+  createdAt DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("messages")
+}
+
+model Submission {
+  id            String           @id @default(uuid())
+  sessionId     String
+  code          String
+  language      String
+  status        SubmissionStatus
+  
+  passedTests   Int     @default(0)
+  totalTests    Int     @default(0)
+  executionTime Int? // ms
+  memoryUsage   Int? // kb
+  testCaseResults Json? // Chi tiết từng case
+
+  createdAt DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("submissions")
+}
+
+model Evaluation {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  
+  scores    Json // {logic: 80, cleanCode: 90}
+  feedback  String?
+  pros      Json? // List string
+  cons      Json? // List string
+
+  createdAt DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("evaluations")
+}

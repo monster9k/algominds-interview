@@ -32,11 +32,12 @@ _Trạng thái: Đang thực hiện_
 
 _Mục tiêu: Xây dựng API khung sườn, Auth và Dữ liệu tĩnh._
 
-- [ ] **2.1. Project Scaffolding**
-  - [ ] Setup ConfigModule (Quản lý biến môi trường).
-  - [ ] Setup Global Validation Pipe & Error Filter.
+- [x] **2.1. Project Scaffolding**
+  - [x] Setup ConfigModule (Quản lý biến môi trường).
+  - [x] Setup Global Validation Pipe & Error Filter.
 - [ ] **2.2. Authentication Module**
   - [ ] API Register/Login (Email & Password).
+  - [x] Setup JWT Strategy.
   - [ ] Setup JWT Guard (Bảo vệ API).
   - [ ] _(Optional)_ Setup Google OAuth.
 - [ ] **2.3. User & Problem Modules**

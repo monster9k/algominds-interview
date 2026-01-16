@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt'; // Thư viện mã hóa
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable() //Vì @Injectable() đánh dấu UsersService là một provider để NestJS có thể tạo, quản lý và inject nó vào chỗ khác bằng Dependency Injection (DI).
 export class UsersService {
@@ -42,12 +43,48 @@ export class UsersService {
         provider: provider || 'local', // Mặc định là email nếu không gửi lên
         providerId,
         avatarUrl,
+        role: 'USER',
+        stats: {
+          create: {
+            credits: 10,
+            streakDays: 0,
+          },
+        },
+      },
+      include: {
+        stats: true,
       },
     });
 
     // 4. Xóa password khỏi kết quả trả về
     const { password: _, ...result } = newUser;
 
+    return result;
+  }
+
+  async findOne(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        stats: true,
+      },
+    });
+    if (!user) return null;
+
+    // Loại bỏ password trước khi trả về
+    const { password, ...result } = user;
+    return result;
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: {
+        ...updateUserDto,
+      },
+    });
+
+    const { password, ...result } = updatedUser;
     return result;
   }
 }

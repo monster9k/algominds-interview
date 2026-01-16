@@ -10,13 +10,13 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientID: configService.getOrThrow('GOOGLE_CLIENT_ID'),
       clientSecret: configService.getOrThrow('GOOGLE_CLIENT_SECRET'),
       callbackURL: configService.getOrThrow('GOOGLE_CALLBACK_URL'),
-      scope: ['email', 'profile'],
+      scope: ['email', 'profile'], // Thêm prompt vào scope
     });
   }
 
   async validate(
     accessToken: string,
-    refreshToken: string, // dung de xin moi khi accessToken het han
+    refreshToken: string, // dung de xin moi  khi accessToken het han
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {

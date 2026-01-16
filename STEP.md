@@ -38,7 +38,7 @@ _Mục tiêu: Xây dựng API khung sườn, Auth và Dữ liệu tĩnh._
 - [ ] **2.2. Authentication Module**
   - [x] API Register/Login (Email & Password).
   - [x] Setup JWT Strategy.
-  - [] Setup JWT Guard (Bảo vệ API).
+  - [x] Setup JWT Guard (Bảo vệ API).
   - [ ] _(Optional)_ Setup Google OAuth.
 - [ ] **2.3. User & Problem Modules**
   - [ ] API User Profile (Get/Update).

@@ -8,12 +8,12 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UsersService,
+    private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
-    const user = await this.userService.Create(createUserDto);
+    const user = await this.usersService.create(createUserDto);
     const resultUser = { email: user.email, name: user.name };
     return {
       message: 'Đăng ký thành công',
@@ -21,31 +21,55 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto) {
-    const { email, password } = loginDto;
-    const user = await this.userService.findByEmai(email);
-
-    if (!user) {
-      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
-    }
-
-    if (user.password === null) {
-      throw new UnauthorizedException('Tài khoản không có mật khẩu');
-    }
-
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      user.password as string,
-    );
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
-    }
-
-    const payload = { sub: user.id, email: user.email, role: user.role };
+  // Hàm này chỉ lo việc ký giấy thông hành, không lo check pass
+  async generateToken(userId: string, email: string, role: string) {
+    const payload = { sub: userId, email, role };
     return {
       access_token: await this.jwtService.signAsync(payload),
-      user: { id: user.id, email: user.email, name: user.name },
+      user: { id: userId, email, role }, // Trả thêm info để Frontend dùng
     };
+  }
+
+  async login(loginDto: LoginDto) {
+    const user = await this.usersService.findByEmail(loginDto.email);
+    if (!user || !user.password) {
+      // Nếu user ko có pass (user Google) thì chặn luôn
+      throw new UnauthorizedException('Sai tài khoản hoặc mật khẩu');
+    }
+
+    const isMatch = await bcrypt.compare(loginDto.password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Sai tài khoản hoặc mật khẩu');
+    }
+
+    // Pass đúng -> Gọi hàm tạo token
+    return this.generateToken(user.id, user.email, user.role);
+  }
+
+  async validateGoogleUser(googleUser: any) {
+    const { email, name, avatarUrl, providerId } = googleUser;
+
+    // A. Kiểm tra user đã tồn tại chưa?
+    const user = await this.usersService.findByEmail(email);
+
+    if (user) {
+      // Nếu đã có -> Trả về luôn để login
+      // (Optional: Update avatar nếu muốn, nhưng để đơn giản ta cứ return)
+      return user;
+    }
+
+    // B. Nếu chưa có -> Tạo mới (Register)
+    console.log('User Google mới, đang tạo vào DB...');
+
+    const newUser = await this.usersService.create({
+      email,
+      name,
+      password: undefined, // Schema cho phép null -> Chuẩn bài!
+      provider: 'google',
+      providerId: providerId,
+      avatarUrl: avatarUrl,
+    });
+
+    return newUser;
   }
 }

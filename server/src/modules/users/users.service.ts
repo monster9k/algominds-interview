@@ -7,34 +7,46 @@ import * as bcrypt from 'bcrypt'; // Thư viện mã hóa
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findByEmai(email: string) {
+  async findByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
     });
   }
 
-  async Create(createUserDto: CreateUserDto) {
-    const { email, name, password } = createUserDto;
+  async create(createUserDto: CreateUserDto) {
+    const { email, name, password, provider, providerId, avatarUrl } =
+      createUserDto;
 
-    // check xem email tồn tại chưa
-    const existingUser = await this.findByEmai(email);
-
+    // 1. Check xem email tồn tại chưa
+    const existingUser = await this.findByEmail(email);
     if (existingUser) {
       throw new ConflictException('Email này đã được sử dụng!');
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // 2. Xử lý Password (Logic mới: Chỉ hash nếu có password)
+    let hashedPassword: string | null = null;
 
+    if (password) {
+      // Trường hợp Đăng ký thường
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(password, salt);
+    }
+    // Trường hợp Google: password sẽ là null, hashedPassword cũng là null -> OK
+
+    // 3. Lưu vào DB (Thêm các trường provider, avatarUrl)
     const newUser = await this.prisma.user.create({
       data: {
         email,
         name,
-        password: hashedPassword,
+        password: hashedPassword, // Có thể là chuỗi hash hoặc null
+        provider: provider || 'local', // Mặc định là email nếu không gửi lên
+        providerId,
+        avatarUrl,
       },
     });
 
-    const { password: _, ...result } = newUser; // xoa thang password khoi kq tra ve chi luu vao db thoi;
+    // 4. Xóa password khỏi kết quả trả về
+    const { password: _, ...result } = newUser;
 
     return result;
   }

@@ -42,8 +42,9 @@ _Mục tiêu: Xây dựng API khung sườn, Auth và Dữ liệu tĩnh._
   - [x] _(Optional)_ Setup Google OAuth.
 - [x] **2.3. User & Problem Modules**
   - [x] API User Profile (Get/Update).
-  - [ ] API CRUD Problem (Tạo bài tập, Test cases).
-  - [ ] Seed dữ liệu mẫu (Tạo sẵn 1-2 bài thuật toán).
+  - [x] API CRUD Problem (Tạo bài tập, Test cases).
+  - [x] Seed dữ liệu mẫu (Tạo sẵn 1-2 bài thuật toán).
+    - [ ] Setup Swagger (API Docs).
 
 ---
 

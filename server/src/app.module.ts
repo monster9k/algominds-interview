@@ -3,6 +3,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ProblemsModule } from './modules/problems/problems.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AuthModule } from './modules/auth/auth.module';
     PrismaModule,
     UsersModule,
     AuthModule,
+    ProblemsModule,
   ], // Nhập module Prisma vào đây
   controllers: [],
   providers: [],

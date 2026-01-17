@@ -40,8 +40,8 @@ _Mục tiêu: Xây dựng API khung sườn, Auth và Dữ liệu tĩnh._
   - [x] Setup JWT Strategy.
   - [x] Setup JWT Guard (Bảo vệ API).
   - [x] _(Optional)_ Setup Google OAuth.
-- [ ] **2.3. User & Problem Modules**
-  - [ ] API User Profile (Get/Update).
+- [x] **2.3. User & Problem Modules**
+  - [x] API User Profile (Get/Update).
   - [ ] API CRUD Problem (Tạo bài tập, Test cases).
   - [ ] Seed dữ liệu mẫu (Tạo sẵn 1-2 bài thuật toán).
 

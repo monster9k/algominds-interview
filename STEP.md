@@ -52,8 +52,8 @@ _Mục tiêu: Xây dựng API khung sườn, Auth và Dữ liệu tĩnh._
 
 _Mục tiêu: Xử lý logic phỏng vấn, State Machine và Real-time._
 
-- [ ] **3.1. Session Module**
-  - [ ] API Start Session (Tạo phiên mới).
+- [x] **3.1. Session Module**
+  - [x] API Start Session (Tạo phiên mới).
   - [ ] Logic Optimistic Locking (Xử lý `version` để tránh ghi đè).
   - [ ] API chuyển đổi trạng thái (Phase 1 -> Phase 2).
 - [ ] **3.2. Real-time Gateway (Socket.io)**

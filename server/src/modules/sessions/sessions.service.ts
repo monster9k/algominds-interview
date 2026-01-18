@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { SessionStatus } from '@prisma/client';
+import { UpdateSessionDto } from './dto/update-session.dto';
 @Injectable()
 export class SessionsService {
   constructor(private prisma: PrismaService) {}
@@ -51,5 +56,36 @@ export class SessionsService {
     }
 
     return session;
+  }
+
+  async update(id: string, userId: string, updateSessionDto: UpdateSessionDto) {
+    const { version, ...dataToUpdate } = updateSessionDto;
+
+    const session = await this.prisma.session.findUnique({
+      where: { id },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Phiên làm việc không tồn tại');
+    }
+
+    if (session.userId !== userId) {
+      throw new NotFoundException('Bạn không có quyền sửa phiên này');
+    }
+
+    // Logic Optimistic Locking (Xử lý `version` để tránh ghi đè).
+    if (session.version !== version) {
+      throw new ConflictException(
+        'Dữ liệu đã bị thay đổi bởi thiết bị khác. Vui lòng tải lại trang.',
+      );
+    }
+
+    return this.prisma.session.update({
+      where: { id }, // Chỉ cần where ID vì ta đã check logic ở trên rồi
+      data: {
+        ...dataToUpdate,
+        version: { increment: 1 }, // Tự động +1 version
+      },
+    });
   }
 }

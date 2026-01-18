@@ -4,7 +4,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { JwtUser } from '../auth/type/jwt-user.type';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Users') // lam viec voi swagger
+@ApiBearerAuth() // Báo với swagger là api này cần bearToken
 @Controller('users') // Đường dẫn gốc là /users
 @UseGuards(JwtAuthGuard) // Bảo vệ toàn bộ Controller này (Phải có Token mới vào được)
 export class UsersController {

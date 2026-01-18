@@ -44,7 +44,7 @@ _Mục tiêu: Xây dựng API khung sườn, Auth và Dữ liệu tĩnh._
   - [x] API User Profile (Get/Update).
   - [x] API CRUD Problem (Tạo bài tập, Test cases).
   - [x] Seed dữ liệu mẫu (Tạo sẵn 1-2 bài thuật toán).
-    - [ ] Setup Swagger (API Docs).
+    - [x] Setup Swagger (API Docs).
 
 ---
 

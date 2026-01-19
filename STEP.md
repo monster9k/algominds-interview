@@ -54,12 +54,12 @@ _Mục tiêu: Xử lý logic phỏng vấn, State Machine và Real-time._
 
 - [x] **3.1. Session Module**
   - [x] API Start Session (Tạo phiên mới).
-  - [ ] Logic Optimistic Locking (Xử lý `version` để tránh ghi đè).
-  - [ ] API chuyển đổi trạng thái (Phase 1 -> Phase 2).
-- [ ] **3.2. Real-time Gateway (Socket.io)**
-  - [ ] Setup WebSocket Gateway.
-  - [ ] Xử lý Join Room (Mỗi session 1 room).
-  - [ ] Chat realtime (Gửi/Nhận tin nhắn).
+  - [x] Logic Optimistic Locking (Xử lý `version` để tránh ghi đè).
+  - [x] API chuyển đổi trạng thái (Phase 1 -> Phase 2).
+- [x] **3.2. Real-time Gateway (Socket.io)**
+  - [x] Setup WebSocket Gateway.
+  - [x] Xử lý Join Room (Mỗi session 1 room).
+  - [x] Chat realtime (Gửi/Nhận tin nhắn).
 - [ ] **3.3. AI Integration (GPT-4o)**
   - [ ] Setup Service gọi OpenAI API.
   - [ ] Viết Prompt Engineering cho vai trò "Interviewer khó tính".

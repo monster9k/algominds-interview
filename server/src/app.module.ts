@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ProblemsModule } from './modules/problems/problems.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { AiModule } from './modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ChatModule } from './modules/chat/chat.module';
     ProblemsModule,
     SessionsModule,
     ChatModule,
+    AiModule,
   ], // Nhập module Prisma vào đây
   controllers: [],
   providers: [],

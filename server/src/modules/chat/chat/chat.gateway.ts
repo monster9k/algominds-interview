@@ -11,6 +11,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { MessageSender } from '@prisma/client';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 @WebSocketGateway({
   cors: {
     origin: '*', // Cho phép React (port 5173) kết nối
@@ -23,7 +25,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private logger: Logger = new Logger('ChatGateway'); //1 logger instance với context = ChatGateway
   //[Nest] 12345  - 01/18/2026, 10:22:31 AM  LOG [ChatGateway] Client connected: abc123
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @InjectQueue('ai-queue') private aiQueue: Queue, // Inject Queue vào
+  ) {}
 
   handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
@@ -58,6 +63,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       sessionId: string;
       content: string;
       sender: MessageSender;
+      userId: string;
     },
   ) {
     // A. Lưu vào Database trước
@@ -73,6 +79,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Sự kiện bắn về tên là 'receive_message'
     this.server.to(data.sessionId).emit('receive_message', newMessage);
 
+    // 3. LOGIC: Nếu người gửi là USER -> Kích hoạt AI trả lời
+    if (data.sender === 'USER') {
+      // Thêm vào hàng đợi
+      await this.aiQueue.add('chat-job', {
+        sessionId: data.sessionId,
+        userId: data.userId, // Cần ID user để tracking
+        content: data.content,
+      });
+      console.log('Added job to AI Queue');
+    }
     return newMessage;
   }
 }

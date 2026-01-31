@@ -115,6 +115,11 @@ model Problem {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  // NÂNG CẤP: Metadata cho việc chấm bài
+  functionName  String   @default("solution") // Tên hàm: "twoSum", "isValid"
+  // (Optional) Input Type Signature để parse cho chuẩn C++ 
+  // VD: ["number[]", "number"] -> Giúp convert JSON sang C++ Vector
+  inputSignature Json?
   // Relations
   tags     ProblemTag[]
   sessions Session[]

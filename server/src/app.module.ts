@@ -8,6 +8,8 @@ import { SessionsModule } from './modules/sessions/sessions.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AiModule } from './modules/ai/ai.module';
 import { JudgeModule } from './modules/judge/judge.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -15,6 +17,7 @@ import { JudgeModule } from './modules/judge/judge.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
     PrismaModule,
     UsersModule,
     AuthModule,
@@ -23,8 +26,20 @@ import { JudgeModule } from './modules/judge/judge.module';
     ChatModule,
     AiModule,
     JudgeModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 60 giây
+        limit: 10, // Tối đa 10 request
+      },
+    ]),
   ], // Nhập module Prisma vào đây
   controllers: [],
-  providers: [],
+  providers: [
+    // Kích hoạt Guard toàn cục
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

@@ -3,10 +3,12 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // 1. Kích hoạt Validation toàn cục (Global Pipe)
+  app.use(helmet());
   const configService = app.get(ConfigService);
 
   app.useGlobalPipes(
@@ -17,7 +19,12 @@ async function bootstrap() {
   );
 
   // 2. Bật CORS (Để sau này Frontend React gọi được API mà không bị chặn)
-  app.enableCors();
+  //  CORS (Cho phép Frontend Localhost gọi)
+  app.enableCors({
+    origin: ['http://localhost:5173'], // Chỉ cho phép React Vite
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
 
   // --- 2. CẤU HÌNH SWAGGER (THÊM ĐOẠN NÀY) ---
   const config = new DocumentBuilder()

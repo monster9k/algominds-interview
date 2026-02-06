@@ -1,7 +1,7 @@
 /**
- * Utility Functions
- * Common utility functions used throughout the application
- * Includes Tailwind CSS class name merging and other helpers
+ * Các hàm tiện ích
+ * Các hàm tiện ích chung được sử dụng trong toàn bộ ứng dụng
+ * Bao gồm việc hợp nhất tên lớp CSS của Tailwind và các hàm trợ giúp khác
  */
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -16,26 +16,26 @@ type ClassValue =
   | ClassValue[];
 
 /**
- * Combines class names and merges Tailwind classes intelligently
- * Prevents conflicts between Tailwind classes (e.g., 'px-2 px-4' -> 'px-4')
+ * Kết hợp các tên lớp và hợp nhất các lớp Tailwind một cách thông minh
+ * Ngăn chặn xung đột giữa các lớp Tailwind (ví dụ: 'px-2 px-4' -> 'px-4')
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 /**
- * Test function to verify path alias is working
+ * Hàm kiểm tra để xác minh bí danh đường dẫn (path alias) hoạt động
  */
 export const hello = () => {
-  console.log("Hello AlgoMinds - Path alias working!");
+  console.log("Hello AlgoMinds - Path alias hoạt động!");
   return "Hello AlgoMinds";
 };
 
 /**
- * Format date to readable string
+ * Định dạng ngày thành chuỗi có thể đọc được
  */
 export function formatDate(date: Date | string): string {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("vi-VN", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -43,7 +43,7 @@ export function formatDate(date: Date | string): string {
 }
 
 /**
- * Debounce function to limit API calls
+ * Hàm debounce để giới hạn các lệnh gọi API
  */
 export function debounce<T extends (...args: any[]) => void>(
   func: T,

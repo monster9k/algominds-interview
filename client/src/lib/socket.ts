@@ -1,7 +1,7 @@
 /**
- * Socket.IO Client Configuration
- * Manages real-time WebSocket connections for live features
- * Handles chat, live coding sessions, and real-time updates
+ * Cấu hình Socket.IO Client
+ * Quản lý các kết nối WebSocket thời gian thực cho các tính năng trực tiếp
+ * Xử lý chat, phiên lập trình trực tiếp, và các cập nhật thời gian thực
  */
 import { io, Socket } from "socket.io-client";
 import { env } from "@/config/env";
@@ -9,8 +9,8 @@ import { env } from "@/config/env";
 let socket: Socket | null = null;
 
 /**
- * Initialize socket connection
- * Call this when user authenticates or app starts
+ * Khởi tạo kết nối socket
+ * Gọi hàm này khi người dùng xác thực hoặc khi ứng dụng bắt đầu
  */
 export function initializeSocket(token?: string): Socket {
   if (socket?.connected) {
@@ -20,12 +20,12 @@ export function initializeSocket(token?: string): Socket {
   socket = io(env.SOCKET_URL, {
     autoConnect: false,
     auth: {
-      token, // Pass JWT token for authentication
+      token, // Truyền JWT token để xác thực
     },
     transports: ["websocket", "polling"],
   });
 
-  // Connection event handlers
+  // Các hàm xử lý sự kiện kết nối
   socket.on("connect", () => {
     console.log("✅ Socket connected:", socket?.id);
   });
@@ -38,21 +38,21 @@ export function initializeSocket(token?: string): Socket {
     console.error("🔴 Socket connection error:", error);
   });
 
-  // Connect the socket
+  // Kết nối socket
   socket.connect();
 
   return socket;
 }
 
 /**
- * Get current socket instance
+ * Lấy phiên bản socket hiện tại
  */
 export function getSocket(): Socket | null {
   return socket;
 }
 
 /**
- * Disconnect and cleanup socket
+ * Ngắt kết nối và dọn dẹp socket
  */
 export function disconnectSocket(): void {
   if (socket) {
@@ -62,20 +62,20 @@ export function disconnectSocket(): void {
 }
 
 /**
- * Socket event listeners for different features
+ * Các hàm lắng nghe sự kiện socket cho các tính năng khác nhau
  */
 export const socketEvents = {
-  // Interview session events
+  // Sự kiện phiên phỏng vấn
   INTERVIEW_JOIN: "interview:join",
   INTERVIEW_LEAVE: "interview:leave",
   INTERVIEW_CODE_UPDATE: "interview:code_update",
   INTERVIEW_MESSAGE: "interview:message",
 
-  // Chat events
+  // Sự kiện chat
   CHAT_MESSAGE: "chat:message",
   CHAT_TYPING: "chat:typing",
 
-  // User presence
+  // Sự hiện diện của người dùng
   USER_ONLINE: "user:online",
   USER_OFFLINE: "user:offline",
 } as const;

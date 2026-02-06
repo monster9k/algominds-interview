@@ -1,9 +1,9 @@
 /**
- * Global Providers Wrapper
- * Wraps the entire app with necessary providers:
- * - React Query Client for server state management
- * - Theme Provider (if using theme system)
- * - Auth Provider for authentication context
+ * Trình bao bọc các Provider toàn cục
+ * Bao bọc toàn bộ ứng dụng với các provider cần thiết:
+ * - React Query Client để quản lý trạng thái từ server
+ * - Theme Provider (nếu sử dụng hệ thống theme)
+ * - Auth Provider cho ngữ cảnh xác thực
  */
 import React from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -16,7 +16,7 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      {/* TODO: Add other providers as needed */}
+      {/* TODO: Thêm các provider khác khi cần */}
       {/* <ThemeProvider> */}
       {/* <AuthProvider> */}
       {children}

@@ -1,12 +1,12 @@
 /**
- * Axios HTTP Client Configuration
- * Centralized HTTP client with request/response interceptors
- * Handles authentication tokens and error responses automatically
+ * Cấu hình Axios HTTP Client
+ * HTTP client tập trung với các interceptor cho request/response
+ * Tự động xử lý token xác thực và các phản hồi lỗi
  */
 import axios from "axios";
 import { env } from "@/config/env";
 
-// Create axios instance with base configuration
+// Tạo phiên bản axios với cấu hình cơ bản
 export const api = axios.create({
   baseURL: env.API_URL,
   timeout: 10000,
@@ -15,10 +15,10 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor - Add auth token to requests
+// Request interceptor - Thêm token xác thực vào các yêu cầu
 api.interceptors.request.use(
   (config) => {
-    // Get token from localStorage (adjust based on your auth strategy)
+    // Lấy token từ localStorage (điều chỉnh dựa trên chiến lược xác thực của bạn)
     const token = localStorage.getItem("authToken");
 
     if (token) {
@@ -32,28 +32,38 @@ api.interceptors.request.use(
   },
 );
 
-// Response interceptor - Handle common response scenarios
+// Response interceptor - Xử lý các kịch bản phản hồi phổ biến
 api.interceptors.response.use(
   (response) => {
+    // Nếu phản hồi thành công, chỉ cần trả về dữ liệu
     return response;
   },
   (error) => {
-    // Handle 401 - Unauthorized (redirect to login)
+    // Xử lý 401 - Unauthorized (chuyển hướng đến trang đăng nhập)
     if (error.response?.status === 401) {
+      // Có thể thêm logic thông báo cho người dùng ở đây
+      console.error(
+        "Lỗi 401: Chưa xác thực hoặc token hết hạn. Đang chuyển hướng...",
+      );
       localStorage.removeItem("authToken");
+      // Dùng window.location để đảm bảo reload lại toàn bộ ứng dụng
       window.location.href = "/login";
     }
 
-    // Handle 403 - Forbidden
+    // Xử lý 403 - Forbidden
     if (error.response?.status === 403) {
-      console.error("Access denied");
+      console.error("Lỗi 403: Không có quyền truy cập tài nguyên này.");
+      // Có thể hiển thị một thông báo toast ở đây
     }
 
-    // Handle 500 - Server Error
+    // Xử lý 500 - Server Error
     if (error.response?.status === 500) {
-      console.error("Server error occurred");
+      console.error("Lỗi 500: Đã xảy ra lỗi phía máy chủ.");
+      // Có thể hiển thị một thông báo toast ở đây
     }
 
+    // Quan trọng: Luôn reject promise với đối tượng error
+    // để các hàm gọi (như React Query) có thể bắt và xử lý lỗi.
     return Promise.reject(error);
   },
 );

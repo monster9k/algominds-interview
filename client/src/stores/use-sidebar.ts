@@ -1,7 +1,7 @@
 /**
- * Global UI State Store (Zustand)
- * Manages global UI state like sidebar visibility, modals, etc.
- * Only store truly global state here - prefer local state when possible
+ * Kho lưu trữ trạng thái UI toàn cục (Zustand)
+ * Quản lý trạng thái UI toàn cục như hiển thị sidebar, modals, v.v.
+ * Chỉ lưu trữ trạng thái thực sự toàn cục ở đây - ưu tiên trạng thái cục bộ khi có thể
  */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -26,14 +26,14 @@ export const useSidebar = create<SidebarState>()(
       setMobile: (isMobile: boolean) => set({ isMobile }),
     }),
     {
-      name: "sidebar-storage", // localStorage key
-      partialize: (state) => ({ isOpen: state.isOpen }), // Only persist isOpen
+      name: "sidebar-storage", // Khóa trong localStorage
+      partialize: (state) => ({ isOpen: state.isOpen }), // Chỉ lưu trữ trạng thái isOpen
     },
   ),
 );
 
 /**
- * Usage example:
+ * Ví dụ sử dụng:
  * const { isOpen, toggle } = useSidebar();
- * <button onClick={toggle}>Toggle Sidebar</button>
+ * <button onClick={toggle}>Chuyển đổi Sidebar</button>
  */

@@ -123,7 +123,7 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
         </div>
       </div>
       <Button variant="outline" type="button" disabled={isLoading}>
-        Google
+        <img src="/google.svg" alt="Google" className="h-4 w-4  " />
       </Button>
     </div>
   );

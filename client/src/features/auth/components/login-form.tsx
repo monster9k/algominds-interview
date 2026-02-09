@@ -104,7 +104,7 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
       </div>
       <Button variant="outline" type="button" disabled={isLoading}>
         {/* Replace with actual Google Icon if available or needed */}
-        Google
+        <img src="/google.svg" alt="Google" className="h-4 w-4" />
       </Button>
     </div>
   );

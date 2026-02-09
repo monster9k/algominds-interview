@@ -12,6 +12,9 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { ProblemsPage } from "@/features/problems/pages/problems-page";
+import { InterviewRoom } from "@/features/interview/pages/interview-room";
 
 // TODO: Import các component của route khi các tính năng được xây dựng
 // import { AuthRoutes } from '@/features/auth';
@@ -19,18 +22,18 @@ import {
 // import { InterviewRoutes } from '@/features/interview';
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    element: (
-      <div className="p-8 text-center">
-        AlgoMinds - Feature-Based Architecture Setup Complete!
-        <br />
-        <a href="/auth/login" className="text-primary hover:underline">
-          Go to Login
-        </a>
-      </div>
-    ),
-  },
+  // {
+  //   path: "/",
+  //   element: (
+  //     <div className="p-8 text-center">
+  //       AlgoMinds - Feature-Based Architecture Setup Complete!
+  //       <br />
+  //       <a href="/auth/login" className="text-primary hover:underline">
+  //         Go to Login
+  //       </a>
+  //     </div>
+  //   ),
+  // },
   {
     path: "/test-landPage",
     element: <LandingPage />,
@@ -40,17 +43,24 @@ const router = createBrowserRouter([
     element: <TestApiPage />,
   },
   {
-    path: "/auth/login",
-    element: <LoginPage />,
-  },
-  {
-    path: "/auth/register",
-    element: <RegisterPage />,
-  },
-  // Redirect /auth to /auth/login
-  {
     path: "/auth",
-    element: <Navigate to="/auth/login" replace />,
+    children: [
+      { path: "login", element: <LoginPage /> },
+      { path: "register", element: <RegisterPage /> },
+    ],
+  },
+  {
+    path: "/",
+    element: <DashboardLayout />, // Áp dụng Layout Dashboard cho các trang con
+    children: [
+      { path: "problems", element: <ProblemsPage /> },
+      // Thêm dashboard home sau
+      { path: "dashboard", element: <Navigate to="/problems" replace /> },
+    ],
+  },
+  {
+    path: "/interview/:id",
+    element: <InterviewRoom />,
   },
   // TODO: Thêm các route của tính năng tại đây
   // ...AuthRoutes,

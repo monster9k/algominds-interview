@@ -1,130 +1,157 @@
-import * as React from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import * as z from "zod";
+import { Loader2, User, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useRegister } from "../hooks/use-auth";
+import { PasswordInput } from "@/components/ui/password-input";
 
 const registerSchema = z
   .object({
-    email: z.string().email({ message: "Invalid email address" }),
-    password: z
-      .string()
-      .min(6, { message: "Password must be at least 6 characters" }),
+    name: z.string().min(2, { message: "Tên phải có ít nhất 2 ký tự" }), // Thêm field name
+    email: z.string().email({ message: "Email không hợp lệ" }),
+    password: z.string().min(6, { message: "Mật khẩu phải từ 6 ký tự" }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: "Mật khẩu không khớp",
     path: ["confirmPassword"],
   });
 
-type RegisterSchema = z.infer<typeof registerSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
-interface RegisterFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+export function RegisterForm({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const { mutate: registerUser, isPending } = useRegister();
 
-export function RegisterForm({ className, ...props }: RegisterFormProps) {
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterSchema>({
+  const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
+    defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
   });
 
-  async function onSubmit(data: RegisterSchema) {
-    setIsLoading(true);
-
-    // TODO: Connect to actual Auth API
-    setTimeout(() => {
-      console.log(data);
-      setIsLoading(false);
-    }, 3000);
+  function onSubmit(data: RegisterFormValues) {
+    // Gọi API Register (Backend cần: email, password, name)
+    registerUser({
+      email: data.email,
+      password: data.password,
+      name: data.name,
+    });
   }
 
   return (
-    <div className={cn("grid gap-6", className)} {...props}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid gap-2">
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="email">
-              Email
-            </Label>
-            <Input
-              id="email"
-              placeholder="name@example.com"
-              type="email"
-              autoCapitalize="none"
-              autoComplete="email"
-              autoCorrect="off"
-              disabled={isLoading}
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-destructive text-xs">{errors.email.message}</p>
+    <div className={className} {...props}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {/* Name Field */}
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Name</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="John Doe"
+                      className="pl-9 bg-secondary/50 border-transparent focus:border-primary/50"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="password">
-              Password
-            </Label>
-            <Input
-              id="password"
-              placeholder="Password"
-              type="password"
-              disabled={isLoading}
-              {...register("password")}
-            />
-            {errors.password && (
-              <p className="text-destructive text-xs">
-                {errors.password.message}
-              </p>
+          />
+
+          {/* Email Field (Giữ nguyên) */}
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="name@example.com"
+                      className="pl-9 bg-secondary/50 border-transparent focus:border-primary/50"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="confirmPassword">
-              Confirm Password
-            </Label>
-            <Input
-              id="confirmPassword"
-              placeholder="Confirm Password"
-              type="password"
-              disabled={isLoading}
-              {...register("confirmPassword")}
-            />
-            {errors.confirmPassword && (
-              <p className="text-destructive text-xs">
-                {errors.confirmPassword.message}
-              </p>
+          />
+
+          {/* Password & Confirm Password (Giữ nguyên) */}
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <PasswordInput
+                      type="password"
+                      placeholder="••••••••"
+                      className="pl-9 bg-secondary/50 border-transparent focus:border-primary/50"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
+          />
+
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <PasswordInput
+                      type="password"
+                      placeholder="••••••••"
+                      className="pl-9 bg-secondary/50 border-transparent focus:border-primary/50"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <Button
-            className="w-full bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-500 hover:to-orange-500 text-white font-bold shadow-lg shadow-rose-900/20 hover:shadow-rose-900/40 hover:scale-[1.01] transition-all duration-200 cursor-pointer"
-            disabled={isLoading}
+            type="submit"
+            className="w-full bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-500 hover:to-orange-500 text-white font-bold shadow-lg shadow-rose-900/20"
+            disabled={isPending}
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Account
           </Button>
-        </div>
-      </form>
-      <div className="relative border-b py-4">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full " />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background text-muted-foreground px-2 ">
-            Or continue with
-          </span>
-        </div>
-      </div>
-      <Button variant="outline" type="button" disabled={isLoading}>
-        <img src="/google.svg" alt="Google" className="h-4 w-4  " />
-      </Button>
+        </form>
+      </Form>
     </div>
   );
 }

@@ -126,6 +126,7 @@ export function LoginForm({
         type="button"
         disabled={isPending}
         className="w-full bg-secondary/30 hover:bg-secondary border-zinc-800"
+        onClick={authApi.loginWithGoogle}
         // onClick={authApi.loginWithGoogle} // Gọi hàm redirect
       >
         <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">

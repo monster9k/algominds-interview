@@ -20,4 +20,8 @@ export const authApi = {
     const response = await api.get("/auth/profile");
     return response.data;
   },
+  loginWithGoogle: () => {
+    // Chuyển hướng toàn bộ trang web sang Backend NestJS
+    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+  },
 };

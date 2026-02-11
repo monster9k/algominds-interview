@@ -16,6 +16,7 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProblemsPage } from "@/features/problems/pages/problems-page";
 import { InterviewRoom } from "@/features/interview/pages/interview-room";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
+import { GoogleCallbackPage } from "@/features/auth/pages/google-callback-page";
 
 // TODO: Import các component của route khi các tính năng được xây dựng
 // import { AuthRoutes } from '@/features/auth';
@@ -48,6 +49,7 @@ const router = createBrowserRouter([
     children: [
       { path: "login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
+      { path: "google-callback", element: <GoogleCallbackPage /> },
     ],
   },
   // phai login moi duoc dung

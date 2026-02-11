@@ -18,11 +18,20 @@ export const api = axios.create({
 // Request interceptor - Thêm token xác thực vào các yêu cầu
 api.interceptors.request.use(
   (config) => {
-    // Lấy token từ localStorage (điều chỉnh dựa trên chiến lược xác thực của bạn)
-    const token = localStorage.getItem("authToken");
+    // Lấy raw data từ localStorage (do Zustand persist lưu)
+    const storageData = localStorage.getItem("algominds-auth");
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (storageData) {
+      try {
+        const parsed = JSON.parse(storageData);
+        const token = parsed.state?.token; // Đường dẫn tới token trong Zustand state
+
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (e) {
+        console.error("Lỗi khi phân tích dữ liệu xác thực từ localStorage:", e);
+      }
     }
 
     return config;
@@ -45,9 +54,9 @@ api.interceptors.response.use(
       console.error(
         "Lỗi 401: Chưa xác thực hoặc token hết hạn. Đang chuyển hướng...",
       );
-      localStorage.removeItem("authToken");
+      localStorage.removeItem("algominds-auth");
       // Dùng window.location để đảm bảo reload lại toàn bộ ứng dụng
-      window.location.href = "/login";
+      window.location.href = "/auth/login";
     }
 
     // Xử lý 403 - Forbidden

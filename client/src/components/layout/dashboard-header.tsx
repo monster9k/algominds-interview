@@ -12,8 +12,13 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "@/components/ui/logo";
 import { DashboardSidebar } from "./dashboard-sidebar";
+import { useAuthStore } from "@/stores/use-auth-store"; // Lấy thông tin user
+import { useLogout } from "@/features/auth/hooks/use-auth"; // Import Hook Logout
 
 export function DashboardHeader() {
+  const user = useAuthStore((state) => state.user); // Lấy user từ Store để hiện tên thật
+  const logout = useLogout(); // Lấy hàm logout
+
   return (
     <header className="sticky top-0 z-40 h-16 bg-background/80 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between px-6">
       <div className="flex items-center gap-4 lg:hidden">
@@ -51,19 +56,23 @@ export function DashboardHeader() {
             >
               <Avatar className="h-9 w-9">
                 <AvatarImage
-                  src="https://github.com/shadcn.png"
-                  alt="@shadcn"
+                  src={user?.avatarUrl || "https://github.com/shadcn.png"}
+                  alt={user?.name || "User"}
                 />
-                <AvatarFallback>AM</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary">
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Username</p>
+                <p className="text-sm font-medium leading-none">
+                  {user?.name || "Khách"}
+                </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  user@algominds.com
+                  {user?.email || "Chưa đăng nhập"}
                 </p>
               </div>
             </DropdownMenuLabel>
@@ -71,7 +80,12 @@ export function DashboardHeader() {
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-500 focus:text-red-500">
+
+            {/* GẮN SỰ KIỆN LOGOUT TẠI ĐÂY */}
+            <DropdownMenuItem
+              className="text-red-500 focus:text-red-500 cursor-pointer"
+              onClick={logout}
+            >
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

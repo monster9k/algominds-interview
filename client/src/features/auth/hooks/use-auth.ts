@@ -55,3 +55,21 @@ export const useRegister = () => {
     },
   });
 };
+
+export const useLogout = () => {
+  const navigate = useNavigate();
+  const logoutStore = useAuthStore((state) => state.logout);
+
+  return () => {
+    // 1. Xóa Token & User khỏi Store (và LocalStorage)
+    logoutStore();
+
+    // 2. Thông báo
+    toast.info("Đã đăng xuất", {
+      description: "Hẹn gặp lại bạn sớm!",
+    });
+
+    // 3. Điều hướng về trang Login
+    navigate("/auth/login");
+  };
+};

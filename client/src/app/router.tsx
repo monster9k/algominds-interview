@@ -15,6 +15,7 @@ import {
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProblemsPage } from "@/features/problems/pages/problems-page";
 import { InterviewRoom } from "@/features/interview/pages/interview-room";
+import { ProtectedRoute } from "@/features/auth/components/protected-route";
 
 // TODO: Import các component của route khi các tính năng được xây dựng
 // import { AuthRoutes } from '@/features/auth';
@@ -49,18 +50,30 @@ const router = createBrowserRouter([
       { path: "register", element: <RegisterPage /> },
     ],
   },
+  // phai login moi duoc dung
   {
     path: "/",
-    element: <DashboardLayout />, // Áp dụng Layout Dashboard cho các trang con
+    element: <DashboardLayout />,
     children: [
       { path: "problems", element: <ProblemsPage /> },
-      // Thêm dashboard home sau
       { path: "dashboard", element: <Navigate to="/problems" replace /> },
     ],
   },
+
+  // Protected interview route
   {
-    path: "/interview/:id",
-    element: <InterviewRoom />,
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: "/interview/:id",
+        element: <InterviewRoom />,
+      },
+    ],
+  },
+
+  {
+    path: "*",
+    element: <Navigate to="/auth/login" replace />,
   },
   // TODO: Thêm các route của tính năng tại đây
   // ...AuthRoutes,

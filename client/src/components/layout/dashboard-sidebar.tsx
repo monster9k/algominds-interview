@@ -9,6 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
+import { useLogout } from "@/features/auth/hooks/use-auth";
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -19,6 +20,7 @@ const sidebarItems = [
 
 export function DashboardSidebar() {
   const location = useLocation();
+  const logout = useLogout();
 
   return (
     <div className="flex h-full flex-col bg-zinc-950 border-r border-zinc-800">
@@ -54,6 +56,7 @@ export function DashboardSidebar() {
         <Button
           variant="ghost"
           className="w-full justify-start text-zinc-400 hover:text-red-400 hover:bg-red-950/30"
+          onClick={logout}
         >
           <LogOut className="mr-2 h-4 w-4" />
           Log out

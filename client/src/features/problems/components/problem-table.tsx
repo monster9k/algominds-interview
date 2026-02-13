@@ -1,5 +1,11 @@
 import { Link } from "react-router-dom";
-import { PlayCircle, CheckCircle2, Circle, FileText } from "lucide-react";
+import {
+  PlayCircle,
+  CheckCircle2,
+  Circle,
+  FileText,
+  Loader2,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,67 +16,47 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-// Mock Data (Có thể tách ra file riêng nếu dài)
-const problems = [
-  {
-    id: "1",
-    title: "Two Sum",
-    difficulty: "Easy",
-    acceptance: "52.4%",
-    status: "Solved",
-  },
-  {
-    id: "2",
-    title: "Add Two Numbers",
-    difficulty: "Medium",
-    acceptance: "43.1%",
-    status: "Todo",
-  },
-  {
-    id: "3",
-    title: "Longest Substring Without Repeating Characters",
-    difficulty: "Medium",
-    acceptance: "35.2%",
-    status: "Attempted",
-  },
-  {
-    id: "4",
-    title: "Median of Two Sorted Arrays",
-    difficulty: "Hard",
-    acceptance: "40.8%",
-    status: "Todo",
-  },
-  {
-    id: "5",
-    title: "Longest Palindromic Substring",
-    difficulty: "Medium",
-    acceptance: "34.1%",
-    status: "Solved",
-  },
-  {
-    id: "6",
-    title: "Zigzag Conversion",
-    difficulty: "Medium",
-    acceptance: "48.2%",
-    status: "Todo",
-  },
-];
+import { useProblems } from "../hooks/use-problems";
+import { Difficulty } from "../types";
 
 export function ProblemTable() {
-  const getDifficultyColor = (diff: string) => {
+  // 1. Lấy dữ liệu thật từ Hook
+  const { data: problems, isLoading, isError } = useProblems();
+  const getDifficultyColor = (diff: Difficulty) => {
     switch (diff) {
-      case "Easy":
+      case "EASY":
         return "text-emerald-500 font-medium";
-      case "Medium":
+      case "MEDIUM":
         return "text-yellow-500 font-medium";
-      case "Hard":
+      case "HARD":
         return "text-rose-500 font-medium";
       default:
         return "";
     }
   };
+  // Helper: Format text (EASY -> Easy)
+  const formatDifficulty = (diff: string) => {
+    return diff.charAt(0) + diff.slice(1).toLowerCase();
+  };
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center border border-zinc-800 rounded-xl bg-zinc-900/40">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="text-zinc-500 text-sm">Loading problems...</span>
+        </div>
+      </div>
+    );
+  }
 
+  if (isError) {
+    return (
+      <div className="flex h-64 items-center justify-center border border-zinc-800 rounded-xl bg-zinc-900/40 text-red-400">
+        Không thể tải danh sách bài tập. Vui lòng kiểm tra kết nối Backend.
+      </div>
+    );
+  }
+  console.log("Fetched problems:", problems);
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 overflow-hidden shadow-sm">
       <Table>
@@ -84,50 +70,73 @@ export function ProblemTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {problems.map((problem) => (
-            <TableRow
-              key={problem.id}
-              className="border-zinc-800 hover:bg-zinc-900 transition-colors group"
-            >
-              <TableCell>
-                {problem.status === "Solved" && (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                )}
-                {problem.status === "Attempted" && (
-                  <Circle className="h-4 w-4 text-yellow-500" />
-                )}
-                {problem.status === "Todo" && (
-                  <Circle className="h-4 w-4 text-zinc-700" />
-                )}
-              </TableCell>
-              <TableCell>
-                <Link to={`/interview/${problem.id}`} className="block">
-                  <div className="font-medium text-zinc-300 group-hover:text-primary transition-colors flex items-center gap-2">
-                    {problem.id}. {problem.title}
-                  </div>
-                </Link>
-              </TableCell>
-              <TableCell>
-                <span className={getDifficultyColor(problem.difficulty)}>
-                  {problem.difficulty}
-                </span>
-              </TableCell>
-              <TableCell className="text-zinc-500 text-xs">
-                {problem.acceptance}
-              </TableCell>
-              <TableCell className="text-right">
-                {problem.status === "Solved" && (
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-zinc-500 hover:text-blue-400"
-                  >
-                    <FileText className="h-4 w-4" />
-                  </Button>
-                )}
+          {problems?.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="h-32 text-center text-zinc-500">
+                Chưa có bài tập nào trong cơ sở dữ liệu.
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            problems.map((problem, index) => (
+              <TableRow
+                key={problem.id}
+                className="border-zinc-800 hover:bg-zinc-900 transition-colors group"
+              >
+                <TableCell>
+                  {problem.status === "Solved" && (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  )}
+                  {problem.status === "Attempted" && (
+                    <Circle className="h-4 w-4 text-yellow-500" />
+                  )}
+                  {problem.status === "Todo" && (
+                    <Circle className="h-4 w-4 text-zinc-700" />
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Link to={`/interview/${problem.id}`} className="block">
+                    <div className="flex flex-col gap-1">
+                      <div className="font-medium text-zinc-300 group-hover:text-primary transition-colors flex items-center gap-2">
+                        {index + 1}.{problem.title}
+                      </div>
+                      {/* Hiển thị Tags lấy từ Relation */}
+                      {problem.tags && problem.tags.length > 0 && (
+                        <div className="flex gap-1 flex-wrap">
+                          {problem.tags.map((t) => (
+                            <span
+                              key={t.tag.id}
+                              className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400"
+                            >
+                              {t.tag.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <span className={getDifficultyColor(problem.difficulty)}>
+                    {formatDifficulty(problem.difficulty)}.
+                  </span>
+                </TableCell>
+                <TableCell className="text-zinc-500 text-xs">
+                  {problem.acceptance || "N/A"}
+                </TableCell>
+                <TableCell className="text-right">
+                  {problem.status === "Solved" && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-zinc-500 hover:text-blue-400"
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>

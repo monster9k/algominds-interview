@@ -3,6 +3,7 @@ import { ProblemsService } from './problems.service';
 import { CreateProblemDto } from './dto/create-problem.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 
 @Controller('problems')
 export class ProblemsController {
@@ -16,10 +17,11 @@ export class ProblemsController {
 
   // GET /problems
   @Get()
-  @UseGuards(JwtAuthGuard) // Chỉ cho user đã đăng nhập mới xem được danh sách bài tập
+  @UseGuards(OptionalJwtAuthGuard) // Chỉ cho user đã đăng nhập mới xem được danh sách bài tập
   findAll(@CurrentUser() user: any) {
+    const userId = user?.userId; // Nếu user là guest (chưa đăng nhập), user sẽ là null, nên userId cũng sẽ là undefined
     // console.log('User ID from JWT:', user.userId); // Kiểm tra xem có lấy được userId không
-    return this.problemsService.findAll(user.userId);
+    return this.problemsService.findAll(userId);
   }
 
   // GET /problems/two-sum

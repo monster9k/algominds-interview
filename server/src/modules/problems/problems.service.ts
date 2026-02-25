@@ -74,15 +74,18 @@ export class ProblemsService {
     });
 
     return problems.map((p) => {
-      let status = 'Todo';
+      let status: string | null = null;
 
-      // Logic kiểm tra Status: Solved, Attempted, Todo
-      if (p.sessions && p.sessions.length > 0) {
-        const hasAccepted = p.sessions.some((session) =>
-          session.submissions.some((sub) => sub.status === 'ACCEPTED'),
-        );
-        status = hasAccepted ? 'Solved' : 'Attempted';
+      if (userId) {
+        status = 'Todo'; // Mặc định là Todo nếu user đã đăng nhập nhưng chưa có session nào với bài tập này
+        if (p.sessions && p.sessions.length > 0) {
+          const hasAccepted = p.sessions.some((session) =>
+            session.submissions.some((sub) => sub.status === 'ACCEPTED'),
+          );
+          status = hasAccepted ? 'Solved' : 'Attempted';
+        }
       }
+      // Logic kiểm tra Status: Solved, Attempted, Todo
 
       return {
         id: p.id,

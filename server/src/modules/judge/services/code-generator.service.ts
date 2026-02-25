@@ -112,8 +112,12 @@ ${userCode}
 
 int main() {
     Solution sol;
-    // boolalpha để in true/false thay vì 1/0
-    cout << boolalpha << sol.${functionName}(${argString}) << endl;
+
+    auto result = sol.${functionName}(${argString});
+
+    printVector(result);  // dùng hàm bạn đã định nghĩa
+    cout << endl;
+
     return 0;
 }
 `;

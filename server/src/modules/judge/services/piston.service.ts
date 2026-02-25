@@ -9,7 +9,7 @@ export interface ExecutionResult {
 
 @Injectable()
 export class PistonService {
-  private readonly PISTON_API = 'https://emkc.org/api/v2/piston/execute';
+  private readonly PISTON_API = 'http://localhost:2000/api/v2/execute';
   private readonly logger = new Logger(PistonService.name);
 
   constructor(private httpService: HttpService) {}
@@ -48,11 +48,13 @@ export class PistonService {
   private getLanguageConfig(language: string) {
     const langMap = {
       typescript: { language: 'typescript', version: '5.0.3' },
-      javascript: { language: 'javascript', version: '18.15.0' },
-      python: { language: 'python', version: '3.10.0' },
+      javascript: { language: 'node', version: '20.11.1' },
+      node: { language: 'node', version: '20.11.1' },
+      python: { language: 'python', version: '3.12.0' },
       cpp: { language: 'c++', version: '10.2.0' },
       'c++': { language: 'c++', version: '10.2.0' },
+      c: { language: 'c', version: '10.2.0' },
     };
-    return langMap[language] || langMap['javascript'];
+    return langMap[language] || langMap['node'];
   }
 }

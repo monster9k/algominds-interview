@@ -1,6 +1,15 @@
 import { PrismaClient, Difficulty } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
+import * as dotenv from 'dotenv';
 
-const prisma = new PrismaClient();
+dotenv.config();
+
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Start seeding...');
@@ -135,4 +144,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-//npx prisma db seed

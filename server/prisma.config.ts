@@ -9,4 +9,8 @@ export default defineConfig({
   datasource: {
     url: process.env.DATABASE_URL,
   },
+  migrations: {
+    // Gọi npx ts-node để chạy file seed của bạn
+    seed: 'npx ts-node prisma/seed.ts',
+  },
 });

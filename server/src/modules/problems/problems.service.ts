@@ -51,16 +51,52 @@ export class ProblemsService {
   }
 
   //LẤY DANH SÁCH (Có phân trang & lọc)
-  async findAll() {
-    return this.prisma.problem.findMany({
+  async findAll(userId?: string) {
+    const problems = await this.prisma.problem.findMany({
       select: {
         id: true,
         title: true,
         slug: true,
         difficulty: true,
+        acceptanceRate: true,
+        solution: true,
         tags: { select: { tag: true } }, // Chỉ lấy tên tag để hiển thị list
+        sessions: {
+          where: userId ? { userId } : undefined,
+          select: {
+            submissions: {
+              select: { status: true },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
+    });
+
+    return problems.map((p) => {
+      let status = 'Todo';
+
+      // Logic kiểm tra Status: Solved, Attempted, Todo
+      if (p.sessions && p.sessions.length > 0) {
+        const hasAccepted = p.sessions.some((session) =>
+          session.submissions.some((sub) => sub.status === 'ACCEPTED'),
+        );
+        status = hasAccepted ? 'Solved' : 'Attempted';
+      }
+
+      return {
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        difficulty: p.difficulty,
+        tags: p.tags,
+        // Ép kiểu cho Frontend
+        acceptance: p.acceptanceRate
+          ? `${p.acceptanceRate.toFixed(1)}%`
+          : 'N/A',
+        hasSolution: p.solution !== null,
+        status,
+      };
     });
   }
   // LẤY CHI TIẾT 1 BÀI (Theo Slug)

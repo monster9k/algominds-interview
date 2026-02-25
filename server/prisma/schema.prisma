@@ -111,6 +111,10 @@ model Problem {
   timeLimitMs   Int     @default(1000)
   memoryLimitMb Int     @default(256)
 
+  submitCount    Int     @default(0) 
+  passCount      Int     @default(0) 
+  acceptanceRate Float   @default(0)
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?

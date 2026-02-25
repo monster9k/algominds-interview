@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ProblemsService } from './problems.service';
 import { CreateProblemDto } from './dto/create-problem.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('problems')
 export class ProblemsController {
@@ -14,8 +16,10 @@ export class ProblemsController {
 
   // GET /problems
   @Get()
-  findAll() {
-    return this.problemsService.findAll();
+  @UseGuards(JwtAuthGuard) // Chỉ cho user đã đăng nhập mới xem được danh sách bài tập
+  findAll(@CurrentUser() user: any) {
+    // console.log('User ID from JWT:', user.userId); // Kiểm tra xem có lấy được userId không
+    return this.problemsService.findAll(user.userId);
   }
 
   // GET /problems/two-sum

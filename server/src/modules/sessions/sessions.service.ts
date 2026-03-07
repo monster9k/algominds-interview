@@ -38,6 +38,64 @@ export class SessionsService {
     });
   }
 
+  async findOrCreateBySlug(userId: string, problemSlug: string) {
+    const problem = await this.prisma.problem.findUnique({
+      where: { slug: problemSlug },
+    });
+    if (!problem) {
+      throw new NotFoundException('Bài tập không tồn tại');
+    }
+
+    let session = await this.prisma.session.findFirst({
+      where: {
+        userId,
+        problemId: problem.id,
+        status: {
+          in: [SessionStatus.PHASE_1_STRATEGY, SessionStatus.PHASE_2_IMPLEMENT],
+        }, // Chỉ tìm session đang làm dở
+      },
+      orderBy: { startedAt: 'desc' }, // Lấy session mới nhất
+      include: {
+        problem: {
+          include: {
+            tags: {
+              include: {
+                tag: true,
+              }
+            }
+          }
+        },
+        messages: { orderBy: { createdAt: 'asc' } }, // Lấy luôn tin nhắn để hiển thị lại cuộc trò chuyện
+      },
+    });
+
+    if (!session) {
+      const initialStatus: SessionStatus = 'PHASE_1_STRATEGY';
+      session = await this.prisma.session.create({
+        data: {
+          userId,
+          problemId: problem.id,
+          status: initialStatus,
+          version: 1,
+        },
+        include: {
+          problem: {
+            include: {
+              tags: {
+                include: {
+                  tag: true,
+                },
+              },
+            },
+          },
+          messages: true,
+        },
+      });
+    }
+
+    return session;
+  }
+
   // LẤY CHI TIẾT SESSION (Để user vào lại phòng thi)
   async findOne(id: string, userId: string) {
     const session = await this.prisma.session.findUnique({

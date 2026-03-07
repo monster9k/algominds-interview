@@ -30,6 +30,14 @@ export class SessionsController {
     return this.sessionsService.create(user.userId, createSessionDto);
   }
 
+  @Post('start/:slug')
+  startWorkspace(@CurrentUser() user: JwtUser, @Param('slug') slug: string) {
+    console.log(
+      `Starting session for user ${user.userId} with problem slug: ${slug}`,
+    );
+    return this.sessionsService.findOrCreateBySlug(user.userId, slug);
+  }
+
   @Get(':id')
   findOne(@CurrentUser() user: JwtUser, @Param('id') id: string) {
     return this.sessionsService.findOne(id, user.userId);

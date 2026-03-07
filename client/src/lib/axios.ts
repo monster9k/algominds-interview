@@ -56,7 +56,7 @@ api.interceptors.response.use(
       );
       localStorage.removeItem("algominds-auth");
       // Dùng window.location để đảm bảo reload lại toàn bộ ứng dụng
-      window.location.href = "/auth/login";
+      // window.location.href = "/auth/login";
     }
 
     // Xử lý 403 - Forbidden

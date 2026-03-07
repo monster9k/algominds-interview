@@ -20,7 +20,8 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: authApi.login,
     onSuccess: (data) => {
-      setAuth(data.user, data.accessToken);
+      // console.log("LOGIN RESPONSE:", data);
+      setAuth(data.user, data.access_token);
       toast("Đăng nhập thành công!", {
         description: `Chào mừng trở lại, ${data.user.name || data.user.email}`,
         action: {
@@ -73,5 +74,3 @@ export const useLogout = () => {
     navigate("/auth/login");
   };
 };
-
-

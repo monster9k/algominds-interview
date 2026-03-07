@@ -67,7 +67,7 @@ const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        path: "/interview/:id",
+        path: "/interview/:slug",
         element: <InterviewRoom />,
       },
     ],

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Editor from "@monaco-editor/react";
-import { RotateCcw, Maximize2 } from "lucide-react";
+import { RotateCcw, Maximize2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -10,9 +10,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function CodeEditorPanel() {
+export function CodeEditorPanel({
+  initialCode,
+  isLocked,
+}: {
+  initialCode: Record<string, string>;
+  isLocked: boolean;
+}) {
   const [language, setLanguage] = useState("typescript");
-
+  const codeTemplate = initialCode
+    ? initialCode[language]
+    : "// Write your code here";
   return (
     <div className="h-full flex flex-col bg-zinc-950">
       {/* Editor Toolbar */}
@@ -54,18 +62,24 @@ export function CodeEditorPanel() {
       </div>
 
       {/* Monaco Editor */}
+
       <div className="flex-1 relative">
+        {isLocked && (
+          <div className="absolute inset-0  z-10 bg-zinc-950/60 backdrop-blur-[1px] flex flex-col items-center justify-center text-zinc-400">
+            <Lock className="h-8 w-8 mb-3 text-rose-500" />
+            <p className="font-semibold text-white">Editor is locked</p>
+            <p className="text-xs mt-1">
+              Discuss your strategy with AI in the console first!
+            </p>
+          </div>
+        )}
         <Editor
           height="100%"
           language={language}
           theme="vs-dark"
-          defaultValue={`class Solution {
-    public int[] twoSum(int[] nums, int target) {
-        // Your code here
-        
-    }
-}`}
+          value={codeTemplate}
           options={{
+            readOnly: isLocked,
             minimap: { enabled: false },
             fontSize: 14,
             fontFamily: "'JetBrains Mono', 'Fira Code', monospace",

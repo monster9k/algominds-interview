@@ -1,5 +1,5 @@
 export type Difficulty = "EASY" | "MEDIUM" | "HARD";
-export type ProblemStatus = "Solved" | "Attempted" | "Todo";
+export type ProblemStatus = "Solved" | "Attempted" | "Todo" | null;
 
 //Type cho Tag (do Backend trả về include: { tag: true })
 export interface Tag {
@@ -17,7 +17,8 @@ export interface Problem {
   title: string;
   slug: string;
   difficulty: Difficulty;
-  acceptance?: number;
+  acceptance?: string;
   status?: ProblemStatus;
   tags: ProblemTagResponse[];
+  hasSolution: boolean;
 }

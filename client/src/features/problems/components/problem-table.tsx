@@ -34,6 +34,7 @@ export function ProblemTable() {
         return "";
     }
   };
+  console.log("Fetched problems:", problems); // Debug: Kiểm tra dữ liệu trả về từ Hook
   // Helper: Format text (EASY -> Easy)
   const formatDifficulty = (diff: string) => {
     return diff.charAt(0) + diff.slice(1).toLowerCase();
@@ -56,7 +57,7 @@ export function ProblemTable() {
       </div>
     );
   }
-  console.log("Fetched problems:", problems);
+
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 overflow-hidden shadow-sm">
       <Table>
@@ -64,8 +65,8 @@ export function ProblemTable() {
           <TableRow className="hover:bg-transparent border-zinc-800">
             <TableHead className="w-[50px]">Status</TableHead>
             <TableHead className="w-[400px]">Title</TableHead>
-            <TableHead className="w-[120px]">Difficulty</TableHead>
-            <TableHead className="w-[120px]">Acceptance</TableHead>
+            <TableHead className="w-[120px] text-center">Difficulty</TableHead>
+            <TableHead className="w-[120px] text-center">Acceptance</TableHead>
             <TableHead className="text-right">Solution</TableHead>
           </TableRow>
         </TableHeader>
@@ -92,9 +93,12 @@ export function ProblemTable() {
                   {problem.status === "Todo" && (
                     <Circle className="h-4 w-4 text-zinc-700" />
                   )}
+                  {problem.status === null && (
+                    <Circle className="h-4 w-4 text-zinc-700" />
+                  )}
                 </TableCell>
                 <TableCell>
-                  <Link to={`/interview/${problem.id}`} className="block">
+                  <Link to={`/interview/${problem.slug}`} className="block">
                     <div className="flex flex-col gap-1">
                       <div className="font-medium text-zinc-300 group-hover:text-primary transition-colors flex items-center gap-2">
                         {index + 1}.{problem.title}
@@ -115,12 +119,12 @@ export function ProblemTable() {
                     </div>
                   </Link>
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <span className={getDifficultyColor(problem.difficulty)}>
                     {formatDifficulty(problem.difficulty)}.
                   </span>
                 </TableCell>
-                <TableCell className="text-zinc-500 text-xs">
+                <TableCell className="text-zinc-500 text-xs text-center">
                   {problem.acceptance || "N/A"}
                 </TableCell>
                 <TableCell className="text-right">

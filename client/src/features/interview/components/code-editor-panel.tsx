@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Editor from "@monaco-editor/react";
 import { RotateCcw, Maximize2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,11 +12,18 @@ import {
 export function CodeEditorPanel({
   initialCode,
   isLocked,
+  code,
+  onCodeChange,
+  language,
+  onLanguageChange,
 }: {
   initialCode: Record<string, string>;
   isLocked: boolean;
+  code: string;
+  onCodeChange: (code: string) => void;
+  language: string;
+  onLanguageChange: (language: string) => void;
 }) {
-  const [language, setLanguage] = useState("typescript");
   const codeTemplate = initialCode
     ? initialCode[language]
     : "// Write your code here";
@@ -30,7 +36,7 @@ export function CodeEditorPanel({
             &lt;/&gt; Code
           </span>
           <div className="h-3 w-px bg-zinc-700" />
-          <Select value={language} onValueChange={setLanguage}>
+          <Select value={language} onValueChange={onLanguageChange}>
             <SelectTrigger className="h-7 w-[130px] bg-transparent border-none text-xs text-zinc-300 focus:ring-0 px-2 hover:bg-zinc-800 transition-colors">
               <SelectValue placeholder="Language" />
             </SelectTrigger>
@@ -77,7 +83,8 @@ export function CodeEditorPanel({
           height="100%"
           language={language}
           theme="vs-dark"
-          value={codeTemplate}
+          value={code || codeTemplate}
+          onChange={(value) => onCodeChange(value || "")}
           options={{
             readOnly: isLocked,
             minimap: { enabled: false },

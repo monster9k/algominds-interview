@@ -1,9 +1,19 @@
 import { Link } from "react-router-dom";
-import { Play, Send, Settings, ChevronLeft, List } from "lucide-react";
+import { Play, Send, Settings, ChevronLeft, List, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 
-export function InterviewHeader() {
+interface InterviewHeaderProps {
+  onSubmit?: () => void;
+  onRun?: () => void;
+  isSubmitting?: boolean;
+}
+
+export function InterviewHeader({
+  onSubmit,
+  onRun,
+  isSubmitting = false,
+}: InterviewHeaderProps) {
   return (
     <header className="h-12 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 shrink-0">
       {/* Left: Navigation */}
@@ -36,14 +46,23 @@ export function InterviewHeader() {
           size="sm"
           variant="secondary"
           className="h-8 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700/50"
+          onClick={onRun}
+          disabled={isSubmitting}
         >
           <Play className="mr-2 h-3.5 w-3.5 fill-current" /> Run
         </Button>
         <Button
           size="sm"
           className="h-8 bg-gradient-to-r from-rose-600 to-orange-600 hover:opacity-90 text-white font-semibold border-0 shadow-[0_0_15px_-3px_rgba(225,29,72,0.4)]"
+          onClick={onSubmit}
+          disabled={isSubmitting}
         >
-          <Send className="mr-2 h-3.5 w-3.5" /> Submit
+          {isSubmitting ? (
+            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Send className="mr-2 h-3.5 w-3.5" />
+          )}
+          {isSubmitting ? "Submitting..." : "Submit"}
         </Button>
       </div>
 

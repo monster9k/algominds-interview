@@ -14,6 +14,7 @@ interface ConsolePanelProps {
   initialMessages?: ChatMessage[];
   sessionProblem?: any; // Thêm prop sessionProblem để truyền thông tin bài tập
   currentPhase: SessionPhase; // Thêm prop currentPhase để kiểm soát truy cập tab
+  submissionResult?: any; // Add submission result
 }
 
 export function ConsolePanel({
@@ -22,6 +23,7 @@ export function ConsolePanel({
   initialMessages = [],
   sessionProblem,
   currentPhase,
+  submissionResult,
 }: ConsolePanelProps) {
   const user = useAuthStore((state) => state.user); // lay userid de goi chat message
 
@@ -63,6 +65,20 @@ export function ConsolePanel({
     }
     return undefined;
   };
+
+  const [activeTab, setActiveTab] = useState<string>(getDefaultTab());
+
+  // Switch to result tab when submission completes
+  useEffect(() => {
+    if (submissionResult) {
+      setActiveTab("result");
+    }
+  }, [submissionResult]);
+
+  // Reset to default tab when phase changes
+  useEffect(() => {
+    setActiveTab(getDefaultTab());
+  }, [currentPhase]);
 
   // lắng nghe socket message mới từ server
   useEffect(() => {
@@ -114,7 +130,8 @@ export function ConsolePanel({
 
   return (
     <Tabs
-      defaultValue={getDefaultTab()}
+      value={activeTab}
+      onValueChange={setActiveTab}
       key={currentPhase}
       className="h-full flex flex-col bg-zinc-950"
     >
@@ -220,9 +237,110 @@ export function ConsolePanel({
           </div>
         </TabsContent>
         <TabsContent value="result" className="mt-0">
-          <div className="flex flex-col items-center justify-center h-40 text-zinc-500 space-y-2">
-            <p className="text-sm">You must run your code first</p>
-          </div>
+          {!submissionResult ? (
+            <div className="flex flex-col items-center justify-center h-40 text-zinc-500 space-y-2">
+              <p className="text-sm">You must run your code first</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Overall Result Header */}
+              <div
+                className={`p-4 rounded-lg border ${
+                  submissionResult.status === "ACCEPTED"
+                    ? "bg-green-500/10 border-green-500/30 text-green-400"
+                    : "bg-red-500/10 border-red-500/30 text-red-400"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-lg">
+                    {submissionResult.status === "ACCEPTED"
+                      ? "✅ Accepted"
+                      : `❌ ${submissionResult.status}`}
+                  </span>
+                  <span className="text-sm">
+                    {submissionResult.passedTests}/{submissionResult.totalTests}{" "}
+                    passed
+                  </span>
+                </div>
+                {submissionResult.executionTime && (
+                  <div className="text-xs opacity-75">
+                    Runtime: {submissionResult.executionTime}ms | Memory:{" "}
+                    {submissionResult.memoryUsage}KB
+                  </div>
+                )}
+              </div>
+
+              {/* Test Cases Results */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-zinc-300 mb-3">
+                  Test Cases
+                </h4>
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {submissionResult.testCaseResults?.map(
+                    (testResult: any, index: number) => (
+                      <div
+                        key={index}
+                        className={`p-3 rounded border text-xs ${
+                          testResult.status === "ACCEPTED"
+                            ? "bg-green-500/5 border-green-500/20"
+                            : "bg-red-500/5 border-red-500/20"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold">
+                            Test Case {index + 1}
+                          </span>
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              testResult.status === "ACCEPTED"
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-red-500/20 text-red-400"
+                            }`}
+                          >
+                            {testResult.status === "ACCEPTED" ? "PASS" : "FAIL"}
+                          </span>
+                        </div>
+
+                        {/* Input */}
+                        <div className="mb-2">
+                          <span className="text-zinc-500">Input:</span>
+                          <div className="bg-zinc-900 p-2 rounded mt-1 font-mono">
+                            {JSON.stringify(testResult.input)}
+                          </div>
+                        </div>
+
+                        {/* Expected vs Actual */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <span className="text-zinc-500">Expected:</span>
+                            <div className="bg-zinc-900 p-2 rounded mt-1 font-mono">
+                              {JSON.stringify(testResult.expected)}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-zinc-500">Actual:</span>
+                            <div className="bg-zinc-900 p-2 rounded mt-1 font-mono">
+                              {testResult.actual}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Error if any */}
+                        {testResult.error && (
+                          <div className="mt-2">
+                            <span className="text-red-400">Error:</span>
+                            <div className="bg-red-500/10 border border-red-500/20 p-2 rounded mt-1 font-mono text-red-300">
+                              {testResult.error}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </TabsContent>
         <TabsContent value="ai_chat" className="h-full mt-0 flex flex-col">
           {/* Khu vực hiển thị tin nhắn */}

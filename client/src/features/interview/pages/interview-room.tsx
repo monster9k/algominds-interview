@@ -10,6 +10,7 @@ import { ProblemPanel } from "../components/problem-panel";
 import { CodeEditorPanel } from "../components/code-editor-panel";
 import { ConsolePanel } from "../components/console-panel";
 import { useSession } from "../hooks/use-session";
+import { useSubmitCode } from "../hooks/use-judge";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -27,11 +28,53 @@ export function InterviewRoom() {
 
   const [socket, setSocket] = useState<Socket | null>(null);
 
+  // Code state management
+  const [currentCode, setCurrentCode] = useState<string>("");
+  const [currentLanguage, setCurrentLanguage] = useState<string>("typescript");
+  const [submissionResult, setSubmissionResult] = useState<any>(null);
+
+  // Submission hook
+  const submitCodeMutation = useSubmitCode({
+    onSuccess: (result) => {
+      setSubmissionResult(result);
+    },
+  });
+
+  // Handle submission
+  const handleSubmit = () => {
+    if (!session?.id || !currentCode.trim()) {
+      toast.error("Please write some code before submitting");
+      return;
+    }
+
+    if (currentPhase !== "PHASE_2_IMPLEMENT") {
+      toast.error("Complete Phase 1 strategy discussion first");
+      return;
+    }
+
+    submitCodeMutation.mutate({
+      sessionId: session.id,
+      code: currentCode,
+      language: currentLanguage,
+    });
+  };
+
+  // Handle run (for now, same as submit but could be different)
+  const handleRun = () => {
+    handleSubmit();
+  };
+
   useEffect(() => {
     if (!session) return;
 
     // Load xong session thì set state cho Phase
     setCurrentPhase(session.status);
+
+    // Initialize code with template if not already set
+    if (!currentCode && session.problem.initialCode) {
+      const template = session.problem.initialCode[currentLanguage] || "";
+      setCurrentCode(template);
+    }
 
     // kết nối với socket
     const newSocket = io(import.meta.env.VITE_API_URL || "");
@@ -54,6 +97,14 @@ export function InterviewRoom() {
     };
   }, [session]);
 
+  // Update code template when language changes
+  useEffect(() => {
+    if (session?.problem.initialCode && currentCode === "") {
+      const template = session.problem.initialCode[currentLanguage] || "";
+      setCurrentCode(template);
+    }
+  }, [currentLanguage, session]);
+
   if (isLoading) {
     return (
       <div className="h-screen w-full bg-zinc-950 flex flex-col items-center justify-center text-zinc-400">
@@ -63,6 +114,7 @@ export function InterviewRoom() {
     );
   }
   console.log("SESSION DATA:", session);
+  console.log("submissionResult:", submissionResult);
 
   if (isError || !session) {
     return (
@@ -74,7 +126,11 @@ export function InterviewRoom() {
   return (
     <div className="h-screen w-full bg-zinc-950 flex flex-col overflow-hidden text-sm">
       {/* 1. HEADER */}
-      <InterviewHeader />
+      <InterviewHeader
+        onSubmit={handleSubmit}
+        onRun={handleRun}
+        isSubmitting={submitCodeMutation.isPending}
+      />
 
       {/* 2. WORKSPACE */}
       <div className="flex-1 overflow-hidden p-2">
@@ -105,6 +161,10 @@ export function InterviewRoom() {
                 <CodeEditorPanel
                   initialCode={session.problem.initialCode}
                   isLocked={currentPhase === "PHASE_1_STRATEGY"}
+                  code={currentCode}
+                  onCodeChange={setCurrentCode}
+                  language={currentLanguage}
+                  onLanguageChange={setCurrentLanguage}
                 />
               </ResizablePanel>
 
@@ -122,6 +182,7 @@ export function InterviewRoom() {
                   initialMessages={session?.messages}
                   sessionProblem={session?.problem}
                   currentPhase={currentPhase}
+                  submissionResult={submissionResult}
                 />
               </ResizablePanel>
             </ResizablePanelGroup>

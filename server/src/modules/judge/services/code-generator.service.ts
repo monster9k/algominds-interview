@@ -86,7 +86,21 @@ except Exception as e:
     args: any[],
     functionName: string,
   ): string {
-    const argString = args.map((val) => this.formatCppInput(val)).join(', ');
+    // Generate proper variable declarations instead of inline initialization
+    const argDeclarations = args
+      .map((val, index) => {
+        if (Array.isArray(val)) {
+          const content = val.map((v) => this.formatCppInput(v)).join(', ');
+          return `    vector<int> arg${index} = {${content}};`;
+        } else if (typeof val === 'string') {
+          return `    string arg${index} = "${val}";`;
+        } else {
+          return `    auto arg${index} = ${val};`;
+        }
+      })
+      .join('\n');
+
+    const argNames = args.map((_, index) => `arg${index}`).join(', ');
 
     return `
 #include <iostream>
@@ -113,9 +127,10 @@ ${userCode}
 int main() {
     Solution sol;
 
-    auto result = sol.${functionName}(${argString});
+${argDeclarations}
+    auto result = sol.${functionName}(${argNames});
 
-    printVector(result);  // dùng hàm bạn đã định nghĩa
+    printVector(result);
     cout << endl;
 
     return 0;

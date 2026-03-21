@@ -28,3 +28,29 @@ export interface SessionResponse {
   };
   messages: ChatMessage[];
 }
+
+export type SubmissionStatus =
+  | "PHASE_1_STRATEGY"
+  | "PHASE_2_IMPLEMENT"
+  | "COMPLETED"
+  | "ABANDONED";
+
+export interface TestCaseResult {
+  input: any;
+  expected: any;
+  actual: string;
+  status: SubmissionStatus;
+  error: string | null;
+}
+
+export interface SubmissionResponse {
+  id: string;
+  sessionId: string;
+
+  code: string;
+  language: string;
+  status: string;
+  passedTests: number;
+  totalTests: number;
+  testCaseResults: TestCaseResult[];
+}

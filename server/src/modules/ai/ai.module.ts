@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { AiService } from './ai.service';
+import { AiListener } from './ai.listener';
 import { ChatModule } from '../chat/chat.module';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -25,6 +26,6 @@ import { AiProcessor } from './ai.processor';
       name: 'ai-queue',
     }),
   ],
-  providers: [AiService, AiProcessor],
+  providers: [AiService, AiProcessor, AiListener],
 })
 export class AiModule {}

@@ -3,6 +3,7 @@ import { SubmissionStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CodeGeneratorService } from './services/code-generator.service';
 import { PistonService } from './services/piston.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class JudgeService {
@@ -10,6 +11,7 @@ export class JudgeService {
     private prisma: PrismaService,
     private codeGenerator: CodeGeneratorService, // Inject Service mới
     private pistonService: PistonService, // Inject Service mới
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async submitCode(
@@ -60,53 +62,66 @@ export class JudgeService {
         SubmissionStatus.WRONG_ANSWER;
 
     // 4. Lưu DB
-    return this.prisma.$transaction(async (tx) => {
-      // A. Lưu Submission
-      const submission = await tx.submission.create({
-        data: {
-          sessionId,
-          code,
-          language,
-          status: finalStatus,
-          passedTests,
-          totalTests: tests.length,
-          testCaseResults: results,
-        },
-      });
-
-      // B. Nếu bài đúng -> Cập nhật User Stats
-      if (finalStatus === SubmissionStatus.ACCEPTED) {
-        // Kiểm tra xem bài này user đã từng giải đúng trước đây chưa?
-        // (Nếu giải rồi thì không cộng thêm totalSolved nữa để tránh farm điểm)
-        // Logic này hơi phức tạp, tạm thời ta cứ cộng thẳng để demo
-
-        await tx.userStats.upsert({
-          where: { userId },
-          create: {
-            userId,
-            totalSolved: 1,
-            totalSessions: 1,
-            lastActiveAt: new Date(),
-          },
-          update: {
-            totalSolved: { increment: 1 },
-            lastActiveAt: new Date(),
-            // Logic streakDays cần phức tạp hơn, tạm để sau
-          },
-        });
-
-        // C. Update Session thành COMPLETED
-        await tx.session.update({
-          where: { id: sessionId },
+    return this.prisma
+      .$transaction(async (tx) => {
+        // A. Lưu Submission
+        const submission = await tx.submission.create({
           data: {
-            status: 'COMPLETED',
-            finishedAt: new Date(),
+            sessionId,
+            code,
+            language,
+            status: finalStatus,
+            passedTests,
+            totalTests: tests.length,
+            testCaseResults: results,
           },
         });
-      }
 
-      return submission;
-    });
+        // B. Nếu bài đúng -> Cập nhật User Stats
+        if (finalStatus === SubmissionStatus.ACCEPTED) {
+          // Kiểm tra xem bài này user đã từng giải đúng trước đây chưa?
+          // (Nếu giải rồi thì không cộng thêm totalSolved nữa để tránh farm điểm)
+          // Logic này hơi phức tạp, tạm thời ta cứ cộng thẳng để demo
+
+          await tx.userStats.upsert({
+            where: { userId },
+            create: {
+              userId,
+              totalSolved: 1,
+              totalSessions: 1,
+              lastActiveAt: new Date(),
+            },
+            update: {
+              totalSolved: { increment: 1 },
+              lastActiveAt: new Date(),
+              // Logic streakDays cần phức tạp hơn, tạm để sau
+            },
+          });
+
+          // C. Update Session thành COMPLETED
+          await tx.session.update({
+            where: { id: sessionId },
+            data: {
+              status: 'COMPLETED',
+              finishedAt: new Date(),
+            },
+          });
+        }
+
+        return submission;
+      })
+      .then((submission) => {
+        // PHASE 3: Emit event for AI Code Evaluation (Only if ACCEPTED)
+        if (submission.status === SubmissionStatus.ACCEPTED) {
+          this.eventEmitter.emit('submission.accepted', {
+            sessionId,
+            userId,
+            code,
+            language,
+          });
+        }
+        return submission;
+      });
   }
 
   // Helper xử lý logic 1 test case

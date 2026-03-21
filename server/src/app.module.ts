@@ -8,6 +8,7 @@ import { SessionsModule } from './modules/sessions/sessions.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AiModule } from './modules/ai/ai.module';
 import { JudgeModule } from './modules/judge/judge.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -26,6 +27,7 @@ import { APP_GUARD } from '@nestjs/core';
     ChatModule,
     AiModule,
     JudgeModule,
+    EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 60 giây

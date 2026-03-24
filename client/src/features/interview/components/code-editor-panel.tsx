@@ -69,7 +69,7 @@ export function CodeEditorPanel({
 
       {/* Monaco Editor */}
 
-      <div className="flex-1 relative">
+      <div className="flex-1 relative min-h-0 overflow-hidden">
         {isLocked && (
           <div className="absolute inset-0  z-10 bg-zinc-950/60 backdrop-blur-[1px] flex flex-col items-center justify-center text-zinc-400">
             <Lock className="h-8 w-8 mb-3 text-rose-500" />
@@ -79,24 +79,26 @@ export function CodeEditorPanel({
             </p>
           </div>
         )}
-        <Editor
-          height="100%"
-          language={language}
-          theme="vs-dark"
-          value={code || codeTemplate}
-          onChange={(value) => onCodeChange(value || "")}
-          options={{
-            readOnly: isLocked,
-            minimap: { enabled: false },
-            fontSize: 14,
-            fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-            lineHeight: 24,
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            padding: { top: 16 },
-            tabSize: 4,
-          }}
-        />
+        <div className="absolute inset-0 z-10">
+          <Editor
+            height="100%"
+            language={language}
+            theme="vs-dark"
+            value={code || codeTemplate}
+            onChange={(value) => onCodeChange(value || "")}
+            options={{
+              readOnly: isLocked,
+              minimap: { enabled: false },
+              fontSize: 14,
+              fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+              lineHeight: 24,
+              scrollBeyondLastLine: false,
+              automaticLayout: true,
+              padding: { top: 16 },
+              tabSize: 4,
+            }}
+          />
+        </div>
       </div>
     </div>
   );

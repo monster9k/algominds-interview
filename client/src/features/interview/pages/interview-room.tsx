@@ -142,7 +142,7 @@ export function InterviewRoom() {
           <ResizablePanel
             defaultSize={40}
             minSize={25}
-            className="bg-zinc-950 rounded-l-lg mr-1.5"
+            className="bg-zinc-950 rounded-l-lg flex flex-col"
           >
             <ProblemPanel problem={session.problem} />
           </ResizablePanel>
@@ -156,7 +156,7 @@ export function InterviewRoom() {
               <ResizablePanel
                 defaultSize={60}
                 minSize={20}
-                className="bg-zinc-950 rounded-tr-lg mb-1.5"
+                className="bg-zinc-950 rounded-tr-lg flex flex-col min-h-0 overflow-hidden"
               >
                 <CodeEditorPanel
                   initialCode={session.problem.initialCode}
@@ -174,7 +174,7 @@ export function InterviewRoom() {
               <ResizablePanel
                 defaultSize={40}
                 minSize={10}
-                className="bg-zinc-950 rounded-br-lg"
+                className="bg-zinc-950 rounded-br-lg flex flex-col min-h-0 overflow-hidden"
               >
                 <ConsolePanel
                   socket={socket}

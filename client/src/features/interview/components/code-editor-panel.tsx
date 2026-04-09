@@ -71,7 +71,7 @@ export function CodeEditorPanel({
 
       <div className="flex-1 relative min-h-0 overflow-hidden">
         {isLocked && (
-          <div className="absolute inset-0  z-10 bg-zinc-950/60 backdrop-blur-[1px] flex flex-col items-center justify-center text-zinc-400">
+          <div className="absolute inset-0 z-20 bg-zinc-950/60 backdrop-blur-[1px] flex flex-col items-center justify-center text-zinc-400">
             <Lock className="h-8 w-8 mb-3 text-rose-500" />
             <p className="font-semibold text-white">Editor is locked</p>
             <p className="text-xs mt-1">
@@ -79,7 +79,7 @@ export function CodeEditorPanel({
             </p>
           </div>
         )}
-        <div className="absolute inset-0 z-10">
+        <div className="absolute inset-0">
           <Editor
             height="100%"
             language={language}

@@ -14,10 +14,13 @@ import { useSubmitCode } from "../hooks/use-judge";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { SessionPhase } from "../types";
+import { SessionPhase, type SubmissionResponse } from "../types";
+import type { Submission } from "../components/problem-panel/mockData";
 import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
 
+
+//
 export function InterviewRoom() {
   const { slug } = useParams<{ slug: string }>();
   const { data: session, isLoading, isError } = useSession(slug);
@@ -32,11 +35,37 @@ export function InterviewRoom() {
   const [currentCode, setCurrentCode] = useState<string>("");
   const [currentLanguage, setCurrentLanguage] = useState<string>("typescript");
   const [submissionResult, setSubmissionResult] = useState<any>(null);
+  const [acceptedSubmission, setAcceptedSubmission] =
+    useState<Submission | null>(null);
+  const [problemPanelTab, setProblemPanelTab] = useState<string>("description");
 
   // Submission hook
   const submitCodeMutation = useSubmitCode({
-    onSuccess: (result) => {
+    onSuccess: (result: SubmissionResponse) => {
       setSubmissionResult(result);
+
+      // If ACCEPTED, create submission object and show in ProblemPanel
+      if (result.status === "ACCEPTED" && session) {
+        const newSubmission: Submission = {
+          id: `sub-${Date.now()}`,
+          sessionId: session.id,
+          status: "ACCEPTED",
+          language: currentLanguage,
+          executionTime: 0,
+          memoryUsage: 0,
+          createdAt: "just now",
+          code: currentCode,
+          testcasesPassed: result.passedTests,
+          totalTestcases: result.totalTests,
+          beats: {
+            runtime: 50,
+            memory: 50,
+          },
+          runtimeDistribution: [],
+        };
+        setAcceptedSubmission(newSubmission);
+        setProblemPanelTab("accepted"); // Auto switch to Accepted tab
+      }
     },
   });
 
@@ -144,7 +173,16 @@ export function InterviewRoom() {
             minSize={25}
             className="bg-zinc-950 rounded-l-lg flex flex-col"
           >
-            <ProblemPanel problem={session.problem} />
+            <ProblemPanel
+              problem={session.problem}
+              acceptedSubmission={acceptedSubmission}
+              activeTab={problemPanelTab}
+              onTabChange={setProblemPanelTab}
+              onCloseAccepted={() => {
+                setAcceptedSubmission(null);
+                setProblemPanelTab("description");
+              }}
+            />
           </ResizablePanel>
 
           <ResizableHandle className="bg-zinc-900 w-1.5 border-l border-r border-zinc-800 hover:bg-rose-500/50 transition-colors" />

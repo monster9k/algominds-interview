@@ -389,8 +389,8 @@ function mapSubmissionForUi(
     createdAt: submission.createdAt
       ? new Date(submission.createdAt).toLocaleString()
       : "just now",
-    executionTime: submission.executionTime ?? 0,
-    memoryUsage: submission.memoryUsage ?? 0,
+    executionTime: submission.executionTime ?? null,
+    memoryUsage: submission.memoryUsage ?? null,
     testCaseResults: submission.testCaseResults || [],
     evaluationStatus:
       submission.evaluationStatus ||

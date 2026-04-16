@@ -62,6 +62,8 @@ export interface TestCaseResult {
   actual: string;
   status: SubmissionStatus;
   error: string | null;
+  executionTimeMs?: number | null;
+  memoryUsageKb?: number | null;
 }
 
 export interface SubmissionResponse {

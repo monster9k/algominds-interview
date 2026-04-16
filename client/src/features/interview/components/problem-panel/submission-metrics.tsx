@@ -12,6 +12,14 @@ interface SubmissionMetricsProps {
 }
 
 export function SubmissionMetrics({ submission }: SubmissionMetricsProps) {
+  const runtimeValue = submission.executionTime;
+  const runtimeDisplay =
+    runtimeValue === null || runtimeValue === undefined
+      ? "N/A"
+      : String(runtimeValue);
+  const memoryDisplay = formatMemory(submission.memoryUsage);
+  const [memoryValue, memoryUnit] = memoryDisplay.split(" ");
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Runtime Card */}
@@ -19,14 +27,16 @@ export function SubmissionMetrics({ submission }: SubmissionMetricsProps) {
         <div className="text-sm text-zinc-400">Runtime</div>
         <div className="flex items-baseline gap-2">
           <div className="text-3xl font-bold text-white">
-            {submission.executionTime}{" "}
-            <span className="text-lg font-normal text-zinc-500">ms</span>
+            {runtimeDisplay}{" "}
+            {runtimeValue !== null && runtimeValue !== undefined && (
+              <span className="text-lg font-normal text-zinc-500">ms</span>
+            )}
           </div>
         </div>
-        {submission.runtimeDistribution && (
+        {submission.runtimeDistribution && runtimeValue !== null && (
           <SubmissionResultChart
             data={submission.runtimeDistribution}
-            userValue={submission.executionTime || 0}
+            userValue={runtimeValue}
             label="Runtime distribution"
           />
         )}
@@ -47,8 +57,12 @@ export function SubmissionMetrics({ submission }: SubmissionMetricsProps) {
         <div className="text-sm text-zinc-400">Memory</div>
         <div className="flex items-baseline gap-2">
           <div className="text-3xl font-bold text-white">
-            {formatMemory(submission.memoryUsage).split(" ")[0]}{" "}
-            <span className="text-lg font-normal text-zinc-500">MB</span>
+            {memoryValue}{" "}
+            {memoryUnit && (
+              <span className="text-lg font-normal text-zinc-500">
+                {memoryUnit}
+              </span>
+            )}
           </div>
         </div>
         {/* Placeholder for memory distribution chart if available */}

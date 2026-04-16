@@ -5,6 +5,8 @@ import { lastValueFrom } from 'rxjs';
 export interface ExecutionResult {
   output: string;
   error: string | null;
+  timeMs?: number | null;
+  memoryKb?: number | null;
 }
 
 @Injectable()
@@ -28,10 +30,26 @@ export class PistonService {
         this.httpService.post(this.PISTON_API, payload),
       );
 
-      const run = response.data.run;
+      const run = response.data?.run;
+      const rawTime = run?.time;
+      const rawMemory = run?.memory;
+      const timeMs =
+        typeof rawTime === 'number'
+          ? Math.round(rawTime * 1000)
+          : rawTime
+            ? Math.round(Number(rawTime) * 1000)
+            : null;
+      const memoryKb =
+        typeof rawMemory === 'number'
+          ? Math.round(rawMemory)
+          : rawMemory
+            ? Math.round(Number(rawMemory))
+            : null;
       return {
         output: run.stdout ? run.stdout : '',
         error: run.stderr ? run.stderr : null,
+        timeMs,
+        memoryKb,
       };
     } catch (error) {
       this.logger.error('Piston Execution Failed', {
@@ -41,6 +59,8 @@ export class PistonService {
       return {
         output: '',
         error: 'Execution Engine Error (Rate Limit or Sandbox Down)',
+        timeMs: null,
+        memoryKb: null,
       };
     }
   }

@@ -11,6 +11,7 @@ export class AiListener {
 
   @OnEvent('submission.accepted')
   async handleSubmissionAccepted(payload: {
+    submissionId: string;
     sessionId: string;
     userId: string;
     code: string;
@@ -25,6 +26,7 @@ export class AiListener {
       const job = await this.aiQueue.add(
         'evaluate-code', // Job type
         {
+          submissionId: payload.submissionId,
           sessionId: payload.sessionId,
           userId: payload.userId,
           code: payload.code,

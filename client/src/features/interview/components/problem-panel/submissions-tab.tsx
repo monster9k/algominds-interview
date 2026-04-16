@@ -6,17 +6,19 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TabsContent } from "@/components/ui/tabs";
-import { Submission, MOCK_SUBMISSIONS } from "./mockData";
+import { SubmissionResponse } from "../../types";
 import { SubmissionsList } from "../submissions-list";
 import { SubmissionDetail } from "../submission-detail";
 
 interface SubmissionsTabProps {
-  selectedSubmission: Submission | null;
-  onSelectSubmission: (submission: Submission) => void;
+  submissions: SubmissionResponse[];
+  selectedSubmission: SubmissionResponse | null;
+  onSelectSubmission: (submission: SubmissionResponse) => void;
   onClearSelection: () => void;
 }
 
 export function SubmissionsTab({
+  submissions,
   selectedSubmission,
   onSelectSubmission,
   onClearSelection,
@@ -27,7 +29,7 @@ export function SubmissionsTab({
         {!selectedSubmission ? (
           /* View 1: Submissions List */
           <SubmissionsList
-            submissions={MOCK_SUBMISSIONS}
+            submissions={submissions}
             onSelectSubmission={onSelectSubmission}
           />
         ) : (

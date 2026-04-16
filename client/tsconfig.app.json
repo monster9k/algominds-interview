@@ -21,7 +21,6 @@
     "noUnusedParameters": false,
 
     /* Path Alias Configuration */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

@@ -4,15 +4,14 @@
  */
 
 import { XCircle } from "lucide-react";
-import { Submission } from "./mockData";
+import { SubmissionResponse } from "../../types";
 import {
   formatStatusText,
   getStatusColor,
-  formatMemory,
 } from "@/features/interview/utils/submissionFormatters";
 
 interface SubmissionHeaderProps {
-  submission: Submission;
+  submission: SubmissionResponse;
 }
 
 export function SubmissionHeader({ submission }: SubmissionHeaderProps) {
@@ -27,10 +26,9 @@ export function SubmissionHeader({ submission }: SubmissionHeaderProps) {
         >
           {isAccepted ? "Accepted" : formatStatusText(submission.status)}
         </h3>
-        {isAccepted && submission.testcasesPassed ? (
+        {isAccepted && submission.passedTests ? (
           <p className="text-xs text-zinc-400">
-            {submission.testcasesPassed} / {submission.totalTestcases} testcases
-            passed
+            {submission.passedTests} / {submission.totalTests} testcases passed
           </p>
         ) : null}
         <p className="text-zinc-500 text-xs flex items-center gap-2 mt-2">

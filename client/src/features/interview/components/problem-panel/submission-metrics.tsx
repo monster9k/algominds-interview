@@ -3,12 +3,12 @@
  * Displays runtime and memory metrics with distribution charts
  */
 
-import { Submission } from "./mockData";
+import { SubmissionResponse } from "../../types";
 import { SubmissionResultChart } from "./submission-result-chart";
 import { formatMemory } from "@/features/interview/utils/submissionFormatters";
 
 interface SubmissionMetricsProps {
-  submission: Submission;
+  submission: SubmissionResponse;
 }
 
 export function SubmissionMetrics({ submission }: SubmissionMetricsProps) {

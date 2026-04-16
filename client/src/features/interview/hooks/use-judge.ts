@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { judgeApi } from "../api/judge-api";
 import { toast } from "sonner";
 import { SubmissionResponse } from "../types";
@@ -28,5 +28,19 @@ export const useSubmitCode = ({ onSuccess }: UseSubmitCodeOptions = {}) => {
           error.response?.data?.message || "Hệ thống chấm lỗi (Piston Error)",
       });
     },
+  });
+};
+
+export const useSessionSubmissions = (sessionId?: string) => {
+  return useQuery({
+    queryKey: ["session-submissions", sessionId],
+    queryFn: () => {
+      if (!sessionId) {
+        throw new Error("Session ID is required");
+      }
+      return judgeApi.getSessionSubmissions(sessionId);
+    },
+    enabled: !!sessionId,
+    refetchOnWindowFocus: false,
   });
 };

@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SubmissionStatus } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { CodeGeneratorService } from './services/code-generator.service';
 import { PistonService } from './services/piston.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PrismaService } from '../../prisma/prisma.service';
+
+type EvaluationStatus = 'NOT_AVAILABLE' | 'PENDING' | 'COMPLETED';
 
 @Injectable()
 export class JudgeService {
@@ -26,6 +28,9 @@ export class JudgeService {
       include: { problem: true },
     });
     if (!session) throw new NotFoundException('Phiên họp không tồn tại');
+    if (session.userId !== userId) {
+      throw new NotFoundException('Bạn không có quyền truy cập phiên này');
+    }
 
     const { functionName, testCases } = session.problem;
     const tests = testCases as any[];
@@ -114,14 +119,84 @@ export class JudgeService {
         // PHASE 3: Emit event for AI Code Evaluation (Only if ACCEPTED)
         if (submission.status === SubmissionStatus.ACCEPTED) {
           this.eventEmitter.emit('submission.accepted', {
+            submissionId: submission.id,
             sessionId,
             userId,
             code,
             language,
           });
         }
-        return submission;
+        const evaluationStatus: EvaluationStatus =
+          submission.status === SubmissionStatus.ACCEPTED
+            ? 'PENDING'
+            : 'NOT_AVAILABLE';
+
+        return {
+          ...submission,
+          evaluationStatus,
+          evaluation: null,
+        };
       });
+  }
+
+  async getSessionSubmissions(userId: string, sessionId: string) {
+    const session = await this.ensureSessionOwner(userId, sessionId);
+
+    const [submissions, evaluation] = await this.prisma.$transaction([
+      this.prisma.submission.findMany({
+        where: { sessionId: session.id },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.evaluation.findUnique({
+        where: { sessionId: session.id },
+      }),
+    ]);
+
+    const latestAcceptedSubmission = submissions.find(
+      (submission) => submission.status === SubmissionStatus.ACCEPTED,
+    );
+
+    const normalizedEvaluation = this.normalizeEvaluation(evaluation);
+
+    return submissions.map((submission) => {
+      const hasEvaluation =
+        Boolean(normalizedEvaluation) &&
+        latestAcceptedSubmission?.id === submission.id;
+
+      const evaluationStatus: EvaluationStatus =
+        submission.status === SubmissionStatus.ACCEPTED
+          ? hasEvaluation
+            ? 'COMPLETED'
+            : 'PENDING'
+          : 'NOT_AVAILABLE';
+
+      return {
+        ...submission,
+        evaluationStatus,
+        evaluation: hasEvaluation ? normalizedEvaluation : null,
+      };
+    });
+  }
+
+  async getSessionEvaluation(userId: string, sessionId: string) {
+    await this.ensureSessionOwner(userId, sessionId);
+    const evaluation = await this.prisma.evaluation.findUnique({
+      where: { sessionId },
+    });
+
+    if (!evaluation) {
+      return {
+        sessionId,
+        status: 'PENDING' as EvaluationStatus,
+        evaluation: null,
+      };
+    }
+
+    return {
+      sessionId,
+      status: 'COMPLETED' as EvaluationStatus,
+      evaluation: this.normalizeEvaluation(evaluation),
+    };
   }
 
   // Helper xử lý logic 1 test case
@@ -169,5 +244,55 @@ export class JudgeService {
 
   private normalizeOutput(str: string): string {
     return str.trim().replace(/(\r\n|\n|\r)/gm, '');
+  }
+
+  private async ensureSessionOwner(userId: string, sessionId: string) {
+    const session = await this.prisma.session.findUnique({
+      where: { id: sessionId },
+      select: { id: true, userId: true },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Phiên làm việc không tồn tại');
+    }
+
+    if (session.userId !== userId) {
+      throw new NotFoundException('Bạn không có quyền truy cập phiên này');
+    }
+
+    return session;
+  }
+
+  private normalizeEvaluation(
+    evaluation: {
+      scores: unknown;
+      feedback: string | null;
+      pros: unknown;
+      cons: unknown;
+    } | null,
+  ) {
+    if (!evaluation) {
+      return null;
+    }
+
+    const scores = (evaluation.scores ?? {}) as Record<string, number>;
+    const pros = Array.isArray(evaluation.pros)
+      ? (evaluation.pros as string[])
+      : [];
+    const cons = Array.isArray(evaluation.cons)
+      ? (evaluation.cons as string[])
+      : [];
+
+    return {
+      scores: {
+        logic: Number(scores.logic ?? 0),
+        cleanCode: Number(scores.cleanCode ?? 0),
+        performance: Number(scores.performance ?? 0),
+        bestPractices: Number(scores.bestPractices ?? 0),
+      },
+      feedback: evaluation.feedback ?? '',
+      pros,
+      cons,
+    };
   }
 }

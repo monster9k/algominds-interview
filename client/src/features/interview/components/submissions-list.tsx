@@ -8,11 +8,11 @@ import {
   getStatusColor,
   formatMemory,
 } from "@/features/interview/utils/submissionFormatters";
-import { Submission } from "./problem-panel/mockData";
+import { SubmissionResponse } from "../types";
 
 interface SubmissionsListProps {
-  submissions: Submission[];
-  onSelectSubmission: (submission: Submission) => void;
+  submissions: SubmissionResponse[];
+  onSelectSubmission: (submission: SubmissionResponse) => void;
 }
 
 export function SubmissionsList({

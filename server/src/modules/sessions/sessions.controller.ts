@@ -10,10 +10,11 @@ import {
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SessionsService } from './sessions.service';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+
 import type { JwtUser } from '../auth/type/jwt-user.type';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @ApiTags('Sessions') // Gom nhóm trong Swagger
 @ApiBearerAuth() // Báo Swagger là API này cần Token

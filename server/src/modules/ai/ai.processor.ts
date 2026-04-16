@@ -22,6 +22,7 @@ export class AiProcessor extends WorkerHost {
   async process(job: Job): Promise<any> {
     const jobName = job.name;
     const data = job.data as {
+      submissionId?: string;
       sessionId: string;
       userId: string;
       content?: string;
@@ -141,12 +142,13 @@ export class AiProcessor extends WorkerHost {
    * PHASE 3: Code Evaluation (Clean Code + Performance + Best Practices)
    */
   private async processEvaluateCode(data: {
+    submissionId?: string;
     sessionId: string;
     userId: string;
     code: string;
     language: string;
   }) {
-    const { sessionId, userId, code, language } = data;
+    const { sessionId, submissionId, userId, code, language } = data;
 
     try {
       // 1. Lấy Session + Problem
@@ -206,9 +208,11 @@ Test Cases: ${JSON.stringify(problem.testCases)}
       );
 
       // 5. (Optional) Emit event qua WebSocket để Frontend biết evaluation xong
-      this.chatGateway.server
-        .to(sessionId)
-        .emit('code_evaluation_complete', savedEvaluation);
+      this.chatGateway.server.to(sessionId).emit('code_evaluation_complete', {
+        sessionId,
+        submissionId,
+        evaluation: savedEvaluation,
+      });
 
       return savedEvaluation;
     } catch (error) {

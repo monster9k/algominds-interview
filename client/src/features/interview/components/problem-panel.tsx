@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { DescriptionTab } from "./problem-panel/description-tab";
 import { SubmissionsTab } from "./problem-panel/submissions-tab";
 import { SubmissionDetail } from "./submission-detail";
-import type { Submission } from "./problem-panel/mockData";
+import type { SubmissionResponse } from "../types";
 
 /**
  * ProblemPanel - Main container component
@@ -14,7 +14,8 @@ import type { Submission } from "./problem-panel/mockData";
  */
 interface ProblemPanelProps {
   problem: any;
-  acceptedSubmission?: Submission | null;
+  submissions: SubmissionResponse[];
+  acceptedSubmission?: SubmissionResponse | null;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
   onCloseAccepted?: () => void;
@@ -22,13 +23,14 @@ interface ProblemPanelProps {
 
 export function ProblemPanel({
   problem,
+  submissions,
   acceptedSubmission,
   activeTab = "description",
   onTabChange,
   onCloseAccepted,
 }: ProblemPanelProps) {
   const [selectedSubmission, setSelectedSubmission] =
-    useState<Submission | null>(null);
+    useState<SubmissionResponse | null>(null);
 
   if (!problem) return null;
 
@@ -119,6 +121,7 @@ export function ProblemPanel({
 
           {/* TAB: SUBMISSIONS */}
           <SubmissionsTab
+            submissions={submissions}
             selectedSubmission={selectedSubmission}
             onSelectSubmission={setSelectedSubmission}
             onClearSelection={() => setSelectedSubmission(null)}

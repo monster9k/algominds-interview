@@ -100,7 +100,10 @@ export class AiProcessor extends WorkerHost {
     try {
       const parsedResponse = JSON.parse(rawAiResponse);
       aiMessageContent = parsedResponse.message;
-      isApproved = parsedResponse.status === 'APPROVED';
+      const normalizedStatus = String(
+        parsedResponse.status || '',
+      ).toUpperCase();
+      isApproved = normalizedStatus === 'APPROVED';
     } catch (e) {
       this.logger.error('Failed to parse AI JSON response', e);
       aiMessageContent = rawAiResponse;

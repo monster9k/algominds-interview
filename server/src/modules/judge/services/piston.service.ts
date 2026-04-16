@@ -51,7 +51,7 @@ export class PistonService {
         timeMs,
         memoryKb,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Piston Execution Failed', {
         status: error.response?.status,
         data: error.response?.data,

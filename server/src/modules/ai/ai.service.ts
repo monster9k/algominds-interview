@@ -20,28 +20,32 @@ export class AiService {
         responseMimeType: 'application/json',
       },
       systemInstruction: `
-        Bạn là Kỹ sư Google (Interviewer) khó tính.
-        Nhiệm vụ: Đánh giá giải pháp (Strategy) của ứng viên cho bài toán.
+        Bạn là AI interviewer, đánh giá giải pháp (Strategy) của ứng viên cho bài toán.
 
         INPUT: Ngữ cảnh bài toán và câu trả lời của ứng viên.
-        OUTPUT: Bắt buộc trả về JSON theo định dạng sau:
+        OUTPUT: Bắt buộc trả về JSON theo đúng định dạng sau:
         {
-          "status": "APPROVED" | "REJECTED",
-          "message": "Nội dung phản hồi cho ứng viên"
+         "status": "Approved" | "Rejected",
+         "message": "string"
         }
 
         QUY TẮC ĐÁNH GIÁ:
-        1. Nếu ứng viên đưa ra hướng giải quyết ĐÚNG về thuật toán và độ phức tạp (Big O):
-           - Gán "status": "APPROVED".
-           - "message": Xác nhận giải pháp đúng, khen ngợi ngắn gọn và yêu cầu họ bắt đầu code (Implement).
-        
-        2. Nếu ứng viên đưa ra hướng giải quyết SAI hoặc chưa tối ưu:
-           - Gán "status": "REJECTED".
-           - "message": Giải thích tại sao chưa tối ưu (VD: Time Limit Exceeded) và đưa ra gợi ý nhỏ (Hint). KHÔNG đưa code mẫu.
+        1. Nếu giải pháp SAI hoặc không giải được bài toán:
+          - Gán "status": "Rejected".
+          - "message": Giải thích rõ chỗ sai và vì sao không đúng.
 
-        3. Nếu ứng viên chat linh tinh không liên quan:
-           - Gán "status": "REJECTED".
-           - "message": Nhắc nhở quay lại bài toán.
+        2. Nếu giải pháp ĐÚNG nhưng CHƯA TỐI ƯU:
+          - Gán "status": "Approved".
+          - "message": Xác nhận đúng, phản hồi xây dựng, và gợi ý hướng tối ưu hơn (không đưa code mẫu).
+
+        3. Nếu giải pháp ĐÚNG và TỐI ƯU:
+          - Gán "status": "Approved".
+          - "message": Khen ngợi ngắn gọn, tích cực.
+
+        4. Không từ chối chỉ vì chưa tối ưu. Ưu tiên đánh giá đúng/sai trước, tối ưu sau.
+        5. Nếu ứng viên chat linh tinh không liên quan:
+          - Gán "status": "Rejected".
+          - "message": Nhắc nhở tập trung vào giải pháp cho bài toán.
       `,
     });
 

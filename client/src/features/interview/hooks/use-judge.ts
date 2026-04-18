@@ -44,3 +44,17 @@ export const useSessionSubmissions = (sessionId?: string) => {
     refetchOnWindowFocus: false,
   });
 };
+
+export const useProblemSubmissions = (problemSlug?: string) => {
+  return useQuery({
+    queryKey: ["problem-submissions", problemSlug],
+    queryFn: () => {
+      if (!problemSlug) {
+        throw new Error("Problem slug is required");
+      }
+      return judgeApi.getProblemSubmissions(problemSlug);
+    },
+    enabled: !!problemSlug,
+    refetchOnWindowFocus: false,
+  });
+};

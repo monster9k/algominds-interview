@@ -10,7 +10,11 @@ import { ProblemPanel } from "../components/problem-panel";
 import { CodeEditorPanel } from "../components/code-editor-panel";
 import { ConsolePanel } from "../components/console-panel";
 import { useSession } from "../hooks/use-session";
-import { useSessionSubmissions, useSubmitCode } from "../hooks/use-judge";
+import {
+  useProblemSubmissions,
+  useSessionSubmissions,
+  useSubmitCode,
+} from "../hooks/use-judge";
 import { useSessionEvaluation } from "../hooks/use-evaluation";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -33,7 +37,7 @@ export function InterviewRoom() {
     data: submissionData,
     refetch: refetchSubmissions,
     isFetching: isFetchingSubmissions,
-  } = useSessionSubmissions(session?.id);
+  } = useProblemSubmissions(slug);
 
   // State quản lý trạng thái Phase đang làm
   const [currentPhase, setCurrentPhase] =

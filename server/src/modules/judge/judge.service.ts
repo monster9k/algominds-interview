@@ -227,6 +227,60 @@ export class JudgeService {
     };
   }
 
+  async getProblemSubmissions(userId: string, problemSlug: string) {
+    const submissions = await this.prisma.submission.findMany({
+      where: {
+        session: {
+          userId,
+          problem: {
+            slug: problemSlug,
+          },
+        },
+      },
+      include: {
+        session: {
+          select: {
+            problemId: true,
+            evaluation: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!submissions.length) {
+      throw new NotFoundException('Không tìm thấy submission nào cho bài này');
+    }
+    //vì mọi problemId trong submissions đều same nên lấy submissions[0] để lấy problemId => không cần phải gọi db
+    const problemId = submissions[0].session.problemId;
+
+    const enrichedSubmissions = await this.attachPerformanceStats(
+      submissions,
+      problemId,
+    );
+
+    return enrichedSubmissions.map((sub: any) => {
+      // logic tách riêng phần session ra khỏi submission, phần còn lại của sub sẽ được gộp vào cho biến submissionBase để trả về cho client
+      const { session, ...submissionBase } = sub;
+      const evaluation = session.evaluation;
+
+      const hasEvaluation =
+        sub.status === SubmissionStatus.ACCEPTED && Boolean(evaluation);
+
+      const evaluationStatus =
+        sub.status === SubmissionStatus.ACCEPTED
+          ? hasEvaluation
+            ? 'COMPLETED'
+            : 'PENDING'
+          : 'NOT_AVAILABLE';
+
+      return {
+        ...submissionBase,
+        evaluationStatus,
+        evaluation: hasEvaluation ? this.normalizeEvaluation(evaluation) : null,
+      };
+    });
+  }
+
   // Helper xử lý logic 1 test case
   private async runSingleTestCase(
     language: string,

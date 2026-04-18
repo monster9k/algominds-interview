@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JudgeService } from './judge.service';
 import { Throttle } from '@nestjs/throttler';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { JwtUser } from '../auth/type/jwt-user.type';
 
 @Controller('judge')
 @UseGuards(JwtAuthGuard)
@@ -43,5 +44,13 @@ export class JudgeController {
     @Param('sessionId') sessionId: string,
   ) {
     return this.judgeService.getSessionEvaluation(user.userId, sessionId);
+  }
+
+  @Get('problems/:slug/submissions')
+  async getProblemSubmissions(
+    @CurrentUser() user: JwtUser,
+    @Param('slug') slug: string,
+  ) {
+    return this.judgeService.getProblemSubmissions(user.userId, slug);
   }
 }

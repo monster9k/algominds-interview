@@ -28,4 +28,13 @@ export const judgeApi = {
     const response = await api.get(`/judge/sessions/${sessionId}/evaluation`);
     return response.data;
   },
+
+  getProblemSubmissions: async (
+    problemSlug: string,
+  ): Promise<SubmissionResponse[]> => {
+    const response = await api.get(
+      `/judge/problems/${problemSlug}/submissions`,
+    );
+    return response.data;
+  },
 };

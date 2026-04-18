@@ -25,7 +25,12 @@ export class AuthService {
   async generateToken(userId: string, email: string, role: string) {
     const payload = { sub: userId, email, role };
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: await this.jwtService.signAsync(payload, {
+        expiresIn: '15m', // Access token có thời hạn ngắn hơn
+      }),
+      refreshToken: await this.jwtService.signAsync(payload, {
+        expiresIn: '7d', // Refresh token có thời hạn lâu hơn
+      }),
       user: { userId, email, role }, // Trả thêm info để Frontend dùng
     };
   }
@@ -71,5 +76,17 @@ export class AuthService {
     });
 
     return newUser;
+  }
+
+  async refreshTokens(refreshToken: string) {
+    const payload = await this.jwtService.verify(refreshToken, {
+      secret: process.env.JWT_SECRET,
+    });
+
+    const user = await this.usersService.findByEmail(payload.email);
+    if(!user){
+      throw new UnauthorizedException('User không tồn tại');
+    }
+    
   }
 }

@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
 async function bootstrap() {
@@ -18,6 +19,9 @@ async function bootstrap() {
     }),
   );
 
+  // cookie
+  app.use(cookieParser());
+
   // 2. Bật CORS (Để sau này Frontend React gọi được API mà không bị chặn)
   //  CORS (Cho phép Frontend Localhost gọi)
   app.enableCors({
@@ -26,7 +30,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // --- 2. CẤU HÌNH SWAGGER (THÊM ĐOẠN NÀY) ---
+  // --- 2. CẤU HÌNH SWAGGER ---
   const config = new DocumentBuilder()
     .setTitle('AlgoMinds API')
     .setDescription('Tài liệu API cho dự án AlgoMinds')

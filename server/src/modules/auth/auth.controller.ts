@@ -5,6 +5,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -29,8 +30,20 @@ export class AuthController {
   }
 
   @Post('login')
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res) {
+    const result = await this.authService.login(loginDto);
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+    });
+
+    return {
+      accessToken: result.access_token,
+      user: result.user,
+    };
   }
 
   @Get('profile')
@@ -72,5 +85,19 @@ export class AuthController {
     return res.redirect(
       `${frontendUrl}/auth/google-callback?accessToken=${data.access_token}&user=${userParam}`,
     );
+  }
+
+  @Post('refresh')
+  async refreshToken(@Req() req, @Res({ passthrough: true }) res) {
+    const refreshToken = req.cookies['refreshToken'];
+    if (!refreshToken) {
+      throw new UnauthorizedException(
+        'Không tìm thấy Refresh Token trong Cookie',
+      );
+    }
+
+    const newTokens = await this.authService.refreshTokens(refreshToken);
+
+
   }
 }

@@ -14,10 +14,14 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private configService: ConfigService,
+  ) {}
 
   @Post('register')
   register(@Body() createUserDto: CreateUserDto) {
@@ -58,14 +62,15 @@ export class AuthController {
       user.email,
       user.role,
     );
+    const frontendUrl = this.configService.get<String>('FRONTEND_URL');
 
+    // đóng gói use vào 1 chuỗi gọn gàng để truyền qua URL
+    const userParam = encodeURIComponent(JSON.stringify(data.user));
     // 3. Trả về kết quả
     // *Lưu ý: Khi làm Frontend thật, ta sẽ res.redirect() về trang React
-    // Còn bây giờ test, ta cứ json ra màn hình xem cho sướng.
-    return res.json({
-      message: 'Google Login Successful ',
-      access_token: data.access_token,
-      user: data.user,
-    });
+
+    return res.redirect(
+      `${frontendUrl}/auth/google-callback?accessToken=${data.access_token}&user=${userParam}`,
+    );
   }
 }

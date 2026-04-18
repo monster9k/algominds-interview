@@ -10,24 +10,22 @@ import { ProblemPanel } from "../components/problem-panel";
 import { CodeEditorPanel } from "../components/code-editor-panel";
 import { ConsolePanel } from "../components/console-panel";
 import { useSession } from "../hooks/use-session";
-import {
-  useProblemSubmissions,
-  useSessionSubmissions,
-  useSubmitCode,
-} from "../hooks/use-judge";
+import { useProblemSubmissions, useSubmitCode } from "../hooks/use-judge";
 import { useSessionEvaluation } from "../hooks/use-evaluation";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   CodeEvaluationCompleteEvent,
   SessionPhase,
-  type Evaluation,
   type SubmissionResponse,
 } from "../types";
-import { Socket } from "socket.io-client";
 import { toast } from "sonner";
-import { disconnectSocket, initializeSocket } from "@/lib/socket";
+import { useInterviewSocket } from "../hooks/use-interview-socket";
+import {
+  mapSubmissionForUi,
+  normalizeEvaluation,
+} from "../utils/submissionFormatters";
 
 //
 export function InterviewRoom() {
@@ -42,8 +40,6 @@ export function InterviewRoom() {
   // State quản lý trạng thái Phase đang làm
   const [currentPhase, setCurrentPhase] =
     useState<SessionPhase>("PHASE_1_STRATEGY");
-
-  const [socket, setSocket] = useState<Socket | null>(null);
 
   // Code state management
   const [currentCode, setCurrentCode] = useState<string>("");
@@ -62,6 +58,70 @@ export function InterviewRoom() {
     session?.id,
     shouldPollEvaluation,
   );
+
+  const handleSessionStatusUpdate = useCallback((status: SessionPhase) => {
+    if (status !== "PHASE_2_IMPLEMENT") {
+      return;
+    }
+
+    setCurrentPhase("PHASE_2_IMPLEMENT");
+    toast.success(
+      "AI đã hoàn thành phần Strategy! Bắt đầu Phase 2: Implement nào!",
+    );
+  }, []);
+
+  const handleCodeEvaluationComplete = useCallback(
+    (payload: CodeEvaluationCompleteEvent) => {
+      if (payload.sessionId !== session?.id) {
+        return;
+      }
+
+      const normalizedEvaluation = normalizeEvaluation(payload.evaluation);
+
+      setAcceptedSubmission((prev) => {
+        if (!prev) {
+          return prev;
+        }
+
+        if (payload.submissionId && prev.id !== payload.submissionId) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          evaluationStatus: "COMPLETED",
+          evaluation: normalizedEvaluation,
+        };
+      });
+
+      setSubmissions((prev) =>
+        prev.map((submission) => {
+          if (payload.submissionId && submission.id !== payload.submissionId) {
+            return submission;
+          }
+
+          if (!payload.submissionId && submission.status !== "ACCEPTED") {
+            return submission;
+          }
+
+          return {
+            ...submission,
+            evaluationStatus: "COMPLETED",
+            evaluation: normalizedEvaluation,
+          };
+        }),
+      );
+
+      toast.success("AI evaluation completed!");
+    },
+    [session?.id],
+  );
+
+  const { socket } = useInterviewSocket({
+    sessionId: session?.id,
+    onSessionStatusUpdate: handleSessionStatusUpdate,
+    onCodeEvaluationComplete: handleCodeEvaluationComplete,
+  });
 
   // Submission hook
   const submitCodeMutation = useSubmitCode({
@@ -116,83 +176,12 @@ export function InterviewRoom() {
   };
 
   useEffect(() => {
-    if (!session) return;
+    if (!session) {
+      return;
+    }
 
     // Load xong session thì set state cho Phase
     setCurrentPhase(session.status);
-
-    // kết nối với socket
-    const newSocket = initializeSocket();
-    setSocket(newSocket);
-
-    // tham gia vào phòng chat tương ứng
-    newSocket.emit("join_room", { sessionId: session.id });
-
-    // Lắng nghe AI cho phép chuyển sang Phase 2
-    newSocket.on("session_status_update", (data) => {
-      if (data.status === "PHASE_2_IMPLEMENT") {
-        setCurrentPhase("PHASE_2_IMPLEMENT");
-        toast.success(
-          "AI đã hoàn thành phần Strategy! Bắt đầu Phase 2: Implement nào!",
-        );
-      }
-    });
-
-    newSocket.on(
-      "code_evaluation_complete",
-      (payload: CodeEvaluationCompleteEvent) => {
-        if (payload.sessionId !== session.id) {
-          return;
-        }
-
-        const normalizedEvaluation = normalizeEvaluation(payload.evaluation);
-
-        setAcceptedSubmission((prev) => {
-          if (!prev) {
-            return prev;
-          }
-
-          if (payload.submissionId && prev.id !== payload.submissionId) {
-            return prev;
-          }
-
-          return {
-            ...prev,
-            evaluationStatus: "COMPLETED",
-            evaluation: normalizedEvaluation,
-          };
-        });
-
-        setSubmissions((prev) =>
-          prev.map((submission) => {
-            if (
-              payload.submissionId &&
-              submission.id !== payload.submissionId
-            ) {
-              return submission;
-            }
-
-            if (!payload.submissionId && submission.status !== "ACCEPTED") {
-              return submission;
-            }
-
-            return {
-              ...submission,
-              evaluationStatus: "COMPLETED",
-              evaluation: normalizedEvaluation,
-            };
-          }),
-        );
-
-        toast.success("AI evaluation completed!");
-      },
-    );
-
-    return () => {
-      newSocket.off("session_status_update");
-      newSocket.off("code_evaluation_complete");
-      disconnectSocket();
-    };
   }, [session]);
 
   useEffect(() => {
@@ -365,39 +354,4 @@ export function InterviewRoom() {
       </footer>
     </div>
   );
-}
-
-function normalizeEvaluation(
-  raw: CodeEvaluationCompleteEvent["evaluation"],
-): Evaluation {
-  const scoreSource = (raw?.scores || {}) as Record<string, number>;
-
-  return {
-    scores: {
-      logic: Number(scoreSource.logic ?? 0),
-      cleanCode: Number(scoreSource.cleanCode ?? 0),
-      performance: Number(scoreSource.performance ?? 0),
-      bestPractices: Number(scoreSource.bestPractices ?? 0),
-    },
-    feedback: raw?.feedback ?? "",
-    pros: Array.isArray(raw?.pros) ? raw.pros : [],
-    cons: Array.isArray(raw?.cons) ? raw.cons : [],
-  };
-}
-
-function mapSubmissionForUi(
-  submission: SubmissionResponse,
-): SubmissionResponse {
-  return {
-    ...submission,
-    createdAt: submission.createdAt
-      ? new Date(submission.createdAt).toLocaleString()
-      : "just now",
-    executionTime: submission.executionTime ?? null,
-    memoryUsage: submission.memoryUsage ?? null,
-    testCaseResults: submission.testCaseResults || [],
-    evaluationStatus:
-      submission.evaluationStatus ||
-      (submission.status === "ACCEPTED" ? "PENDING" : "NOT_AVAILABLE"),
-  };
 }

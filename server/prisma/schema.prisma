@@ -74,10 +74,26 @@ model User {
   // Relations
   stats    UserStats?
   sessions Session[]
+  refreshTokens RefreshToken[]
 
   // Indexes
   @@index([provider, providerId])
   @@map("users") // Đổi tên bảng trong DB thành số nhiều (optional, chuẩn REST)
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  jti       String   @unique
+  tokenHash String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 model UserStats {

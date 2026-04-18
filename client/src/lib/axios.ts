@@ -5,6 +5,60 @@
  */
 import axios from "axios";
 import { env } from "@/config/env";
+import { useAuthStore } from "@/stores/use-auth-store";
+
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    _retry?: boolean;
+  }
+
+  export interface InternalAxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
+
+type PendingRequest = {
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
+};
+
+// Biến cờ để tránh gọi nhiều lần refresh cùng lúc
+let isRefreshing = false;
+const pendingQueue: PendingRequest[] = [];
+
+// - nếu success → trả token cho tất cả request đang chờ
+// - nếu fail → reject hết
+const processQueue = (error: unknown, token: string | null) => {
+  pendingQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+      return;
+    }
+
+    if (token) {
+      resolve(token);
+    }
+  });
+
+  pendingQueue.length = 0;
+};
+
+const refreshAccessToken = async () => {
+  const response = await axios.post(
+    `${env.API_URL}/auth/refresh`,
+    {},
+    {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  const { accessToken, user } = response.data;
+  useAuthStore.getState().setAuth(user, accessToken);
+  return accessToken as string;
+};
 
 // Tạo phiên bản axios với cấu hình cơ bản
 export const api = axios.create({
@@ -13,25 +67,15 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
 // Request interceptor - Thêm token xác thực vào các yêu cầu
 api.interceptors.request.use(
   (config) => {
-    // Lấy raw data từ localStorage (do Zustand persist lưu)
-    const storageData = localStorage.getItem("algominds-auth");
-
-    if (storageData) {
-      try {
-        const parsed = JSON.parse(storageData);
-        const token = parsed.state?.token; // Đường dẫn tới token trong Zustand state
-
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      } catch (e) {
-        console.error("Lỗi khi phân tích dữ liệu xác thực từ localStorage:", e);
-      }
+    const accessToken = useAuthStore.getState().accessToken;
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
     return config;
@@ -47,16 +91,45 @@ api.interceptors.response.use(
     // Nếu phản hồi thành công, chỉ cần trả về dữ liệu
     return response;
   },
-  (error) => {
+  async (error) => {
     // Xử lý 401 - Unauthorized (chuyển hướng đến trang đăng nhập)
     if (error.response?.status === 401) {
-      // Có thể thêm logic thông báo cho người dùng ở đây
-      console.error(
-        "Lỗi 401: Chưa xác thực hoặc token hết hạn. Đang chuyển hướng...",
-      );
-      localStorage.removeItem("algominds-auth");
-      // Dùng window.location để đảm bảo reload lại toàn bộ ứng dụng
-      // window.location.href = "/auth/login";
+      // refresh → retry → lại 401 → loop vô hạn
+      const originalRequest = error.config;
+      if (originalRequest?._retry) {
+        return Promise.reject(error);
+      }
+
+      originalRequest._retry = true;
+
+      if (!isRefreshing) {
+        isRefreshing = true;
+
+        refreshAccessToken()
+          .then((newToken) => {
+            processQueue(null, newToken);
+          })
+          .catch((refreshError) => {
+            processQueue(refreshError, null);
+            useAuthStore.getState().logout();
+            window.location.href = "/auth/login";
+          })
+          .finally(() => {
+            isRefreshing = false;
+          });
+      }
+
+      return new Promise((resolve, reject) => {
+        pendingQueue.push({
+          resolve: (token: string) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(api(originalRequest));
+          },
+          reject: (err) => {
+            reject(err);
+          },
+        });
+      });
     }
 
     // Xử lý 403 - Forbidden

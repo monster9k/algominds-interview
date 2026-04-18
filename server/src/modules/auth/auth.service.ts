@@ -4,12 +4,15 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { PrismaService } from '../../prisma/prisma.service';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private prisma: PrismaService,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
@@ -23,16 +26,66 @@ export class AuthService {
 
   // Hàm này chỉ lo việc ký giấy thông hành, không lo check pass
   async generateToken(userId: string, email: string, role: string) {
-    const payload = { sub: userId, email, role };
+    const refreshJti = randomUUID();
+    const accessPayload = { sub: userId, email, role, type: 'access' };
+    const refreshPayload = {
+      sub: userId,
+      email,
+      role,
+      type: 'refresh',
+      jti: refreshJti,
+    };
+
+    const refreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(accessPayload, { expiresIn: '15m' }),
+      this.jwtService.signAsync(refreshPayload, { expiresIn: '7d' }),
+    ]);
+
     return {
-      access_token: await this.jwtService.signAsync(payload, {
-        expiresIn: '15m', // Access token có thời hạn ngắn hơn
-      }),
-      refreshToken: await this.jwtService.signAsync(payload, {
-        expiresIn: '7d', // Refresh token có thời hạn lâu hơn
-      }),
+      access_token: accessToken,
+      refreshToken,
+      refreshTokenJti: refreshJti,
+      refreshTokenExpiresAt: refreshExpiresAt,
       user: { userId, email, role }, // Trả thêm info để Frontend dùng
     };
+  }
+
+  private async hashRefreshToken(token: string) {
+    // Hash refresh token để không lưu raw token trong DB
+    return bcrypt.hash(token, 10);
+  }
+
+  private async storeRefreshToken(
+    userId: string,
+    refreshToken: string,
+    refreshTokenJti: string,
+    refreshTokenExpiresAt: Date,
+  ) {
+    const tokenHash = await this.hashRefreshToken(refreshToken);
+
+    await this.prisma.refreshToken.create({
+      data: {
+        userId,
+        jti: refreshTokenJti,
+        tokenHash,
+        expiresAt: refreshTokenExpiresAt,
+      },
+    });
+  }
+
+  async issueTokensForUser(user: { id: string; email: string; role: string }) {
+    // Tạo token và lưu refresh token hash cho user này
+    const tokens = await this.generateToken(user.id, user.email, user.role);
+
+    await this.storeRefreshToken(
+      user.id,
+      tokens.refreshToken,
+      tokens.refreshTokenJti,
+      tokens.refreshTokenExpiresAt,
+    );
+
+    return tokens;
   }
 
   async login(loginDto: LoginDto) {
@@ -47,8 +100,8 @@ export class AuthService {
       throw new UnauthorizedException('Sai tài khoản hoặc mật khẩu');
     }
 
-    // Pass đúng -> Gọi hàm tạo token
-    return this.generateToken(user.id, user.email, user.role);
+    // Pass đúng -> Gọi hàm tạo token và lưu refresh token hash
+    return this.issueTokensForUser(user);
   }
 
   async validateGoogleUser(googleUser: any) {
@@ -79,14 +132,89 @@ export class AuthService {
   }
 
   async refreshTokens(refreshToken: string) {
-    const payload = await this.jwtService.verify(refreshToken, {
+    const payload = await this.jwtService.verifyAsync(refreshToken, {
       secret: process.env.JWT_SECRET,
     });
 
-    const user = await this.usersService.findByEmail(payload.email);
-    if(!user){
+    if (payload?.type !== 'refresh' || !payload?.jti) {
+      throw new UnauthorizedException('Refresh Token không hợp lệ');
+    }
+
+    // 1) Xác thực user tồn tại
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+    });
+    if (!user) {
       throw new UnauthorizedException('User không tồn tại');
     }
-    
+
+    // 2) Lấy bản ghi refresh token theo jti để kiểm tra trạng thái
+    const tokenRecord = await this.prisma.refreshToken.findUnique({
+      where: { jti: payload.jti },
+    });
+
+    if (!tokenRecord || tokenRecord.userId !== user.id) {
+      throw new UnauthorizedException('Refresh Token không tồn tại');
+    }
+
+    if (tokenRecord.revokedAt) {
+      throw new UnauthorizedException('Refresh Token đã bị thu hồi');
+    }
+
+    if (tokenRecord.expiresAt <= new Date()) {
+      throw new UnauthorizedException('Refresh Token đã hết hạn');
+    }
+
+    // 3) So khớp raw refresh token với hash trong DB
+    const isMatch = await bcrypt.compare(refreshToken, tokenRecord.tokenHash);
+    if (!isMatch) {
+      throw new UnauthorizedException('Refresh Token không khớp');
+    }
+
+    // 4) Rotate: tạo refresh token mới và revoke token cũ
+    const newTokens = await this.generateToken(user.id, user.email, user.role);
+
+    await this.prisma.$transaction([
+      this.prisma.refreshToken.update({
+        where: { jti: tokenRecord.jti },
+        data: { revokedAt: new Date() },
+      }),
+      this.prisma.refreshToken.create({
+        data: {
+          userId: user.id,
+          jti: newTokens.refreshTokenJti,
+          tokenHash: await this.hashRefreshToken(newTokens.refreshToken),
+          expiresAt: newTokens.refreshTokenExpiresAt,
+        },
+      }),
+    ]);
+
+    return newTokens;
+  }
+
+  async revokeRefreshToken(refreshToken: string) {
+    const payload = await this.jwtService.verifyAsync(refreshToken, {
+      secret: process.env.JWT_SECRET,
+    });
+
+    if (payload?.type !== 'refresh' || !payload?.jti) {
+      throw new UnauthorizedException('Refresh Token không hợp lệ');
+    }
+
+    // Dùng jti để định danh chính xác token cần revoke
+    const tokenRecord = await this.prisma.refreshToken.findUnique({
+      where: { jti: payload.jti },
+    });
+
+    if (!tokenRecord) {
+      throw new UnauthorizedException('Refresh Token không tồn tại');
+    }
+
+    if (!tokenRecord.revokedAt) {
+      await this.prisma.refreshToken.update({
+        where: { jti: tokenRecord.jti },
+        data: { revokedAt: new Date() },
+      });
+    }
   }
 }

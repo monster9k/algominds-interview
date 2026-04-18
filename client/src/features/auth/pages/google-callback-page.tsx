@@ -10,14 +10,14 @@ export const GoogleCallbackPage = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   useEffect(() => {
-    const token = searchParams.get("accessToken");
+    const accessToken = searchParams.get("accessToken");
     const userString = searchParams.get("user");
 
-    if (token && userString) {
+    if (accessToken && userString) {
       try {
         const user = JSON.parse(decodeURIComponent(userString));
         // 1. Lưu vào Global Store
-        setAuth(user, token);
+        setAuth(user, accessToken);
         // 2. Thông báo
         toast.success("Đăng nhập Google thành công!");
         // 3. Chuyển hướng (Dùng replace để không back lại trang loading này)

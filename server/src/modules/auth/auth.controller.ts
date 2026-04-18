@@ -24,6 +24,15 @@ export class AuthController {
     private configService: ConfigService,
   ) {}
 
+  private getRefreshCookieOptions() {
+    return {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict' as const,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+    };
+  }
+
   @Post('register')
   register(@Body() createUserDto: CreateUserDto) {
     return this.authService.register(createUserDto);
@@ -33,12 +42,11 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res) {
     const result = await this.authService.login(loginDto);
 
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
-    });
+    res.cookie(
+      'refreshToken',
+      result.refreshToken,
+      this.getRefreshCookieOptions(),
+    );
 
     return {
       accessToken: result.access_token,
@@ -70,17 +78,19 @@ export class AuthController {
     const user = await this.authService.validateGoogleUser(req.user);
 
     // 2. Tạo Token cho user này
-    const data = await this.authService.generateToken(
-      user.id,
-      user.email,
-      user.role,
-    );
+    const data = await this.authService.issueTokensForUser(user);
     const frontendUrl = this.configService.get<String>('FRONTEND_URL');
 
     // đóng gói use vào 1 chuỗi gọn gàng để truyền qua URL
     const userParam = encodeURIComponent(JSON.stringify(data.user));
     // 3. Trả về kết quả
     // *Lưu ý: Khi làm Frontend thật, ta sẽ res.redirect() về trang React
+
+    res.cookie(
+      'refreshToken',
+      data.refreshToken,
+      this.getRefreshCookieOptions(),
+    );
 
     return res.redirect(
       `${frontendUrl}/auth/google-callback?accessToken=${data.access_token}&user=${userParam}`,
@@ -98,6 +108,30 @@ export class AuthController {
 
     const newTokens = await this.authService.refreshTokens(refreshToken);
 
+    res.cookie(
+      'refreshToken',
+      newTokens.refreshToken,
+      this.getRefreshCookieOptions(),
+    );
 
+    return {
+      accessToken: newTokens.access_token,
+      user: newTokens.user,
+    };
+  }
+
+  @Post('logout')
+  async logout(@Req() req, @Res({ passthrough: true }) res) {
+    const refreshToken = req.cookies['refreshToken'];
+
+    if (refreshToken) {
+      await this.authService.revokeRefreshToken(refreshToken);
+    }
+
+    res.clearCookie('refreshToken', this.getRefreshCookieOptions());
+
+    return {
+      message: 'Đăng xuất thành công',
+    };
   }
 }

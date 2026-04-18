@@ -16,6 +16,14 @@ export const authApi = {
     const response = await api.post("/auth/register", data);
     return response.data;
   },
+  refresh: async (): Promise<AuthResponse> => {
+    const response = await api.post("/auth/refresh");
+    return response.data;
+  },
+  logout: async (): Promise<{ message: string }> => {
+    const response = await api.post("/auth/logout");
+    return response.data;
+  },
   getProfile: async (): Promise<{ message: string; user: User }> => {
     const response = await api.get("/auth/profile");
     return response.data;

@@ -18,6 +18,6 @@ export interface User {
 }
 
 export interface AuthResponse {
-  access_token: string;
+  accessToken: string;
   user: User;
 }

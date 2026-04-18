@@ -21,7 +21,7 @@ export const useLogin = () => {
     mutationFn: authApi.login,
     onSuccess: (data) => {
       // console.log("LOGIN RESPONSE:", data);
-      setAuth(data.user, data.access_token);
+      setAuth(data.user, data.accessToken);
       toast("Đăng nhập thành công!", {
         description: `Chào mừng trở lại, ${data.user.name || data.user.email}`,
         action: {
@@ -61,16 +61,22 @@ export const useLogout = () => {
   const navigate = useNavigate();
   const logoutStore = useAuthStore((state) => state.logout);
 
-  return () => {
-    // 1. Xóa Token & User khỏi Store (và LocalStorage)
-    logoutStore();
+  return async () => {
+    try {
+      await authApi.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // 1. Xóa Token & User khỏi Store
+      logoutStore();
 
-    // 2. Thông báo
-    toast.info("Đã đăng xuất", {
-      description: "Hẹn gặp lại bạn sớm!",
-    });
+      // 2. Thông báo
+      toast.info("Đã đăng xuất", {
+        description: "Hẹn gặp lại bạn sớm!",
+      });
 
-    // 3. Điều hướng về trang Login
-    navigate("/auth/login");
+      // 3. Điều hướng về trang Login
+      navigate("/auth/login");
+    }
   };
 };

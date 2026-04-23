@@ -15,7 +15,9 @@ export function DescriptionTab({ problem }: DescriptionTabProps) {
     <div className="p-5">
       {/* Problem Title and Difficulty */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-white">{problem.title}</h2>
+        <h2 className="text-xl font-bold text-white">
+          {problem.displayId}.{problem.title}
+        </h2>
       </div>
 
       {/* Difficulty and Tags */}
@@ -32,15 +34,6 @@ export function DescriptionTab({ problem }: DescriptionTabProps) {
         >
           {problem.difficulty}
         </Badge>
-        {problem.tags?.map((t) => (
-          <Badge
-            key={t.tag.id}
-            variant="secondary"
-            className="bg-zinc-800 text-zinc-400 border-zinc-700"
-          >
-            {t.tag.name}
-          </Badge>
-        ))}
       </div>
 
       {/* Problem Content */}

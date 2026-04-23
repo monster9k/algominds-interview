@@ -26,16 +26,9 @@ export function InterviewHeader({
         </Link>
         <div className="h-4 w-px bg-zinc-800" />
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-zinc-400 hover:text-zinc-100"
-          >
+          <div className="flex items-center gap-2 cursor-pointer hover:bg-zinc-900 px-2 py-1 rounded transition-colors space-x-1">
             <List className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-2 cursor-pointer hover:bg-zinc-900 px-2 py-1 rounded transition-colors">
             <span className="font-medium text-zinc-200">1. Two Sum</span>
-            <ChevronLeft className="h-4 w-4 rotate-180 text-zinc-500" />
           </div>
         </div>
       </div>

@@ -114,6 +114,7 @@ model UserStats {
 
 model Problem {
   id            String     @id @default(uuid())
+  displayId     Int        @unique @default(autoincrement())
   slug          String     @unique
   title         String
   difficulty    Difficulty

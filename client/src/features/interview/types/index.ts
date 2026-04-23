@@ -25,6 +25,7 @@ export interface SessionResponse {
     difficulty: Difficulty;
     content: string;
     initialCode: Record<string, string>; // { "typescript": "...", "python": "..." }
+    displayId: number;
   };
   messages: ChatMessage[];
   submissions?: SubmissionResponse[];

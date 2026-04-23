@@ -55,6 +55,7 @@ export class ProblemsService {
     const problems = await this.prisma.problem.findMany({
       select: {
         id: true,
+        displayId: true,
         title: true,
         slug: true,
         difficulty: true,
@@ -89,6 +90,7 @@ export class ProblemsService {
 
       return {
         id: p.id,
+        displayId: p.displayId,
         title: p.title,
         slug: p.slug,
         difficulty: p.difficulty,
@@ -106,7 +108,27 @@ export class ProblemsService {
   async findOne(slug: string) {
     const problem = await this.prisma.problem.findUnique({
       where: { slug },
-      include: {
+      select: {
+        id: true,
+        displayId: true,
+        slug: true,
+        title: true,
+        difficulty: true,
+        content: true,
+        initialCode: true,
+        solution: true,
+        testCases: true,
+        exampleCases: true,
+        timeLimitMs: true,
+        memoryLimitMb: true,
+        submitCount: true,
+        passCount: true,
+        acceptanceRate: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+        functionName: true,
+        inputSignature: true,
         tags: { include: { tag: true } },
       },
     });

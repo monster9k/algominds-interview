@@ -32,7 +32,12 @@ export class SessionsService {
       include: {
         problem: {
           // Lấy luôn thông tin bài tập để hiển thị tên, độ khó
-          select: { title: true, slug: true, difficulty: true },
+          select: {
+            displayId: true,
+            title: true,
+            slug: true,
+            difficulty: true,
+          },
         },
       },
     });
@@ -61,9 +66,9 @@ export class SessionsService {
             tags: {
               include: {
                 tag: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         messages: { orderBy: { createdAt: 'asc' } }, // Lấy luôn tin nhắn để hiển thị lại cuộc trò chuyện
       },

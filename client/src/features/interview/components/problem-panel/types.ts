@@ -4,6 +4,7 @@
 
 export interface Problem {
   id: string;
+  displayId?: number;
   title: string;
   difficulty: "EASY" | "MEDIUM" | "HARD";
   content: string; // HTML content

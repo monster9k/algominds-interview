@@ -28,7 +28,7 @@ export function CodeEditorPanel({
     ? initialCode[language]
     : "// Write your code here";
   return (
-    <div className="h-full flex flex-col bg-zinc-950">
+    <div className="h-full flex flex-col bg-zinc-900">
       {/* Editor Toolbar */}
       <div className="h-10 border-b border-zinc-800 bg-zinc-900/50 flex items-center justify-between px-3">
         <div className="flex items-center gap-3">

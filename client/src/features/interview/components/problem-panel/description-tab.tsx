@@ -12,16 +12,16 @@ interface DescriptionTabProps {
 
 export function DescriptionTab({ problem }: DescriptionTabProps) {
   return (
-    <div className="p-5">
+    <div className="problem-description-container p-4 sm:p-5">
       {/* Problem Title and Difficulty */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-white">
-          {problem.displayId}.{problem.title}
+      <div className="mb-4">
+        <h2 className="wrap-break-word text-lg font-bold text-white sm:text-xl">
+          {problem.displayId}. {problem.title}
         </h2>
       </div>
 
       {/* Difficulty and Tags */}
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="mb-5 flex flex-wrap gap-2 sm:mb-6">
         <Badge
           variant="secondary"
           className={
@@ -38,7 +38,7 @@ export function DescriptionTab({ problem }: DescriptionTabProps) {
 
       {/* Problem Content */}
       <div
-        className="prose prose-invert prose-sm max-w-none text-zinc-300 leading-relaxed custom-problem-html"
+        className="custom-problem-html text-zinc-300"
         dangerouslySetInnerHTML={{ __html: problem.content }}
       />
     </div>

@@ -14,6 +14,7 @@ export interface ProblemTagResponse {
 
 export interface Problem {
   id: string;
+  displayId: number;
   title: string;
   slug: string;
   difficulty: Difficulty;

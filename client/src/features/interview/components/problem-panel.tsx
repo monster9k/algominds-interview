@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Code2, Beaker, History, CheckCircle2, X } from "lucide-react";
+import {
+  Code2,
+  Beaker,
+  History,
+  CheckCircle2,
+  X,
+  Lightbulb,
+} from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DescriptionTab } from "./problem-panel/description-tab";
@@ -41,30 +48,30 @@ export function ProblemPanel({
       className="h-full flex flex-col bg-zinc-950"
     >
       {/* Tabs Header */}
-      <div className="bg-zinc-900/50 border-b border-zinc-800 px-2 shrink-0">
-        <TabsList className="h-10 bg-transparent p-0 gap-1">
+      <div className="bg-zinc-900 border-b border-zinc-800 px-2 shrink-0">
+        <TabsList className="h-8 bg-transparent p-0 gap-1">
           <TabsTrigger
             value="description"
-            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-rose-500 rounded-none h-full px-4 text-zinc-400 font-medium text-xs flex gap-2"
+            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none  h-full px-4 py-2 text-zinc-400 font-medium text-xs flex gap-2 hover:bg-zinc-800 rounded transition-colors "
           >
             <Code2 className="h-3.5 w-3.5 text-rose-500" /> Description
           </TabsTrigger>
           <TabsTrigger
             value="editorial"
-            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-rose-500 rounded-none h-full px-4 text-zinc-400 font-medium text-xs flex gap-2"
+            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none  h-full px-4 py-2 text-zinc-400 font-medium text-xs flex gap-2 hover:bg-zinc-800 rounded transition-colors"
           >
             <Beaker className="h-3.5 w-3.5 text-blue-500" /> Editorial
           </TabsTrigger>
           <TabsTrigger
             value="solutions"
-            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-rose-500 rounded-none h-full px-4 text-zinc-400 font-medium text-xs"
+            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none  h-full px-4 py-2 text-zinc-400 font-medium text-xs flex gap-2 hover:bg-zinc-800 rounded transition-colors"
           >
-            Solutions
+            <Lightbulb className="h-3.5 w-3.5 text-blue-500" /> Solutions
           </TabsTrigger>
           <TabsTrigger
             value="submissions"
             onClick={() => setSelectedSubmission(null)}
-            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-rose-500 rounded-none h-full px-4 text-zinc-400 font-medium text-xs flex gap-2"
+            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none  h-full px-4 py-2 text-zinc-400 font-medium text-xs flex gap-2 hover:bg-zinc-800 rounded transition-colors"
           >
             <History className="h-3.5 w-3.5 text-emerald-500" /> Submissions
           </TabsTrigger>

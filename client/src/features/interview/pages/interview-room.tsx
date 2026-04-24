@@ -266,6 +266,9 @@ export function InterviewRoom() {
         onSubmit={handleSubmit}
         onRun={handleRun}
         isSubmitting={submitCodeMutation.isPending}
+        currentProblemSlug={slug}
+        currentProblemTitle={session.problem.title}
+        currentProblemDisplayId={session.problem.displayId}
       />
 
       {/* 2. WORKSPACE */}

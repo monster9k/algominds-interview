@@ -15,64 +15,7 @@ async function main() {
   console.log('🌱 Start seeding...');
 
   // ===============================
-  // BÀI 1: VALID PARENTHESES
-  // ===============================
-  await prisma.problem.upsert({
-    where: { slug: 'valid-parentheses' },
-    update: {},
-    create: {
-      title: 'Valid Parentheses',
-      slug: 'valid-parentheses',
-      difficulty: Difficulty.EASY,
-      functionName: 'isValid',
-      content: `
-        <p>Given a string <code>s</code> containing just the characters
-        <code>'('</code>, <code>')'</code>, <code>'{'</code>, <code>'}'</code>,
-        <code>'['</code>, <code>']'</code>, determine if the input string is valid.</p>
-      `,
-      timeLimitMs: 1000,
-      memoryLimitMb: 256,
-
-      initialCode: {
-        javascript: `function isValid(s) {
-  // Write your code here
-};`,
-        typescript: `function isValid(s: string): boolean {
-  // Write your code here
-}`,
-        cpp: `class Solution {
-public:
-    bool isValid(string s) {
-        // Write your code here
-    }
-};`,
-      },
-
-      testCases: [
-        { input: { s: '()' }, output: true },
-        { input: { s: '()[]{}' }, output: true },
-        { input: { s: '(]' }, output: false },
-        { input: { s: '([)]' }, output: false },
-        { input: { s: '{[]}' }, output: true },
-      ],
-
-      tags: {
-        create: [
-          {
-            tag: {
-              connectOrCreate: {
-                where: { name: 'Stack' },
-                create: { name: 'Stack', slug: 'stack' },
-              },
-            },
-          },
-        ],
-      },
-    },
-  });
-
-  // ===============================
-  // BÀI 2: TWO SUM
+  // BÀI 1: TWO SUM
   // ===============================
   await prisma.problem.upsert({
     where: { slug: 'two-sum' },
@@ -125,6 +68,62 @@ public:
               connectOrCreate: {
                 where: { name: 'Hash Table' },
                 create: { name: 'Hash Table', slug: 'hash-table' },
+              },
+            },
+          },
+        ],
+      },
+    },
+  });
+  // ===============================
+  // BÀI 2: VALID PARENTHESES
+  // ===============================
+  await prisma.problem.upsert({
+    where: { slug: 'valid-parentheses' },
+    update: {},
+    create: {
+      title: 'Valid Parentheses',
+      slug: 'valid-parentheses',
+      difficulty: Difficulty.EASY,
+      functionName: 'isValid',
+      content: `
+        <p>Given a string <code>s</code> containing just the characters
+        <code>'('</code>, <code>')'</code>, <code>'{'</code>, <code>'}'</code>,
+        <code>'['</code>, <code>']'</code>, determine if the input string is valid.</p>
+      `,
+      timeLimitMs: 1000,
+      memoryLimitMb: 256,
+
+      initialCode: {
+        javascript: `function isValid(s) {
+  // Write your code here
+};`,
+        typescript: `function isValid(s: string): boolean {
+  // Write your code here
+}`,
+        cpp: `class Solution {
+public:
+    bool isValid(string s) {
+        // Write your code here
+    }
+};`,
+      },
+
+      testCases: [
+        { input: { s: '()' }, output: true },
+        { input: { s: '()[]{}' }, output: true },
+        { input: { s: '(]' }, output: false },
+        { input: { s: '([)]' }, output: false },
+        { input: { s: '{[]}' }, output: true },
+      ],
+
+      tags: {
+        create: [
+          {
+            tag: {
+              connectOrCreate: {
+                where: { name: 'Stack' },
+                create: { name: 'Stack', slug: 'stack' },
               },
             },
           },

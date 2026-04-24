@@ -6,6 +6,7 @@
 import axios from "axios";
 import { env } from "@/config/env";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { router } from "@/app/router";
 
 declare module "axios" {
   export interface AxiosRequestConfig {
@@ -112,7 +113,7 @@ api.interceptors.response.use(
           .catch((refreshError) => {
             processQueue(refreshError, null);
             useAuthStore.getState().logout();
-            window.location.href = "/auth/login";
+            router.navigate("/auth/login");
           })
           .finally(() => {
             isRefreshing = false;

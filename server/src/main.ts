@@ -25,7 +25,7 @@ async function bootstrap() {
   // 2. Bật CORS (Để sau này Frontend React gọi được API mà không bị chặn)
   //  CORS (Cho phép Frontend Localhost gọi)
   app.enableCors({
-    origin: ['http://localhost:5173'], // Chỉ cho phép React Vite
+    origin: configService.get<string>('FRONTEND_URL'), // Chỉ cho phép React Vite
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

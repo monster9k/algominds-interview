@@ -11,6 +11,7 @@ import { JudgeModule } from './modules/judge/judge.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { QueueModule } from './common/queue/queue.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { APP_GUARD } from '@nestjs/core';
     }),
 
     PrismaModule,
+    QueueModule,
     UsersModule,
     AuthModule,
     ProblemsModule,

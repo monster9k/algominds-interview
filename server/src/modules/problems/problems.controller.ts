@@ -2,6 +2,8 @@ import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ProblemsService } from './problems.service';
 import { CreateProblemDto } from './dto/create-problem.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -10,8 +12,10 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class ProblemsController {
   constructor(private readonly problemsService: ProblemsService) {}
 
-  // POST /problems (Chỉ nên cho Admin, nhưng dev thì cứ mở)
+  // POST /problems (Admin only)
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   create(@Body() createProblemDto: CreateProblemDto) {
     return this.problemsService.create(createProblemDto);
   }

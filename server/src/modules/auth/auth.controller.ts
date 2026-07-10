@@ -27,9 +27,9 @@ export class AuthController {
   private getRefreshCookieOptions() {
     return {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict' as const,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+      secure: process.env.NODE_ENV === 'production', //
+      sameSite: 'lax' as const, //
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     };
   }
 
@@ -79,12 +79,7 @@ export class AuthController {
 
     // 2. Tạo Token cho user này
     const data = await this.authService.issueTokensForUser(user);
-    const frontendUrl = this.configService.get<String>('FRONTEND_URL');
-
-    // đóng gói use vào 1 chuỗi gọn gàng để truyền qua URL
-    const userParam = encodeURIComponent(JSON.stringify(data.user));
-    // 3. Trả về kết quả
-    // *Lưu ý: Khi làm Frontend thật, ta sẽ res.redirect() về trang React
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
 
     res.cookie(
       'refreshToken',
@@ -92,9 +87,7 @@ export class AuthController {
       this.getRefreshCookieOptions(),
     );
 
-    return res.redirect(
-      `${frontendUrl}/auth/google-callback?accessToken=${data.access_token}&user=${userParam}`,
-    );
+    return res.redirect(`${frontendUrl}/auth/google-callback`);
   }
 
   @Post('refresh')

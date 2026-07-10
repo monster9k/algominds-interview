@@ -1,37 +1,28 @@
+import { authApi } from "@/features/auth/api/auth-api";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const GoogleCallbackPage = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
 
   useEffect(() => {
-    const accessToken = searchParams.get("accessToken");
-    const userString = searchParams.get("user");
-
-    if (accessToken && userString) {
-      try {
-        const user = JSON.parse(decodeURIComponent(userString));
-        // 1. Lưu vào Global Store
+    authApi
+      .refresh()
+      .then(({ accessToken, user }) => {
         setAuth(user, accessToken);
-        // 2. Thông báo
         toast.success("Đăng nhập Google thành công!");
-        // 3. Chuyển hướng (Dùng replace để không back lại trang loading này)
         navigate("/dashboard", { replace: true });
-      } catch (error) {
-        console.error("Lỗi parse user data:", error);
-        navigate("/auth/login");
-        toast.error("Lỗi dữ liệu đăng nhập");
-      }
-    } else {
-      navigate("/auth/login");
-      toast.error("Đăng nhập thất bại");
-    }
-  }, [searchParams, setAuth, navigate]);
+      })
+      .catch((error) => {
+        console.error("Lỗi xác thực Google:", error);
+        navigate("/auth/login", { replace: true });
+        toast.error("Đăng nhập thất bại");
+      });
+  }, [setAuth, navigate]);
 
   return (
     <div className="h-screen w-full flex flex-col items-center justify-center bg-background space-y-4">

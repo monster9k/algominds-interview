@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 import { disconnectSocket, initializeSocket } from "@/lib/socket";
 import { CodeEvaluationCompleteEvent, SessionPhase } from "../types";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 interface UseInterviewSocketOptions {
   sessionId?: string;
@@ -19,13 +20,14 @@ export function useInterviewSocket({
   onCodeEvaluationComplete,
 }: UseInterviewSocketOptions) {
   const [socket, setSocket] = useState<Socket | null>(null);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   useEffect(() => {
-    if (!sessionId) {
+    if (!sessionId || !accessToken) {
       return;
     }
 
-    const newSocket = initializeSocket();
+    const newSocket = initializeSocket(accessToken);
     setSocket(newSocket);
 
     const handleSessionStatusUpdate = (data: SessionStatusUpdatePayload) => {
@@ -52,7 +54,7 @@ export function useInterviewSocket({
       disconnectSocket();
       setSocket(null);
     };
-  }, [sessionId, onSessionStatusUpdate, onCodeEvaluationComplete]);
+  }, [sessionId, accessToken, onSessionStatusUpdate, onCodeEvaluationComplete]);
 
   return { socket };
 }

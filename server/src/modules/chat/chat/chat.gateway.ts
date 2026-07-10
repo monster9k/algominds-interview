@@ -13,6 +13,20 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { MessageSender } from '@prisma/client';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { ConfigService } from '@nestjs/config';
+import { verify } from 'jsonwebtoken';
+
+type AuthenticatedSocketUser = {
+  userId: string;
+  username: string;
+  role: string;
+};
+
+type JwtPayload = {
+  sub: string;
+  email: string;
+  role: string;
+};
 @WebSocketGateway({
   cors: {
     origin: '*', // Cho phép React (port 5173) kết nối
@@ -20,17 +34,45 @@ import { Queue } from 'bullmq';
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   private logger: Logger = new Logger('ChatGateway'); //1 logger instance với context = ChatGateway
   //[Nest] 12345  - 01/18/2026, 10:22:31 AM  LOG [ChatGateway] Client connected: abc123
 
   constructor(
     private prisma: PrismaService,
+    private configService: ConfigService,
     @InjectQueue('ai-queue') private aiQueue: Queue, // Inject Queue vào
   ) {}
 
   handleConnection(client: Socket) {
+    const rawToken = client.handshake.auth?.token as string | undefined;
+
+    if (!rawToken) {
+      this.logger.warn(`Socket rejected (missing token): ${client.id}`);
+      client.disconnect(true);
+      return;
+    }
+
+    const token = rawToken.startsWith('Bearer ') ? rawToken.slice(7) : rawToken;
+
+    try {
+      const payload = verify(
+        token,
+        this.configService.getOrThrow<string>('JWT_SECRET'),
+      ) as JwtPayload;
+
+      client.data.user = {
+        userId: payload.sub,
+        username: payload.email,
+        role: payload.role,
+      } as AuthenticatedSocketUser;
+    } catch {
+      this.logger.warn(`Socket rejected (invalid token): ${client.id}`);
+      client.disconnect(true);
+      return;
+    }
+
     this.logger.log(`Client connected: ${client.id}`);
   }
 
@@ -39,15 +81,36 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('join_room') // tương tự post/get
-  handleJoinRoom(
+  async handleJoinRoom(
     @MessageBody() data: { sessionId: string },
     @ConnectedSocket() client: Socket,
   ) {
-    // Cho client tham gia vào "phòng" có tên là sessionId
+    const socketUser = client.data.user as AuthenticatedSocketUser | undefined;
+
+    if (!socketUser?.userId) {
+      client.emit('error', { message: 'Unauthorized socket connection' });
+      client.disconnect(true);
+      return;
+    }
+
     if (!data.sessionId) {
       this.logger.error('sessionId is undefined');
       return;
     }
+
+    const session = await this.prisma.session.findUnique({
+      where: { id: data.sessionId },
+      select: { userId: true },
+    });
+
+    if (!session || session.userId !== socketUser.userId) {
+      this.logger.warn(
+        `Unauthorized room join attempt. socket=${client.id}, session=${data.sessionId}`,
+      );
+      client.emit('error', { message: 'Forbidden session access' });
+      return;
+    }
+
     client.join(data.sessionId);
 
     this.logger.log(`Client ${client.id} joined room ${data.sessionId}`);
@@ -58,20 +121,40 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('send_message')
   async handleMessage(
+    @ConnectedSocket() client: Socket,
     @MessageBody()
     data: {
       sessionId: string;
       content: string;
-      sender: MessageSender;
-      userId: string;
     },
   ) {
+    const socketUser = client.data.user as AuthenticatedSocketUser | undefined;
+
+    if (!socketUser?.userId) {
+      client.emit('error', { message: 'Unauthorized socket connection' });
+      client.disconnect(true);
+      return;
+    }
+
+    const session = await this.prisma.session.findUnique({
+      where: { id: data.sessionId },
+      select: { userId: true },
+    });
+
+    if (!session || session.userId !== socketUser.userId) {
+      this.logger.warn(
+        `Unauthorized message attempt. socket=${client.id}, session=${data.sessionId}`,
+      );
+      client.emit('error', { message: 'Forbidden session access' });
+      return;
+    }
+
     // A. Lưu vào Database trước
     const newMessage = await this.prisma.message.create({
       data: {
         sessionId: data.sessionId,
         content: data.content,
-        sender: data.sender, // 'USER' hoặc 'AI'
+        sender: MessageSender.USER,
       },
     });
 
@@ -79,16 +162,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Sự kiện bắn về tên là 'receive_message'
     this.server.to(data.sessionId).emit('receive_message', newMessage);
 
-    // 3. LOGIC: Nếu người gửi là USER -> Kích hoạt AI trả lời
-    if (data.sender === 'USER') {
-      // Thêm vào hàng đợi
-      await this.aiQueue.add('chat-job', {
-        sessionId: data.sessionId,
-        userId: data.userId, // Cần ID user để tracking
-        content: data.content,
-      });
-      console.log('Added job to AI Queue');
-    }
+    // 3. Người gửi từ socket luôn là USER -> Kích hoạt AI trả lời
+    await this.aiQueue.add('chat-job', {
+      sessionId: data.sessionId,
+      userId: socketUser.userId,
+      content: data.content,
+    });
+    console.log('Added job to AI Queue');
+
     return newMessage;
   }
 }

@@ -3,6 +3,7 @@
  * Displays problem title, difficulty, tags, and content
  */
 
+import DOMPurify from "dompurify";
 import { Badge } from "@/components/ui/badge";
 import { Problem } from "./types";
 
@@ -39,7 +40,9 @@ export function DescriptionTab({ problem }: DescriptionTabProps) {
       {/* Problem Content */}
       <div
         className="custom-problem-html text-zinc-300"
-        dangerouslySetInnerHTML={{ __html: problem.content }}
+        dangerouslySetInnerHTML={{
+          __html: DOMPurify.sanitize(problem.content),
+        }}
       />
     </div>
   );

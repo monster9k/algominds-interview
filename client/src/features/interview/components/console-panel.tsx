@@ -83,9 +83,7 @@ export function ConsolePanel({
 
     socket.emit("send_message", {
       sessionId,
-      userId: user.id,
       content: inputValue,
-      sender: "USER",
     });
     setInputValue("");
   };

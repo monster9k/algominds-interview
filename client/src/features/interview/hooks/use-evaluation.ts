@@ -1,10 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { judgeApi } from "../api/judge-api";
 
-export const useSessionEvaluation = (
-  sessionId?: string,
-  shouldPoll = false,
-) => {
+export const useSessionEvaluation = (sessionId?: string) => {
   return useQuery({
     queryKey: ["session-evaluation", sessionId],
     queryFn: () => {
@@ -14,7 +11,6 @@ export const useSessionEvaluation = (
       return judgeApi.getSessionEvaluation(sessionId);
     },
     enabled: !!sessionId,
-    refetchInterval: shouldPoll ? 3000 : false,
     refetchOnWindowFocus: false,
   });
 };

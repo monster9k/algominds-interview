@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 
 export interface ExecutionResult {
@@ -11,10 +12,15 @@ export interface ExecutionResult {
 
 @Injectable()
 export class PistonService {
-  private readonly PISTON_API = 'http://localhost:2000/api/v2/execute';
+  private readonly pistonApiUrl: string;
   private readonly logger = new Logger(PistonService.name);
 
-  constructor(private httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    this.pistonApiUrl = this.configService.getOrThrow<string>('PISTON_API_URL');
+  }
 
   async execute(language: string, code: string): Promise<ExecutionResult> {
     const config = this.getLanguageConfig(language);
@@ -27,7 +33,7 @@ export class PistonService {
 
     try {
       const response = await lastValueFrom(
-        this.httpService.post(this.PISTON_API, payload),
+        this.httpService.post(this.pistonApiUrl, payload),
       );
 
       const run = response.data?.run;

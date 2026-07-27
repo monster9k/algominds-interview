@@ -3,21 +3,23 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Import các components con đã tách
 import { InterviewHeader } from "../components/interview-header";
 import { ProblemPanel } from "../components/problem-panel";
 import { CodeEditorPanel } from "../components/code-editor-panel";
 import { ConsolePanel } from "../components/console-panel";
-import { useSession } from "../hooks/use-session";
+import { useStartSession } from "../hooks/use-session";
 import { useProblemSubmissions, useSubmitCode } from "../hooks/use-judge";
 import { useSessionEvaluation } from "../hooks/use-evaluation";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CodeEvaluationCompleteEvent,
   SessionPhase,
+  type SessionResponse,
   type SubmissionResponse,
 } from "../types";
 import { toast } from "sonner";
@@ -29,8 +31,52 @@ import {
 
 //
 export function InterviewRoom() {
+  const queryClient = useQueryClient();
   const { slug } = useParams<{ slug: string }>();
-  const { data: session, isLoading, isError } = useSession(slug);
+  const [session, setSession] = useState<SessionResponse | null>(null);
+  const [sessionLoadError, setSessionLoadError] = useState(false);
+  const requestedSlugRef = useRef<string | null>(null);
+  const startSessionMutation = useStartSession();
+  const { mutateAsync: startSession, isPending: isStartingSession } =
+    startSessionMutation;
+
+  useEffect(() => {
+    if (!slug) {
+      return;
+    }
+
+    if (requestedSlugRef.current === slug && (isStartingSession || session)) {
+      return;
+    }
+
+    requestedSlugRef.current = slug;
+    setSession(null);
+    setSessionLoadError(false);
+
+    let isActive = true;
+
+    void startSession(slug)
+      .then((sessionData) => {
+        if (!isActive) {
+          return;
+        }
+        setSession(sessionData);
+      })
+      .catch(() => {
+        if (!isActive) {
+          return;
+        }
+        setSessionLoadError(true);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [slug, session, isStartingSession, startSession]);
+
+  const isLoading = isStartingSession || (!session && !sessionLoadError);
+  const isError = sessionLoadError;
+
   const {
     data: submissionData,
     refetch: refetchSubmissions,
@@ -49,15 +95,8 @@ export function InterviewRoom() {
     useState<SubmissionResponse | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);
   const [problemPanelTab, setProblemPanelTab] = useState<string>("description");
-  const shouldPollEvaluation =
-    Boolean(session?.id) &&
-    acceptedSubmission?.status === "ACCEPTED" &&
-    acceptedSubmission.evaluationStatus === "PENDING";
 
-  const { data: evaluationData } = useSessionEvaluation(
-    session?.id,
-    shouldPollEvaluation,
-  );
+  const { data: evaluationData } = useSessionEvaluation(session?.id);
 
   const handleSessionStatusUpdate = useCallback((status: SessionPhase) => {
     if (status !== "PHASE_2_IMPLEMENT") {
@@ -75,6 +114,10 @@ export function InterviewRoom() {
       if (payload.sessionId !== session?.id) {
         return;
       }
+
+      queryClient.invalidateQueries({
+        queryKey: ["session-evaluation", payload.sessionId],
+      });
 
       const normalizedEvaluation = normalizeEvaluation(payload.evaluation);
 
@@ -114,7 +157,7 @@ export function InterviewRoom() {
 
       toast.success("AI evaluation completed!");
     },
-    [session?.id],
+    [queryClient, session?.id],
   );
 
   const { socket } = useInterviewSocket({

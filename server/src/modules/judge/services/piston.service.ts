@@ -58,13 +58,36 @@ export class PistonService {
         memoryKb,
       };
     } catch (error: any) {
-      this.logger.error('Piston Execution Failed', {
-        status: error.response?.status,
-        data: error.response?.data,
+      const isAxiosError = !!error.response;
+
+      if (isAxiosError) {
+        this.logger.error('Piston API returned an error response', {
+          status: error.response.status,
+          data: JSON.stringify(error.response.data),
+        });
+
+        const pistonMessage: string =
+          error.response.data?.message ??
+          error.response.data?.error ??
+          JSON.stringify(error.response.data);
+
+        return {
+          output: '',
+          error: `Piston Error [${error.response.status}]: ${pistonMessage}`,
+          timeMs: null,
+          memoryKb: null,
+        };
+      }
+
+      // Network-level failure (ECONNREFUSED, timeout, etc.)
+      this.logger.error('Piston unreachable', {
+        code: error.code,
+        message: error.message,
       });
+
       return {
         output: '',
-        error: 'Execution Engine Error (Rate Limit or Sandbox Down)',
+        error: `Piston unreachable: ${error.code ?? error.message}`,
         timeMs: null,
         memoryKb: null,
       };

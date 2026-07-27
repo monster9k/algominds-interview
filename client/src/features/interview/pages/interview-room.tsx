@@ -15,7 +15,7 @@ import { useProblemSubmissions, useSubmitCode } from "../hooks/use-judge";
 import { useSessionEvaluation } from "../hooks/use-evaluation";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CodeEvaluationCompleteEvent,
   SessionPhase,
@@ -52,6 +52,12 @@ export function InterviewRoom() {
   // Code state management
   const [currentCode, setCurrentCode] = useState<string>("");
   const [currentLanguage, setCurrentLanguage] = useState<string>("typescript");
+  const isPristineRef = useRef(true);
+
+  const handleCodeChange = useCallback((code: string) => {
+    isPristineRef.current = false;
+    setCurrentCode(code);
+  }, []);
   const [submissionResult, setSubmissionResult] = useState<any>(null);
   const [acceptedSubmission, setAcceptedSubmission] =
     useState<SubmissionResponse | null>(null);
@@ -156,8 +162,9 @@ export function InterviewRoom() {
     },
   });
 
-  // Handle submission
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
+    if (submitCodeMutation.isPending) return;
+
     if (!session?.id || !currentCode.trim()) {
       toast.error("Please write some code before submitting");
       return;
@@ -173,12 +180,17 @@ export function InterviewRoom() {
       code: currentCode,
       language: currentLanguage,
     });
-  };
+  }, [
+    submitCodeMutation,
+    session?.id,
+    currentCode,
+    currentPhase,
+    currentLanguage,
+  ]);
 
-  // Handle run (for now, same as submit but could be different)
-  const handleRun = () => {
+  const handleRun = useCallback(() => {
     handleSubmit();
-  };
+  }, [handleSubmit]);
 
   useEffect(() => {
     if (!session) {
@@ -240,9 +252,22 @@ export function InterviewRoom() {
 
   // Update code template when language changes
   useEffect(() => {
-    if (session?.problem.initialCode && currentCode === "") {
-      const template = session.problem.initialCode[currentLanguage] || "";
+    if (!session?.problem.initialCode) return;
+
+    const template = session.problem.initialCode[currentLanguage] ?? "";
+
+    if (isPristineRef.current) {
       setCurrentCode(template);
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Switch to ${currentLanguage}? Your current code will be replaced with the starter template.`,
+    );
+
+    if (confirmed) {
+      setCurrentCode(template);
+      isPristineRef.current = true;
     }
   }, [currentLanguage, session]);
 
@@ -316,7 +341,7 @@ export function InterviewRoom() {
                   initialCode={session.problem.initialCode}
                   isLocked={currentPhase === "PHASE_1_STRATEGY"}
                   code={currentCode}
-                  onCodeChange={setCurrentCode}
+                  onCodeChange={handleCodeChange}
                   language={currentLanguage}
                   onLanguageChange={setCurrentLanguage}
                 />

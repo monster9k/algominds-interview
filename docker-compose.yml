@@ -16,6 +16,15 @@ services:
     networks:
       - algominds-net
 
+  # SERVICE 3: CODE EXECUTION SANDBOX (Piston)
+  piston:
+    image: ghcr.io/engineer-man/piston
+    container_name: algominds_piston
+    ports:
+      - "2000:2000"
+    networks:
+      - algominds-net
+
   # SERVICE 2: CACHE & QUEUE (Redis)
   redis:
     image: redis:7-alpine

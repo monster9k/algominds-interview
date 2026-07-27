@@ -95,9 +95,16 @@ api.interceptors.response.use(
   async (error) => {
     // Xử lý 401 - Unauthorized (chuyển hướng đến trang đăng nhập)
     if (error.response?.status === 401) {
-      // refresh → retry → lại 401 → loop vô hạn
       const originalRequest = error.config;
-      if (originalRequest?._retry) {
+      const requestUrl = originalRequest?.url ?? "";
+      const isAuthEndpoint = [
+        "/auth/refresh",
+        "/auth/login",
+        "/auth/register",
+      ].some((url) => requestUrl.includes(url));
+
+      if (isAuthEndpoint || originalRequest?._retry) {
+        useAuthStore.getState().logout();
         return Promise.reject(error);
       }
 

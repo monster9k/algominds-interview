@@ -1,18 +1,18 @@
 version: "3.8"
 
 services:
-  #  SERVICE 1: DATABASE (PostgreSQL)
+  # SERVICE 1: DATABASE (PostgreSQL)
   postgres:
-    image: postgres:16-alpine # Dùng bản Alpine cho nhẹ (chỉ vài chục MB)
-    container_name: algominds_db # Tên thùng chứa để dễ tìm
+    image: postgres:16-alpine
+    container_name: algominds_db
     ports:
-      - "5432:5432" # Mở cổng 5432 để máy thật kết nối được vào máy ảo
+      - "5432:5432"
     environment:
-      POSTGRES_USER: admin # Tên đăng nhập DB
-      POSTGRES_PASSWORD: admin123 # Mật khẩu DB (Nhớ cái này để cấu hình NestJS)
-      POSTGRES_DB: algominds # Tên Database mặc định sẽ tạo ra
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: algominds
     volumes:
-      - postgres_data:/var/lib/postgresql/data #  QUAN TRỌNG: Lưu dữ liệu ra ngoài máy thật // nếu ko có dòng này thì khi tắt dữ liệu sẽ mất sạch
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - algominds-net
 
@@ -24,23 +24,28 @@ services:
       - "2000:2000"
     networks:
       - algominds-net
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    privileged: true # QUAN TRỌNG: Cấp quyền để Piston tạo môi trường isolate
+    volumes:
+      - piston_data:/piston
 
   # SERVICE 2: CACHE & QUEUE (Redis)
   redis:
     image: redis:7-alpine
     container_name: algominds_redis
     ports:
-      - "6379:6379" # Cổng mặc định của Redis
+      - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
       - algominds-net
 
-# Khai báo nơi lưu trữ dữ liệu bền vững (Persistent Storage)
 volumes:
   postgres_data:
   redis_data:
+  piston_data:
 
-# Khai báo mạng nội bộ để 2 container nhìn thấy nhau
 networks:
   algominds-net:

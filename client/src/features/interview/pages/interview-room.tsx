@@ -3,6 +3,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Import các components con đã tách
 import { InterviewHeader } from "../components/interview-header";
@@ -30,6 +31,7 @@ import {
 
 //
 export function InterviewRoom() {
+  const queryClient = useQueryClient();
   const { slug } = useParams<{ slug: string }>();
   const [session, setSession] = useState<SessionResponse | null>(null);
   const [sessionLoadError, setSessionLoadError] = useState(false);
@@ -93,15 +95,8 @@ export function InterviewRoom() {
     useState<SubmissionResponse | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);
   const [problemPanelTab, setProblemPanelTab] = useState<string>("description");
-  const shouldPollEvaluation =
-    Boolean(session?.id) &&
-    acceptedSubmission?.status === "ACCEPTED" &&
-    acceptedSubmission.evaluationStatus === "PENDING";
 
-  const { data: evaluationData } = useSessionEvaluation(
-    session?.id,
-    shouldPollEvaluation,
-  );
+  const { data: evaluationData } = useSessionEvaluation(session?.id);
 
   const handleSessionStatusUpdate = useCallback((status: SessionPhase) => {
     if (status !== "PHASE_2_IMPLEMENT") {
@@ -119,6 +114,10 @@ export function InterviewRoom() {
       if (payload.sessionId !== session?.id) {
         return;
       }
+
+      queryClient.invalidateQueries({
+        queryKey: ["session-evaluation", payload.sessionId],
+      });
 
       const normalizedEvaluation = normalizeEvaluation(payload.evaluation);
 
@@ -158,7 +157,7 @@ export function InterviewRoom() {
 
       toast.success("AI evaluation completed!");
     },
-    [session?.id],
+    [queryClient, session?.id],
   );
 
   const { socket } = useInterviewSocket({

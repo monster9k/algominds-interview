@@ -83,7 +83,8 @@ export function ProblemPanel({
               className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 rounded-none h-full px-4 text-emerald-400 font-medium text-xs flex gap-2 group"
             >
               <CheckCircle2 className="h-3.5 w-3.5" /> Accepted
-              <button
+              <span
+                role="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onCloseAccepted?.();
@@ -92,7 +93,7 @@ export function ProblemPanel({
                 title="Close"
               >
                 <X className="h-3 w-3" />
-              </button>
+              </span>
             </TabsTrigger>
           )}
         </TabsList>

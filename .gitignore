@@ -27,3 +27,5 @@ coverage/
 # Docker volumes
 postgres_data/
 redis_data/
+# Piston CLI Tool
+piston_src/

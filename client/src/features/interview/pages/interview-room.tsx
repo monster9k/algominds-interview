@@ -15,11 +15,10 @@ import { useProblemSubmissions, useSubmitCode } from "../hooks/use-judge";
 import { useSessionEvaluation } from "../hooks/use-evaluation";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   CodeEvaluationCompleteEvent,
   SessionPhase,
-  type SessionResponse,
   type SubmissionResponse,
 } from "../types";
 import { toast } from "sonner";
@@ -33,49 +32,12 @@ import {
 export function InterviewRoom() {
   const queryClient = useQueryClient();
   const { slug } = useParams<{ slug: string }>();
-  const [session, setSession] = useState<SessionResponse | null>(null);
-  const [sessionLoadError, setSessionLoadError] = useState(false);
-  const requestedSlugRef = useRef<string | null>(null);
-  const startSessionMutation = useStartSession();
-  const { mutateAsync: startSession, isPending: isStartingSession } =
-    startSessionMutation;
 
-  useEffect(() => {
-    if (!slug) {
-      return;
-    }
-
-    if (requestedSlugRef.current === slug && (isStartingSession || session)) {
-      return;
-    }
-
-    requestedSlugRef.current = slug;
-    setSession(null);
-    setSessionLoadError(false);
-
-    let isActive = true;
-
-    void startSession(slug)
-      .then((sessionData) => {
-        if (!isActive) {
-          return;
-        }
-        setSession(sessionData);
-      })
-      .catch(() => {
-        if (!isActive) {
-          return;
-        }
-        setSessionLoadError(true);
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, [slug, session, isStartingSession, startSession]);
-
-  const isLoading = isStartingSession || (!session && !sessionLoadError);
-  const isError = sessionLoadError;
+  const {
+    data: session,
+    isPending: isLoading,
+    isError,
+  } = useStartSession(slug);
 
   const {
     data: submissionData,
@@ -194,8 +156,9 @@ export function InterviewRoom() {
     },
   });
 
-  // Handle submission
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
+    if (submitCodeMutation.isPending) return;
+
     if (!session?.id || !currentCode.trim()) {
       toast.error("Please write some code before submitting");
       return;
@@ -211,12 +174,17 @@ export function InterviewRoom() {
       code: currentCode,
       language: currentLanguage,
     });
-  };
+  }, [
+    submitCodeMutation,
+    session?.id,
+    currentCode,
+    currentPhase,
+    currentLanguage,
+  ]);
 
-  // Handle run (for now, same as submit but could be different)
-  const handleRun = () => {
+  const handleRun = useCallback(() => {
     handleSubmit();
-  };
+  }, [handleSubmit]);
 
   useEffect(() => {
     if (!session) {
@@ -275,14 +243,6 @@ export function InterviewRoom() {
       }),
     );
   }, [evaluationData, acceptedSubmission?.id]);
-
-  // Update code template when language changes
-  useEffect(() => {
-    if (session?.problem.initialCode && currentCode === "") {
-      const template = session.problem.initialCode[currentLanguage] || "";
-      setCurrentCode(template);
-    }
-  }, [currentLanguage, session]);
 
   if (isLoading) {
     return (

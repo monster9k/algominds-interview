@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useEffect, useRef } from "react";
 
 export function CodeEditorPanel({
   initialCode,
@@ -24,9 +25,37 @@ export function CodeEditorPanel({
   language: string;
   onLanguageChange: (language: string) => void;
 }) {
-  const codeTemplate = initialCode
-    ? initialCode[language]
-    : "// Write your code here";
+  const prevLanguageRef = useRef(language);
+
+  useEffect(() => {
+    const prevLanguage = prevLanguageRef.current;
+    prevLanguageRef.current = language;
+
+    if (prevLanguage === language) return;
+
+    const newTemplate = initialCode?.[language] ?? "";
+    const prevTemplate = initialCode?.[prevLanguage] ?? "";
+    const isPristine = code === prevTemplate || code === "";
+
+    if (isPristine) {
+      onCodeChange(newTemplate);
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Switch to ${language}? Your current code will be replaced with the starter template.`,
+    );
+
+    if (confirmed) {
+      onCodeChange(newTemplate);
+    } else {
+      // Revert the language dropdown back
+      onLanguageChange(prevLanguage);
+    }
+  }, [language]);
+
+  const defaultCode = initialCode?.[language] ?? "// Write your code here";
+
   return (
     <div className="h-full flex flex-col bg-zinc-900">
       {/* Editor Toolbar */}
@@ -84,7 +113,7 @@ export function CodeEditorPanel({
             height="100%"
             language={language}
             theme="vs-dark"
-            value={code || codeTemplate}
+            value={code || defaultCode}
             onChange={(value) => onCodeChange(value || "")}
             options={{
               readOnly: isLocked,

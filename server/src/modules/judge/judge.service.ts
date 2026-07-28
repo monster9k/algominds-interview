@@ -291,16 +291,21 @@ export class JudgeService {
     const { input, output: expectedOutput } = testCase;
 
     // A. Generate Code
-    const runnableCode = this.codeGenerator.prepareRunnableCode(
-      language,
-      userCode,
-      input,
-      functionName,
-    );
+    const { code: runnableCode, stdin } =
+      this.codeGenerator.prepareRunnableCode(
+        language,
+        userCode,
+        input,
+        functionName,
+      );
 
     // B. Execute
     const startTime = Date.now();
-    const execResult = await this.pistonService.execute(language, runnableCode);
+    const execResult = await this.pistonService.execute(
+      language,
+      runnableCode,
+      stdin,
+    );
     const endTime = Date.now();
     const executionTimeMs =
       execResult.timeMs !== null && execResult.timeMs !== undefined
@@ -315,10 +320,12 @@ export class JudgeService {
         ? SubmissionStatus.COMPILE_ERROR
         : SubmissionStatus.RUNTIME_ERROR;
     } else {
-      const actual = this.normalizeOutput(execResult.output);
-      const expected = this.normalizeOutput(JSON.stringify(expectedOutput));
+      const actual = execResult.output.trim();
+      const expected = JSON.stringify(expectedOutput);
 
-      if (actual !== expected) status = SubmissionStatus.WRONG_ANSWER;
+      if (!this.outputsMatch(actual, expected)) {
+        status = SubmissionStatus.WRONG_ANSWER;
+      }
     }
 
     return {
@@ -330,6 +337,21 @@ export class JudgeService {
       executionTimeMs,
       memoryUsageKb: execResult.memoryKb ?? null,
     };
+  }
+
+  private outputsMatch(actual: string, expected: string): boolean {
+    try {
+      const parsedActual = JSON.parse(actual);
+      const parsedExpected = JSON.parse(expected);
+      return JSON.stringify(parsedActual) === JSON.stringify(parsedExpected);
+    } catch {
+      // Fallback: strip all whitespace and compare as plain strings
+      return this.stripWhitespace(actual) === this.stripWhitespace(expected);
+    }
+  }
+
+  private stripWhitespace(str: string): string {
+    return str.replace(/\s+/g, '');
   }
 
   private normalizeOutput(str: string): string {

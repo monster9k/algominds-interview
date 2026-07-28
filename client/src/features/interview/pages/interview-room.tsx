@@ -15,7 +15,7 @@ import { useProblemSubmissions, useSubmitCode } from "../hooks/use-judge";
 import { useSessionEvaluation } from "../hooks/use-evaluation";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   CodeEvaluationCompleteEvent,
   SessionPhase,
@@ -52,12 +52,6 @@ export function InterviewRoom() {
   // Code state management
   const [currentCode, setCurrentCode] = useState<string>("");
   const [currentLanguage, setCurrentLanguage] = useState<string>("typescript");
-  const isPristineRef = useRef(true);
-
-  const handleCodeChange = useCallback((code: string) => {
-    isPristineRef.current = false;
-    setCurrentCode(code);
-  }, []);
   const [submissionResult, setSubmissionResult] = useState<any>(null);
   const [acceptedSubmission, setAcceptedSubmission] =
     useState<SubmissionResponse | null>(null);
@@ -250,27 +244,6 @@ export function InterviewRoom() {
     );
   }, [evaluationData, acceptedSubmission?.id]);
 
-  // Update code template when language changes
-  useEffect(() => {
-    if (!session?.problem.initialCode) return;
-
-    const template = session.problem.initialCode[currentLanguage] ?? "";
-
-    if (isPristineRef.current) {
-      setCurrentCode(template);
-      return;
-    }
-
-    const confirmed = window.confirm(
-      `Switch to ${currentLanguage}? Your current code will be replaced with the starter template.`,
-    );
-
-    if (confirmed) {
-      setCurrentCode(template);
-      isPristineRef.current = true;
-    }
-  }, [currentLanguage, session]);
-
   if (isLoading) {
     return (
       <div className="h-screen w-full bg-zinc-950 flex flex-col items-center justify-center text-zinc-400">
@@ -341,7 +314,7 @@ export function InterviewRoom() {
                   initialCode={session.problem.initialCode}
                   isLocked={currentPhase === "PHASE_1_STRATEGY"}
                   code={currentCode}
-                  onCodeChange={handleCodeChange}
+                  onCodeChange={setCurrentCode}
                   language={currentLanguage}
                   onLanguageChange={setCurrentLanguage}
                 />

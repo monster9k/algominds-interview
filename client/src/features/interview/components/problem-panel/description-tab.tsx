@@ -3,7 +3,8 @@
  * Displays problem title, difficulty, tags, and content
  */
 
-import DOMPurify from "dompurify";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Badge } from "@/components/ui/badge";
 import { Problem } from "./types";
 
@@ -38,12 +39,11 @@ export function DescriptionTab({ problem }: DescriptionTabProps) {
       </div>
 
       {/* Problem Content */}
-      <div
-        className="custom-problem-html text-zinc-300"
-        dangerouslySetInnerHTML={{
-          __html: DOMPurify.sanitize(problem.content),
-        }}
-      />
+      <div className="custom-problem-html text-zinc-300 prose prose-invert prose-sm max-w-none">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {problem.content}
+        </ReactMarkdown>
+      </div>
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
 } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProblemsPage } from "@/features/problems/pages/problems-page";
+import { ProfilePage } from "@/features/users/pages/profile-page";
 import { InterviewRoom } from "@/features/interview/pages/interview-room";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { GoogleCallbackPage } from "@/features/auth/pages/google-callback-page";
@@ -58,6 +59,7 @@ const router = createBrowserRouter([
     element: <DashboardLayout />,
     children: [
       { path: "problems", element: <ProblemsPage /> },
+      { path: "profile", element: <ProfilePage /> },
       { path: "dashboard", element: <Navigate to="/problems" replace /> },
     ],
   },

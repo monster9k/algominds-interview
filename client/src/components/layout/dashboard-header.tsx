@@ -1,21 +1,11 @@
 import { Bell, ChevronDown, Menu } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "@/components/ui/logo";
 import { DashboardSidebar } from "./dashboard-sidebar";
-import { useAuthStore } from "@/stores/use-auth-store"; // Lấy thông tin user
-import { useLogout } from "@/features/auth/hooks/use-auth"; // Import Hook Logout
+import { UserNavMenu } from "./user-nav-menu";
 
 const navLinks = [
   { label: "Problems", href: "/problems" },
@@ -26,9 +16,6 @@ const navLinks = [
 ];
 
 export function DashboardHeader() {
-  const user = useAuthStore((state) => state.user); // Lấy user từ Store để hiện tên thật
-  const logout = useLogout(); // Lấy hàm logout
-  const navigate = useNavigate();
   const location = useLocation();
 
   return (
@@ -82,58 +69,7 @@ export function DashboardHeader() {
           <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary animate-pulse" />
         </Button>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="relative h-9 w-9 rounded-full ring-2 ring-primary/20 hover:ring-primary/50 transition-all"
-            >
-              <Avatar className="h-9 w-9">
-                <AvatarImage
-                  src={user?.avatarUrl || "https://github.com/shadcn.png"}
-                  alt={user?.name || "User"}
-                />
-                <AvatarFallback className="bg-primary/10 text-primary">
-                  {user?.name?.charAt(0).toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {user?.name || "Khách"}
-                </p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {user?.email || "Chưa đăng nhập"}
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => navigate("/profile")}
-            >
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => navigate("/settings")}
-            >
-              Settings
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-
-            {/* GẮN SỰ KIỆN LOGOUT TẠI ĐÂY */}
-            <DropdownMenuItem
-              className="text-red-500 focus:text-red-500 cursor-pointer"
-              onClick={logout}
-            >
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <UserNavMenu />
       </div>
     </header>
   );

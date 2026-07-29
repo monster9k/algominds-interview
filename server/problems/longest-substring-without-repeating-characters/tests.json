@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"s\":\"abcabcbb\"}",
+    "expected": 3,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"bbbbb\"}",
+    "expected": 1,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"pwwkew\"}",
+    "expected": 3,
+    "isHidden": true
+  }
+]

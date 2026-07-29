@@ -1,0 +1,8 @@
+{
+  "title": "Product of Array Except Self",
+  "difficulty": "MEDIUM",
+  "functionName": "productExceptSelf",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Array", "Prefix Sum"]
+}

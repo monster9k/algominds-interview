@@ -1,0 +1,8 @@
+{
+  "title": "Container With Most Water",
+  "difficulty": "MEDIUM",
+  "functionName": "maxArea",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Array", "Two Pointers"]
+}

@@ -1,5 +1,6 @@
-import { Bell, Menu } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Bell, ChevronDown, Menu } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -16,13 +17,22 @@ import { DashboardSidebar } from "./dashboard-sidebar";
 import { useAuthStore } from "@/stores/use-auth-store"; // Lấy thông tin user
 import { useLogout } from "@/features/auth/hooks/use-auth"; // Import Hook Logout
 
+const navLinks = [
+  { label: "Problems", href: "/problems" },
+  { label: "Contest", href: "#" },
+  { label: "Discuss", href: "#" },
+  { label: "Interview", href: "#", hasDropdown: true },
+  { label: "Store", href: "#", hasDropdown: true },
+];
+
 export function DashboardHeader() {
   const user = useAuthStore((state) => state.user); // Lấy user từ Store để hiện tên thật
   const logout = useLogout(); // Lấy hàm logout
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
-    <header className="sticky top-0 z-40 h-16 bg-background/80 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between px-6">
+    <header className="sticky top-0 z-40 h-14 shrink-0 bg-background/80 backdrop-blur-md border-b border-zinc-800 flex items-stretch px-4 md:px-6">
       <div className="flex items-center gap-4 lg:hidden">
         <Sheet>
           <SheetTrigger asChild>
@@ -39,6 +49,28 @@ export function DashboardHeader() {
         </Sheet>
         <Logo size="sm" iconOnly />
       </div>
+
+      <nav className="hidden md:flex items-stretch gap-6 md:ml-2 lg:ml-0">
+        {navLinks.map((link) => {
+          const isActive =
+            link.href !== "#" && location.pathname.startsWith(link.href);
+          return (
+            <Link
+              key={link.label}
+              to={link.href}
+              className={cn(
+                "flex items-center gap-1 border-b-2 text-sm font-medium transition-colors",
+                isActive
+                  ? "border-foreground text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {link.label}
+              {link.hasDropdown && <ChevronDown className="h-3.5 w-3.5" />}
+            </Link>
+          );
+        })}
+      </nav>
 
       <div className="ml-auto flex items-center gap-4">
         <Button
@@ -85,7 +117,12 @@ export function DashboardHeader() {
             >
               Profile
             </DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => navigate("/settings")}
+            >
+              Settings
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
 
             {/* GẮN SỰ KIỆN LOGOUT TẠI ĐÂY */}

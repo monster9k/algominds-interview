@@ -15,6 +15,7 @@ import {
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProblemsPage } from "@/features/problems/pages/problems-page";
 import { ProfilePage } from "@/features/users/pages/profile-page";
+import { SettingsPage } from "@/features/settings/pages/settings-page";
 import { InterviewRoom } from "@/features/interview/pages/interview-room";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { GoogleCallbackPage } from "@/features/auth/pages/google-callback-page";
@@ -60,6 +61,7 @@ const router = createBrowserRouter([
     children: [
       { path: "problems", element: <ProblemsPage /> },
       { path: "profile", element: <ProfilePage /> },
+      { path: "settings", element: <SettingsPage /> },
       { path: "dashboard", element: <Navigate to="/problems" replace /> },
     ],
   },

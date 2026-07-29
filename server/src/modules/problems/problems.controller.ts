@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ProblemsService } from './problems.service';
 import { CreateProblemDto } from './dto/create-problem.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -20,13 +28,16 @@ export class ProblemsController {
     return this.problemsService.create(createProblemDto);
   }
 
-  // GET /problems
+  // GET /problems?difficulty=EASY&tags=Array&tags=Hash Table
   @Get()
   @UseGuards(OptionalJwtAuthGuard) // Chỉ cho user đã đăng nhập mới xem được danh sách bài tập
-  findAll(@CurrentUser() user: any) {
+  findAll(
+    @CurrentUser() user: any,
+    @Query('difficulty') difficulty?: string,
+    @Query('tags') tags?: string | string[],
+  ) {
     const userId = user?.userId; // Nếu user là guest (chưa đăng nhập), user sẽ là null, nên userId cũng sẽ là undefined
-    // console.log('User ID from JWT:', user.userId); // Kiểm tra xem có lấy được userId không
-    return this.problemsService.findAll(userId);
+    return this.problemsService.findAll(userId, { difficulty, tags });
   }
 
   // GET /problems/two-sum

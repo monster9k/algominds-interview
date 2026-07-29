@@ -23,3 +23,9 @@ export interface Problem {
   tags: ProblemTagResponse[];
   hasSolution: boolean;
 }
+
+// Params dùng để filter danh sách problems (query params gửi lên GET /problems)
+export interface ProblemFilterParams {
+  difficulty?: Difficulty;
+  tags?: string[];
+}

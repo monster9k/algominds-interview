@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, Tags } from "lucide-react";
+import { Search, Tags } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -8,34 +8,71 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Difficulty } from "../types";
 
-const topics = [
-  "All Topics",
-  "Algorithms",
-  "Database",
-  "Shell",
-  "Concurrency",
-  "JavaScript",
+// Tag taxonomy hiện có trong bộ đề đã seed (server/problems/*)
+const TOPICS = [
+  "Array",
+  "String",
+  "Hash Table",
+  "Stack",
+  "Binary Search",
+  "Dynamic Programming",
+  "Math",
+  "Prefix Sum",
+  "Two Pointers",
+  "Sliding Window",
 ];
 
-export function ProblemFilters() {
+const ALL_DIFFICULTIES = "ALL";
+
+interface ProblemFiltersProps {
+  difficulty?: Difficulty;
+  onDifficultyChange: (difficulty?: Difficulty) => void;
+  selectedTags: string[];
+  onToggleTag: (tag: string) => void;
+  onClearTags: () => void;
+}
+
+export function ProblemFilters({
+  difficulty,
+  onDifficultyChange,
+  selectedTags,
+  onToggleTag,
+  onClearTags,
+}: ProblemFiltersProps) {
   return (
     <div className="flex flex-col gap-4">
       {/* Top Row: Topics Pills */}
       <div className="flex flex-wrap gap-2">
-        {topics.map((topic, i) => (
-          <Button
-            key={topic}
-            variant={i === 0 ? "secondary" : "ghost"}
-            className={`rounded-full h-8 text-xs font-medium ${
-              i === 0
-                ? "bg-zinc-800 text-white hover:bg-zinc-700"
-                : "bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-            }`}
-          >
-            {topic}
-          </Button>
-        ))}
+        <Button
+          variant={selectedTags.length === 0 ? "secondary" : "ghost"}
+          className={`rounded-full h-8 text-xs font-medium ${
+            selectedTags.length === 0
+              ? "bg-zinc-800 text-white hover:bg-zinc-700"
+              : "bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+          }`}
+          onClick={onClearTags}
+        >
+          All Topics
+        </Button>
+        {TOPICS.map((topic) => {
+          const isActive = selectedTags.includes(topic);
+          return (
+            <Button
+              key={topic}
+              variant={isActive ? "secondary" : "ghost"}
+              className={`rounded-full h-8 text-xs font-medium ${
+                isActive
+                  ? "bg-zinc-800 text-white hover:bg-zinc-700"
+                  : "bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+              }`}
+              onClick={() => onToggleTag(topic)}
+            >
+              {topic}
+            </Button>
+          );
+        })}
       </div>
 
       {/* Bottom Row: Search & Dropdowns */}
@@ -48,18 +85,26 @@ export function ProblemFilters() {
           />
         </div>
 
-        <Select>
+        <Select
+          value={difficulty ?? ALL_DIFFICULTIES}
+          onValueChange={(value) =>
+            onDifficultyChange(
+              value === ALL_DIFFICULTIES ? undefined : (value as Difficulty),
+            )
+          }
+        >
           <SelectTrigger className="w-[130px] h-10 bg-zinc-900 border-zinc-800 text-zinc-400 rounded-lg">
             <SelectValue placeholder="Difficulty" />
           </SelectTrigger>
           <SelectContent className="bg-zinc-900 border-zinc-800">
-            <SelectItem value="easy" className="text-emerald-500">
+            <SelectItem value={ALL_DIFFICULTIES}>All</SelectItem>
+            <SelectItem value="EASY" className="text-emerald-500">
               Easy
             </SelectItem>
-            <SelectItem value="medium" className="text-yellow-500">
+            <SelectItem value="MEDIUM" className="text-yellow-500">
               Medium
             </SelectItem>
-            <SelectItem value="hard" className="text-red-500">
+            <SelectItem value="HARD" className="text-red-500">
               Hard
             </SelectItem>
           </SelectContent>

@@ -17,11 +17,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useProblems } from "../hooks/use-problems";
-import { Difficulty } from "../types";
+import { Difficulty, ProblemFilterParams } from "../types";
 
-export function ProblemTable() {
+interface ProblemTableProps {
+  filters: ProblemFilterParams;
+}
+
+export function ProblemTable({ filters }: ProblemTableProps) {
   // 1. Lấy dữ liệu thật từ Hook
-  const { data: problems, isLoading, isError } = useProblems();
+  const { data: problems, isLoading, isError } = useProblems(filters);
   const getDifficultyColor = (diff: Difficulty) => {
     switch (diff) {
       case "EASY":

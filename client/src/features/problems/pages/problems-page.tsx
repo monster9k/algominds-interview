@@ -1,10 +1,21 @@
+import { useState } from "react";
 import { ProblemFilters } from "../components/problem-filters";
 import { ProblemTable } from "../components/problem-table";
 import { StudyPlanWidget } from "../components/study-plan-widget";
 import { CalendarWidget } from "../components/calendar-widget";
 import { Card } from "@/components/ui/card";
+import { Difficulty } from "../types";
 
 export function ProblemsPage() {
+  const [difficulty, setDifficulty] = useState<Difficulty | undefined>();
+  const [tags, setTags] = useState<string[]>([]);
+
+  const handleToggleTag = (tag: string) => {
+    setTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  };
+
   return (
     <div className="container mx-auto max-w-7xl pb-10">
       {/* 1. Widgets Area (Top Banner) */}
@@ -13,8 +24,14 @@ export function ProblemsPage() {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* 2. Main Content (Filters + Table) - Chiếm 70% */}
         <div className="flex-1 min-w-0 space-y-6">
-          <ProblemFilters />
-          <ProblemTable />
+          <ProblemFilters
+            difficulty={difficulty}
+            onDifficultyChange={setDifficulty}
+            selectedTags={tags}
+            onToggleTag={handleToggleTag}
+            onClearTags={() => setTags([])}
+          />
+          <ProblemTable filters={{ difficulty, tags }} />
         </div>
 
         {/* 3. Right Sidebar (Calendar & Progress) - Chiếm 30% */}

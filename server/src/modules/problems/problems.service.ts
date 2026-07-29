@@ -1,7 +1,13 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import { Difficulty, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProblemDto } from './dto/create-problem.dto';
 import slugify from 'slugify';
+
+export interface FindAllFilters {
+  difficulty?: string;
+  tags?: string | string[];
+}
 
 @Injectable()
 export class ProblemsService {
@@ -51,8 +57,19 @@ export class ProblemsService {
   }
 
   //LẤY DANH SÁCH (Có phân trang & lọc)
-  async findAll(userId?: string) {
+  async findAll(userId?: string, filters?: FindAllFilters) {
+    const difficulty = this.parseDifficulty(filters?.difficulty);
+    const tags = this.normalizeTags(filters?.tags);
+
+    const where: Prisma.ProblemWhereInput = {
+      ...(difficulty && { difficulty }),
+      ...(tags.length > 0 && {
+        tags: { some: { tag: { name: { in: tags } } } },
+      }),
+    };
+
     const problems = await this.prisma.problem.findMany({
+      where,
       select: {
         id: true,
         displayId: true,
@@ -133,5 +150,21 @@ export class ProblemsService {
       },
     });
     return problem;
+  }
+
+  // Chuẩn hoá query param "difficulty" (bỏ qua nếu không hợp lệ)
+  private parseDifficulty(value?: string): Difficulty | undefined {
+    if (!value) return undefined;
+    const normalized = value.toUpperCase();
+    const isValid = (Object.values(Difficulty) as string[]).includes(
+      normalized,
+    );
+    return isValid ? (normalized as Difficulty) : undefined;
+  }
+
+  // Chuẩn hoá query param "tags": có thể là string đơn hoặc mảng string
+  private normalizeTags(value?: string | string[]): string[] {
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
   }
 }

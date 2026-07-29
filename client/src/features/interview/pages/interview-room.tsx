@@ -299,15 +299,24 @@ export function InterviewRoom() {
             />
           </ResizablePanel>
 
-          <ResizableHandle className="bg-zinc-900 w-1.5 border-l border-r border-zinc-800 hover:bg-rose-500/50 transition-colors" />
+          <ResizableHandle
+            orientation="horizontal"
+            withHandle
+            className="bg-zinc-900 w-1.5 border-l border-r border-zinc-800 hover:bg-rose-500/50 transition-colors"
+          />
 
           {/* PHẢI: EDITOR & CONSOLE */}
-          <ResizablePanel defaultSize={60} minSize={30}>
+          <ResizablePanel
+            defaultSize={60}
+            minSize={30}
+            className="flex flex-col min-h-0 overflow-hidden"
+          >
             <ResizablePanelGroup orientation="vertical">
               {/* EDITOR PANEL */}
               <ResizablePanel
                 defaultSize={60}
                 minSize={20}
+                maxSize={75}
                 className="bg-zinc-950 rounded-tr-lg flex flex-col min-h-0 overflow-hidden"
               >
                 <CodeEditorPanel
@@ -320,12 +329,17 @@ export function InterviewRoom() {
                 />
               </ResizablePanel>
 
-              <ResizableHandle className="bg-zinc-900 h-1.5 border-t border-b border-zinc-800 hover:bg-rose-500/50 transition-colors" />
+              <ResizableHandle
+                orientation="vertical"
+                withHandle
+                className="bg-zinc-900 h-1.5 border-t border-b border-zinc-800 hover:bg-rose-500/50 transition-colors"
+              />
 
               {/* CONSOLE PANEL */}
               <ResizablePanel
                 defaultSize={40}
                 minSize={10}
+                maxSize={60}
                 className="bg-zinc-950 rounded-br-lg flex flex-col min-h-0 overflow-hidden"
               >
                 <ConsolePanel

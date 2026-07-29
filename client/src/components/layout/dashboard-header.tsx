@@ -1,4 +1,5 @@
 import { Bell, Menu } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -18,6 +19,7 @@ import { useLogout } from "@/features/auth/hooks/use-auth"; // Import Hook Logou
 export function DashboardHeader() {
   const user = useAuthStore((state) => state.user); // Lấy user từ Store để hiện tên thật
   const logout = useLogout(); // Lấy hàm logout
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-40 h-16 bg-background/80 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between px-6">
@@ -77,7 +79,12 @@ export function DashboardHeader() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => navigate("/profile")}
+            >
+              Profile
+            </DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
 

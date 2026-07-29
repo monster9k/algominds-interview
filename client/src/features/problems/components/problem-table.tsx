@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   PlayCircle,
   CheckCircle2,
@@ -25,7 +25,11 @@ interface ProblemTableProps {
 
 export function ProblemTable({ filters }: ProblemTableProps) {
   // 1. Lấy dữ liệu thật từ Hook
-  const { data: problems, isLoading, isError } = useProblems(filters);
+  // isPending (chứ không phải isLoading) vì query bị `enabled: false` trong
+  // lúc chờ auth hydrate xong - isLoading sẽ là false trong lúc đó dù data
+  // vẫn chưa có, khiến bảng render `problems.map` trên undefined.
+  const { data: problems, isPending, isError } = useProblems(filters);
+  const navigate = useNavigate();
   const getDifficultyColor = (diff: Difficulty) => {
     switch (diff) {
       case "EASY":
@@ -43,7 +47,7 @@ export function ProblemTable({ filters }: ProblemTableProps) {
   const formatDifficulty = (diff: string) => {
     return diff.charAt(0) + diff.slice(1).toLowerCase();
   };
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="flex h-64 items-center justify-center border border-zinc-800 rounded-xl bg-zinc-900/40">
         <div className="flex flex-col items-center gap-2">
@@ -82,7 +86,7 @@ export function ProblemTable({ filters }: ProblemTableProps) {
               </TableCell>
             </TableRow>
           ) : (
-            problems.map((problem, index) => (
+            problems.map((problem) => (
               <TableRow
                 key={problem.id}
                 className="border-zinc-800 hover:bg-zinc-900 transition-colors group"
@@ -105,7 +109,7 @@ export function ProblemTable({ filters }: ProblemTableProps) {
                   <Link to={`/interview/${problem.slug}`} className="block">
                     <div className="flex flex-col gap-1">
                       <div className="font-medium text-zinc-300 group-hover:text-primary transition-colors flex items-center gap-2">
-                        {index + 1}.{problem.title}
+                        {problem.displayId}. {problem.title}
                       </div>
                       {/* Hiển thị Tags lấy từ Relation */}
                       {problem.tags && problem.tags.length > 0 && (
@@ -137,6 +141,7 @@ export function ProblemTable({ filters }: ProblemTableProps) {
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8 text-zinc-500 hover:text-blue-400"
+                      onClick={() => navigate(`/interview/${problem.slug}`)}
                     >
                       <FileText className="h-4 w-4" />
                     </Button>

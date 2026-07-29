@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Tags } from "lucide-react";
+import { ArrowUpDown, Search, Tags } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Difficulty, ProblemStatus } from "../types";
+import { Difficulty, ProblemStatus, SortDirection } from "../types";
 
 // Tag taxonomy hiện có trong bộ đề đã seed (server/problems/*)
 const TOPICS = [
@@ -38,6 +38,8 @@ interface ProblemFiltersProps {
   status?: NonNullable<ProblemStatus>;
   onStatusChange: (status?: NonNullable<ProblemStatus>) => void;
   isAuthenticated?: boolean;
+  sortDirection?: SortDirection;
+  onToggleSortDirection: () => void;
 }
 
 export function ProblemFilters({
@@ -51,6 +53,8 @@ export function ProblemFilters({
   status,
   onStatusChange,
   isAuthenticated = true,
+  sortDirection = "asc",
+  onToggleSortDirection,
 }: ProblemFiltersProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -58,10 +62,10 @@ export function ProblemFilters({
       <div className="flex flex-wrap gap-2">
         <Button
           variant={selectedTags.length === 0 ? "secondary" : "ghost"}
-          className={`rounded-full h-8 text-xs font-medium ${
+          className={`rounded-full h-8 text-xs font-medium border ${
             selectedTags.length === 0
-              ? "bg-zinc-800 text-white hover:bg-zinc-700"
-              : "bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+              ? "bg-white text-zinc-950 border-white hover:bg-zinc-200"
+              : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-200"
           }`}
           onClick={onClearTags}
         >
@@ -73,10 +77,10 @@ export function ProblemFilters({
             <Button
               key={topic}
               variant={isActive ? "secondary" : "ghost"}
-              className={`rounded-full h-8 text-xs font-medium ${
+              className={`rounded-full h-8 text-xs font-medium border ${
                 isActive
-                  ? "bg-zinc-800 text-white hover:bg-zinc-700"
-                  : "bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                  ? "bg-zinc-800 text-white border-zinc-700 hover:bg-zinc-700"
+                  : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-200"
               }`}
               onClick={() => onToggleTag(topic)}
             >
@@ -87,16 +91,30 @@ export function ProblemFilters({
       </div>
 
       {/* Bottom Row: Search & Dropdowns */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
           <Input
             placeholder="Search questions..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 h-10 bg-zinc-900 border-zinc-800 focus:border-zinc-700 text-zinc-200 rounded-lg"
+            className="pl-9 h-9 bg-zinc-900 border-zinc-800 focus:border-zinc-700 text-zinc-200 rounded-md"
           />
         </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 text-zinc-400 hover:bg-zinc-800 rounded-md shrink-0"
+          title={
+            sortDirection === "asc"
+              ? "Sorting ascending (1 → 9)"
+              : "Sorting descending (9 → 1)"
+          }
+          onClick={onToggleSortDirection}
+        >
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
 
         <Select
           value={difficulty ?? ALL_DIFFICULTIES}
@@ -106,12 +124,12 @@ export function ProblemFilters({
             )
           }
         >
-          <SelectTrigger className="w-[130px] h-10 bg-zinc-900 border-zinc-800 text-zinc-400 rounded-lg">
+          <SelectTrigger className="w-[120px] h-9 bg-zinc-900 border-zinc-800 text-zinc-400 rounded-md">
             <SelectValue placeholder="Difficulty" />
           </SelectTrigger>
           <SelectContent className="bg-zinc-900 border-zinc-800">
             <SelectItem value={ALL_DIFFICULTIES}>All</SelectItem>
-            <SelectItem value="EASY" className="text-emerald-500">
+            <SelectItem value="EASY" className="text-teal-500">
               Easy
             </SelectItem>
             <SelectItem value="MEDIUM" className="text-yellow-500">
@@ -135,7 +153,7 @@ export function ProblemFilters({
           }
         >
           <SelectTrigger
-            className="w-[130px] h-10 bg-zinc-900 border-zinc-800 text-zinc-400 rounded-lg disabled:opacity-50"
+            className="w-[120px] h-9 bg-zinc-900 border-zinc-800 text-zinc-400 rounded-md disabled:opacity-50"
             title={
               isAuthenticated
                 ? undefined
@@ -155,7 +173,7 @@ export function ProblemFilters({
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 text-zinc-400 hover:bg-zinc-800 rounded-lg"
+          className="h-9 w-9 text-zinc-400 hover:bg-zinc-800 rounded-md"
         >
           <Tags className="h-4 w-4" />
         </Button>

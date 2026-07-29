@@ -11,6 +11,7 @@ export interface FindAllFilters {
   tags?: string | string[];
   search?: string;
   status?: string;
+  sortDirection?: string;
 }
 
 @Injectable()
@@ -67,6 +68,7 @@ export class ProblemsService {
     const search = filters?.search?.trim();
     // Status phụ thuộc vào session/submission của user -> chỉ áp dụng khi đã đăng nhập
     const statusFilter = userId ? this.parseStatus(filters?.status) : undefined;
+    const sortDirection = this.parseSortDirection(filters?.sortDirection);
 
     const where: Prisma.ProblemWhereInput = {
       ...(difficulty && { difficulty }),
@@ -100,7 +102,7 @@ export class ProblemsService {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { displayId: sortDirection || 'asc' },
     });
 
     const enriched = problems.map((p) => {
@@ -197,5 +199,14 @@ export class ProblemsService {
       ATTEMPTED: 'Attempted',
     };
     return map[value.toUpperCase()];
+  }
+
+  // Chuẩn hoá query param "sortDirection" ('asc'/'desc', không phân biệt hoa thường)
+  private parseSortDirection(value?: string): 'asc' | 'desc' | undefined {
+    if (!value) return undefined;
+    const normalized = value.toLowerCase();
+    return normalized === 'asc' || normalized === 'desc'
+      ? normalized
+      : undefined;
   }
 }

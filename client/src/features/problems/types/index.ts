@@ -1,5 +1,6 @@
 export type Difficulty = "EASY" | "MEDIUM" | "HARD";
 export type ProblemStatus = "Solved" | "Attempted" | "Todo" | null;
+export type SortDirection = "asc" | "desc";
 
 //Type cho Tag (do Backend trả về include: { tag: true })
 export interface Tag {
@@ -30,4 +31,5 @@ export interface ProblemFilterParams {
   tags?: string[];
   search?: string;
   status?: NonNullable<ProblemStatus>;
+  sortDirection?: SortDirection;
 }

@@ -1,0 +1,22 @@
+[
+  {
+    "input": "{\"s\":\"()\"}",
+    "expected": true,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"()[]{}\"}",
+    "expected": true,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"(]\"}",
+    "expected": false,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"([)]\"}",
+    "expected": false,
+    "isHidden": true
+  }
+]

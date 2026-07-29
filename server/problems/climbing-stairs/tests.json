@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"n\":2}",
+    "expected": 2,
+    "isHidden": false
+  },
+  {
+    "input": "{\"n\":3}",
+    "expected": 3,
+    "isHidden": false
+  },
+  {
+    "input": "{\"n\":5}",
+    "expected": 8,
+    "isHidden": true
+  }
+]

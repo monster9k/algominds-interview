@@ -1,7 +1,17 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import { Difficulty, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProblemDto } from './dto/create-problem.dto';
 import slugify from 'slugify';
+
+export type ProblemStatus = 'Solved' | 'Attempted' | 'Todo';
+
+export interface FindAllFilters {
+  difficulty?: string;
+  tags?: string | string[];
+  search?: string;
+  status?: string;
+}
 
 @Injectable()
 export class ProblemsService {
@@ -51,8 +61,25 @@ export class ProblemsService {
   }
 
   //LẤY DANH SÁCH (Có phân trang & lọc)
-  async findAll(userId?: string) {
+  async findAll(userId?: string, filters?: FindAllFilters) {
+    const difficulty = this.parseDifficulty(filters?.difficulty);
+    const tags = this.normalizeTags(filters?.tags);
+    const search = filters?.search?.trim();
+    // Status phụ thuộc vào session/submission của user -> chỉ áp dụng khi đã đăng nhập
+    const statusFilter = userId ? this.parseStatus(filters?.status) : undefined;
+
+    const where: Prisma.ProblemWhereInput = {
+      ...(difficulty && { difficulty }),
+      ...(tags.length > 0 && {
+        tags: { some: { tag: { name: { in: tags } } } },
+      }),
+      ...(search && {
+        title: { contains: search, mode: 'insensitive' },
+      }),
+    };
+
     const problems = await this.prisma.problem.findMany({
+      where,
       select: {
         id: true,
         displayId: true,
@@ -63,7 +90,9 @@ export class ProblemsService {
         solution: true,
         tags: { select: { tag: true } }, // Chỉ lấy tên tag để hiển thị list
         sessions: {
-          where: userId ? { userId } : undefined,
+          // userId rỗng (guest) sẽ không khớp với bất kỳ session nào (id UUID hợp lệ)
+          // -> tránh kéo session của TẤT CẢ user về khi chưa đăng nhập
+          where: { userId: userId ?? '' },
           select: {
             submissions: {
               select: { status: true },
@@ -74,8 +103,8 @@ export class ProblemsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return problems.map((p) => {
-      let status: string | null = null;
+    const enriched = problems.map((p) => {
+      let status: ProblemStatus | null = null;
 
       if (userId) {
         status = 'Todo'; // Mặc định là Todo nếu user đã đăng nhập nhưng chưa có session nào với bài tập này
@@ -103,6 +132,14 @@ export class ProblemsService {
         status,
       };
     });
+
+    // Status phụ thuộc vào dữ liệu đã enrich (aggregate submissions) nên lọc sau khi map,
+    // thay vì lọc trực tiếp ở Prisma `where`.
+    if (statusFilter) {
+      return enriched.filter((p) => p.status === statusFilter);
+    }
+
+    return enriched;
   }
   // LẤY CHI TIẾT 1 BÀI (Theo Slug)
   async findOne(slug: string) {
@@ -133,5 +170,32 @@ export class ProblemsService {
       },
     });
     return problem;
+  }
+
+  // Chuẩn hoá query param "difficulty" (bỏ qua nếu không hợp lệ)
+  private parseDifficulty(value?: string): Difficulty | undefined {
+    if (!value) return undefined;
+    const normalized = value.toUpperCase();
+    const isValid = (Object.values(Difficulty) as string[]).includes(
+      normalized,
+    );
+    return isValid ? (normalized as Difficulty) : undefined;
+  }
+
+  // Chuẩn hoá query param "tags": có thể là string đơn hoặc mảng string
+  private normalizeTags(value?: string | string[]): string[] {
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+  }
+
+  // Chuẩn hoá query param "status" (TODO/SOLVED/ATTEMPTED, không phân biệt hoa thường)
+  private parseStatus(value?: string): ProblemStatus | undefined {
+    if (!value) return undefined;
+    const map: Record<string, ProblemStatus> = {
+      TODO: 'Todo',
+      SOLVED: 'Solved',
+      ATTEMPTED: 'Attempted',
+    };
+    return map[value.toUpperCase()];
   }
 }

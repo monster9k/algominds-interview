@@ -1,10 +1,30 @@
+import { useState } from "react";
 import { ProblemFilters } from "../components/problem-filters";
 import { ProblemTable } from "../components/problem-table";
 import { StudyPlanWidget } from "../components/study-plan-widget";
 import { CalendarWidget } from "../components/calendar-widget";
 import { Card } from "@/components/ui/card";
+import { Difficulty, ProblemStatus } from "../types";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 export function ProblemsPage() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  const [difficulty, setDifficulty] = useState<Difficulty | undefined>();
+  const [tags, setTags] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<NonNullable<ProblemStatus>>();
+
+  // Trì hoãn 400ms để tránh gọi API liên tục khi user đang gõ
+  const debouncedSearch = useDebounce(search, 400);
+
+  const handleToggleTag = (tag: string) => {
+    setTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  };
+
   return (
     <div className="container mx-auto max-w-7xl pb-10">
       {/* 1. Widgets Area (Top Banner) */}
@@ -13,8 +33,26 @@ export function ProblemsPage() {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* 2. Main Content (Filters + Table) - Chiếm 70% */}
         <div className="flex-1 min-w-0 space-y-6">
-          <ProblemFilters />
-          <ProblemTable />
+          <ProblemFilters
+            difficulty={difficulty}
+            onDifficultyChange={setDifficulty}
+            selectedTags={tags}
+            onToggleTag={handleToggleTag}
+            onClearTags={() => setTags([])}
+            search={search}
+            onSearchChange={setSearch}
+            status={isAuthenticated ? status : undefined}
+            onStatusChange={setStatus}
+            isAuthenticated={isAuthenticated}
+          />
+          <ProblemTable
+            filters={{
+              difficulty,
+              tags,
+              search: debouncedSearch,
+              status: isAuthenticated ? status : undefined,
+            }}
+          />
         </div>
 
         {/* 3. Right Sidebar (Calendar & Progress) - Chiếm 30% */}

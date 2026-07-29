@@ -28,7 +28,7 @@ export class ProblemsController {
     return this.problemsService.create(createProblemDto);
   }
 
-  // GET /problems?difficulty=EASY&tags=Array&tags=Hash Table&search=sum&status=SOLVED
+  // GET /problems?difficulty=EASY&tags=Array&tags=Hash Table&search=sum&status=SOLVED&sortDirection=asc
   @Get()
   @UseGuards(OptionalJwtAuthGuard) // Chỉ cho user đã đăng nhập mới xem được danh sách bài tập
   findAll(
@@ -37,6 +37,7 @@ export class ProblemsController {
     @Query('tags') tags?: string | string[],
     @Query('search') search?: string,
     @Query('status') status?: string,
+    @Query('sortDirection') sortDirection?: string,
   ) {
     const userId = user?.userId; // Nếu user là guest (chưa đăng nhập), user sẽ là null, nên userId cũng sẽ là undefined
     return this.problemsService.findAll(userId, {
@@ -44,6 +45,7 @@ export class ProblemsController {
       tags,
       search,
       status,
+      sortDirection,
     });
   }
 

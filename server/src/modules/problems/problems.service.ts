@@ -80,7 +80,9 @@ export class ProblemsService {
         solution: true,
         tags: { select: { tag: true } }, // Chỉ lấy tên tag để hiển thị list
         sessions: {
-          where: userId ? { userId } : undefined,
+          // userId rỗng (guest) sẽ không khớp với bất kỳ session nào (id UUID hợp lệ)
+          // -> tránh kéo session của TẤT CẢ user về khi chưa đăng nhập
+          where: { userId: userId ?? '' },
           select: {
             submissions: {
               select: { status: true },

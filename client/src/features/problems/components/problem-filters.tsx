@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Difficulty } from "../types";
+import { Difficulty, ProblemStatus } from "../types";
 
 // Tag taxonomy hiện có trong bộ đề đã seed (server/problems/*)
 const TOPICS = [
@@ -25,6 +25,7 @@ const TOPICS = [
 ];
 
 const ALL_DIFFICULTIES = "ALL";
+const ALL_STATUSES = "ALL";
 
 interface ProblemFiltersProps {
   difficulty?: Difficulty;
@@ -32,6 +33,11 @@ interface ProblemFiltersProps {
   selectedTags: string[];
   onToggleTag: (tag: string) => void;
   onClearTags: () => void;
+  search: string;
+  onSearchChange: (search: string) => void;
+  status?: NonNullable<ProblemStatus>;
+  onStatusChange: (status?: NonNullable<ProblemStatus>) => void;
+  isAuthenticated?: boolean;
 }
 
 export function ProblemFilters({
@@ -40,6 +46,11 @@ export function ProblemFilters({
   selectedTags,
   onToggleTag,
   onClearTags,
+  search,
+  onSearchChange,
+  status,
+  onStatusChange,
+  isAuthenticated = true,
 }: ProblemFiltersProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -81,6 +92,8 @@ export function ProblemFilters({
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
           <Input
             placeholder="Search questions..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
             className="pl-9 h-10 bg-zinc-900 border-zinc-800 focus:border-zinc-700 text-zinc-200 rounded-lg"
           />
         </div>
@@ -110,14 +123,32 @@ export function ProblemFilters({
           </SelectContent>
         </Select>
 
-        <Select>
-          <SelectTrigger className="w-[130px] h-10 bg-zinc-900 border-zinc-800 text-zinc-400 rounded-lg">
+        <Select
+          value={status ?? ALL_STATUSES}
+          disabled={!isAuthenticated}
+          onValueChange={(value) =>
+            onStatusChange(
+              value === ALL_STATUSES
+                ? undefined
+                : (value as NonNullable<ProblemStatus>),
+            )
+          }
+        >
+          <SelectTrigger
+            className="w-[130px] h-10 bg-zinc-900 border-zinc-800 text-zinc-400 rounded-lg disabled:opacity-50"
+            title={
+              isAuthenticated
+                ? undefined
+                : "Đăng nhập để lọc theo trạng thái"
+            }
+          >
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent className="bg-zinc-900 border-zinc-800">
-            <SelectItem value="todo">Todo</SelectItem>
-            <SelectItem value="solved">Solved</SelectItem>
-            <SelectItem value="attempted">Attempted</SelectItem>
+            <SelectItem value={ALL_STATUSES}>All</SelectItem>
+            <SelectItem value="Todo">Todo</SelectItem>
+            <SelectItem value="Solved">Solved</SelectItem>
+            <SelectItem value="Attempted">Attempted</SelectItem>
           </SelectContent>
         </Select>
 

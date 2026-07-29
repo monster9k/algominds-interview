@@ -8,6 +8,8 @@ export const problemsApi = {
       params: {
         difficulty: filters?.difficulty,
         tags: filters?.tags?.length ? filters.tags : undefined,
+        search: filters?.search?.trim() || undefined,
+        status: filters?.status,
       },
       // tags=Array&tags=Stack thay vì tags[]=Array&tags[]=Stack
       paramsSerializer: { indexes: null },

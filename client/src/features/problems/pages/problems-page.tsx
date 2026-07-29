@@ -4,11 +4,20 @@ import { ProblemTable } from "../components/problem-table";
 import { StudyPlanWidget } from "../components/study-plan-widget";
 import { CalendarWidget } from "../components/calendar-widget";
 import { Card } from "@/components/ui/card";
-import { Difficulty } from "../types";
+import { Difficulty, ProblemStatus } from "../types";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 export function ProblemsPage() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   const [difficulty, setDifficulty] = useState<Difficulty | undefined>();
   const [tags, setTags] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<NonNullable<ProblemStatus>>();
+
+  // Trì hoãn 400ms để tránh gọi API liên tục khi user đang gõ
+  const debouncedSearch = useDebounce(search, 400);
 
   const handleToggleTag = (tag: string) => {
     setTags((prev) =>
@@ -30,8 +39,20 @@ export function ProblemsPage() {
             selectedTags={tags}
             onToggleTag={handleToggleTag}
             onClearTags={() => setTags([])}
+            search={search}
+            onSearchChange={setSearch}
+            status={isAuthenticated ? status : undefined}
+            onStatusChange={setStatus}
+            isAuthenticated={isAuthenticated}
           />
-          <ProblemTable filters={{ difficulty, tags }} />
+          <ProblemTable
+            filters={{
+              difficulty,
+              tags,
+              search: debouncedSearch,
+              status: isAuthenticated ? status : undefined,
+            }}
+          />
         </div>
 
         {/* 3. Right Sidebar (Calendar & Progress) - Chiếm 30% */}

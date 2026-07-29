@@ -28,4 +28,6 @@ export interface Problem {
 export interface ProblemFilterParams {
   difficulty?: Difficulty;
   tags?: string[];
+  search?: string;
+  status?: NonNullable<ProblemStatus>;
 }

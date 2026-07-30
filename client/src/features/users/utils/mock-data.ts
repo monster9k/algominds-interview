@@ -1,6 +1,5 @@
 import type {
   BadgeInfo,
-  CommunityStat,
   DifficultyStat,
   HeatmapDay,
   RecentSubmission,
@@ -81,13 +80,6 @@ export const MOCK_MAX_STREAK = MOCK_HEATMAP_DAYS.reduce(
   },
   { current: 0, max: 0 },
 ).max;
-
-export const MOCK_COMMUNITY_STATS: CommunityStat[] = [
-  { id: "views", label: "Views", value: 128, lastWeek: 4 },
-  { id: "solution", label: "Solution", value: 6, lastWeek: 0 },
-  { id: "discuss", label: "Discuss", value: 2, lastWeek: 0 },
-  { id: "reputation", label: "Reputation", value: 34, lastWeek: 1 },
-];
 
 export const MOCK_BADGE: BadgeInfo = {
   totalCount: 1,

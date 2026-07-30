@@ -2,6 +2,7 @@ import { ArrowRight, Award } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MOCK_BADGE } from "../utils/mock-data";
 
+// TODO: Requires backend schema — no Badge model exists yet, stays mocked.
 export function BadgesCard() {
   return (
     <Card className="h-full">

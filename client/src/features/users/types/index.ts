@@ -1,5 +1,28 @@
 export type Difficulty = "EASY" | "MEDIUM" | "HARD";
 
+// Shape returned by GET /users/me (server: users.service.ts#findOne)
+export interface UserStats {
+  id: string;
+  userId: string;
+  totalSessions: number;
+  totalSolved: number;
+  averageScore: number;
+  streakDays: number;
+  lastActiveAt: string | null;
+  credits: number;
+}
+
+export interface UserProfileResponse {
+  id: string;
+  email: string;
+  name: string;
+  role: "USER" | "ADMIN";
+  avatarUrl: string | null;
+  bio: string | null;
+  isPro: boolean;
+  stats: UserStats | null;
+}
+
 export interface DifficultyStat {
   difficulty: Difficulty;
   solved: number;
@@ -22,13 +45,6 @@ export interface RecentSubmission {
   difficulty: Difficulty;
   status: SubmissionStatus;
   timeAgo: string;
-}
-
-export interface CommunityStat {
-  id: string;
-  label: string;
-  value: number;
-  lastWeek: number;
 }
 
 export interface BadgeInfo {

@@ -93,3 +93,10 @@ Path alias `@/` → `client/src/` (see `vite.config.ts`, `tsconfig.json`). Serve
 - No automated test suite exists yet — be extra careful when touching `judge.service.ts` or `auth.service.ts`, since there's no regression safety net.
 - `proj.md` is a dated architectural audit (2026-07-06) with a prioritized issue list (security, RBAC, refactors, etc.). Treat it as historical/reference context, not current state — several items it flags (e.g. unauthenticated problem creation, hardcoded Piston URL) have already been fixed in the current code. Verify against the actual source before acting on anything it says.
 - `STEP.md` is a Vietnamese-language phase checklist tracking overall project progress across 6 phases (infra → backend core → AI/session engine → frontend core → interview room UI → polish/deploy).
+
+## Detailed rules
+Auto-loaded from `.claude/rules/` — see `.claude/README.md` for how this directory is organized.
+@.claude/rules/workflow.md
+@.claude/rules/design.md
+@.claude/rules/tech-defaults.md
+@CLAUDE.local.md

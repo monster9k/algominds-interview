@@ -27,6 +27,8 @@ const STATUS_CONFIG: Record<
   },
 };
 
+// TODO: Requires backend schema — Submission history isn't exposed via an
+// endpoint scoped to "recent submissions across problems" yet, stays mocked.
 export function RecentSubmissionsCard() {
   return (
     <Card>

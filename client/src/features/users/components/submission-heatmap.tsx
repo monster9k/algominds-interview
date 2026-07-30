@@ -37,6 +37,7 @@ function getWeekMonthLabel(weeks: HeatmapDay[][], weekIndex: number): string {
   return month !== prevMonth ? MONTH_LABELS[month] : "";
 }
 
+// TODO: Requires backend schema — no per-day submission activity model exists yet, stays mocked.
 export function SubmissionHeatmap() {
   const totalSubmissions = MOCK_HEATMAP_DAYS.reduce((sum, d) => sum + d.count, 0);
   const weeks = chunkIntoWeeks(MOCK_HEATMAP_DAYS);

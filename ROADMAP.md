@@ -70,9 +70,9 @@
 - [x] **Rà soát `ThrottlerGuard` global (10 req/60s)** — có thể quá chặt khi áp dụng đồng loạt cho mọi endpoint; cân nhắc cấu hình riêng theo route nhạy cảm (login, submit) vs route đọc (problems list).
 
 ### Data model
-- [ ] **Thêm `@@index` cho `SessionEvent.sessionId`** — hiện chưa có index dù bảng này được query theo session khi audit lịch sử transition.
+- [x] **Thêm `@@index` cho `SessionEvent.sessionId`** — hiện chưa có index dù bảng này được query theo session khi audit lịch sử transition.
   📍 `server/prisma/schema.prisma` (model `SessionEvent`).
-- [ ] **Thêm index cho `Session.problemId`** (hiện chỉ có `@@index([userId, status])`) — cần cho truy vấn thống kê theo problem (acceptance rate, số lượt submit).
+- [x] **Thêm index cho `Session.problemId`** (hiện chỉ có `@@index([userId, status])`) — cần cho truy vấn thống kê theo problem (acceptance rate, số lượt submit).
 - [ ] **Xác nhận cascade delete (hard) và soft-delete (`deletedAt`) không xung đột** cho `User`/`Problem` — hai cơ chế xoá đang tồn tại song song trong schema, cần thống nhất flow nào được dùng thật trong service.
 
 ### Cấu hình & vận hành

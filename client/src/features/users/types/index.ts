@@ -21,6 +21,7 @@ export interface UserProfileResponse {
   bio: string | null;
   isPro: boolean;
   stats: UserStats | null;
+  rank: number | null;
 }
 
 export interface DifficultyStat {

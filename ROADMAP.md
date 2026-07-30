@@ -84,7 +84,8 @@
 
 ### Frontend — dữ liệu & UX
 - [ ] **Nối nốt dữ liệu thật cho `features/users/`**: `badges-card.tsx`, `recent-submissions-card.tsx`, `submission-heatmap.tsx` vẫn dùng mock data (`MOCK_BADGE`, `MOCK_RECENT_SUBMISSIONS`, `MOCK_HEATMAP_DAYS`) — cần model backend tương ứng (Badge, SubmissionActivity) trước khi wiring. Đã có comment `TODO: Requires backend schema` sẵn trong code, cần chính thức hoá thành task backend + frontend.
-- [ ] **`profile-info-card.tsx` hardcode `Rank #1,364,526`** (giá trị tĩnh) — cần API ranking thật.
+- [x] **`profile-info-card.tsx` hardcode `Rank #1,364,526`** (giá trị tĩnh) — cần API ranking thật.
+  Không tạo bảng leaderboard riêng (chưa cần thiết ở quy mô hiện tại) — `GET /users/me` (`users.service.ts findOne`) giờ trả thêm `rank` tính bằng `count(userStats.totalSolved > current) + 1`. Đã verify query chạy đúng trên DB dev thật. Frontend hiển thị `N/A` nếu `rank` null (user chưa có `UserStats`).
 - [x] **Thêm loading state riêng theo từng giai đoạn** trong interview room (đang chấm chiến lược Phase 1, đang chạy test case Phase 2) — hiện người dùng chỉ thấy toast sau khi xong, không có spinner khi đang chờ.
   📍 `client/src/features/interview/components/*` (ai-chat-tab, testcase-tab).
   Phase 2 (Submit) hoá ra **đã có sẵn** spinner + disabled state ở `interview-header.tsx` (`isSubmitting`) — không cần sửa. Gap thật sự là Phase 1: gửi tin chiến lược xong không có gì báo hiệu đang chờ Gemini trả lời. Đã thêm state `isAiThinking` trong `console-panel.tsx` (bật khi emit `send_message`, tắt khi nhận `receive_message` từ AI hoặc khi có `error`/`credits_exhausted`), hiển thị bubble "..." typing-indicator trong `ai-chat-tab.tsx` + disable ô nhập/nút gửi trong lúc chờ.

@@ -76,7 +76,18 @@ export class UsersService {
 
     // Loại bỏ password trước khi trả về
     const { password, ...result } = user;
-    return result;
+
+    // Rank theo totalSolved — không có bảng leaderboard riêng nên tính trực
+    // tiếp: rank = số user có totalSolved cao hơn + 1.
+    let rank: number | null = null;
+    if (user.stats) {
+      const higherRankedCount = await this.prisma.userStats.count({
+        where: { totalSolved: { gt: user.stats.totalSolved } },
+      });
+      rank = higherRankedCount + 1;
+    }
+
+    return { ...result, rank };
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {

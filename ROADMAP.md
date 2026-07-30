@@ -15,7 +15,7 @@
 ## 🔴 P0 — Khẩn cấp & Cốt lõi
 
 ### Bảo mật & Xác thực
-- [ ] **Access token và refresh token dùng chung `JWT_SECRET`, `JwtStrategy` không phân biệt loại token**
+- [x] **Access token và refresh token dùng chung `JWT_SECRET`, `JwtStrategy` không phân biệt loại token**
   Refresh token (sống 7 ngày) có đủ `sub/email/role` như access token nên có thể dùng thẳng làm Bearer token cho mọi route `JwtAuthGuard`, bỏ qua cơ chế xoay vòng/hash refresh token.
   📍 `server/src/modules/auth/jwt.strategy.ts` (hàm `validate`), `server/src/modules/auth/auth.service.ts` (nơi ký token) — cần thêm claim `type: 'access' | 'refresh'` và kiểm tra trong strategy.
 

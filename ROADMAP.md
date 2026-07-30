@@ -91,7 +91,7 @@
   📍 `client/src/features/interview/hooks/use-interview-socket.ts`.
 - [ ] **Thêm Global Error Boundary** cho React app — hiện `main.tsx` không có, một crash bất kỳ sẽ làm trắng trang production.
 - [ ] **Tích hợp monitoring cơ bản (Sentry hoặc tương đương)** cho cả client và server — hiện chưa có bất kỳ error tracking nào ngoài `console.log`.
-- [ ] **Dọn `console.log` rò rỉ dữ liệu phiên trong production** — `interview-room.tsx` (dòng ~255-256, log toàn bộ `SESSION DATA`/`submissionResult` mỗi render), `use-auth.ts` (log `LOGIN RESPONSE`), `lib/socket.ts` (log connect/disconnect).
+- [x] **Dọn `console.log` rò rỉ dữ liệu phiên trong production** — `interview-room.tsx` (dòng ~255-256, log toàn bộ `SESSION DATA`/`submissionResult` mỗi render), `use-auth.ts` (log `LOGIN RESPONSE`), `lib/socket.ts` (log connect/disconnect).
 - [ ] **Cập nhật `CLAUDE.md`** — dòng ghi "problem-filters.tsx renders filter UI but is not yet wired to the query" đã lỗi thời, thực tế đã wired đầy đủ qua `useProblems(filters)`.
 
 ---

@@ -252,9 +252,6 @@ export function InterviewRoom() {
       </div>
     );
   }
-  console.log("SESSION DATA:", session);
-  console.log("submissionResult:", submissionResult);
-
   if (isError || !session) {
     return (
       <div className="h-screen w-full bg-zinc-950 flex flex-col items-center justify-center text-rose-500">

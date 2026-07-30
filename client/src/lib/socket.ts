@@ -25,13 +25,18 @@ export function initializeSocket(token?: string): Socket {
     transports: ["websocket", "polling"],
   });
 
-  // Các hàm xử lý sự kiện kết nối
+  // Các hàm xử lý sự kiện kết nối — chỉ log ở dev, tránh rò rỉ noise/thông
+  // tin kết nối ra console production.
   socket.on("connect", () => {
-    console.log("✅ Socket connected:", socket?.id);
+    if (import.meta.env.DEV) {
+      console.log("✅ Socket connected:", socket?.id);
+    }
   });
 
   socket.on("disconnect", (reason) => {
-    console.log("❌ Socket disconnected:", reason);
+    if (import.meta.env.DEV) {
+      console.log("❌ Socket disconnected:", reason);
+    }
   });
 
   socket.on("connect_error", (error) => {

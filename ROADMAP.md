@@ -43,7 +43,7 @@
 ### Test coverage cho luồng nhạy cảm
 - [x] **Viết unit test cho `JudgeService`** (chấm điểm, so sánh test case, xử lý lỗi Piston) — hiện 0% coverage, không có safety net khi sửa logic chấm bài.
   📍 `server/src/modules/judge/judge.service.ts`.
-- [ ] **Viết unit test cho `AuthService`** (login, register, refresh token rotation, Google OAuth linking) — đặc biệt quan trọng vì đây là nơi vừa phát hiện 2 lỗ hổng ở trên.
+- [x] **Viết unit test cho `AuthService`** (login, register, refresh token rotation, Google OAuth linking) — đặc biệt quan trọng vì đây là nơi vừa phát hiện 2 lỗ hổng ở trên.
   📍 `server/src/modules/auth/auth.service.ts`.
 - [ ] **Thêm script `test` cho `client/`** — hiện `client/package.json` chỉ có `dev/build/lint/preview`, chưa có Vitest/testing-library nào được cấu hình.
 

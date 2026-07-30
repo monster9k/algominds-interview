@@ -93,6 +93,7 @@ export interface AIChatTabProps {
   onInputChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   scrollRef: React.RefObject<HTMLDivElement>;
+  isAiThinking?: boolean;
 }
 
 // Tab Types

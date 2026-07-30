@@ -40,6 +40,7 @@ export function ConsolePanel({
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputValue, setInputValue] = useState("");
   const [selectedCase, setSelectedCase] = useState(0);
+  const [isAiThinking, setIsAiThinking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const testCases = sessionProblem?.testCases || [];
@@ -62,10 +63,21 @@ export function ConsolePanel({
     if (!socket) return;
     const handleReceiveMessage = (newMessage: ChatMessage) => {
       setMessages((prev) => [...prev, newMessage]);
+      // Tin nhắn của chính user cũng được broadcast lại qua receive_message —
+      // chỉ tắt "AI đang trả lời..." khi tin mới thực sự đến từ AI.
+      if (newMessage.sender === "AI") {
+        setIsAiThinking(false);
+      }
     };
+    const stopThinking = () => setIsAiThinking(false);
+
     socket.on("receive_message", handleReceiveMessage);
+    socket.on("error", stopThinking);
+    socket.on("credits_exhausted", stopThinking);
     return () => {
       socket.off("receive_message", handleReceiveMessage);
+      socket.off("error", stopThinking);
+      socket.off("credits_exhausted", stopThinking);
     };
   }, [socket]);
 
@@ -86,6 +98,7 @@ export function ConsolePanel({
       content: inputValue,
     });
     setInputValue("");
+    setIsAiThinking(true);
   };
 
   return (
@@ -202,6 +215,7 @@ export function ConsolePanel({
             onInputChange={setInputValue}
             onSubmit={handleSendMessage}
             scrollRef={scrollRef}
+            isAiThinking={isAiThinking}
           />
         </TabsContent>
       </div>

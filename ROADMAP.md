@@ -48,7 +48,7 @@
 - [x] **Thêm script `test` cho `client/`** — hiện `client/package.json` chỉ có `dev/build/lint/preview`, chưa có Vitest/testing-library nào được cấu hình.
 
 ### Xử lý lỗi luồng WebSocket / AI / Judge
-- [ ] **Phân biệt và hiển thị đúng lỗi khi Gemini hoặc Piston fail/timeout**
+- [x] **Phân biệt và hiển thị đúng lỗi khi Gemini hoặc Piston fail/timeout**
   Hiện tại chỉ có toast lỗi chung chung ("Hệ thống chấm lỗi"), không phân biệt được nguyên nhân (Piston timeout vs Gemini fail vs network).
   📍 `client/src/features/interview/hooks/use-judge.ts`, `use-evaluation.ts`, `use-session.ts` (chưa có `onError` handler rõ ràng).
 - [ ] **Đồng bộ retry/backoff cho job `chat-job`** — hiện không có `attempts/backoff`, khác với job `evaluate-code` đã có `attempts: 3` + backoff. Lỗi giữa `processChat` sẽ làm mất tin nhắn AI vĩnh viễn, không có dead-letter queue để debug.

@@ -12,5 +12,6 @@ export const useSessionEvaluation = (sessionId?: string) => {
     },
     enabled: !!sessionId,
     refetchOnWindowFocus: false,
+    meta: { fallbackMessage: "Không tải được đánh giá AI cho bài nộp này." },
   });
 };

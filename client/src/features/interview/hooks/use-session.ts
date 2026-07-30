@@ -10,5 +10,7 @@ export const useStartSession = (slug?: string) => {
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    // InterviewRoom đã tự render 1 full-page error state khi isError — không cần toast trùng lặp.
+    meta: { silent: true },
   });
 };

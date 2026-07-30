@@ -5,6 +5,7 @@ import { JudgeService } from './judge.service';
 import { Throttle } from '@nestjs/throttler';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { JwtUser } from '../auth/type/jwt-user.type';
+import { SubmitCodeDto } from './dto/submit-code.dto';
 
 @Controller('judge')
 @UseGuards(JwtAuthGuard)
@@ -13,15 +14,7 @@ export class JudgeController {
 
   @Throttle({ default: { limit: 1, ttl: 5000 } }) // 1 request mỗi 5s
   @Post('submit')
-  async submit(
-    @CurrentUser() user: any,
-    @Body()
-    body: {
-      sessionId: string;
-      code: string;
-      language: string;
-    },
-  ) {
+  async submit(@CurrentUser() user: any, @Body() body: SubmitCodeDto) {
     return this.judgeService.submitCode(
       user.userId,
       body.sessionId,

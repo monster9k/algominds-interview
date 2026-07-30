@@ -23,7 +23,7 @@
   Tài khoản đăng ký bằng email/password có thể bị đăng nhập qua Google với cùng email mà không có bước liên kết tường minh — rủi ro account takeover.
   📍 `server/src/modules/auth/auth.service.ts` (hàm `validateGoogleUser`, dòng ~107-131).
 
-- [ ] **DTO validation bị bỏ qua ở `POST /judge/submit`**
+- [x] **DTO validation bị bỏ qua ở `POST /judge/submit`**
   Body dùng kiểu literal `{ sessionId, code, language }` thay vì class DTO, nên `ValidationPipe({whitelist, forbidNonWhitelisted})` toàn cục không có tác dụng — không giới hạn độ dài `code`, `language` lạ bị fallback âm thầm về `node`.
   📍 `server/src/modules/judge/judge.controller.ts` (dòng ~16-23), `server/src/modules/judge/services/piston.service.ts` (dòng ~182) — cần tạo `SubmitCodeDto` với `class-validator`.
 

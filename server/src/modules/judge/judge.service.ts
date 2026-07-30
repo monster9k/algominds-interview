@@ -32,7 +32,8 @@ export class JudgeService {
       throw new NotFoundException('Bạn không có quyền truy cập phiên này');
     }
 
-    const { functionName, testCases } = session.problem;
+    const { functionName, testCases, timeLimitMs, memoryLimitMb } =
+      session.problem;
     const tests = testCases as any[];
     if (!tests || tests.length === 0)
       throw new NotFoundException('Không tìm thấy test case nào');
@@ -56,6 +57,7 @@ export class JudgeService {
         code,
         testCase,
         functionName,
+        { timeLimitMs, memoryLimitMb },
       );
       if (
         result.executionTimeMs !== null &&
@@ -287,6 +289,7 @@ export class JudgeService {
     userCode: string,
     testCase: any,
     functionName: string,
+    limits?: { timeLimitMs?: number; memoryLimitMb?: number },
   ) {
     const { input, output: expectedOutput } = testCase;
 
@@ -305,6 +308,7 @@ export class JudgeService {
       language,
       runnableCode,
       stdin,
+      limits,
     );
     const endTime = Date.now();
     const executionTimeMs =

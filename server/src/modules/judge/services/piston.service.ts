@@ -26,6 +26,7 @@ export class PistonService {
     language: string,
     code: string,
     stdin?: string,
+    limits?: { timeLimitMs?: number; memoryLimitMb?: number },
   ): Promise<ExecutionResult> {
     const config = this.getLanguageConfig(language);
 
@@ -37,6 +38,15 @@ export class PistonService {
 
     if (stdin !== undefined) {
       payload.stdin = stdin;
+    }
+
+    // Đề bài có timeLimitMs/memoryLimitMb riêng — nếu không truyền, mọi bài
+    // đều chạy theo giới hạn mặc định của Piston thay vì theo đề.
+    if (limits?.timeLimitMs) {
+      payload.run_timeout = limits.timeLimitMs;
+    }
+    if (limits?.memoryLimitMb) {
+      payload.run_memory_limit = limits.memoryLimitMb * 1024 * 1024;
     }
 
     // Piston needs an explicit `main` class for Java, otherwise it defaults

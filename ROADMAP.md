@@ -36,7 +36,7 @@
   `UserStats.credits` được khởi tạo `10` khi đăng ký nhưng không có nơi nào trong `ai.service.ts`/`ai.processor.ts`/`chat.gateway.ts` đọc hoặc trừ field này — mỗi tin nhắn `send_message` đều bắn job Gemini không giới hạn số lần/user.
   📍 `server/prisma/schema.prisma` (model `UserStats`), `server/src/modules/chat/chat.gateway.ts` (dòng ~166-171).
 
-- [ ] **Giới hạn `timeLimitMs`/`memoryLimitMb` của đề bài không được enforce khi chấm bài**
+- [x] **Giới hạn `timeLimitMs`/`memoryLimitMb` của đề bài không được enforce khi chấm bài**
   `Problem` đã có sẵn field này nhưng payload gửi Piston không truyền `run_timeout`/`run_memory_limit` tương ứng — mọi bài đều chạy theo giới hạn mặc định của Piston, không theo đề.
   📍 `server/src/modules/judge/services/piston.service.ts` (dòng ~32-36).
 

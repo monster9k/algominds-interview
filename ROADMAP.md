@@ -67,7 +67,7 @@
 - [x] **Rate-limit riêng cho WebSocket `send_message`** + giới hạn độ dài `content` trước khi lưu DB/gửi Gemini — hiện chỉ kiểm tra ownership session, không có spam-guard như REST (`ThrottlerGuard`).
   📍 `server/src/modules/chat/chat.gateway.ts` (dòng ~122-174).
 - [x] **`PrismaService` đọc thẳng `process.env.DATABASE_URL`** thay vì qua `ConfigService` — chuẩn hoá lại để nhất quán với các service khác và dễ test/mocking.
-- [ ] **Rà soát `ThrottlerGuard` global (10 req/60s)** — có thể quá chặt khi áp dụng đồng loạt cho mọi endpoint; cân nhắc cấu hình riêng theo route nhạy cảm (login, submit) vs route đọc (problems list).
+- [x] **Rà soát `ThrottlerGuard` global (10 req/60s)** — có thể quá chặt khi áp dụng đồng loạt cho mọi endpoint; cân nhắc cấu hình riêng theo route nhạy cảm (login, submit) vs route đọc (problems list).
 
 ### Data model
 - [ ] **Thêm `@@index` cho `SessionEvent.sessionId`** — hiện chưa có index dù bảng này được query theo session khi audit lịch sử transition.

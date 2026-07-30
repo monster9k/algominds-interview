@@ -30,10 +30,15 @@ import { QueueModule } from './common/queue/queue.module';
     AiModule,
     JudgeModule,
     EventEmitterModule.forRoot(),
+    // Default áp cho MỌI route chưa tự override bằng @Throttle() — nới từ
+    // 10/60s lên 60/60s vì 1 lần load trang (problems list + profile +
+    // stats + submissions...) đã dễ dàng bắn 4-5 request song song, còn
+    // các route nhạy cảm thật sự (login, submit) đã tự khai báo giới hạn
+    // chặt hơn riêng qua @Throttle() ở controller tương ứng.
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 60 giây
-        limit: 10, // Tối đa 10 request
+        limit: 60,
       },
     ]),
   ], // Nhập module Prisma vào đây

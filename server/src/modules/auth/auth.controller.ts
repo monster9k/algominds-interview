@@ -16,6 +16,11 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ConfigService } from '@nestjs/config';
+import { Throttle } from '@nestjs/throttler';
+
+// Route nhạy cảm brute-force (login/register/refresh) — chặt hơn nhiều so
+// với default 60/60s dùng cho các route đọc thông thường.
+const AUTH_THROTTLE = { default: { limit: 5, ttl: 60000 } };
 
 @Controller('auth')
 export class AuthController {
@@ -33,11 +38,13 @@ export class AuthController {
     };
   }
 
+  @Throttle(AUTH_THROTTLE)
   @Post('register')
   register(@Body() createUserDto: CreateUserDto) {
     return this.authService.register(createUserDto);
   }
 
+  @Throttle(AUTH_THROTTLE)
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res) {
     const result = await this.authService.login(loginDto);
@@ -99,6 +106,7 @@ export class AuthController {
     return res.redirect(`${frontendUrl}/auth/google-callback`);
   }
 
+  @Throttle(AUTH_THROTTLE)
   @Post('refresh')
   async refreshToken(@Req() req, @Res({ passthrough: true }) res) {
     const refreshToken = req.cookies['refreshToken'];

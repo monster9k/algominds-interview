@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
-import { SessionStatus } from '@prisma/client';
+import { Prisma, SessionStatus } from '@prisma/client';
 import { UpdateSessionDto } from './dto/update-session.dto';
 @Injectable()
 export class SessionsService {
@@ -126,6 +126,7 @@ export class SessionsService {
 
     const session = await this.prisma.session.findUnique({
       where: { id },
+      select: { userId: true },
     });
 
     if (!session) {
@@ -136,19 +137,27 @@ export class SessionsService {
       throw new NotFoundException('Bạn không có quyền sửa phiên này');
     }
 
-    // Logic Optimistic Locking (Xử lý `version` để tránh ghi đè).
-    if (session.version !== version) {
-      throw new ConflictException(
-        'Dữ liệu đã bị thay đổi bởi thiết bị khác. Vui lòng tải lại trang.',
-      );
+    // Optimistic locking phải atomic: đưa `version` vào chính mệnh đề `where`
+    // của update thay vì check-rồi-write riêng biệt, nếu không 2 request cùng
+    // version gửi gần như đồng thời sẽ đều pass check rồi cùng ghi đè nhau.
+    try {
+      return await this.prisma.session.update({
+        where: { id, version },
+        data: {
+          ...dataToUpdate,
+          version: { increment: 1 }, // Tự động +1 version
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new ConflictException(
+          'Dữ liệu đã bị thay đổi bởi thiết bị khác. Vui lòng tải lại trang.',
+        );
+      }
+      throw error;
     }
-
-    return this.prisma.session.update({
-      where: { id }, // Chỉ cần where ID vì ta đã check logic ở trên rồi
-      data: {
-        ...dataToUpdate,
-        version: { increment: 1 }, // Tự động +1 version
-      },
-    });
   }
 }

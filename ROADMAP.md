@@ -28,7 +28,7 @@
   📍 `server/src/modules/judge/judge.controller.ts` (dòng ~16-23), `server/src/modules/judge/services/piston.service.ts` (dòng ~182) — cần tạo `SubmitCodeDto` với `class-validator`.
 
 ### Tính đúng đắn dữ liệu
-- [ ] **Optimistic lock `Session.version` không atomic — mất tác dụng khi race condition**
+- [x] **Optimistic lock `Session.version` không atomic — mất tác dụng khi race condition**
   Flow hiện tại: `findUnique` → so `version` bằng tay → `update({ where: { id } })` (không đưa `version` vào mệnh đề `where`). Hai request cùng version gửi gần như đồng thời đều pass check rồi cùng ghi đè.
   📍 `server/src/modules/sessions/sessions.service.ts` (dòng ~124-153) — sửa thành `update({ where: { id, version } })` và bắt lỗi `P2025` (record not found) để trả lỗi conflict đúng nghĩa.
 

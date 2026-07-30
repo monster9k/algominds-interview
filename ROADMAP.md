@@ -87,7 +87,7 @@
 - [ ] **`profile-info-card.tsx` hardcode `Rank #1,364,526`** (giá trị tĩnh) — cần API ranking thật.
 - [ ] **Thêm loading state riêng theo từng giai đoạn** trong interview room (đang chấm chiến lược Phase 1, đang chạy test case Phase 2) — hiện người dùng chỉ thấy toast sau khi xong, không có spinner khi đang chờ.
   📍 `client/src/features/interview/components/*` (ai-chat-tab, testcase-tab).
-- [ ] **Re-emit `join_room` khi socket tự reconnect** — hiện `join_room` chỉ emit 1 lần trong effect, nếu socket rớt và Socket.io tự reconnect giữa phiên, client không tự join lại room.
+- [x] **Re-emit `join_room` khi socket tự reconnect** — hiện `join_room` chỉ emit 1 lần trong effect, nếu socket rớt và Socket.io tự reconnect giữa phiên, client không tự join lại room.
   📍 `client/src/features/interview/hooks/use-interview-socket.ts`.
 - [ ] **Thêm Global Error Boundary** cho React app — hiện `main.tsx` không có, một crash bất kỳ sẽ làm trắng trang production.
 - [ ] **Tích hợp monitoring cơ bản (Sentry hoặc tương đương)** cho cả client và server — hiện chưa có bất kỳ error tracking nào ngoài `console.log`.

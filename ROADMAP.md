@@ -79,7 +79,8 @@
 ### Cấu hình & vận hành
 - [x] **Bổ sung biến còn thiếu vào `server/.env.example`**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` (bắt buộc — code dùng `getOrThrow`, app crash nếu thiếu khi khởi động), `NODE_ENV` (ảnh hưởng cờ `secure` của cookie).
 - [x] **Thêm giá trị mẫu/default cho từng biến trong `.env.example`** (cả server và client) — hiện để trống hoàn toàn, dev mới không biết điền format nào (vd `EXPIRES_IN`). `client/.env.example` đã có sẵn giá trị mẫu hợp lệ từ trước, chỉ `server/.env.example` cần bổ sung (dùng placeholder giả, không copy secret thật từ `.env`).
-- [ ] **`docker-compose.yml`: thêm `healthcheck`** cho `postgres`, `redis`, `piston`; không hardcode `POSTGRES_PASSWORD: admin123`; cân nhắc bỏ `privileged: true` cho container `piston` ngoài môi trường dev.
+- [x] **`docker-compose.yml`: thêm `healthcheck`** cho `postgres`, `redis`, `piston`; không hardcode `POSTGRES_PASSWORD: admin123`; cân nhắc bỏ `privileged: true` cho container `piston` ngoài môi trường dev.
+  Đã thêm healthcheck cho cả 3 service (đã test thực tế bằng `docker compose up -d`, cả 3 lên `healthy`); `POSTGRES_USER/PASSWORD/DB` giờ đọc từ biến môi trường với default giữ nguyên giá trị cũ (không phá vỡ setup hiện có). **Giữ nguyên `privileged: true`** — đây là yêu cầu bắt buộc để Piston tạo sandbox isolate/nsjail chấm code, tắt đi sẽ hỏng tính năng chấm bài; đã thêm comment giải thích + khuyến nghị tách Piston ra host riêng khi lên production thay vì chỉ dựa vào compose file này.
 
 ### Frontend — dữ liệu & UX
 - [ ] **Nối nốt dữ liệu thật cho `features/users/`**: `badges-card.tsx`, `recent-submissions-card.tsx`, `submission-heatmap.tsx` vẫn dùng mock data (`MOCK_BADGE`, `MOCK_RECENT_SUBMISSIONS`, `MOCK_HEATMAP_DAYS`) — cần model backend tương ứng (Badge, SubmissionActivity) trước khi wiring. Đã có comment `TODO: Requires backend schema` sẵn trong code, cần chính thức hoá thành task backend + frontend.

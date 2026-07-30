@@ -44,6 +44,11 @@ export class ChatGateway
   @WebSocketServer()
   server!: Server;
 
+  private static readonly MAX_MESSAGE_LENGTH = 4000;
+  private static readonly MESSAGE_COOLDOWN_MS = 2000;
+  // In-memory per-user cooldown — 1 instance của server, không cần Redis cho việc này.
+  private readonly lastMessageAt = new Map<string, number>();
+
   private logger: Logger = new Logger('ChatGateway'); //1 logger instance với context = ChatGateway
   //[Nest] 12345  - 01/18/2026, 10:22:31 AM  LOG [ChatGateway] Client connected: abc123
 
@@ -152,6 +157,29 @@ export class ChatGateway
       return;
     }
 
+    if (
+      typeof data.content !== 'string' ||
+      !data.content.trim() ||
+      data.content.length > ChatGateway.MAX_MESSAGE_LENGTH
+    ) {
+      client.emit('error', {
+        message: `Nội dung tin nhắn không hợp lệ (tối đa ${ChatGateway.MAX_MESSAGE_LENGTH} ký tự).`,
+      });
+      return;
+    }
+
+    // Spam-guard: REST có ThrottlerGuard, WS thì không có gì tương đương —
+    // 1 user gửi liên tục sẽ bắn job Gemini liên tục (dù có trừ credit, vẫn
+    // đáng chặn sớm để đỡ tải DB/queue).
+    const now = Date.now();
+    const lastSentAt = this.lastMessageAt.get(socketUser.userId) ?? 0;
+    if (now - lastSentAt < ChatGateway.MESSAGE_COOLDOWN_MS) {
+      client.emit('error', {
+        message: 'Bạn đang gửi tin nhắn quá nhanh. Vui lòng chờ một chút.',
+      });
+      return;
+    }
+
     const session = await this.prisma.session.findUnique({
       where: { id: data.sessionId },
       select: { userId: true },
@@ -164,6 +192,8 @@ export class ChatGateway
       client.emit('error', { message: 'Forbidden session access' });
       return;
     }
+
+    this.lastMessageAt.set(socketUser.userId, now);
 
     // A. Lưu vào Database trước
     const newMessage = await this.prisma.message.create({

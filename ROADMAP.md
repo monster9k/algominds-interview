@@ -90,7 +90,8 @@
 - [x] **Re-emit `join_room` khi socket tự reconnect** — hiện `join_room` chỉ emit 1 lần trong effect, nếu socket rớt và Socket.io tự reconnect giữa phiên, client không tự join lại room.
   📍 `client/src/features/interview/hooks/use-interview-socket.ts`.
 - [x] **Thêm Global Error Boundary** cho React app — hiện `main.tsx` không có, một crash bất kỳ sẽ làm trắng trang production.
-- [ ] **Tích hợp monitoring cơ bản (Sentry hoặc tương đương)** cho cả client và server — hiện chưa có bất kỳ error tracking nào ngoài `console.log`.
+- [x] **Tích hợp monitoring cơ bản (Sentry hoặc tương đương)** cho cả client và server — hiện chưa có bất kỳ error tracking nào ngoài `console.log`.
+  Scaffolded opt-in (không có `SENTRY_DSN`/`VITE_SENTRY_DSN` thì hoàn toàn no-op, đã boot-test server thật để xác nhận). Server: `src/instrument.ts` (`Sentry.init` trước mọi import khác) + `SentryModule`/`SentryGlobalFilter` trong `app.module.ts`. Client: `src/lib/monitoring.ts` (`initMonitoring()` gọi ở `main.tsx`), `ErrorBoundary.componentDidCatch` gọi `captureException`.
 - [x] **Dọn `console.log` rò rỉ dữ liệu phiên trong production** — `interview-room.tsx` (dòng ~255-256, log toàn bộ `SESSION DATA`/`submissionResult` mỗi render), `use-auth.ts` (log `LOGIN RESPONSE`), `lib/socket.ts` (log connect/disconnect).
 - [x] **Cập nhật `CLAUDE.md`** — dòng ghi "problem-filters.tsx renders filter UI but is not yet wired to the query" đã lỗi thời, thực tế đã wired đầy đủ qua `useProblems(filters)`.
 

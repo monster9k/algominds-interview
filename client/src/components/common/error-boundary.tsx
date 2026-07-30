@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { RotateCcw } from "lucide-react";
+import { captureException } from "@/lib/monitoring";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -23,6 +24,7 @@ export class ErrorBoundary extends Component<
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught render error:", error, errorInfo);
+    captureException(error, { componentStack: errorInfo.componentStack });
   }
 
   private handleReload = () => {

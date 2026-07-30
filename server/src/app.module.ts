@@ -10,8 +10,9 @@ import { AiModule } from './modules/ai/ai.module';
 import { JudgeModule } from './modules/judge/judge.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { QueueModule } from './common/queue/queue.module';
+import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 
 @Module({
   imports: [
@@ -19,6 +20,10 @@ import { QueueModule } from './common/queue/queue.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
+    // Phải là module đầu tiên theo docs của Sentry — nếu chưa có SENTRY_DSN
+    // (xem instrument.ts) thì các API Sentry bên trong tự no-op.
+    SentryModule.forRoot(),
 
     PrismaModule,
     QueueModule,
@@ -48,6 +53,12 @@ import { QueueModule } from './common/queue/queue.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    // Bắt exception toàn cục để báo lên Sentry (no-op nếu chưa có SENTRY_DSN),
+    // sau đó delegate lại cho behavior mặc định của Nest.
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
     },
   ],
 })

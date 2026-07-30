@@ -77,8 +77,8 @@
   **Kết luận audit**: không có endpoint xoá nào (hard hoặc soft) được implement — `deletedAt` chưa từng được ghi ở đâu, chỉ có 1 chỗ select ra mà không lọc theo nó (`problems.service.ts findOne`). Vì vậy chưa có xung đột thật, nhưng các query đọc (`findByEmail`, `users.findOne`, `problems.findAll/findOne`, `sessions.create/findOrCreateBySlug`, `auth.refreshTokens`) đều **không lọc `deletedAt: null`** — nếu sau này có ai set `deletedAt` (vd qua admin panel tương lai) thì user/problem đó vẫn đăng nhập/hiển thị/tạo session bình thường như chưa hề bị xoá. Đã sửa các query trên để lọc `deletedAt: null`, giữ nguyên `onDelete: Cascade` cho các bảng phụ thuộc 1:1 vào vòng đời cha (`RefreshToken`, `SessionEvent`, `Message`, `Submission`, `Evaluation`) vì đó là cơ chế đúng cho hard-delete thật sự khi nó được implement.
 
 ### Cấu hình & vận hành
-- [ ] **Bổ sung biến còn thiếu vào `server/.env.example`**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` (bắt buộc — code dùng `getOrThrow`, app crash nếu thiếu khi khởi động), `NODE_ENV` (ảnh hưởng cờ `secure` của cookie).
-- [ ] **Thêm giá trị mẫu/default cho từng biến trong `.env.example`** (cả server và client) — hiện để trống hoàn toàn, dev mới không biết điền format nào (vd `EXPIRES_IN`).
+- [x] **Bổ sung biến còn thiếu vào `server/.env.example`**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` (bắt buộc — code dùng `getOrThrow`, app crash nếu thiếu khi khởi động), `NODE_ENV` (ảnh hưởng cờ `secure` của cookie).
+- [x] **Thêm giá trị mẫu/default cho từng biến trong `.env.example`** (cả server và client) — hiện để trống hoàn toàn, dev mới không biết điền format nào (vd `EXPIRES_IN`). `client/.env.example` đã có sẵn giá trị mẫu hợp lệ từ trước, chỉ `server/.env.example` cần bổ sung (dùng placeholder giả, không copy secret thật từ `.env`).
 - [ ] **`docker-compose.yml`: thêm `healthcheck`** cho `postgres`, `redis`, `piston`; không hardcode `POSTGRES_PASSWORD: admin123`; cân nhắc bỏ `privileged: true` cho container `piston` ngoài môi trường dev.
 
 ### Frontend — dữ liệu & UX

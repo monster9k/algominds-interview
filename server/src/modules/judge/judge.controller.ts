@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 import { JudgeService } from './judge.service';
@@ -45,5 +53,24 @@ export class JudgeController {
     @Param('slug') slug: string,
   ) {
     return this.judgeService.getProblemSubmissions(user.userId, slug);
+  }
+
+  // Dùng cho trang profile — lịch sử submit gần nhất của user, không giới hạn theo 1 problem/session cụ thể.
+  @Get('submissions/recent')
+  async getRecentSubmissions(
+    @CurrentUser() user: JwtUser,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedLimit = Math.min(
+      Math.max(parseInt(limit ?? '', 10) || 5, 1),
+      20,
+    );
+    return this.judgeService.getRecentSubmissions(user.userId, parsedLimit);
+  }
+
+  // Dùng cho trang profile — heatmap số lượt submit theo ngày trong ~1 năm gần nhất.
+  @Get('submissions/heatmap')
+  async getSubmissionHeatmap(@CurrentUser() user: JwtUser) {
+    return this.judgeService.getSubmissionHeatmap(user.userId);
   }
 }

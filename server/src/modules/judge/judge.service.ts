@@ -283,6 +283,62 @@ export class JudgeService {
     });
   }
 
+  // Dùng cho card "Recent Submissions" ở trang profile.
+  async getRecentSubmissions(userId: string, limit: number) {
+    const submissions = await this.prisma.submission.findMany({
+      where: { session: { userId } },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        status: true,
+        createdAt: true,
+        session: {
+          select: {
+            problem: { select: { title: true, difficulty: true } },
+          },
+        },
+      },
+    });
+
+    return submissions.map((submission) => ({
+      id: submission.id,
+      title: submission.session.problem.title,
+      difficulty: submission.session.problem.difficulty,
+      status: submission.status,
+      createdAt: submission.createdAt,
+    }));
+  }
+
+  // Dùng cho "Submission Heatmap" ở trang profile — điền đủ mỗi ngày trong
+  // khoảng, kể cả ngày có 0 submission, để frontend chia lưới 7 hàng/tuần.
+  async getSubmissionHeatmap(userId: string, days = 371) {
+    const since = new Date();
+    since.setHours(0, 0, 0, 0);
+    since.setDate(since.getDate() - (days - 1));
+
+    const submissions = await this.prisma.submission.findMany({
+      where: { session: { userId }, createdAt: { gte: since } },
+      select: { createdAt: true },
+    });
+
+    const countsByDay = new Map<string, number>();
+    for (const submission of submissions) {
+      const key = submission.createdAt.toISOString().slice(0, 10);
+      countsByDay.set(key, (countsByDay.get(key) ?? 0) + 1);
+    }
+
+    const result: { date: string; count: number }[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const key = date.toISOString().slice(0, 10);
+      result.push({ date: key, count: countsByDay.get(key) ?? 0 });
+    }
+
+    return result;
+  }
+
   // Helper xử lý logic 1 test case
   private async runSingleTestCase(
     language: string,

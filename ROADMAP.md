@@ -19,7 +19,7 @@
   Refresh token (sống 7 ngày) có đủ `sub/email/role` như access token nên có thể dùng thẳng làm Bearer token cho mọi route `JwtAuthGuard`, bỏ qua cơ chế xoay vòng/hash refresh token.
   📍 `server/src/modules/auth/jwt.strategy.ts` (hàm `validate`), `server/src/modules/auth/auth.service.ts` (nơi ký token) — cần thêm claim `type: 'access' | 'refresh'` và kiểm tra trong strategy.
 
-- [ ] **`AuthService.validateGoogleUser` không kiểm tra provider gốc của tài khoản**
+- [x] **`AuthService.validateGoogleUser` không kiểm tra provider gốc của tài khoản**
   Tài khoản đăng ký bằng email/password có thể bị đăng nhập qua Google với cùng email mà không có bước liên kết tường minh — rủi ro account takeover.
   📍 `server/src/modules/auth/auth.service.ts` (hàm `validateGoogleUser`, dòng ~107-131).
 

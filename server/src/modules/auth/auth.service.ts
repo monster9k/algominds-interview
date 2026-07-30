@@ -111,8 +111,16 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (user) {
-      // Nếu đã có -> Trả về luôn để login
-      // (Optional: Update avatar nếu muốn, nhưng để đơn giản ta cứ return)
+      // Chặn account takeover: 1 email đã đăng ký bằng email/password (provider
+      // "email") không được phép đăng nhập thẳng qua Google mà không có bước
+      // liên kết tường minh trước.
+      if (user.provider !== 'google') {
+        throw new UnauthorizedException(
+          'Email này đã được đăng ký bằng mật khẩu. Vui lòng đăng nhập bằng email/mật khẩu.',
+        );
+      }
+
+      // Đã liên kết Google từ trước -> Trả về luôn để login
       return user;
     }
 

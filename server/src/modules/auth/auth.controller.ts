@@ -74,12 +74,21 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req, @Res() res) {
-    // 1. Lấy hoặc Tạo user từ DB
-    const user = await this.authService.validateGoogleUser(req.user);
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+
+    // Đây là 1 browser redirect flow, không phải JSON API — nếu throw thẳng
+    // exception thì user sẽ thấy trang lỗi 401 thô thay vì quay lại app.
+    let user;
+    try {
+      user = await this.authService.validateGoogleUser(req.user);
+    } catch {
+      return res.redirect(
+        `${frontendUrl}/auth/login?error=google_account_conflict`,
+      );
+    }
 
     // 2. Tạo Token cho user này
     const data = await this.authService.issueTokensForUser(user);
-    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
 
     res.cookie(
       'refreshToken',

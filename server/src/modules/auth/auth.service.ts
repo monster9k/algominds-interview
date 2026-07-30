@@ -148,9 +148,9 @@ export class AuthService {
       throw new UnauthorizedException('Refresh Token không hợp lệ');
     }
 
-    // 1) Xác thực user tồn tại
+    // 1) Xác thực user tồn tại (và chưa bị soft-delete)
     const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
+      where: { id: payload.sub, deletedAt: null },
     });
     if (!user) {
       throw new UnauthorizedException('User không tồn tại');

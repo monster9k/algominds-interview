@@ -15,7 +15,7 @@ export class SessionsService {
     const { problemId } = createSessionDto;
 
     const problem = await this.prisma.problem.findUnique({
-      where: { id: problemId },
+      where: { id: problemId, deletedAt: null },
     });
 
     if (!problem) {
@@ -45,7 +45,7 @@ export class SessionsService {
 
   async findOrCreateBySlug(userId: string, problemSlug: string) {
     const problem = await this.prisma.problem.findUnique({
-      where: { slug: problemSlug },
+      where: { slug: problemSlug, deletedAt: null },
     });
     if (!problem) {
       throw new NotFoundException('Bài tập không tồn tại');

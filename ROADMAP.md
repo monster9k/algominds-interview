@@ -73,7 +73,8 @@
 - [x] **Thêm `@@index` cho `SessionEvent.sessionId`** — hiện chưa có index dù bảng này được query theo session khi audit lịch sử transition.
   📍 `server/prisma/schema.prisma` (model `SessionEvent`).
 - [x] **Thêm index cho `Session.problemId`** (hiện chỉ có `@@index([userId, status])`) — cần cho truy vấn thống kê theo problem (acceptance rate, số lượt submit).
-- [ ] **Xác nhận cascade delete (hard) và soft-delete (`deletedAt`) không xung đột** cho `User`/`Problem` — hai cơ chế xoá đang tồn tại song song trong schema, cần thống nhất flow nào được dùng thật trong service.
+- [x] **Xác nhận cascade delete (hard) và soft-delete (`deletedAt`) không xung đột** cho `User`/`Problem` — hai cơ chế xoá đang tồn tại song song trong schema, cần thống nhất flow nào được dùng thật trong service.
+  **Kết luận audit**: không có endpoint xoá nào (hard hoặc soft) được implement — `deletedAt` chưa từng được ghi ở đâu, chỉ có 1 chỗ select ra mà không lọc theo nó (`problems.service.ts findOne`). Vì vậy chưa có xung đột thật, nhưng các query đọc (`findByEmail`, `users.findOne`, `problems.findAll/findOne`, `sessions.create/findOrCreateBySlug`, `auth.refreshTokens`) đều **không lọc `deletedAt: null`** — nếu sau này có ai set `deletedAt` (vd qua admin panel tương lai) thì user/problem đó vẫn đăng nhập/hiển thị/tạo session bình thường như chưa hề bị xoá. Đã sửa các query trên để lọc `deletedAt: null`, giữ nguyên `onDelete: Cascade` cho các bảng phụ thuộc 1:1 vào vòng đời cha (`RefreshToken`, `SessionEvent`, `Message`, `Submission`, `Evaluation`) vì đó là cơ chế đúng cho hard-delete thật sự khi nó được implement.
 
 ### Cấu hình & vận hành
 - [ ] **Bổ sung biến còn thiếu vào `server/.env.example`**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` (bắt buộc — code dùng `getOrThrow`, app crash nếu thiếu khi khởi động), `NODE_ENV` (ảnh hưởng cờ `secure` của cookie).

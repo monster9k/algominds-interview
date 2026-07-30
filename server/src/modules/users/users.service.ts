@@ -9,8 +9,11 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async findByEmail(email: string) {
+    // Extended whereUnique: `email` vẫn là điều kiện unique, `deletedAt`
+    // chỉ là filter thêm — user đã soft-delete không được tìm thấy qua
+    // đường này (login/register đều dùng chung hàm này).
     return this.prisma.user.findUnique({
-      where: { email },
+      where: { email, deletedAt: null },
     });
   }
 
@@ -64,7 +67,7 @@ export class UsersService {
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: {
         stats: true,
       },

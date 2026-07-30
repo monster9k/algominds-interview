@@ -177,11 +177,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // 3. Người gửi từ socket luôn là USER -> Kích hoạt AI trả lời
-    await this.aiQueue.add('chat-job', {
-      sessionId: data.sessionId,
-      userId: socketUser.userId,
-      content: data.content,
-    });
+    // Đồng bộ retry/backoff với job 'evaluate-code' (ai.listener.ts) — nếu
+    // không, 1 lần processChat lỗi sẽ làm mất tin nhắn AI vĩnh viễn và không
+    // có gì để debug (job bị xoá khỏi queue ngay cả khi fail).
+    await this.aiQueue.add(
+      'chat-job',
+      {
+        sessionId: data.sessionId,
+        userId: socketUser.userId,
+        content: data.content,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    );
     console.log('Added job to AI Queue');
 
     return newMessage;

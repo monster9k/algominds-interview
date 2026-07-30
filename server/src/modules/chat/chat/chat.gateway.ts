@@ -162,6 +162,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Sự kiện bắn về tên là 'receive_message'
     this.server.to(data.sessionId).emit('receive_message', newMessage);
 
+    // C. Khấu trừ AI credit atomic (chỉ trừ nếu còn > 0) trước khi bắn job Gemini,
+    // tránh 1 user spam tin nhắn để bắn job vô hạn không giới hạn.
+    const creditResult = await this.prisma.userStats.updateMany({
+      where: { userId: socketUser.userId, credits: { gt: 0 } },
+      data: { credits: { decrement: 1 } },
+    });
+
+    if (creditResult.count === 0) {
+      client.emit('credits_exhausted', {
+        message: 'Bạn đã dùng hết credit AI. Vui lòng nâng cấp để tiếp tục.',
+      });
+      return newMessage;
+    }
+
     // 3. Người gửi từ socket luôn là USER -> Kích hoạt AI trả lời
     await this.aiQueue.add('chat-job', {
       sessionId: data.sessionId,

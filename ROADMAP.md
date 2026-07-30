@@ -32,7 +32,7 @@
   Flow hiện tại: `findUnique` → so `version` bằng tay → `update({ where: { id } })` (không đưa `version` vào mệnh đề `where`). Hai request cùng version gửi gần như đồng thời đều pass check rồi cùng ghi đè.
   📍 `server/src/modules/sessions/sessions.service.ts` (dòng ~124-153) — sửa thành `update({ where: { id, version } })` và bắt lỗi `P2025` (record not found) để trả lỗi conflict đúng nghĩa.
 
-- [ ] **Không giới hạn/khấu trừ AI credits dù model đã có sẵn field**
+- [x] **Không giới hạn/khấu trừ AI credits dù model đã có sẵn field**
   `UserStats.credits` được khởi tạo `10` khi đăng ký nhưng không có nơi nào trong `ai.service.ts`/`ai.processor.ts`/`chat.gateway.ts` đọc hoặc trừ field này — mỗi tin nhắn `send_message` đều bắn job Gemini không giới hạn số lần/user.
   📍 `server/prisma/schema.prisma` (model `UserStats`), `server/src/modules/chat/chat.gateway.ts` (dòng ~166-171).
 

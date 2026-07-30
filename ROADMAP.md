@@ -45,7 +45,7 @@
   📍 `server/src/modules/judge/judge.service.ts`.
 - [x] **Viết unit test cho `AuthService`** (login, register, refresh token rotation, Google OAuth linking) — đặc biệt quan trọng vì đây là nơi vừa phát hiện 2 lỗ hổng ở trên.
   📍 `server/src/modules/auth/auth.service.ts`.
-- [ ] **Thêm script `test` cho `client/`** — hiện `client/package.json` chỉ có `dev/build/lint/preview`, chưa có Vitest/testing-library nào được cấu hình.
+- [x] **Thêm script `test` cho `client/`** — hiện `client/package.json` chỉ có `dev/build/lint/preview`, chưa có Vitest/testing-library nào được cấu hình.
 
 ### Xử lý lỗi luồng WebSocket / AI / Judge
 - [ ] **Phân biệt và hiển thị đúng lỗi khi Gemini hoặc Piston fail/timeout**

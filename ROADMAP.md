@@ -55,7 +55,7 @@
   📍 `server/src/modules/chat/chat.gateway.ts` (dòng ~166-170), `server/src/common/queue/queue.module.ts` (thiếu `defaultJobOptions` toàn cục).
 
 ### CI tối thiểu
-- [ ] **Thêm GitHub Actions workflow chạy lint + build (server & client) trên mỗi PR** — hiện không có `.github/workflows` nào, không có gì chặn merge code lỗi/không build được.
+- [x] **Thêm GitHub Actions workflow chạy lint + build (server & client) trên mỗi PR** — hiện không có `.github/workflows` nào, không có gì chặn merge code lỗi/không build được.
 
 ---
 
@@ -103,6 +103,7 @@
 - [ ] **Xử lý các TODO còn sót** trong `client/src/app/router.tsx` (dòng ~23, 84).
 - [ ] **Rà soát dependency `dompurify`** trong `client/package.json` — không tìm thấy nơi sử dụng thực tế trong `client/src`, cân nhắc xoá nếu thật sự không cần hoặc áp dụng đúng chỗ nếu vẫn cần sanitize nội dung đề bài (`content` là HTML).
 - [ ] **Animation & performance polish** cho interview room, dashboard — sau khi các mục P0/P1 đã ổn định.
+- [ ] **Chuyển bước lint trong CI (`.github/workflows/ci.yml`) từ non-blocking sang blocking** — hiện để `continue-on-error: true` vì repo có ~180 lỗi `@typescript-eslint/no-unsafe-*`/`no-explicit-any` tồn đọng từ trước (server + client); dọn hết nợ này rồi mới bật gate cứng.
 
 ---
 

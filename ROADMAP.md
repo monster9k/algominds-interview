@@ -62,7 +62,7 @@
 ## 🟡 P1 — Quan trọng
 
 ### Backend hardening
-- [ ] **`ChatGateway` cấu hình CORS `origin: '*'`**, không khớp whitelist `FRONTEND_URL` mà REST đang dùng ở `main.ts`. Thu hẹp lại theo cùng whitelist.
+- [x] **`ChatGateway` cấu hình CORS `origin: '*'`**, không khớp whitelist `FRONTEND_URL` mà REST đang dùng ở `main.ts`. Thu hẹp lại theo cùng whitelist.
   📍 `server/src/modules/chat/chat.gateway.ts` (dòng ~30-34).
 - [ ] **Rate-limit riêng cho WebSocket `send_message`** + giới hạn độ dài `content` trước khi lưu DB/gửi Gemini — hiện chỉ kiểm tra ownership session, không có spam-guard như REST (`ThrottlerGuard`).
   📍 `server/src/modules/chat/chat.gateway.ts` (dòng ~122-174).

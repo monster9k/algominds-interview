@@ -4,6 +4,7 @@ import {
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -27,12 +28,19 @@ type JwtPayload = {
   email: string;
   role: string;
 };
+
+// Không set `origin: FRONTEND_URL` trực tiếp ở decorator: decorator này chạy
+// khi Node require() class (trước khi ConfigModule.forRoot() nạp .env), nên
+// process.env lúc đó chưa có gì. Whitelist thật sự được set trong afterInit()
+// bên dưới, sau khi DI container (và ConfigService) đã sẵn sàng.
 @WebSocketGateway({
   cors: {
-    origin: '*', // Cho phép React (port 5173) kết nối
+    credentials: true,
   },
 })
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway
+  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
+{
   @WebSocketServer()
   server!: Server;
 
@@ -44,6 +52,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private configService: ConfigService,
     @InjectQueue('ai-queue') private aiQueue: Queue, // Inject Queue vào
   ) {}
+
+  afterInit(server: Server) {
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+    server.engine.opts.cors = {
+      origin: frontendUrl,
+      credentials: true,
+    };
+  }
 
   handleConnection(client: Socket) {
     const rawToken = client.handshake.auth?.token as string | undefined;

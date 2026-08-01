@@ -1,4 +1,5 @@
 import { Github, Apple, Linkedin } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -33,13 +34,15 @@ const socialAccounts = [
 ];
 
 export function SocialAccountsSection() {
+  const { t } = useTranslation("settings");
+
   return (
     <section className="mt-8">
       <h2 className="text-lg font-semibold text-foreground">
-        Social Accounts
+        {t("social.title")}
       </h2>
       <p className="text-sm text-muted-foreground mt-1 mb-4">
-        Connect a social account to sign in to LeetCode.
+        {t("social.description")}
       </p>
 
       <div className="rounded-lg border border-border bg-card overflow-hidden">
@@ -60,12 +63,8 @@ export function SocialAccountsSection() {
             <span className="text-sm font-medium text-foreground">
               {account.label}
             </span>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="ml-auto bg-white text-black hover:bg-white/90"
-            >
-              Connect
+            <Button variant="secondary" size="sm" className="ml-auto">
+              {t("social.connect")}
             </Button>
           </div>
         ))}

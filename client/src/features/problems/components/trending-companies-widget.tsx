@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
@@ -19,24 +20,25 @@ const TRENDING_COMPANIES = [
 
 export function TrendingCompaniesWidget() {
   const [search, setSearch] = useState("");
+  const { t } = useTranslation("problems");
 
   const filtered = TRENDING_COMPANIES.filter((c) =>
     c.name.toLowerCase().includes(search.trim().toLowerCase()),
   );
 
   return (
-    <Card className="bg-zinc-900/50 border-zinc-800 p-4">
-      <h3 className="font-semibold text-zinc-200 mb-3 text-sm">
-        Trending Companies
+    <Card className="bg-card border-border p-4">
+      <h3 className="font-semibold text-foreground mb-3 text-sm">
+        {t("companies.title")}
       </h3>
 
       <div className="relative mb-3">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         <Input
-          placeholder="Search for a company..."
+          placeholder={t("companies.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-8 h-8 text-xs bg-zinc-950/50 border-zinc-800 focus:border-zinc-700 text-zinc-200 rounded-md"
+          className="pl-8 h-8 text-xs bg-background/50 border-border focus:border-ring text-foreground rounded-md"
         />
       </div>
 
@@ -44,12 +46,12 @@ export function TrendingCompaniesWidget() {
         {filtered.map((company) => (
           <div
             key={company.name}
-            className="flex items-center justify-between gap-1 px-2 py-1.5 rounded-md bg-zinc-800/60 border border-zinc-800 hover:bg-zinc-800 cursor-pointer transition-colors"
+            className="flex items-center justify-between gap-1 px-2 py-1.5 rounded-md bg-muted/60 border border-border hover:bg-muted cursor-pointer transition-colors"
           >
-            <span className="text-[11px] text-zinc-300 truncate">
+            <span className="text-[11px] text-foreground truncate">
               {company.name}
             </span>
-            <span className="text-[10px] px-1 py-0.5 rounded bg-zinc-950/60 text-zinc-500 shrink-0">
+            <span className="text-[10px] px-1 py-0.5 rounded bg-background/60 text-muted-foreground shrink-0">
               {company.count}
             </span>
           </div>

@@ -1,4 +1,5 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslation } from "react-i18next";
 import { ResultTabProps } from "./types";
 import { ResultAccepted } from "./result-accepted";
 import { ResultFailed } from "./result-failed";
@@ -12,11 +13,13 @@ export function ResultTab({
   onAnalysis,
   onSolution,
 }: ResultTabProps) {
+  const { t } = useTranslation("interview");
+
   return (
     <ScrollArea className="h-full p-4">
       {!submissionResult ? (
-        <div className="flex flex-col items-center justify-center h-40 text-zinc-500 space-y-2">
-          <p className="text-sm">You must run your code first</p>
+        <div className="flex flex-col items-center justify-center h-40 text-muted-foreground space-y-2">
+          <p className="text-sm">{t("console.runCodeFirst")}</p>
         </div>
       ) : submissionResult.status === "ACCEPTED" ? (
         <ResultAccepted

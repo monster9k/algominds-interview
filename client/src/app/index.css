@@ -4,47 +4,109 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
+@theme inline {
   --radius: 0.5rem;
 
-  /* --- PALETTE MÀU (ROSE GOLD & DARK THEME) --- */
+  /* Ánh xạ token Tailwind (bg-background, text-foreground, ...) sang biến
+     theo theme khai báo bên dưới ở :root / .dark — "inline" bắt Tailwind
+     dùng var() thay vì resolve giá trị tĩnh lúc build. */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 
-  /* Background: Đen sâu (OLED style) */
-  --color-background: #09090b;
-  --color-foreground: #fafafa;
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
 
-  /* Card: Xám đậm */
-  --color-card: #18181b;
-  --color-card-foreground: #fafafa;
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
 
-  --color-popover: #18181b;
-  --color-popover-foreground: #fafafa;
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
 
-  /* PRIMARY: ROSE GOLD (Màu chủ đạo) - Đã chỉnh sáng hơn để nổi bật */
-  --color-primary: #e11d48; /* Gốc đỏ hồng */
-  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
 
-  /* Muted */
-  --color-secondary: #27272a;
-  --color-secondary-foreground: #fafafa;
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 
-  --color-muted: #27272a;
-  --color-muted-foreground: #a1a1aa;
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
 
-  --color-accent: #27272a;
-  --color-accent-foreground: #fafafa;
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 
-  --color-destructive: #7f1d1d;
-  --color-destructive-foreground: #fafafa;
-
-  --color-border: #27272a;
-  --color-input: #27272a;
-  --color-ring: #e11d48;
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
-/* Base setup */
+/* --- LIGHT THEME (mặc định, phong cách LeetCode) --- */
 :root {
+  color-scheme: light;
+
+  --background: #fafafa;
+  --foreground: #18181b;
+
+  --card: #ffffff;
+  --card-foreground: #18181b;
+
+  --popover: #ffffff;
+  --popover-foreground: #18181b;
+
+  /* PRIMARY: ROSE GOLD — màu chủ đạo, giữ nguyên xuyên suốt cả 2 theme */
+  --primary: #e11d48;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #e11d48;
+}
+
+/* --- DARK THEME (ROSE GOLD & DARK) --- */
+.dark {
   color-scheme: dark;
+
+  /* Background: Đen sâu (OLED style) */
+  --background: #09090b;
+  --foreground: #fafafa;
+
+  /* Card: Xám đậm */
+  --card: #18181b;
+  --card-foreground: #fafafa;
+
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
+
+  --primary: #e11d48;
+  --primary-foreground: #ffffff;
+
+  /* Muted */
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+
+  --destructive: #7f1d1d;
+  --destructive-foreground: #fafafa;
+
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #e11d48;
 }
 
 body {
@@ -79,7 +141,7 @@ body {
 }
 
 .custom-problem-html {
-  color: #d4d4d8;
+  color: #3f3f46;
   font-size: 0.9rem;
   line-height: 1.7;
   overflow-wrap: anywhere;
@@ -101,7 +163,7 @@ body {
 .custom-problem-html h4,
 .custom-problem-html h5,
 .custom-problem-html h6 {
-  color: #fafafa;
+  color: #18181b;
   line-height: 1.35;
   margin-top: 1.2rem;
   margin-bottom: 0.6rem;
@@ -148,42 +210,42 @@ body {
 }
 
 .custom-problem-html a {
-  color: #fda4af;
+  color: #e11d48;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .custom-problem-html a:hover {
-  color: #fb7185;
+  color: #be123c;
 }
 
 .custom-problem-html strong {
-  color: #fafafa;
+  color: #18181b;
   font-weight: 600;
 }
 
 .custom-problem-html em {
-  color: #e4e4e7;
+  color: #3f3f46;
 }
 
 .custom-problem-html blockquote {
   margin: 1rem 0;
-  border-left: 3px solid #3f3f46;
+  border-left: 3px solid #d4d4d8;
   padding-left: 0.9rem;
-  color: #a1a1aa;
+  color: #52525b;
 }
 
 .custom-problem-html hr {
   border: none;
-  border-top: 1px solid #27272a;
+  border-top: 1px solid #e4e4e7;
   margin: 1.2rem 0;
 }
 
 .custom-problem-html code {
-  border: 1px solid #3f3f46;
-  background: #18181b;
+  border: 1px solid #d4d4d8;
+  background: #f4f4f5;
   border-radius: 0.35rem;
-  color: #f4f4f5;
+  color: #18181b;
   padding: 0.1rem 0.35rem;
   font-size: 0.82rem;
   font-family: "Fira Code", "JetBrains Mono", Consolas, monospace;
@@ -192,8 +254,8 @@ body {
 .custom-problem-html pre {
   margin: 1rem 0;
   overflow-x: auto;
-  border: 1px solid #3f3f46;
-  background: #09090b;
+  border: 1px solid #d4d4d8;
+  background: #f4f4f5;
   border-radius: 0.6rem;
   padding: 0.85rem;
 }
@@ -214,21 +276,84 @@ body {
   max-width: 100%;
   overflow-x: auto;
   border-collapse: collapse;
-  border: 1px solid #3f3f46;
+  border: 1px solid #d4d4d8;
   border-radius: 0.6rem;
   margin: 1rem 0;
 }
 
 .custom-problem-html thead {
-  background: #18181b;
+  background: #f4f4f5;
 }
 
 .custom-problem-html th,
 .custom-problem-html td {
-  border: 1px solid #3f3f46;
+  border: 1px solid #d4d4d8;
   padding: 0.55rem 0.65rem;
   text-align: left;
   white-space: nowrap;
+}
+
+/* Dark theme overrides — giữ nguyên bộ màu dark gốc */
+.dark .custom-problem-html {
+  color: #d4d4d8;
+}
+
+.dark .custom-problem-html h1,
+.dark .custom-problem-html h2,
+.dark .custom-problem-html h3,
+.dark .custom-problem-html h4,
+.dark .custom-problem-html h5,
+.dark .custom-problem-html h6 {
+  color: #fafafa;
+}
+
+.dark .custom-problem-html a {
+  color: #fda4af;
+}
+
+.dark .custom-problem-html a:hover {
+  color: #fb7185;
+}
+
+.dark .custom-problem-html strong {
+  color: #fafafa;
+}
+
+.dark .custom-problem-html em {
+  color: #e4e4e7;
+}
+
+.dark .custom-problem-html blockquote {
+  border-left-color: #3f3f46;
+  color: #a1a1aa;
+}
+
+.dark .custom-problem-html hr {
+  border-top-color: #27272a;
+}
+
+.dark .custom-problem-html code {
+  border-color: #3f3f46;
+  background: #18181b;
+  color: #f4f4f5;
+}
+
+.dark .custom-problem-html pre {
+  border-color: #3f3f46;
+  background: #09090b;
+}
+
+.dark .custom-problem-html table {
+  border-color: #3f3f46;
+}
+
+.dark .custom-problem-html thead {
+  background: #18181b;
+}
+
+.dark .custom-problem-html th,
+.dark .custom-problem-html td {
+  border-color: #3f3f46;
 }
 
 @container (max-width: 520px) {

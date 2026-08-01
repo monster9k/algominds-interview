@@ -1,45 +1,56 @@
 import { Sparkles, Boxes, GraduationCap, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // Banner quảng cáo tĩnh (UI only) mô phỏng dãy thẻ "LeetCode Crash Course" trên trang gốc
 const BANNERS = [
   {
     id: "fingertips",
-    title: "AlgoMinds at Your Fingertips",
-    caption: "Practice anywhere, anytime.",
+    titleKey: "banners.fingertips.title",
+    captionKey: "banners.fingertips.caption",
     icon: Sparkles,
-    className: "bg-gradient-to-br from-zinc-800 to-zinc-950 border-zinc-700/50",
+    className: "bg-gradient-to-br from-muted to-card border-border",
     iconClassName: "text-violet-400",
+    titleClassName: "text-foreground",
+    captionClassName: "text-muted-foreground",
   },
   {
     id: "system-design",
-    title: "Interview Crash Course:",
-    caption: "System Design and Beyond",
+    titleKey: "banners.systemDesign.title",
+    captionKey: "banners.systemDesign.caption",
     icon: Boxes,
     className:
       "bg-gradient-to-br from-emerald-700 to-emerald-950 border-emerald-600/30",
     iconClassName: "text-emerald-200",
+    titleClassName: "text-white",
+    captionClassName: "text-white/70",
   },
   {
     id: "dsa",
-    title: "Interview Crash Course:",
-    caption: "Data Structures and Algorithms",
+    titleKey: "banners.dsa.title",
+    captionKey: "banners.dsa.caption",
     icon: GraduationCap,
     className:
       "bg-gradient-to-br from-purple-700 to-purple-950 border-purple-600/30",
     iconClassName: "text-purple-200",
+    titleClassName: "text-white",
+    captionClassName: "text-white/70",
   },
   {
     id: "top-interview",
-    title: "Top Interview",
-    caption: "Questions",
+    titleKey: "banners.topInterview.title",
+    captionKey: "banners.topInterview.caption",
     icon: Trophy,
     className:
       "bg-gradient-to-br from-blue-600 to-blue-950 border-blue-500/30",
     iconClassName: "text-blue-200",
+    titleClassName: "text-white",
+    captionClassName: "text-white/70",
   },
 ];
 
 export function FeatureBanners() {
+  const { t } = useTranslation("problems");
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
       {BANNERS.map((banner) => (
@@ -51,11 +62,15 @@ export function FeatureBanners() {
             className={`h-6 w-6 ${banner.iconClassName} opacity-90`}
           />
           <div>
-            <p className="text-sm font-semibold text-white leading-tight">
-              {banner.title}
+            <p
+              className={`text-sm font-semibold leading-tight ${banner.titleClassName}`}
+            >
+              {t(banner.titleKey)}
             </p>
-            <p className="text-xs text-white/70 leading-tight">
-              {banner.caption}
+            <p
+              className={`text-xs leading-tight ${banner.captionClassName}`}
+            >
+              {t(banner.captionKey)}
             </p>
           </div>
         </div>

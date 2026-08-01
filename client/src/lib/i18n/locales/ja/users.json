@@ -1,0 +1,64 @@
+{
+  "badges": {
+    "title": "バッジ",
+    "mostRecentBadge": "最新のバッジ"
+  },
+  "stats": {
+    "solvedProblems": "解決した問題",
+    "solved": "解決済み"
+  },
+  "difficulty": {
+    "easy": "易しい",
+    "medium": "普通",
+    "hard": "難しい"
+  },
+  "profile": {
+    "editProfile": "プロフィールを編集",
+    "rank": "ランク",
+    "rankNotAvailable": "N/A",
+    "yourStats": "あなたの統計",
+    "guest": "ゲスト",
+    "notSignedIn": "未サインイン",
+    "statLabels": {
+      "streak": "連続記録",
+      "sessions": "セッション数",
+      "avgScore": "平均スコア",
+      "credits": "クレジット"
+    }
+  },
+  "submissions": {
+    "recentTitle": "最近の提出",
+    "viewAll": "すべての提出を表示",
+    "empty": "まだ提出がありません。",
+    "status": {
+      "accepted": "正解",
+      "wrongAnswer": "不正解",
+      "compileError": "コンパイルエラー",
+      "runtimeError": "実行時エラー",
+      "tle": "時間切れ"
+    }
+  },
+  "heatmap": {
+    "title": "過去1年間の提出数: {{count}}件",
+    "activeDays": "アクティブ日数:",
+    "maxStreak": "最大連続記録:",
+    "current": "現在",
+    "less": "少ない",
+    "more": "多い",
+    "dayTooltip": "{{date}}に{{count}}件の提出",
+    "months": {
+      "jan": "1月",
+      "feb": "2月",
+      "mar": "3月",
+      "apr": "4月",
+      "may": "5月",
+      "jun": "6月",
+      "jul": "7月",
+      "aug": "8月",
+      "sep": "9月",
+      "oct": "10月",
+      "nov": "11月",
+      "dec": "12月"
+    }
+  }
+}

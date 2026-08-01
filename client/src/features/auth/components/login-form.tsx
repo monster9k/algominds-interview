@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2, Mail, Lock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,18 +17,20 @@ import { useLogin } from "../hooks/use-auth"; // Import Hook
 import { authApi } from "../api/auth-api"; // Import API cho Google
 import { PasswordInput } from "@/components/ui/password-input";
 
-// Schema giữ nguyên
-const loginSchema = z.object({
-  email: z.string().email({ message: "Email không hợp lệ" }),
-  password: z.string().min(6, { message: "Mật khẩu phải từ 6 ký tự" }),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-
 export function LoginForm({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
+  const { t } = useTranslation("auth");
+
+  // Schema giữ nguyên
+  const loginSchema = z.object({
+    email: z.string().email({ message: t("login.invalidEmail") }),
+    password: z.string().min(6, { message: t("login.passwordTooShort") }),
+  });
+
+  type LoginFormValues = z.infer<typeof loginSchema>;
+
   // 1. Gọi Hook Login
   const { mutate: login, isPending } = useLogin();
 
@@ -51,12 +54,12 @@ export function LoginForm({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t("login.emailLabel")}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="name@example.com"
+                      placeholder={t("login.emailPlaceholder")}
                       className="pl-9 bg-secondary/50 border-transparent focus:border-primary/50"
                       {...field}
                     />
@@ -73,12 +76,12 @@ export function LoginForm({
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t("login.passwordLabel")}</FormLabel>
                   <a
                     href="#"
                     className="text-xs text-muted-foreground hover:text-primary"
                   >
-                    Forgot password?
+                    {t("login.forgotPassword")}
                   </a>
                 </div>
                 <FormControl>
@@ -86,7 +89,7 @@ export function LoginForm({
                     <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <PasswordInput
                       type="password"
-                      placeholder="••••••••"
+                      placeholder={t("login.passwordPlaceholder")}
                       className="pl-9 bg-secondary/50 border-transparent focus:border-primary/50"
                       {...field}
                     />
@@ -104,18 +107,18 @@ export function LoginForm({
             disabled={isPending}
           >
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isPending ? "Signing in..." : "Sign In"}
+            {isPending ? t("login.signingIn") : t("login.signIn")}
           </Button>
         </form>
       </Form>
 
       <div className="relative my-4">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-zinc-800" />
+          <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
+            {t("login.orContinueWith")}
           </span>
         </div>
       </div>
@@ -125,7 +128,7 @@ export function LoginForm({
         variant="outline"
         type="button"
         disabled={isPending}
-        className="w-full bg-secondary/30 hover:bg-secondary border-zinc-800"
+        className="w-full bg-secondary/30 hover:bg-secondary border-border"
         onClick={authApi.loginWithGoogle}
         // onClick={authApi.loginWithGoogle} // Gọi hàm redirect
       >
@@ -148,7 +151,7 @@ export function LoginForm({
             fill="#EA4335"
           />
         </svg>
-        Google
+        {t("login.google")}
       </Button>
     </div>
   );

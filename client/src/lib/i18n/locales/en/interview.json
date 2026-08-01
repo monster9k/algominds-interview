@@ -1,0 +1,140 @@
+{
+  "common": {
+    "loadingWorkspace": "Loading Workspace...",
+    "syncingSubmissions": "Syncing latest submissions...",
+    "ready": "Ready",
+    "console": "Console",
+    "notAvailable": "N/A",
+    "unknownLanguage": "Unknown"
+  },
+  "errors": {
+    "loadSessionFailed": "Failed to load session. Please try again.",
+    "loadProblemsFailed": "Failed to load problem list.",
+    "emptyCode": "Please write some code before submitting",
+    "phase1Incomplete": "Complete Phase 1 strategy discussion first"
+  },
+  "toasts": {
+    "strategyApproved": "AI has completed the Strategy phase! Let's start Phase 2: Implement!",
+    "evaluationComplete": "AI evaluation completed!"
+  },
+  "header": {
+    "problemFallback": "Problem",
+    "problemListTitle": "Problem List",
+    "searchPlaceholder": "Search questions",
+    "loadingProblems": "Loading problem list...",
+    "noProblemsFound": "No matching problems found.",
+    "run": "Run",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Med.",
+      "hard": "Hard"
+    }
+  },
+  "problemPanel": {
+    "tabs": {
+      "description": "Description",
+      "editorial": "Editorial",
+      "solutions": "Solutions",
+      "submissions": "Submissions",
+      "accepted": "Accepted"
+    },
+    "closeTooltip": "Close",
+    "editorialComingSoon": {
+      "title": "Editorial - Coming Soon",
+      "body": "Editorial content will be available here."
+    },
+    "solutionsComingSoon": {
+      "title": "Solutions - Coming Soon",
+      "body": "Community solutions will be available here."
+    }
+  },
+  "evaluation": {
+    "title": "AI Evaluation",
+    "scores": {
+      "logic": "Logic",
+      "cleanCode": "Clean Code",
+      "performance": "Performance",
+      "bestPractices": "Best Practices"
+    },
+    "feedbackLabel": "Feedback:",
+    "pros": "Strengths",
+    "cons": "Areas to Improve"
+  },
+  "submissionDetail": {
+    "accepted": "Accepted",
+    "submittedAt": "submitted at",
+    "justNow": "just now",
+    "testcasesPassed": "{{passed}} / {{total}} testcases passed",
+    "backButton": "Back to Submissions",
+    "evaluationPending": "AI is evaluating your submission. The score will appear shortly.",
+    "runtime": "Runtime",
+    "memory": "Memory",
+    "runtimeDistribution": "Runtime distribution",
+    "memoryDistributionUnavailable": "Memory distribution not available",
+    "beats": "Beats {{percent}}% of users with {{language}}",
+    "beatsPercent": "Beats <percent>{{percent}}%</percent>",
+    "code": "Code"
+  },
+  "console": {
+    "testcaseTab": "Testcase",
+    "resultTab": "Result",
+    "aiChatTab": "AI Chat",
+    "phase1RequiredTooltip": "Required in Phase 1",
+    "tabLockedTooltip": "This tab will unlock after AI approves your strategy",
+    "noTestCases": "No test cases available",
+    "caseLabel": "Case {{number}}",
+    "testCaseLabel": "Test Case {{number}}",
+    "pass": "PASS",
+    "fail": "FAIL",
+    "input": "Input:",
+    "expected": "Expected:",
+    "actual": "Actual:",
+    "error": "Error:",
+    "runCodeFirst": "You must run your code first",
+    "testCasesHeading": "Test Cases ({{passed}}/{{total}})",
+    "testCasesLabel": "Test Cases",
+    "passedLabel": "{{passed}}/{{total}} passed",
+    "runtimeMemoryLabel": "Runtime: {{time}}ms | Memory: {{memory}}KB",
+    "analysis": "Analysis",
+    "solution": "Solution"
+  },
+  "phaseLabels": {
+    "PHASE_1_STRATEGY": "Phase 1: Strategy",
+    "PHASE_2_IMPLEMENT": "Phase 2: Implementation",
+    "COMPLETED": "Completed",
+    "ABANDONED": "Abandoned"
+  },
+  "aiChat": {
+    "emptyState": {
+      "PHASE_1_STRATEGY": {
+        "title": "🎯 Phase 1: Strategy Discussion",
+        "message": "Suggest an algorithm idea and time/space complexity (Big O) for this problem!",
+        "note": "Note: other tabs will unlock after AI approves your strategy"
+      },
+      "PHASE_2_IMPLEMENT": {
+        "message": "Discuss the algorithm and implementation with AI!"
+      },
+      "COMPLETED": {
+        "message": "Discuss the algorithm and implementation with AI!"
+      },
+      "ABANDONED": {
+        "message": "This session has been abandoned"
+      }
+    },
+    "inputPlaceholderThinking": "AI is replying...",
+    "inputPlaceholder": "Type a message..."
+  },
+  "editor": {
+    "title": "Code",
+    "languagePlaceholder": "Language",
+    "switchLanguageConfirm": "Switch to {{language}}? Your current code will be replaced with the starter template.",
+    "locked": "Editor is locked",
+    "lockedHint": "Discuss your strategy with AI in the console first!"
+  },
+  "submissionsList": {
+    "status": "Status",
+    "language": "Language"
+  }
+}

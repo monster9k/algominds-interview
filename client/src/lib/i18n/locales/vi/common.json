@@ -1,0 +1,44 @@
+{
+  "nav": {
+    "problems": "Bài tập",
+    "contest": "Cuộc thi",
+    "discuss": "Thảo luận",
+    "interview": "Phỏng vấn",
+    "store": "Cửa hàng"
+  },
+  "sidebar": {
+    "library": "Thư viện",
+    "quest": "Nhiệm vụ",
+    "explore": "Khám phá",
+    "studyPlan": "Lộ trình học",
+    "myLists": "Danh sách của tôi",
+    "favorite": "Yêu thích"
+  },
+  "userMenu": {
+    "guest": "Khách",
+    "premiumHint": "Mở khoá toàn bộ tính năng với gói Premium!",
+    "myLists": "Danh sách",
+    "notebook": "Sổ tay",
+    "progress": "Tiến độ",
+    "points": "Điểm",
+    "tryNewFeatures": "Thử tính năng mới",
+    "orders": "Đơn hàng",
+    "myPlaygrounds": "Playground của tôi",
+    "settings": "Cài đặt",
+    "appearance": "Giao diện",
+    "signOut": "Đăng xuất"
+  },
+  "errorBoundary": {
+    "title": "Đã có lỗi xảy ra.",
+    "description": "Ứng dụng gặp sự cố không mong muốn. Vui lòng tải lại trang — nếu lỗi vẫn tiếp diễn, hãy báo cho đội ngũ hỗ trợ.",
+    "reload": "Tải lại trang"
+  },
+  "actions": {
+    "save": "Lưu",
+    "cancel": "Huỷ",
+    "confirm": "Xác nhận",
+    "loading": "Đang tải...",
+    "retry": "Thử lại",
+    "close": "Đóng"
+  }
+}

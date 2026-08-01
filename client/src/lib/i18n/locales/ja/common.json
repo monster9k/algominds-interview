@@ -1,0 +1,44 @@
+{
+  "nav": {
+    "problems": "問題",
+    "contest": "コンテスト",
+    "discuss": "ディスカッション",
+    "interview": "面接",
+    "store": "ストア"
+  },
+  "sidebar": {
+    "library": "ライブラリ",
+    "quest": "クエスト",
+    "explore": "探索",
+    "studyPlan": "学習プラン",
+    "myLists": "マイリスト",
+    "favorite": "お気に入り"
+  },
+  "userMenu": {
+    "guest": "ゲスト",
+    "premiumHint": "プレミアムに登録してすべての機能を利用しよう！",
+    "myLists": "マイリスト",
+    "notebook": "ノート",
+    "progress": "進捗",
+    "points": "ポイント",
+    "tryNewFeatures": "新機能を試す",
+    "orders": "注文履歴",
+    "myPlaygrounds": "マイプレイグラウンド",
+    "settings": "設定",
+    "appearance": "外観",
+    "signOut": "ログアウト"
+  },
+  "errorBoundary": {
+    "title": "エラーが発生しました。",
+    "description": "予期しないエラーが発生しました。ページを再読み込みしてください。問題が解決しない場合はサポートまでご連絡ください。",
+    "reload": "ページを再読み込み"
+  },
+  "actions": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "loading": "読み込み中...",
+    "retry": "再試行",
+    "close": "閉じる"
+  }
+}

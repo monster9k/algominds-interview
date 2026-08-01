@@ -1,0 +1,64 @@
+{
+  "badges": {
+    "title": "Huy hiệu",
+    "mostRecentBadge": "Huy hiệu gần nhất"
+  },
+  "stats": {
+    "solvedProblems": "Bài đã giải",
+    "solved": "Đã giải"
+  },
+  "difficulty": {
+    "easy": "Dễ",
+    "medium": "Trung bình",
+    "hard": "Khó"
+  },
+  "profile": {
+    "editProfile": "Chỉnh sửa hồ sơ",
+    "rank": "Xếp hạng",
+    "rankNotAvailable": "N/A",
+    "yourStats": "Thống kê của bạn",
+    "guest": "Khách",
+    "notSignedIn": "Chưa đăng nhập",
+    "statLabels": {
+      "streak": "Chuỗi ngày",
+      "sessions": "Phiên phỏng vấn",
+      "avgScore": "Điểm trung bình",
+      "credits": "Tín dụng"
+    }
+  },
+  "submissions": {
+    "recentTitle": "Bài nộp gần đây",
+    "viewAll": "Xem tất cả bài nộp",
+    "empty": "Chưa có bài nộp nào.",
+    "status": {
+      "accepted": "Đã chấp nhận",
+      "wrongAnswer": "Sai kết quả",
+      "compileError": "Lỗi biên dịch",
+      "runtimeError": "Lỗi thực thi",
+      "tle": "Quá thời gian"
+    }
+  },
+  "heatmap": {
+    "title": "{{count}} lượt nộp bài trong năm qua",
+    "activeDays": "Tổng số ngày hoạt động:",
+    "maxStreak": "Chuỗi dài nhất:",
+    "current": "Hiện tại",
+    "less": "Ít",
+    "more": "Nhiều",
+    "dayTooltip": "{{count}} lượt nộp vào ngày {{date}}",
+    "months": {
+      "jan": "Th1",
+      "feb": "Th2",
+      "mar": "Th3",
+      "apr": "Th4",
+      "may": "Th5",
+      "jun": "Th6",
+      "jul": "Th7",
+      "aug": "Th8",
+      "sep": "Th9",
+      "oct": "Th10",
+      "nov": "Th11",
+      "dec": "Th12"
+    }
+  }
+}

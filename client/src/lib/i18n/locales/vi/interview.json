@@ -1,0 +1,140 @@
+{
+  "common": {
+    "loadingWorkspace": "Đang tải không gian làm việc...",
+    "syncingSubmissions": "Đang đồng bộ bài nộp mới nhất...",
+    "ready": "Sẵn sàng",
+    "console": "Console",
+    "notAvailable": "N/A",
+    "unknownLanguage": "Không xác định"
+  },
+  "errors": {
+    "loadSessionFailed": "Không thể tải phiên làm việc. Vui lòng thử lại.",
+    "loadProblemsFailed": "Không thể tải danh sách bài tập.",
+    "emptyCode": "Vui lòng viết code trước khi nộp bài",
+    "phase1Incomplete": "Hãy hoàn thành thảo luận chiến lược ở Phase 1 trước"
+  },
+  "toasts": {
+    "strategyApproved": "AI đã hoàn thành phần Strategy! Bắt đầu Phase 2: Implement nào!",
+    "evaluationComplete": "AI đã hoàn thành đánh giá!"
+  },
+  "header": {
+    "problemFallback": "Bài tập",
+    "problemListTitle": "Danh sách bài tập",
+    "searchPlaceholder": "Tìm kiếm bài tập",
+    "loadingProblems": "Đang tải danh sách bài tập...",
+    "noProblemsFound": "Không tìm thấy bài phù hợp.",
+    "run": "Chạy",
+    "submit": "Nộp bài",
+    "submitting": "Đang nộp...",
+    "difficulty": {
+      "easy": "Dễ",
+      "medium": "T.Bình",
+      "hard": "Khó"
+    }
+  },
+  "problemPanel": {
+    "tabs": {
+      "description": "Mô tả",
+      "editorial": "Bài giải",
+      "solutions": "Lời giải",
+      "submissions": "Bài nộp",
+      "accepted": "Đã chấp nhận"
+    },
+    "closeTooltip": "Đóng",
+    "editorialComingSoon": {
+      "title": "Bài giải - Sắp ra mắt",
+      "body": "Nội dung bài giải sẽ sớm có tại đây."
+    },
+    "solutionsComingSoon": {
+      "title": "Lời giải - Sắp ra mắt",
+      "body": "Lời giải từ cộng đồng sẽ sớm có tại đây."
+    }
+  },
+  "evaluation": {
+    "title": "Đánh giá của AI",
+    "scores": {
+      "logic": "Logic",
+      "cleanCode": "Code sạch",
+      "performance": "Hiệu năng",
+      "bestPractices": "Best Practices"
+    },
+    "feedbackLabel": "Nhận xét:",
+    "pros": "Điểm mạnh",
+    "cons": "Cần cải thiện"
+  },
+  "submissionDetail": {
+    "accepted": "Đã chấp nhận",
+    "submittedAt": "nộp lúc",
+    "justNow": "vừa xong",
+    "testcasesPassed": "{{passed}} / {{total}} testcase đạt",
+    "backButton": "Quay lại danh sách bài nộp",
+    "evaluationPending": "AI đang đánh giá bài làm. Điểm số sẽ xuất hiện trong giây lát.",
+    "runtime": "Thời gian chạy",
+    "memory": "Bộ nhớ",
+    "runtimeDistribution": "Phân bố thời gian chạy",
+    "memoryDistributionUnavailable": "Chưa có dữ liệu phân bố bộ nhớ",
+    "beats": "Vượt qua {{percent}}% người dùng {{language}}",
+    "beatsPercent": "Vượt qua <percent>{{percent}}%</percent>",
+    "code": "Code"
+  },
+  "console": {
+    "testcaseTab": "Testcase",
+    "resultTab": "Kết quả",
+    "aiChatTab": "AI Chat",
+    "phase1RequiredTooltip": "Bắt buộc sử dụng trong Phase 1",
+    "tabLockedTooltip": "Tab này sẽ được mở khóa sau khi AI phê duyệt chiến lược của bạn",
+    "noTestCases": "Không có test case nào",
+    "caseLabel": "Case {{number}}",
+    "testCaseLabel": "Test Case {{number}}",
+    "pass": "ĐẠT",
+    "fail": "TRƯỢT",
+    "input": "Input:",
+    "expected": "Kỳ vọng:",
+    "actual": "Thực tế:",
+    "error": "Lỗi:",
+    "runCodeFirst": "Bạn cần chạy code trước",
+    "testCasesHeading": "Test Cases ({{passed}}/{{total}})",
+    "testCasesLabel": "Test Cases",
+    "passedLabel": "{{passed}}/{{total}} đạt",
+    "runtimeMemoryLabel": "Thời gian: {{time}}ms | Bộ nhớ: {{memory}}KB",
+    "analysis": "Phân tích",
+    "solution": "Lời giải"
+  },
+  "phaseLabels": {
+    "PHASE_1_STRATEGY": "Phase 1: Chiến lược",
+    "PHASE_2_IMPLEMENT": "Phase 2: Triển khai",
+    "COMPLETED": "Hoàn thành",
+    "ABANDONED": "Đã hủy"
+  },
+  "aiChat": {
+    "emptyState": {
+      "PHASE_1_STRATEGY": {
+        "title": "🎯 Phase 1: Thảo luận chiến lược",
+        "message": "Hãy đề xuất ý tưởng thuật toán và độ phức tạp (Big O) cho bài toán này nhé!",
+        "note": "Lưu ý: Các tab khác sẽ được mở khóa sau khi AI phê duyệt chiến lược của bạn"
+      },
+      "PHASE_2_IMPLEMENT": {
+        "message": "Thảo luận với AI về thuật toán và cách triển khai!"
+      },
+      "COMPLETED": {
+        "message": "Thảo luận với AI về thuật toán và cách triển khai!"
+      },
+      "ABANDONED": {
+        "message": "Session đã bị hủy"
+      }
+    },
+    "inputPlaceholderThinking": "AI đang trả lời...",
+    "inputPlaceholder": "Nhập tin nhắn..."
+  },
+  "editor": {
+    "title": "Code",
+    "languagePlaceholder": "Ngôn ngữ",
+    "switchLanguageConfirm": "Chuyển sang {{language}}? Code hiện tại sẽ bị thay bằng mẫu khởi tạo.",
+    "locked": "Editor đang bị khóa",
+    "lockedHint": "Hãy thảo luận chiến lược với AI ở console trước!"
+  },
+  "submissionsList": {
+    "status": "Trạng thái",
+    "language": "Ngôn ngữ"
+  }
+}

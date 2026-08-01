@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { RotateCcw } from "lucide-react";
+import i18n from "@/lib/i18n";
 import { captureException } from "@/lib/monitoring";
 
 interface ErrorBoundaryProps {
@@ -35,18 +36,19 @@ export class ErrorBoundary extends Component<
   render() {
     if (this.state.error) {
       return (
-        <div className="h-screen w-full bg-zinc-950 flex flex-col items-center justify-center gap-4 text-zinc-100 px-6 text-center">
-          <p className="text-lg font-semibold">Đã có lỗi xảy ra.</p>
-          <p className="text-sm text-zinc-400 max-w-md">
-            Ứng dụng gặp sự cố không mong muốn. Vui lòng tải lại trang — nếu
-            lỗi vẫn tiếp diễn, hãy báo cho đội ngũ hỗ trợ.
+        <div className="h-screen w-full bg-background flex flex-col items-center justify-center gap-4 text-foreground px-6 text-center">
+          <p className="text-lg font-semibold">
+            {i18n.t("errorBoundary.title", { ns: "common" })}
+          </p>
+          <p className="text-sm text-muted-foreground max-w-md">
+            {i18n.t("errorBoundary.description", { ns: "common" })}
           </p>
           <button
             onClick={this.handleReload}
-            className="inline-flex items-center gap-2 rounded-md bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <RotateCcw className="h-4 w-4" />
-            Tải lại trang
+            {i18n.t("errorBoundary.reload", { ns: "common" })}
           </button>
         </div>
       );

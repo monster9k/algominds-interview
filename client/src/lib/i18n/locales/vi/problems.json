@@ -1,0 +1,56 @@
+{
+  "filters": {
+    "allTopics": "Tất cả chủ đề",
+    "searchPlaceholder": "Tìm kiếm câu hỏi...",
+    "sortAscending": "Sắp xếp tăng dần (1 → 9)",
+    "sortDescending": "Sắp xếp giảm dần (9 → 1)",
+    "difficultyPlaceholder": "Độ khó",
+    "statusPlaceholder": "Trạng thái",
+    "loginToFilterStatus": "Đăng nhập để lọc theo trạng thái",
+    "all": "Tất cả",
+    "easy": "Dễ",
+    "medium": "Trung bình",
+    "hard": "Khó",
+    "statusTodo": "Chưa làm",
+    "statusSolved": "Đã giải",
+    "statusAttempted": "Đã thử"
+  },
+  "table": {
+    "loading": "Đang tải danh sách bài tập...",
+    "errorLoading": "Không thể tải danh sách bài tập. Vui lòng kiểm tra kết nối Backend.",
+    "emptyState": "Chưa có bài tập nào trong cơ sở dữ liệu.",
+    "columnStatus": "Trạng thái",
+    "columnTitle": "Tiêu đề",
+    "columnAcceptance": "Tỉ lệ chấp nhận",
+    "columnDifficulty": "Độ khó",
+    "columnSolution": "Lời giải",
+    "notAvailable": "N/A"
+  },
+  "calendar": {
+    "dayLabel": "Ngày {{day}}",
+    "streakLabel": "Chuỗi {{count}} ngày 🔥",
+    "weekdays": ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
+  },
+  "banners": {
+    "fingertips": {
+      "title": "AlgoMinds trong tầm tay",
+      "caption": "Luyện tập mọi lúc, mọi nơi."
+    },
+    "systemDesign": {
+      "title": "Khoá học cấp tốc:",
+      "caption": "System Design và hơn thế nữa"
+    },
+    "dsa": {
+      "title": "Khoá học cấp tốc:",
+      "caption": "Cấu trúc dữ liệu và Giải thuật"
+    },
+    "topInterview": {
+      "title": "Câu hỏi phỏng vấn",
+      "caption": "hàng đầu"
+    }
+  },
+  "companies": {
+    "title": "Công ty nổi bật",
+    "searchPlaceholder": "Tìm kiếm công ty..."
+  }
+}

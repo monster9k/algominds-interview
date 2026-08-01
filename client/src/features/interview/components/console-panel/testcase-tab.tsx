@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslation } from "react-i18next";
 import { TestcaseTabProps } from "./types";
 
 /**
@@ -11,11 +12,13 @@ export function TestcaseTab({
   selectedCase,
   onCaseSelect,
 }: TestcaseTabProps) {
+  const { t } = useTranslation("interview");
+
   if (!testCases || testCases.length === 0) {
     return (
       <ScrollArea className="h-full p-4">
-        <div className="flex items-center justify-center h-40 text-zinc-500">
-          <p className="text-sm">No test cases available</p>
+        <div className="flex items-center justify-center h-40 text-muted-foreground">
+          <p className="text-sm">{t("console.noTestCases")}</p>
         </div>
       </ScrollArea>
     );
@@ -37,11 +40,11 @@ export function TestcaseTab({
                 onClick={() => onCaseSelect(index)}
                 className={`h-7 text-xs transition-all ${
                   selectedCase === index
-                    ? "bg-zinc-800 text-white border border-zinc-700"
-                    : "text-zinc-500 hover:text-zinc-300"
+                    ? "bg-accent text-accent-foreground border border-border"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Case {index + 1}
+                {t("console.caseLabel", { number: index + 1 })}
               </Button>
             ))}
           </div>
@@ -51,10 +54,10 @@ export function TestcaseTab({
             {currentCase &&
               Object.entries(currentCase.input || {}).map(([key, value]) => (
                 <div key={key} className="space-y-1">
-                  <span className="text-xs text-zinc-500 font-medium">
+                  <span className="text-xs text-muted-foreground font-medium">
                     {key} =
                   </span>
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-md p-3 font-mono text-sm text-zinc-300">
+                  <div className="bg-card border border-border rounded-md p-3 font-mono text-sm text-foreground">
                     {Array.isArray(value)
                       ? `[${value.join(", ")}]`
                       : String(value)}

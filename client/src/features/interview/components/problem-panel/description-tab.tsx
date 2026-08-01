@@ -17,7 +17,7 @@ export function DescriptionTab({ problem }: DescriptionTabProps) {
     <div className="problem-description-container p-4 sm:p-5">
       {/* Problem Title and Difficulty */}
       <div className="mb-4">
-        <h2 className="wrap-break-word text-lg font-bold text-white sm:text-xl">
+        <h2 className="wrap-break-word text-lg font-bold text-foreground sm:text-xl">
           {problem.displayId}. {problem.title}
         </h2>
       </div>
@@ -39,7 +39,8 @@ export function DescriptionTab({ problem }: DescriptionTabProps) {
       </div>
 
       {/* Problem Content */}
-      <div className="custom-problem-html text-zinc-300 prose prose-invert prose-sm max-w-none">
+      {/* text color handled entirely by .custom-problem-html (light/dark variants in index.css) */}
+      <div className="custom-problem-html prose prose-invert prose-sm max-w-none">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {problem.content}
         </ReactMarkdown>

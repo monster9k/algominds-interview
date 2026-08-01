@@ -1,9 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MOCK_DIFFICULTY_STATS } from "../utils/mock-data";
 import {
   DIFFICULTY_BAR_COLOR,
-  DIFFICULTY_LABEL,
   DIFFICULTY_RING_COLOR,
   DIFFICULTY_TEXT_COLOR,
 } from "../utils/difficulty";
@@ -37,6 +37,7 @@ function buildRingArcs(
 }
 
 export function SolvedStatsCard() {
+  const { t } = useTranslation("users");
   const { data: profile, isLoading } = useUserProfile();
 
   const mockTotalSolved = MOCK_DIFFICULTY_STATS.reduce((sum, s) => sum + s.solved, 0);
@@ -59,7 +60,7 @@ export function SolvedStatsCard() {
   return (
     <Card className="h-full">
       <CardHeader className="p-4">
-        <CardTitle className="text-base">Solved Problems</CardTitle>
+        <CardTitle className="text-base">{t("stats.solvedProblems")}</CardTitle>
       </CardHeader>
       <CardContent className="p-4 pt-0 flex items-center gap-4">
         {isLoading ? (
@@ -107,7 +108,7 @@ export function SolvedStatsCard() {
                     /{totalProblems}
                   </span>
                 </span>
-                <span className="text-[10px] text-muted-foreground">Solved</span>
+                <span className="text-[10px] text-muted-foreground">{t("stats.solved")}</span>
               </div>
             </div>
 
@@ -118,7 +119,7 @@ export function SolvedStatsCard() {
                   <div key={stat.difficulty}>
                     <div className="flex items-baseline justify-between text-xs">
                       <span className={`font-medium ${DIFFICULTY_TEXT_COLOR[stat.difficulty]}`}>
-                        {DIFFICULTY_LABEL[stat.difficulty]}
+                        {t(`difficulty.${stat.difficulty.toLowerCase()}`)}
                       </span>
                       <span className="text-muted-foreground">
                         {stat.solved}

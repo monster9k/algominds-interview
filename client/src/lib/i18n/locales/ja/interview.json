@@ -1,0 +1,140 @@
+{
+  "common": {
+    "loadingWorkspace": "ワークスペースを読み込み中...",
+    "syncingSubmissions": "最新の提出を同期中...",
+    "ready": "準備完了",
+    "console": "コンソール",
+    "notAvailable": "N/A",
+    "unknownLanguage": "不明"
+  },
+  "errors": {
+    "loadSessionFailed": "セッションの読み込みに失敗しました。もう一度お試しください。",
+    "loadProblemsFailed": "問題リストの読み込みに失敗しました。",
+    "emptyCode": "提出する前にコードを入力してください",
+    "phase1Incomplete": "先にPhase 1の戦略ディスカッションを完了してください"
+  },
+  "toasts": {
+    "strategyApproved": "AIがStrategyフェーズを承認しました!Phase 2: Implementを始めましょう!",
+    "evaluationComplete": "AI評価が完了しました!"
+  },
+  "header": {
+    "problemFallback": "問題",
+    "problemListTitle": "問題リスト",
+    "searchPlaceholder": "問題を検索",
+    "loadingProblems": "問題リストを読み込み中...",
+    "noProblemsFound": "一致する問題が見つかりません。",
+    "run": "実行",
+    "submit": "提出",
+    "submitting": "提出中...",
+    "difficulty": {
+      "easy": "簡単",
+      "medium": "普通",
+      "hard": "難しい"
+    }
+  },
+  "problemPanel": {
+    "tabs": {
+      "description": "説明",
+      "editorial": "解説",
+      "solutions": "解答例",
+      "submissions": "提出履歴",
+      "accepted": "正解"
+    },
+    "closeTooltip": "閉じる",
+    "editorialComingSoon": {
+      "title": "解説 - 近日公開",
+      "body": "解説コンテンツは近日公開予定です。"
+    },
+    "solutionsComingSoon": {
+      "title": "解答例 - 近日公開",
+      "body": "コミュニティの解答例は近日公開予定です。"
+    }
+  },
+  "evaluation": {
+    "title": "AI評価",
+    "scores": {
+      "logic": "ロジック",
+      "cleanCode": "コードの綺麗さ",
+      "performance": "パフォーマンス",
+      "bestPractices": "ベストプラクティス"
+    },
+    "feedbackLabel": "フィードバック:",
+    "pros": "良かった点",
+    "cons": "改善が必要な点"
+  },
+  "submissionDetail": {
+    "accepted": "正解",
+    "submittedAt": "提出日時",
+    "justNow": "たった今",
+    "testcasesPassed": "{{passed}} / {{total}} 件のテストケースが成功",
+    "backButton": "提出履歴に戻る",
+    "evaluationPending": "AIが提出内容を評価しています。まもなくスコアが表示されます。",
+    "runtime": "実行時間",
+    "memory": "メモリ",
+    "runtimeDistribution": "実行時間の分布",
+    "memoryDistributionUnavailable": "メモリ分布データはありません",
+    "beats": "{{language}}ユーザーの{{percent}}%より高速",
+    "beatsPercent": "上位<percent>{{percent}}%</percent>",
+    "code": "コード"
+  },
+  "console": {
+    "testcaseTab": "テストケース",
+    "resultTab": "結果",
+    "aiChatTab": "AIチャット",
+    "phase1RequiredTooltip": "Phase 1では必須です",
+    "tabLockedTooltip": "AIが戦略を承認するとこのタブが解放されます",
+    "noTestCases": "テストケースがありません",
+    "caseLabel": "ケース {{number}}",
+    "testCaseLabel": "テストケース {{number}}",
+    "pass": "成功",
+    "fail": "失敗",
+    "input": "入力:",
+    "expected": "期待値:",
+    "actual": "実際の値:",
+    "error": "エラー:",
+    "runCodeFirst": "先にコードを実行してください",
+    "testCasesHeading": "テストケース ({{passed}}/{{total}})",
+    "testCasesLabel": "テストケース",
+    "passedLabel": "{{passed}}/{{total}} 件成功",
+    "runtimeMemoryLabel": "実行時間: {{time}}ms | メモリ: {{memory}}KB",
+    "analysis": "分析",
+    "solution": "解答"
+  },
+  "phaseLabels": {
+    "PHASE_1_STRATEGY": "Phase 1: 戦略",
+    "PHASE_2_IMPLEMENT": "Phase 2: 実装",
+    "COMPLETED": "完了",
+    "ABANDONED": "中断"
+  },
+  "aiChat": {
+    "emptyState": {
+      "PHASE_1_STRATEGY": {
+        "title": "🎯 Phase 1: 戦略ディスカッション",
+        "message": "この問題のアルゴリズムのアイデアと計算量(Big O)を提案してください!",
+        "note": "注意:他のタブはAIが戦略を承認した後に解放されます"
+      },
+      "PHASE_2_IMPLEMENT": {
+        "message": "アルゴリズムと実装についてAIと話し合いましょう!"
+      },
+      "COMPLETED": {
+        "message": "アルゴリズムと実装についてAIと話し合いましょう!"
+      },
+      "ABANDONED": {
+        "message": "このセッションは中断されました"
+      }
+    },
+    "inputPlaceholderThinking": "AIが返信中...",
+    "inputPlaceholder": "メッセージを入力..."
+  },
+  "editor": {
+    "title": "コード",
+    "languagePlaceholder": "言語",
+    "switchLanguageConfirm": "{{language}}に切り替えますか?現在のコードはスターターテンプレートに置き換えられます。",
+    "locked": "エディタはロックされています",
+    "lockedHint": "まずコンソールでAIと戦略を話し合ってください!"
+  },
+  "submissionsList": {
+    "status": "ステータス",
+    "language": "言語"
+  }
+}

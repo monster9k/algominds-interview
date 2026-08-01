@@ -1,5 +1,6 @@
 import { Bell, ChevronDown, Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -8,18 +9,19 @@ import { DashboardSidebar } from "./dashboard-sidebar";
 import { UserNavMenu } from "./user-nav-menu";
 
 const navLinks = [
-  { label: "Problems", href: "/problems" },
-  { label: "Contest", href: "#" },
-  { label: "Discuss", href: "#" },
-  { label: "Interview", href: "#", hasDropdown: true },
-  { label: "Store", href: "#", hasDropdown: true },
+  { labelKey: "nav.problems", href: "/problems" },
+  { labelKey: "nav.contest", href: "#" },
+  { labelKey: "nav.discuss", href: "#" },
+  { labelKey: "nav.interview", href: "#", hasDropdown: true },
+  { labelKey: "nav.store", href: "#", hasDropdown: true },
 ];
 
 export function DashboardHeader() {
   const location = useLocation();
+  const { t } = useTranslation("common");
 
   return (
-    <header className="sticky top-0 z-40 h-14 shrink-0 bg-background/80 backdrop-blur-md border-b border-zinc-800 flex items-stretch px-4 md:px-6">
+    <header className="sticky top-0 z-40 h-14 shrink-0 bg-background/80 backdrop-blur-md border-b border-border flex items-stretch px-4 md:px-6">
       <div className="flex items-center gap-4 lg:hidden">
         <Sheet>
           <SheetTrigger asChild>
@@ -29,7 +31,7 @@ export function DashboardHeader() {
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="p-0 bg-zinc-950 w-64 border-zinc-800"
+            className="p-0 bg-background w-64 border-border"
           >
             <DashboardSidebar />
           </SheetContent>
@@ -43,7 +45,7 @@ export function DashboardHeader() {
             link.href !== "#" && location.pathname.startsWith(link.href);
           return (
             <Link
-              key={link.label}
+              key={link.labelKey}
               to={link.href}
               className={cn(
                 "flex items-center gap-1 border-b-2 text-sm font-medium transition-colors",
@@ -52,7 +54,7 @@ export function DashboardHeader() {
                   : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
-              {link.label}
+              {t(link.labelKey)}
               {link.hasDropdown && <ChevronDown className="h-3.5 w-3.5" />}
             </Link>
           );
@@ -63,7 +65,7 @@ export function DashboardHeader() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative text-zinc-400 hover:text-primary"
+          className="relative text-muted-foreground hover:text-primary"
         >
           <Bell className="h-5 w-5" />
           <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary animate-pulse" />

@@ -14,6 +14,7 @@ import { SubmissionsTab } from "./problem-panel/submissions-tab";
 import { SubmissionDetail } from "./submission-detail";
 import type { SubmissionResponse } from "../types";
 import type { Problem } from "./problem-panel/types";
+import { useTranslation } from "react-i18next";
 
 /**
  * ProblemPanel - Main container component
@@ -37,6 +38,7 @@ export function ProblemPanel({
   onTabChange,
   onCloseAccepted,
 }: ProblemPanelProps) {
+  const { t } = useTranslation("interview");
   const [selectedSubmission, setSelectedSubmission] =
     useState<SubmissionResponse | null>(null);
 
@@ -46,52 +48,57 @@ export function ProblemPanel({
     <Tabs
       value={activeTab}
       onValueChange={onTabChange}
-      className="h-full flex flex-col bg-zinc-950"
+      className="h-full flex flex-col bg-background"
     >
       {/* Tabs Header */}
-      <div className="bg-zinc-900 border-b border-zinc-800 px-2 shrink-0">
+      <div className="bg-card border-b border-border px-2 shrink-0">
         <TabsList className="h-8 bg-transparent p-0 gap-1">
           <TabsTrigger
             value="description"
-            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none  h-full px-4 py-2 text-zinc-400 font-medium text-xs flex gap-2 hover:bg-zinc-800 rounded transition-colors "
+            className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none  h-full px-4 py-2 text-muted-foreground font-medium text-xs flex gap-2 hover:bg-accent rounded transition-colors "
           >
-            <Code2 className="h-3.5 w-3.5 text-rose-500" /> Description
+            <Code2 className="h-3.5 w-3.5 text-rose-500" />{" "}
+            {t("problemPanel.tabs.description")}
           </TabsTrigger>
           <TabsTrigger
             value="editorial"
-            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none  h-full px-4 py-2 text-zinc-400 font-medium text-xs flex gap-2 hover:bg-zinc-800 rounded transition-colors"
+            className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none  h-full px-4 py-2 text-muted-foreground font-medium text-xs flex gap-2 hover:bg-accent rounded transition-colors"
           >
-            <Beaker className="h-3.5 w-3.5 text-blue-500" /> Editorial
+            <Beaker className="h-3.5 w-3.5 text-blue-500" />{" "}
+            {t("problemPanel.tabs.editorial")}
           </TabsTrigger>
           <TabsTrigger
             value="solutions"
-            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none  h-full px-4 py-2 text-zinc-400 font-medium text-xs flex gap-2 hover:bg-zinc-800 rounded transition-colors"
+            className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none  h-full px-4 py-2 text-muted-foreground font-medium text-xs flex gap-2 hover:bg-accent rounded transition-colors"
           >
-            <Lightbulb className="h-3.5 w-3.5 text-blue-500" /> Solutions
+            <Lightbulb className="h-3.5 w-3.5 text-blue-500" />{" "}
+            {t("problemPanel.tabs.solutions")}
           </TabsTrigger>
           <TabsTrigger
             value="submissions"
             onClick={() => setSelectedSubmission(null)}
-            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none  h-full px-4 py-2 text-zinc-400 font-medium text-xs flex gap-2 hover:bg-zinc-800 rounded transition-colors"
+            className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none  h-full px-4 py-2 text-muted-foreground font-medium text-xs flex gap-2 hover:bg-accent rounded transition-colors"
           >
-            <History className="h-3.5 w-3.5 text-emerald-500" /> Submissions
+            <History className="h-3.5 w-3.5 text-emerald-500" />{" "}
+            {t("problemPanel.tabs.submissions")}
           </TabsTrigger>
 
           {/* Dynamic Accepted Tab */}
           {acceptedSubmission && (
             <TabsTrigger
               value="accepted"
-              className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 rounded-none h-full px-4 text-emerald-400 font-medium text-xs flex gap-2 group"
+              className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 rounded-none h-full px-4 text-emerald-400 font-medium text-xs flex gap-2 group"
             >
-              <CheckCircle2 className="h-3.5 w-3.5" /> Accepted
+              <CheckCircle2 className="h-3.5 w-3.5" />{" "}
+              {t("problemPanel.tabs.accepted")}
               <span
                 role="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onCloseAccepted?.();
                 }}
-                className="ml-1 hover:bg-zinc-800 rounded p-0.5 transition-colors opacity-0 group-hover:opacity-100"
-                title="Close"
+                className="ml-1 hover:bg-accent rounded p-0.5 transition-colors opacity-0 group-hover:opacity-100"
+                title={t("problemPanel.closeTooltip")}
               >
                 <X className="h-3 w-3" />
               </span>
@@ -110,21 +117,21 @@ export function ProblemPanel({
 
           {/* TAB: EDITORIAL */}
           <TabsContent value="editorial" className="mt-0 p-5">
-            <div className="text-zinc-400">
-              <h3 className="text-lg font-bold text-white mb-4">
-                Editorial - Coming Soon
+            <div className="text-muted-foreground">
+              <h3 className="text-lg font-bold text-foreground mb-4">
+                {t("problemPanel.editorialComingSoon.title")}
               </h3>
-              <p>Editorial content will be available here.</p>
+              <p>{t("problemPanel.editorialComingSoon.body")}</p>
             </div>
           </TabsContent>
 
           {/* TAB: SOLUTIONS */}
           <TabsContent value="solutions" className="mt-0 p-5">
-            <div className="text-zinc-400">
-              <h3 className="text-lg font-bold text-white mb-4">
-                Solutions - Coming Soon
+            <div className="text-muted-foreground">
+              <h3 className="text-lg font-bold text-foreground mb-4">
+                {t("problemPanel.solutionsComingSoon.title")}
               </h3>
-              <p>Community solutions will be available here.</p>
+              <p>{t("problemPanel.solutionsComingSoon.body")}</p>
             </div>
           </TabsContent>
 

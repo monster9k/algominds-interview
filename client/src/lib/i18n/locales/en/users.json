@@ -1,0 +1,64 @@
+{
+  "badges": {
+    "title": "Badges",
+    "mostRecentBadge": "Most Recent Badge"
+  },
+  "stats": {
+    "solvedProblems": "Solved Problems",
+    "solved": "Solved"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "rank": "Rank",
+    "rankNotAvailable": "N/A",
+    "yourStats": "Your Stats",
+    "guest": "Guest",
+    "notSignedIn": "Not signed in",
+    "statLabels": {
+      "streak": "Streak",
+      "sessions": "Sessions",
+      "avgScore": "Avg Score",
+      "credits": "Credits"
+    }
+  },
+  "submissions": {
+    "recentTitle": "Recent Submissions",
+    "viewAll": "View all submissions",
+    "empty": "No submissions yet.",
+    "status": {
+      "accepted": "Accepted",
+      "wrongAnswer": "Wrong Answer",
+      "compileError": "Compile Error",
+      "runtimeError": "Runtime Error",
+      "tle": "Time Limit Exceeded"
+    }
+  },
+  "heatmap": {
+    "title": "{{count}} submissions in the past year",
+    "activeDays": "Total active days:",
+    "maxStreak": "Max streak:",
+    "current": "Current",
+    "less": "Less",
+    "more": "More",
+    "dayTooltip": "{{count}} submissions on {{date}}",
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    }
+  }
+}

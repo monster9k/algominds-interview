@@ -5,6 +5,7 @@
  */
 
 import { ChevronLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { SubmissionResponse } from "../types";
 import { SubmissionHeader } from "./problem-panel/submission-header";
@@ -21,6 +22,7 @@ export function SubmissionDetail({
   submission,
   onBack,
 }: SubmissionDetailProps) {
+  const { t } = useTranslation("interview");
   const isAccepted = submission.status === "ACCEPTED";
   const isEvaluationPending =
     isAccepted &&
@@ -35,9 +37,10 @@ export function SubmissionDetail({
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="text-zinc-400 hover:text-white px-2 hover:bg-zinc-800 -ml-2 h-auto"
+          className="text-muted-foreground hover:text-foreground px-2 hover:bg-accent -ml-2 h-auto"
         >
-          <ChevronLeft className="h-4 w-4 mr-1" /> Back to Submissions
+          <ChevronLeft className="h-4 w-4 mr-1" />{" "}
+          {t("submissionDetail.backButton")}
         </Button>
       </div>
 
@@ -54,7 +57,7 @@ export function SubmissionDetail({
 
       {isEvaluationPending && (
         <div className="border border-amber-700/50 bg-amber-900/20 rounded-xl px-4 py-3 text-xs text-amber-200">
-          AI đang đánh giá bài làm. Điểm số sẽ xuất hiện trong giây lát.
+          {t("submissionDetail.evaluationPending")}
         </div>
       )}
 

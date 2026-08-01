@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Search, Tags } from "lucide-react";
@@ -56,6 +57,8 @@ export function ProblemFilters({
   sortDirection = "asc",
   onToggleSortDirection,
 }: ProblemFiltersProps) {
+  const { t } = useTranslation("problems");
+
   return (
     <div className="flex flex-col gap-4">
       {/* Top Row: Topics Pills */}
@@ -64,12 +67,12 @@ export function ProblemFilters({
           variant={selectedTags.length === 0 ? "secondary" : "ghost"}
           className={`rounded-full h-8 text-xs font-medium border ${
             selectedTags.length === 0
-              ? "bg-white text-zinc-950 border-white hover:bg-zinc-200"
-              : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-200"
+              ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+              : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
           }`}
           onClick={onClearTags}
         >
-          All Topics
+          {t("filters.allTopics")}
         </Button>
         {TOPICS.map((topic) => {
           const isActive = selectedTags.includes(topic);
@@ -79,8 +82,8 @@ export function ProblemFilters({
               variant={isActive ? "secondary" : "ghost"}
               className={`rounded-full h-8 text-xs font-medium border ${
                 isActive
-                  ? "bg-zinc-800 text-white border-zinc-700 hover:bg-zinc-700"
-                  : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-200"
+                  ? "bg-secondary text-secondary-foreground border-border hover:bg-secondary/80"
+                  : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
               }`}
               onClick={() => onToggleTag(topic)}
             >
@@ -93,23 +96,23 @@ export function ProblemFilters({
       {/* Bottom Row: Search & Dropdowns */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search questions..."
+            placeholder={t("filters.searchPlaceholder")}
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 h-9 bg-zinc-900 border-zinc-800 focus:border-zinc-700 text-zinc-200 rounded-md"
+            className="pl-9 h-9 bg-card border-border focus:border-ring text-foreground rounded-md"
           />
         </div>
 
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 text-zinc-400 hover:bg-zinc-800 rounded-md shrink-0"
+          className="h-9 w-9 text-muted-foreground hover:bg-muted rounded-md shrink-0"
           title={
             sortDirection === "asc"
-              ? "Sorting ascending (1 → 9)"
-              : "Sorting descending (9 → 1)"
+              ? t("filters.sortAscending")
+              : t("filters.sortDescending")
           }
           onClick={onToggleSortDirection}
         >
@@ -124,19 +127,19 @@ export function ProblemFilters({
             )
           }
         >
-          <SelectTrigger className="w-[120px] h-9 bg-zinc-900 border-zinc-800 text-zinc-400 rounded-md">
-            <SelectValue placeholder="Difficulty" />
+          <SelectTrigger className="w-[120px] h-9 bg-card border-border text-muted-foreground rounded-md">
+            <SelectValue placeholder={t("filters.difficultyPlaceholder")} />
           </SelectTrigger>
-          <SelectContent className="bg-zinc-900 border-zinc-800">
-            <SelectItem value={ALL_DIFFICULTIES}>All</SelectItem>
+          <SelectContent className="bg-popover border-border">
+            <SelectItem value={ALL_DIFFICULTIES}>{t("filters.all")}</SelectItem>
             <SelectItem value="EASY" className="text-teal-500">
-              Easy
+              {t("filters.easy")}
             </SelectItem>
             <SelectItem value="MEDIUM" className="text-yellow-500">
-              Medium
+              {t("filters.medium")}
             </SelectItem>
             <SelectItem value="HARD" className="text-red-500">
-              Hard
+              {t("filters.hard")}
             </SelectItem>
           </SelectContent>
         </Select>
@@ -153,27 +156,27 @@ export function ProblemFilters({
           }
         >
           <SelectTrigger
-            className="w-[120px] h-9 bg-zinc-900 border-zinc-800 text-zinc-400 rounded-md disabled:opacity-50"
+            className="w-[120px] h-9 bg-card border-border text-muted-foreground rounded-md disabled:opacity-50"
             title={
-              isAuthenticated
-                ? undefined
-                : "Đăng nhập để lọc theo trạng thái"
+              isAuthenticated ? undefined : t("filters.loginToFilterStatus")
             }
           >
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t("filters.statusPlaceholder")} />
           </SelectTrigger>
-          <SelectContent className="bg-zinc-900 border-zinc-800">
-            <SelectItem value={ALL_STATUSES}>All</SelectItem>
-            <SelectItem value="Todo">Todo</SelectItem>
-            <SelectItem value="Solved">Solved</SelectItem>
-            <SelectItem value="Attempted">Attempted</SelectItem>
+          <SelectContent className="bg-popover border-border">
+            <SelectItem value={ALL_STATUSES}>{t("filters.all")}</SelectItem>
+            <SelectItem value="Todo">{t("filters.statusTodo")}</SelectItem>
+            <SelectItem value="Solved">{t("filters.statusSolved")}</SelectItem>
+            <SelectItem value="Attempted">
+              {t("filters.statusAttempted")}
+            </SelectItem>
           </SelectContent>
         </Select>
 
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 text-zinc-400 hover:bg-zinc-800 rounded-md"
+          className="h-9 w-9 text-muted-foreground hover:bg-muted rounded-md"
         >
           <Tags className="h-4 w-4" />
         </Button>

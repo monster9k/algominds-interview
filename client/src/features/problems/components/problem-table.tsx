@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { CheckCircle2, FileText, Loader2 } from "lucide-react";
 import {
   Table,
@@ -23,6 +24,7 @@ export function ProblemTable({ filters }: ProblemTableProps) {
   // vẫn chưa có, khiến bảng render `problems.map` trên undefined.
   const { data: problems, isPending, isError } = useProblems(filters);
   const navigate = useNavigate();
+  const { t } = useTranslation("problems");
   const getDifficultyColor = (diff: Difficulty) => {
     switch (diff) {
       case "EASY":
@@ -41,10 +43,12 @@ export function ProblemTable({ filters }: ProblemTableProps) {
   };
   if (isPending) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg bg-zinc-900/40">
+      <div className="flex h-64 items-center justify-center rounded-lg bg-muted/40">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="text-zinc-500 text-sm">Loading problems...</span>
+          <span className="text-muted-foreground text-sm">
+            {t("table.loading")}
+          </span>
         </div>
       </div>
     );
@@ -52,8 +56,8 @@ export function ProblemTable({ filters }: ProblemTableProps) {
 
   if (isError) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg bg-zinc-900/40 text-red-400">
-        Không thể tải danh sách bài tập. Vui lòng kiểm tra kết nối Backend.
+      <div className="flex h-64 items-center justify-center rounded-lg bg-muted/40 text-destructive">
+        {t("table.errorLoading")}
       </div>
     );
   }
@@ -62,29 +66,32 @@ export function ProblemTable({ filters }: ProblemTableProps) {
     <div className="rounded-lg overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent border-b border-zinc-800/80">
-            <TableHead className="w-[50px] text-zinc-500 text-xs">
-              Status
+          <TableRow className="hover:bg-transparent border-b border-border/80">
+            <TableHead className="w-[50px] text-muted-foreground text-xs">
+              {t("table.columnStatus")}
             </TableHead>
-            <TableHead className="w-[400px] text-zinc-500 text-xs">
-              Title
+            <TableHead className="w-[400px] text-muted-foreground text-xs">
+              {t("table.columnTitle")}
             </TableHead>
-            <TableHead className="w-[120px] text-center text-zinc-500 text-xs">
-              Acceptance
+            <TableHead className="w-[120px] text-center text-muted-foreground text-xs">
+              {t("table.columnAcceptance")}
             </TableHead>
-            <TableHead className="w-[100px] text-center text-zinc-500 text-xs">
-              Difficulty
+            <TableHead className="w-[100px] text-center text-muted-foreground text-xs">
+              {t("table.columnDifficulty")}
             </TableHead>
-            <TableHead className="text-right text-zinc-500 text-xs">
-              Solution
+            <TableHead className="text-right text-muted-foreground text-xs">
+              {t("table.columnSolution")}
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {problems?.length === 0 ? (
             <TableRow className="border-0">
-              <TableCell colSpan={5} className="h-32 text-center text-zinc-500">
-                Chưa có bài tập nào trong cơ sở dữ liệu.
+              <TableCell
+                colSpan={5}
+                className="h-32 text-center text-muted-foreground"
+              >
+                {t("table.emptyState")}
               </TableCell>
             </TableRow>
           ) : (
@@ -103,18 +110,18 @@ export function ProblemTable({ filters }: ProblemTableProps) {
                 <TableCell>
                   <Link to={`/interview/${problem.slug}`} className="block">
                     <div className="flex flex-col gap-1">
-                      <div className="font-medium text-zinc-300 group-hover:text-primary transition-colors flex items-center gap-2">
+                      <div className="font-medium text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
                         {problem.displayId}. {problem.title}
                       </div>
                       {/* Hiển thị Tags lấy từ Relation */}
                       {problem.tags && problem.tags.length > 0 && (
                         <div className="flex gap-1 flex-wrap">
-                          {problem.tags.map((t) => (
+                          {problem.tags.map((pt) => (
                             <span
-                              key={t.tag.id}
-                              className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400"
+                              key={pt.tag.id}
+                              className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
                             >
-                              {t.tag.name}
+                              {pt.tag.name}
                             </span>
                           ))}
                         </div>
@@ -122,8 +129,8 @@ export function ProblemTable({ filters }: ProblemTableProps) {
                     </div>
                   </Link>
                 </TableCell>
-                <TableCell className="text-zinc-500 text-xs text-center">
-                  {problem.acceptance || "N/A"}
+                <TableCell className="text-muted-foreground text-xs text-center">
+                  {problem.acceptance || t("table.notAvailable")}
                 </TableCell>
                 <TableCell className="text-center">
                   <span className={getDifficultyColor(problem.difficulty)}>
@@ -135,7 +142,7 @@ export function ProblemTable({ filters }: ProblemTableProps) {
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 text-zinc-500 hover:text-blue-400"
+                      className="h-8 w-8 text-muted-foreground hover:text-blue-400"
                       onClick={() => navigate(`/interview/${problem.slug}`)}
                     >
                       <FileText className="h-4 w-4" />

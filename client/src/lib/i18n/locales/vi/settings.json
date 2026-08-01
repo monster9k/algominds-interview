@@ -1,0 +1,45 @@
+{
+  "appearance": {
+    "title": "Giao diện",
+    "description": "Tuỳ chỉnh giao diện hiển thị của AlgoMinds trên thiết bị của bạn.",
+    "themeLabel": "Chủ đề",
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Hệ thống"
+  },
+  "language": {
+    "title": "Ngôn ngữ",
+    "description": "Chọn ngôn ngữ hiển thị cho toàn bộ ứng dụng.",
+    "selectLabel": "Ngôn ngữ",
+    "en": "English",
+    "vi": "Tiếng Việt",
+    "ja": "日本語"
+  },
+  "sidebar": {
+    "title": "Cài đặt",
+    "account": "Tài khoản",
+    "privacy": "Quyền riêng tư",
+    "billing": "Gói đăng ký & Thanh toán",
+    "points": "Điểm thưởng",
+    "orders": "Đơn hàng",
+    "notifications": "Thông báo",
+    "profileSettings": "Cài đặt hồ sơ"
+  },
+  "general": {
+    "title": "Chung",
+    "description": "Bạn có thể đăng nhập bằng email, số điện thoại hoặc LeetCode ID.",
+    "leetcodeId": "LeetCode ID",
+    "email": "Email",
+    "phoneNumber": "Số điện thoại",
+    "password": "Mật khẩu"
+  },
+  "social": {
+    "title": "Tài khoản mạng xã hội",
+    "description": "Liên kết tài khoản mạng xã hội để đăng nhập vào LeetCode.",
+    "connect": "Liên kết"
+  },
+  "danger": {
+    "title": "Vùng nguy hiểm",
+    "deleteAccount": "Xóa tài khoản"
+  }
+}

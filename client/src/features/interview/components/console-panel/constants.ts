@@ -57,14 +57,16 @@ export const RESULT_MESSAGES = {
 export const STYLES = {
   // Testcase button
   TESTCASE_BUTTON_BASE:
-    "h-7 text-xs transition-all data-[state=active]:bg-zinc-800 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-zinc-700",
-  TESTCASE_BUTTON_INACTIVE: "text-zinc-500 hover:text-zinc-300",
+    "h-7 text-xs transition-all data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:border data-[state=active]:border-border",
+  TESTCASE_BUTTON_INACTIVE:
+    "text-muted-foreground hover:text-foreground",
 
   // Tab trigger
   TAB_TRIGGER_BASE:
-    "data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-rose-500 rounded-none h-full px-4 font-medium text-xs flex gap-2 transition-all",
-  TAB_TRIGGER_ACCESSIBLE: "text-zinc-400 hover:text-zinc-300 cursor-pointer",
-  TAB_TRIGGER_DISABLED: "text-zinc-600 cursor-not-allowed opacity-50",
+    "data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-rose-500 rounded-none h-full px-4 font-medium text-xs flex gap-2 transition-all",
+  TAB_TRIGGER_ACCESSIBLE:
+    "text-muted-foreground hover:text-foreground cursor-pointer",
+  TAB_TRIGGER_DISABLED: "text-muted-foreground/60 cursor-not-allowed opacity-50",
 
   // Status badges
   STATUS_ACCEPTED: "bg-green-500/5 border-green-500/20",
@@ -82,7 +84,7 @@ export const STYLES = {
 
   // Code display
   CODE_BLOCK_BG:
-    "bg-zinc-900 border border-zinc-800 rounded-md p-3 font-mono text-sm text-zinc-300",
+    "bg-card border border-border rounded-md p-3 font-mono text-sm text-foreground",
 
   // Action buttons
   ACTION_BUTTON_ANALYSIS:
@@ -91,13 +93,13 @@ export const STYLES = {
     "bg-emerald-600/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-600/20 hover:text-emerald-300",
 
   // Chat messages
-  CHAT_MESSAGE_USER: "bg-zinc-800 text-zinc-200 rounded-br-none",
+  CHAT_MESSAGE_USER: "bg-secondary text-secondary-foreground rounded-br-none",
   CHAT_MESSAGE_AI:
-    "bg-rose-500/10 text-rose-100 border border-rose-500/20 rounded-bl-none",
+    "bg-rose-500/10 text-rose-900 dark:text-rose-100 border border-rose-500/20 rounded-bl-none",
 
   // Input field
   CHAT_INPUT:
-    "flex-1 bg-zinc-950 border border-zinc-800 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-rose-500/50 transition-colors",
+    "flex-1 bg-background border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:border-rose-500/50 transition-colors",
 };
 
 // Status colors

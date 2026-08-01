@@ -4,6 +4,7 @@
  */
 
 import { FileCode2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface CodeBlockProps {
   code: string;
@@ -11,17 +12,19 @@ interface CodeBlockProps {
 }
 
 export function CodeBlock({ code, language }: CodeBlockProps) {
-  const displayLanguage = language === "cpp" ? "C++" : language || "Unknown";
+  const { t } = useTranslation("interview");
+  const displayLanguage =
+    language === "cpp" ? "C++" : language || t("common.unknownLanguage");
 
   return (
-    <div className="border-t border-zinc-800/50 pt-6">
-      <div className="flex items-center gap-2 text-zinc-300 font-bold mb-3">
-        <FileCode2 className="h-4 w-4" /> Code
-        <span className="text-[10px] font-medium bg-zinc-800 px-1.5 py-0.5 rounded ml-1 uppercase text-zinc-400">
+    <div className="border-t border-border/50 pt-6">
+      <div className="flex items-center gap-2 text-foreground font-bold mb-3">
+        <FileCode2 className="h-4 w-4" /> {t("submissionDetail.code")}
+        <span className="text-[10px] font-medium bg-muted px-1.5 py-0.5 rounded ml-1 uppercase text-muted-foreground">
           {displayLanguage}
         </span>
       </div>
-      <pre className="bg-zinc-900/70 border border-zinc-800/50 p-4 rounded-xl overflow-x-auto text-xs text-zinc-300 font-mono leading-relaxed shadow-inner">
+      <pre className="bg-card/70 border border-border/50 p-4 rounded-xl overflow-x-auto text-xs text-foreground font-mono leading-relaxed shadow-inner">
         <code>{code}</code>
       </pre>
     </div>

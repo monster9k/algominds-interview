@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { AIChatTabProps } from "./types";
-import { AI_CHAT_EMPTY_STATE, STYLES } from "./constants";
+import { STYLES } from "./constants";
 import { cn } from "@/lib/utils";
 
 /**
@@ -18,10 +19,9 @@ export function AIChatTab({
   scrollRef,
   isAiThinking = false,
 }: AIChatTabProps) {
-  const emptyStateConfig =
-    currentPhase === "PHASE_1_STRATEGY"
-      ? AI_CHAT_EMPTY_STATE.PHASE_1_STRATEGY
-      : AI_CHAT_EMPTY_STATE.PHASE_2_IMPLEMENTATION;
+  const { t } = useTranslation("interview");
+  const emptyStateKey =
+    currentPhase === "PHASE_1_STRATEGY" ? "PHASE_1_STRATEGY" : currentPhase;
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -29,21 +29,19 @@ export function AIChatTab({
       <ScrollArea className="flex-1 min-h-0 px-4">
         <div className="min-h-full flex flex-col justify-end pb-4 pt-4">
           {messages.length === 0 && (
-            <div className="text-zinc-500 text-xs text-center space-y-2 my-auto">
+            <div className="text-muted-foreground text-xs text-center space-y-2 my-auto">
               {currentPhase === "PHASE_1_STRATEGY" ? (
                 <>
                   <p className="font-medium text-rose-400">
-                    {emptyStateConfig.title}
+                    {t(`aiChat.emptyState.${emptyStateKey}.title`)}
                   </p>
-                  <p>{emptyStateConfig.message}</p>
-                  {emptyStateConfig.note && (
-                    <p className="text-[10px] text-zinc-600">
-                      {emptyStateConfig.note}
-                    </p>
-                  )}
+                  <p>{t(`aiChat.emptyState.${emptyStateKey}.message`)}</p>
+                  <p className="text-[10px] text-muted-foreground/70">
+                    {t(`aiChat.emptyState.${emptyStateKey}.note`)}
+                  </p>
                 </>
               ) : (
-                <p>{emptyStateConfig.message}</p>
+                <p>{t(`aiChat.emptyState.${emptyStateKey}.message`)}</p>
               )}
             </div>
           )}
@@ -90,13 +88,17 @@ export function AIChatTab({
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="border-t border-zinc-800 bg-zinc-900/30 p-3 shrink-0">
+      <div className="border-t border-border bg-card/30 p-3 shrink-0">
         <form onSubmit={onSubmit} className="flex gap-2">
           <input
             type="text"
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
-            placeholder={isAiThinking ? "AI đang trả lời..." : "Nhập tin nhắn..."}
+            placeholder={
+              isAiThinking
+                ? t("aiChat.inputPlaceholderThinking")
+                : t("aiChat.inputPlaceholder")
+            }
             disabled={isAiThinking}
             className={`${STYLES.CHAT_INPUT}`}
             autoComplete="off"

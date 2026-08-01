@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { SubmissionStatus } from '@prisma/client';
+import { Prisma, SubmissionStatus } from '@prisma/client';
 import { CodeGeneratorService } from './services/code-generator.service';
 import { PistonService } from './services/piston.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
+import { TestCase } from './types';
 
 type EvaluationStatus = 'NOT_AVAILABLE' | 'PENDING' | 'COMPLETED';
 
@@ -34,14 +35,14 @@ export class JudgeService {
 
     const { functionName, testCases, timeLimitMs, memoryLimitMb } =
       session.problem;
-    const tests = testCases as any[];
+    const tests = testCases as unknown as TestCase[];
     if (!tests || tests.length === 0)
       throw new NotFoundException('Không tìm thấy test case nào');
 
     // 2. Chạy Test Cases (Tuần tự để tránh Rate Limit)
     const results: Array<{
-      input: any;
-      expected: any;
+      input: unknown;
+      expected: unknown;
       actual: string;
       status: SubmissionStatus;
       error: string | null;
@@ -99,7 +100,7 @@ export class JudgeService {
           totalTests: tests.length,
           executionTime: hasExecutionTime ? totalExecutionTimeMs : null,
           memoryUsage: maxMemoryUsageKb,
-          testCaseResults: results,
+          testCaseResults: results as unknown as Prisma.InputJsonValue,
         },
       });
 
@@ -260,7 +261,7 @@ export class JudgeService {
       problemId,
     );
 
-    return enrichedSubmissions.map((sub: any) => {
+    return enrichedSubmissions.map((sub) => {
       // logic tách riêng phần session ra khỏi submission, phần còn lại của sub sẽ được gộp vào cho biến submissionBase để trả về cho client
       const { session, ...submissionBase } = sub;
       const evaluation = session.evaluation;
@@ -343,18 +344,20 @@ export class JudgeService {
   private async runSingleTestCase(
     language: string,
     userCode: string,
-    testCase: any,
+    testCase: TestCase,
     functionName: string,
     limits?: { timeLimitMs?: number; memoryLimitMb?: number },
   ) {
     const { input, output: expectedOutput } = testCase;
 
-    // A. Generate Code
+    // A. Generate Code — testCase.input is loaded from the Problem.testCases
+    // JSON blob, always an object of named params (see CodeGeneratorService,
+    // which does Object.values(input) to positionally order them).
     const { code: runnableCode, stdin } =
       this.codeGenerator.prepareRunnableCode(
         language,
         userCode,
-        input,
+        input as Record<string, unknown>,
         functionName,
       );
 
@@ -401,8 +404,8 @@ export class JudgeService {
 
   private outputsMatch(actual: string, expected: string): boolean {
     try {
-      const parsedActual = JSON.parse(actual);
-      const parsedExpected = JSON.parse(expected);
+      const parsedActual: unknown = JSON.parse(actual);
+      const parsedExpected: unknown = JSON.parse(expected);
       return JSON.stringify(parsedActual) === JSON.stringify(parsedExpected);
     } catch {
       // Fallback: strip all whitespace and compare as plain strings
@@ -467,10 +470,13 @@ export class JudgeService {
     return Math.round((fasterOrEqualCount / values.length) * 100);
   }
 
-  private async attachPerformanceStats(
-    submissions: Array<any>,
-    problemId: string,
-  ) {
+  private async attachPerformanceStats<
+    T extends {
+      language: string;
+      executionTime: number | null;
+      memoryUsage: number | null;
+    },
+  >(submissions: T[], problemId: string) {
     if (!submissions.length) {
       return submissions;
     }

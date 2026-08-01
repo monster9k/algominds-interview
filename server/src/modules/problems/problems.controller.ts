@@ -15,6 +15,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { RequestUser } from '../../common/types/request-user.type';
 
 @Controller('problems')
 export class ProblemsController {
@@ -32,7 +33,8 @@ export class ProblemsController {
   @Get()
   @UseGuards(OptionalJwtAuthGuard) // Chỉ cho user đã đăng nhập mới xem được danh sách bài tập
   findAll(
-    @CurrentUser() user: any,
+    // OptionalJwtAuthGuard resolves guests to null (see handleRequest())
+    @CurrentUser() user: RequestUser | null,
     @Query('difficulty') difficulty?: string,
     @Query('tags') tags?: string | string[],
     @Query('search') search?: string,

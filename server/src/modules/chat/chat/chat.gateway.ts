@@ -29,6 +29,10 @@ type JwtPayload = {
   role: string;
 };
 
+// socket.io's SocketData generic defaults to `any` — pin it down so
+// `client.data.user` type-checks instead of being an unsafe `any` access.
+type AppSocket = Socket<any, any, any, { user?: AuthenticatedSocketUser }>;
+
 // Không set `origin: FRONTEND_URL` trực tiếp ở decorator: decorator này chạy
 // khi Node require() class (trước khi ConfigModule.forRoot() nạp .env), nên
 // process.env lúc đó chưa có gì. Whitelist thật sự được set trong afterInit()
@@ -66,7 +70,7 @@ export class ChatGateway
     };
   }
 
-  handleConnection(client: Socket) {
+  handleConnection(client: AppSocket) {
     const rawToken = client.handshake.auth?.token as string | undefined;
 
     if (!rawToken) {
@@ -87,7 +91,7 @@ export class ChatGateway
         userId: payload.sub,
         username: payload.email,
         role: payload.role,
-      } as AuthenticatedSocketUser;
+      };
     } catch {
       this.logger.warn(`Socket rejected (invalid token): ${client.id}`);
       client.disconnect(true);
@@ -97,16 +101,16 @@ export class ChatGateway
     this.logger.log(`Client connected: ${client.id}`);
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(client: AppSocket) {
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
   @SubscribeMessage('join_room') // tương tự post/get
   async handleJoinRoom(
     @MessageBody() data: { sessionId: string },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AppSocket,
   ) {
-    const socketUser = client.data.user as AuthenticatedSocketUser | undefined;
+    const socketUser = client.data.user;
 
     if (!socketUser?.userId) {
       client.emit('error', { message: 'Unauthorized socket connection' });
@@ -132,7 +136,7 @@ export class ChatGateway
       return;
     }
 
-    client.join(data.sessionId);
+    await client.join(data.sessionId);
 
     this.logger.log(`Client ${client.id} joined room ${data.sessionId}`);
 
@@ -142,14 +146,14 @@ export class ChatGateway
 
   @SubscribeMessage('send_message')
   async handleMessage(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AppSocket,
     @MessageBody()
     data: {
       sessionId: string;
       content: string;
     },
   ) {
-    const socketUser = client.data.user as AuthenticatedSocketUser | undefined;
+    const socketUser = client.data.user;
 
     if (!socketUser?.userId) {
       client.emit('error', { message: 'Unauthorized socket connection' });

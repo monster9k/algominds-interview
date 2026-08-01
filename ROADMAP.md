@@ -102,7 +102,8 @@
 
 ## 🟢 P2 — Hoàn thiện & Đánh bóng
 
-- [ ] **Thêm husky + lint-staged** — pre-commit hook chạy lint/format, hiện chưa có nên dễ commit code chưa format.
+- [x] **Thêm husky + lint-staged** — pre-commit hook chạy lint/format, hiện chưa có nên dễ commit code chưa format.
+  Root `package.json` mới (không phải npm workspace — `server/`/`client/` vẫn giữ nguyên `package.json`/`node_modules` riêng) chỉ chứa `husky` + `lint-staged` làm dev tooling. `server/` và `client/` có eslint config/plugin riêng nên không thể chạy `eslint` thẳng từ root với path mà lint-staged truyền vào (sai cwd → sai config resolution). Giải quyết bằng `lint-staged.config.js` gọi 2 wrapper script (`scripts/lint-staged-server.js`, `scripts/lint-staged-client.js`) quy đổi path về tương đối trong từng thư mục con rồi spawn eslint/prettier với đúng `cwd`. Quan trọng: chỉ lint **các file đang staged**, không lint toàn bộ `src/**` — nếu không, ~237 lỗi eslint tồn đọng (mục CI-gate bên dưới) sẽ chặn mọi commit đụng đến server/client, kể cả file không liên quan. Đã test cả 2 nhánh (server `.ts`, client `.tsx`) qua `npx lint-staged` thật, bao gồm cả case "prettier tự sửa về y hệt bản gốc → lint-staged đúng đắn chặn empty commit".
 - [ ] **Viết `README.md` ở root** hướng dẫn setup từ đầu (docker-compose, `.env`, seed, chạy dev) — hiện `server/README.md`/`client/README.md` vẫn là boilerplate mặc định của NestJS/Vite, chưa customize.
 - [x] **Bật lại `staleTime`** trong `use-problems.ts` (hiện đang comment out) — mỗi lần chuyển tab đều refetch không cần thiết.
   `queryClient` gốc (`lib/query-client.ts`) đã có `defaultOptions.queries.staleTime = 5 * 60 * 1000` từ đầu, nên hành vi runtime không đổi — nhưng dòng comment ở `use-problems.ts` khiến người đọc tưởng caching đang tắt. Bỏ comment để khai báo tường minh ngay tại query, không phụ thuộc ngầm vào default global.

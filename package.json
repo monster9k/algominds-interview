@@ -1,0 +1,13 @@
+{
+  "name": "algominds",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Root workspace config for git hooks (husky + lint-staged) — not an npm workspace, server/ and client/ keep their own package.json and dependencies.",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.1"
+  }
+}

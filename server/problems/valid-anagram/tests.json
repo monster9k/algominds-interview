@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"s\":\"anagram\",\"t\":\"nagaram\"}",
+    "expected": true,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"rat\",\"t\":\"car\"}",
+    "expected": false,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"a\",\"t\":\"ab\"}",
+    "expected": false,
+    "isHidden": true
+  }
+]

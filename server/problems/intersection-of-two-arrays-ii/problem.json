@@ -1,0 +1,8 @@
+{
+  "title": "Intersection of Two Arrays II",
+  "difficulty": "MEDIUM",
+  "functionName": "intersect",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Array", "Hash Table"]
+}

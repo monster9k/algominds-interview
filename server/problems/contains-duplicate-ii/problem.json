@@ -1,0 +1,8 @@
+{
+  "title": "Contains Duplicate II",
+  "difficulty": "MEDIUM",
+  "functionName": "containsNearbyDuplicate",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Array", "Hash Table", "Sliding Window"]
+}

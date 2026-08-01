@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"nums\":[1,2,3,1]}",
+    "expected": 4,
+    "isHidden": false
+  },
+  {
+    "input": "{\"nums\":[2,7,9,3,1]}",
+    "expected": 12,
+    "isHidden": false
+  },
+  {
+    "input": "{\"nums\":[2,1,1,2]}",
+    "expected": 4,
+    "isHidden": true
+  }
+]

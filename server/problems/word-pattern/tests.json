@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"pattern\":\"abba\",\"s\":\"dog cat cat dog\"}",
+    "expected": true,
+    "isHidden": false
+  },
+  {
+    "input": "{\"pattern\":\"abba\",\"s\":\"dog cat cat fish\"}",
+    "expected": false,
+    "isHidden": false
+  },
+  {
+    "input": "{\"pattern\":\"aaaa\",\"s\":\"dog cat cat dog\"}",
+    "expected": false,
+    "isHidden": true
+  }
+]

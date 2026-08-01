@@ -1,0 +1,8 @@
+{
+  "title": "Find Minimum in Rotated Sorted Array",
+  "difficulty": "MEDIUM",
+  "functionName": "findMin",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Array", "Binary Search"]
+}

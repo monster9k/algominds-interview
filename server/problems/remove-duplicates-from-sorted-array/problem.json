@@ -1,0 +1,8 @@
+{
+  "title": "Remove Duplicates from Sorted Array",
+  "difficulty": "EASY",
+  "functionName": "removeDuplicates",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Array", "Two Pointers"]
+}

@@ -1,0 +1,8 @@
+{
+  "title": "Counting Bits",
+  "difficulty": "EASY",
+  "functionName": "countBits",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Dynamic Programming", "Bit Manipulation"]
+}

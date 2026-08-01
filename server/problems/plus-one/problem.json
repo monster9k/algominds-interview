@@ -1,0 +1,8 @@
+{
+  "title": "Plus One",
+  "difficulty": "EASY",
+  "functionName": "plusOne",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Array", "Math"]
+}

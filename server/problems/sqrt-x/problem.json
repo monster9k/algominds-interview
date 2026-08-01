@@ -1,0 +1,8 @@
+{
+  "title": "Sqrt(x)",
+  "difficulty": "EASY",
+  "functionName": "mySqrt",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Math", "Binary Search"]
+}

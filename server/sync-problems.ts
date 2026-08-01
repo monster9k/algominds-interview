@@ -102,7 +102,7 @@ async function syncProblem(
   }
 
   // --- 1. Read all assets ---
-  const meta: ProblemMeta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+  const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as ProblemMeta;
 
   const statementPath = path.join(problemDir, 'statement.md');
   const content = fs.existsSync(statementPath)
@@ -114,9 +114,9 @@ async function syncProblem(
     console.warn(`  ⚠️  Skipping "${folderName}" — tests.json not found`);
     return;
   }
-  const rawTests: RawTestCase[] = JSON.parse(
+  const rawTests = JSON.parse(
     fs.readFileSync(testsPath, 'utf-8'),
-  );
+  ) as RawTestCase[];
 
   // --- 2. Build initialCode map from templates/ ---
   const templatesDir = path.join(problemDir, 'templates');
@@ -155,33 +155,36 @@ async function syncProblem(
     tagIds.push(tag.id);
   }
 
-  // --- 5. Upsert the problem ---
+  // --- 5. Create or update the problem ---
+  // NOTE: intentionally NOT using prisma.problem.upsert() here. On Postgres,
+  // upsert compiles to a single `INSERT ... ON CONFLICT DO UPDATE`, which
+  // evaluates the `displayId` column's `DEFAULT nextval(...)` to build the
+  // candidate insert row even when the conflict/update branch is taken —
+  // permanently burning a sequence value on every re-sync of an unchanged
+  // problem. Since this script re-processes every folder on each run, that
+  // silently fragmented displayId into large, meaningless gaps. Doing an
+  // explicit findUnique + update/create avoids evaluating that DEFAULT
+  // unless a row is actually being created.
   const difficulty = meta.difficulty as Difficulty;
 
-  const problem = await prisma.problem.upsert({
+  const data = {
+    title: meta.title,
+    difficulty,
+    content,
+    initialCode: initialCode as unknown as Prisma.InputJsonValue,
+    testCases: testCases as unknown as Prisma.InputJsonValue,
+    functionName: meta.functionName ?? folderName,
+    timeLimitMs: meta.timeLimit ?? 1000,
+    memoryLimitMb: meta.memoryLimit ?? 256,
+  };
+
+  const existing = await prisma.problem.findUnique({
     where: { slug: folderName },
-    update: {
-      title: meta.title,
-      difficulty,
-      content,
-      initialCode: initialCode as unknown as Prisma.InputJsonValue,
-      testCases: testCases as unknown as Prisma.InputJsonValue,
-      functionName: meta.functionName ?? folderName,
-      timeLimitMs: meta.timeLimit ?? 1000,
-      memoryLimitMb: meta.memoryLimit ?? 256,
-    },
-    create: {
-      slug: folderName,
-      title: meta.title,
-      difficulty,
-      content,
-      initialCode: initialCode as unknown as Prisma.InputJsonValue,
-      testCases: testCases as unknown as Prisma.InputJsonValue,
-      functionName: meta.functionName ?? folderName,
-      timeLimitMs: meta.timeLimit ?? 1000,
-      memoryLimitMb: meta.memoryLimit ?? 256,
-    },
   });
+
+  const problem = existing
+    ? await prisma.problem.update({ where: { slug: folderName }, data })
+    : await prisma.problem.create({ data: { slug: folderName, ...data } });
 
   // --- 6. Sync tags (delete old links, re-insert) ---
   await prisma.problemTag.deleteMany({ where: { problemId: problem.id } });

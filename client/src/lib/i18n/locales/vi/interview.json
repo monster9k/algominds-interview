@@ -26,7 +26,12 @@
     "run": "Chạy",
     "submit": "Nộp bài",
     "submitting": "Đang nộp...",
+    "sortAscending": "Sắp xếp tăng dần",
+    "sortDescending": "Sắp xếp giảm dần",
+    "filterByDifficulty": "Độ khó",
+    "filterByTags": "Chủ đề",
     "difficulty": {
+      "all": "Tất cả",
       "easy": "Dễ",
       "medium": "T.Bình",
       "hard": "Khó"

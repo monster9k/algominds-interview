@@ -26,7 +26,12 @@
     "run": "Run",
     "submit": "Submit",
     "submitting": "Submitting...",
+    "sortAscending": "Sort ascending",
+    "sortDescending": "Sort descending",
+    "filterByDifficulty": "Difficulty",
+    "filterByTags": "Tags",
     "difficulty": {
+      "all": "All",
       "easy": "Easy",
       "medium": "Med.",
       "hard": "Hard"

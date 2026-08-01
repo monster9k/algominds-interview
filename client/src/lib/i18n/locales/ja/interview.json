@@ -26,7 +26,12 @@
     "run": "実行",
     "submit": "提出",
     "submitting": "提出中...",
+    "sortAscending": "昇順で並び替え",
+    "sortDescending": "降順で並び替え",
+    "filterByDifficulty": "難易度",
+    "filterByTags": "トピック",
     "difficulty": {
+      "all": "すべて",
       "easy": "簡単",
       "medium": "普通",
       "hard": "難しい"

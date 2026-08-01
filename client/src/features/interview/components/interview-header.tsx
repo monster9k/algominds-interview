@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Play,
   Send,
-  Settings,
   List,
   Loader2,
   Search,
@@ -18,8 +17,28 @@ import { Logo } from "@/components/ui/logo";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useProblems } from "@/features/problems/hooks/use-problems";
+import { TOPICS } from "@/features/problems/utils/topics";
+import type {
+  Difficulty,
+  ProblemFilterParams,
+  SortDirection,
+} from "@/features/problems/types";
+import { UserNavMenu } from "@/components/layout/user-nav-menu";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useTranslation } from "react-i18next";
+
+const ALL_DIFFICULTIES = "ALL";
 
 interface InterviewHeaderProps {
   onSubmit?: () => void;
@@ -42,11 +61,37 @@ export function InterviewHeader({
   const navigate = useNavigate();
   const [isProblemPanelOpen, setIsProblemPanelOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 400);
+  const [difficultyFilter, setDifficultyFilter] = useState<Difficulty>();
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  // Danh sách đầy đủ, KHÔNG filter — chỉ dùng để hiển thị tiêu đề/đếm bài đã
+  // giải ở nút header, không được phép bị ảnh hưởng bởi filter của panel chọn bài.
+  const { data: problems } = useProblems();
+
+  const hasActivePickerFilter =
+    Boolean(debouncedSearch) ||
+    Boolean(difficultyFilter) ||
+    selectedTags.length > 0 ||
+    sortDirection !== "asc";
+
+  // undefined khi chưa filter gì -> trùng query key với useProblems() ở trên,
+  // TanStack Query dedupe nên không tốn thêm request khi vừa mở panel.
+  const pickerFilters: ProblemFilterParams | undefined = hasActivePickerFilter
+    ? {
+        search: debouncedSearch || undefined,
+        difficulty: difficultyFilter,
+        tags: selectedTags.length ? selectedTags : undefined,
+        sortDirection,
+      }
+    : undefined;
+
   const {
-    data: problems,
-    isLoading: isLoadingProblems,
-    isError: isProblemError,
-  } = useProblems();
+    data: pickerProblems,
+    isLoading: isLoadingPickerProblems,
+    isError: isPickerProblemsError,
+  } = useProblems(pickerFilters);
 
   const solvedCount = useMemo(() => {
     return (problems ?? []).filter((problem) => problem.status === "Solved")
@@ -80,22 +125,11 @@ export function InterviewHeader({
     return 1;
   }, [activeProblemIndex, currentProblemDisplayId]);
 
-  const filteredProblems = useMemo(() => {
-    if (!problems) {
-      return [];
-    }
-
-    const normalizedTerm = searchTerm.trim().toLowerCase();
-    if (!normalizedTerm) {
-      return problems;
-    }
-
-    return problems.filter((problem, index) => {
-      const searchableText =
-        `${index + 1} ${problem.title} ${problem.slug}`.toLowerCase();
-      return searchableText.includes(normalizedTerm);
-    });
-  }, [problems, searchTerm]);
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     if (difficulty === "EASY") {
@@ -124,6 +158,9 @@ export function InterviewHeader({
   const handleSelectProblem = (slug: string) => {
     setIsProblemPanelOpen(false);
     setSearchTerm("");
+    setDifficultyFilter(undefined);
+    setSelectedTags([]);
+    setSortDirection("asc");
     navigate(`/interview/${slug}`);
   };
 
@@ -197,46 +234,107 @@ export function InterviewHeader({
                     variant="ghost"
                     size="icon"
                     className="h-9 w-9 border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+                    title={
+                      sortDirection === "asc"
+                        ? t("header.sortAscending")
+                        : t("header.sortDescending")
+                    }
+                    onClick={() =>
+                      setSortDirection((prev) =>
+                        prev === "asc" ? "desc" : "asc",
+                      )
+                    }
                   >
                     <ArrowUpDown className="h-4 w-4" />
                   </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
-                  >
-                    <SlidersHorizontal className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        title={t("header.filterByTags")}
+                        className={`h-9 w-9 border text-muted-foreground hover:bg-accent hover:text-foreground ${
+                          difficultyFilter || selectedTags.length > 0
+                            ? "border-primary text-primary"
+                            : "border-border"
+                        }`}
+                      >
+                        <SlidersHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>
+                        {t("header.filterByDifficulty")}
+                      </DropdownMenuLabel>
+                      <DropdownMenuRadioGroup
+                        value={difficultyFilter ?? ALL_DIFFICULTIES}
+                        onValueChange={(value) =>
+                          setDifficultyFilter(
+                            value === ALL_DIFFICULTIES
+                              ? undefined
+                              : (value as Difficulty),
+                          )
+                        }
+                      >
+                        <DropdownMenuRadioItem value={ALL_DIFFICULTIES}>
+                          {t("header.difficulty.all")}
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="EASY">
+                          {t("header.difficulty.easy")}
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="MEDIUM">
+                          {t("header.difficulty.medium")}
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="HARD">
+                          {t("header.difficulty.hard")}
+                        </DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>
+                        {t("header.filterByTags")}
+                      </DropdownMenuLabel>
+                      {TOPICS.map((topic) => (
+                        <DropdownMenuCheckboxItem
+                          key={topic}
+                          checked={selectedTags.includes(topic)}
+                          onCheckedChange={() => toggleTag(topic)}
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          {topic}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
               <ScrollArea className="h-[calc(100%-120px)]">
                 <div className="px-2 py-2">
-                  {isLoadingProblems && (
+                  {isLoadingPickerProblems && (
                     <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span>{t("header.loadingProblems")}</span>
                     </div>
                   )}
 
-                  {isProblemError && (
+                  {isPickerProblemsError && (
                     <div className="px-3 py-8 text-center text-sm text-rose-400">
                       {t("errors.loadProblemsFailed")}
                     </div>
                   )}
 
-                  {!isLoadingProblems &&
-                    !isProblemError &&
-                    filteredProblems.length === 0 && (
+                  {!isLoadingPickerProblems &&
+                    !isPickerProblemsError &&
+                    (pickerProblems ?? []).length === 0 && (
                       <div className="px-3 py-8 text-center text-sm text-muted-foreground">
                         {t("header.noProblemsFound")}
                       </div>
                     )}
 
-                  {!isLoadingProblems &&
-                    !isProblemError &&
-                    filteredProblems.map((problem) => {
+                  {!isLoadingPickerProblems &&
+                    !isPickerProblemsError &&
+                    (pickerProblems ?? []).map((problem) => {
                       const isActive = problem.slug === currentProblemSlug;
 
                       return (
@@ -307,16 +405,7 @@ export function InterviewHeader({
 
       {/* Right: Tools */}
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-        >
-          <Settings className="h-4 w-4" />
-        </Button>
-        <div className="h-8 w-8 rounded-full bg-rose-500/20 flex items-center justify-center text-xs font-bold text-rose-500 border border-rose-500/30">
-          U
-        </div>
+        <UserNavMenu />
       </div>
     </header>
   );

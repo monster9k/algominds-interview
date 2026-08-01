@@ -10,20 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Difficulty, ProblemStatus, SortDirection } from "../types";
-
-// Tag taxonomy hiện có trong bộ đề đã seed (server/problems/*)
-const TOPICS = [
-  "Array",
-  "String",
-  "Hash Table",
-  "Stack",
-  "Binary Search",
-  "Dynamic Programming",
-  "Math",
-  "Prefix Sum",
-  "Two Pointers",
-  "Sliding Window",
-];
+import { TOPICS } from "../utils/topics";
 
 const ALL_DIFFICULTIES = "ALL";
 const ALL_STATUSES = "ALL";

@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { Problem, ProblemFilterParams } from "../types";
+import { Company, Problem, ProblemFilterParams } from "../types";
 
 export const problemsApi = {
   getProblems: async (filters?: ProblemFilterParams): Promise<Problem[]> => {
@@ -14,6 +14,13 @@ export const problemsApi = {
       },
       // tags=Array&tags=Stack thay vì tags[]=Array&tags[]=Stack
       paramsSerializer: { indexes: null },
+    });
+    return response.data;
+  },
+
+  getCompanies: async (search?: string): Promise<Company[]> => {
+    const response = await api.get("/companies", {
+      params: { search: search?.trim() || undefined },
     });
     return response.data;
   },

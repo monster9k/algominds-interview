@@ -29,6 +29,7 @@
   "calendar": {
     "dayLabel": "{{day}}日目",
     "streakLabel": "{{count}}日連続 🔥",
+    "submissionsCount": "{{count}}件の提出",
     "weekdays": ["日", "月", "火", "水", "木", "金", "土"]
   },
   "banners": {
@@ -51,6 +52,7 @@
   },
   "companies": {
     "title": "注目の企業",
-    "searchPlaceholder": "企業を検索..."
+    "searchPlaceholder": "企業を検索...",
+    "errorLoading": "企業リストを読み込めませんでした。"
   }
 }

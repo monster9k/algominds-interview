@@ -29,6 +29,7 @@
   "calendar": {
     "dayLabel": "Day {{day}}",
     "streakLabel": "{{count}} Day Streak 🔥",
+    "submissionsCount": "{{count}} submissions",
     "weekdays": ["S", "M", "T", "W", "T", "F", "S"]
   },
   "banners": {
@@ -51,6 +52,7 @@
   },
   "companies": {
     "title": "Trending Companies",
-    "searchPlaceholder": "Search for a company..."
+    "searchPlaceholder": "Search for a company...",
+    "errorLoading": "Failed to load companies."
   }
 }

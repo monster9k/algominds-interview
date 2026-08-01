@@ -3,26 +3,15 @@ import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-
-// Dữ liệu mock (UI only) - chưa có bảng Company ở backend nên chỉ hiển thị tĩnh
-const TRENDING_COMPANIES = [
-  { name: "Google", count: 1832 },
-  { name: "Amazon", count: 1512 },
-  { name: "Meta", count: 987 },
-  { name: "Microsoft", count: 921 },
-  { name: "Bloomberg", count: 654 },
-  { name: "Apple", count: 588 },
-  { name: "TikTok", count: 341 },
-  { name: "Uber", count: 296 },
-  { name: "Adobe", count: 210 },
-  { name: "Oracle", count: 187 },
-];
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCompanies } from "../hooks/use-companies";
 
 export function TrendingCompaniesWidget() {
   const [search, setSearch] = useState("");
   const { t } = useTranslation("problems");
+  const { data: companies, isPending, isError } = useCompanies();
 
-  const filtered = TRENDING_COMPANIES.filter((c) =>
+  const filtered = (companies ?? []).filter((c) =>
     c.name.toLowerCase().includes(search.trim().toLowerCase()),
   );
 
@@ -42,21 +31,35 @@ export function TrendingCompaniesWidget() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5">
-        {filtered.map((company) => (
-          <div
-            key={company.name}
-            className="flex items-center justify-between gap-1 px-2 py-1.5 rounded-md bg-muted/60 border border-border hover:bg-muted cursor-pointer transition-colors"
-          >
-            <span className="text-[11px] text-foreground truncate">
-              {company.name}
-            </span>
-            <span className="text-[10px] px-1 py-0.5 rounded bg-background/60 text-muted-foreground shrink-0">
-              {company.count}
-            </span>
-          </div>
-        ))}
-      </div>
+      {isPending && (
+        <div className="grid grid-cols-2 gap-1.5">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <Skeleton key={i} className="h-7 rounded-md" />
+          ))}
+        </div>
+      )}
+
+      {isError && (
+        <p className="text-xs text-destructive">{t("companies.errorLoading")}</p>
+      )}
+
+      {!isPending && !isError && (
+        <div className="grid grid-cols-2 gap-1.5">
+          {filtered.map((company) => (
+            <div
+              key={company.id}
+              className="flex items-center justify-between gap-1 px-2 py-1.5 rounded-md bg-muted/60 border border-border hover:bg-muted cursor-pointer transition-colors"
+            >
+              <span className="text-[11px] text-foreground truncate">
+                {company.name}
+              </span>
+              <span className="text-[10px] px-1 py-0.5 rounded bg-background/60 text-muted-foreground shrink-0">
+                {company.count}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </Card>
   );
 }

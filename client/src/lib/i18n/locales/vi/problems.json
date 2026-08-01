@@ -29,6 +29,7 @@
   "calendar": {
     "dayLabel": "Ngày {{day}}",
     "streakLabel": "Chuỗi {{count}} ngày 🔥",
+    "submissionsCount": "{{count}} lượt nộp bài",
     "weekdays": ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
   },
   "banners": {
@@ -51,6 +52,7 @@
   },
   "companies": {
     "title": "Công ty nổi bật",
-    "searchPlaceholder": "Tìm kiếm công ty..."
+    "searchPlaceholder": "Tìm kiếm công ty...",
+    "errorLoading": "Không thể tải danh sách công ty."
   }
 }

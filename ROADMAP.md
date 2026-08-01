@@ -104,7 +104,8 @@
 
 - [ ] **Thêm husky + lint-staged** — pre-commit hook chạy lint/format, hiện chưa có nên dễ commit code chưa format.
 - [ ] **Viết `README.md` ở root** hướng dẫn setup từ đầu (docker-compose, `.env`, seed, chạy dev) — hiện `server/README.md`/`client/README.md` vẫn là boilerplate mặc định của NestJS/Vite, chưa customize.
-- [ ] **Bật lại `staleTime`** trong `use-problems.ts` (hiện đang comment out) — mỗi lần chuyển tab đều refetch không cần thiết.
+- [x] **Bật lại `staleTime`** trong `use-problems.ts` (hiện đang comment out) — mỗi lần chuyển tab đều refetch không cần thiết.
+  `queryClient` gốc (`lib/query-client.ts`) đã có `defaultOptions.queries.staleTime = 5 * 60 * 1000` từ đầu, nên hành vi runtime không đổi — nhưng dòng comment ở `use-problems.ts` khiến người đọc tưởng caching đang tắt. Bỏ comment để khai báo tường minh ngay tại query, không phụ thuộc ngầm vào default global.
 - [x] **Dọn dead code**: `client/src/features/interview/components/problem-panel/mockData.ts` (xác nhận còn dùng không), nút "Undo" trong toast login hiện không có chức năng thật (`onClick: () => console.log("Undo")`).
   Xác nhận `mockData.ts` không còn importer nào (grep toàn `client/src`) → xoá file. Nút "Undo" chỉ gọi `console.log`, không rollback được gì → xoá luôn action đó khỏi toast thay vì giả vờ có chức năng.
 - [ ] **Xử lý các TODO còn sót** trong `client/src/app/router.tsx` (dòng ~23, 84).

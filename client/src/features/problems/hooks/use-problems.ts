@@ -16,6 +16,6 @@ export const useProblems = (filters?: ProblemFilterParams) => {
     queryFn: () => problemsApi.getProblems(filters),
     enabled: !isAuthLoading,
     // Giữ cache 5 phút để tránh gọi lại liên tục khi chuyển tab
-    // staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5,
   });
 };

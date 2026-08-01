@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/query-client";
 import { testAuthApi } from "../api/test-auth";
 
 export const useTestAuth = () => {

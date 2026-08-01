@@ -52,7 +52,8 @@ export function InterviewRoom() {
   // Code state management
   const [currentCode, setCurrentCode] = useState<string>("");
   const [currentLanguage, setCurrentLanguage] = useState<string>("typescript");
-  const [submissionResult, setSubmissionResult] = useState<any>(null);
+  const [submissionResult, setSubmissionResult] =
+    useState<SubmissionResponse | null>(null);
   const [acceptedSubmission, setAcceptedSubmission] =
     useState<SubmissionResponse | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);
@@ -252,9 +253,6 @@ export function InterviewRoom() {
       </div>
     );
   }
-  console.log("SESSION DATA:", session);
-  console.log("submissionResult:", submissionResult);
-
   if (isError || !session) {
     return (
       <div className="h-screen w-full bg-zinc-950 flex flex-col items-center justify-center text-rose-500">

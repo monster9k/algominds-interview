@@ -1,7 +1,6 @@
 import { Bug, Lock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Socket } from "socket.io-client";
-import { ChatMessage, SessionPhase } from "../types";
+import { ChatMessage } from "../types";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -10,17 +9,13 @@ import { cn } from "@/lib/utils";
 import { TestcaseTab } from "./console-panel/testcase-tab";
 import { ResultTab } from "./console-panel/result-tab";
 import { AIChatTab } from "./console-panel/ai-chat-tab";
-import { ConsolePanelProps, TabValue } from "./console-panel/types";
+import { ConsolePanelProps } from "./console-panel/types";
 import {
   isTabAccessible,
   getDefaultTab,
   getTabTooltip,
 } from "./console-panel/helpers";
-import {
-  TAB_ACCESSIBILITY,
-  PHASE_LABELS,
-  STYLES,
-} from "./console-panel/constants";
+import { PHASE_LABELS, STYLES } from "./console-panel/constants";
 
 /**
  * ConsolePanel - Main container for console panel
@@ -40,6 +35,7 @@ export function ConsolePanel({
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputValue, setInputValue] = useState("");
   const [selectedCase, setSelectedCase] = useState(0);
+  const [isAiThinking, setIsAiThinking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const testCases = sessionProblem?.testCases || [];
@@ -62,10 +58,21 @@ export function ConsolePanel({
     if (!socket) return;
     const handleReceiveMessage = (newMessage: ChatMessage) => {
       setMessages((prev) => [...prev, newMessage]);
+      // Tin nhắn của chính user cũng được broadcast lại qua receive_message —
+      // chỉ tắt "AI đang trả lời..." khi tin mới thực sự đến từ AI.
+      if (newMessage.sender === "AI") {
+        setIsAiThinking(false);
+      }
     };
+    const stopThinking = () => setIsAiThinking(false);
+
     socket.on("receive_message", handleReceiveMessage);
+    socket.on("error", stopThinking);
+    socket.on("credits_exhausted", stopThinking);
     return () => {
       socket.off("receive_message", handleReceiveMessage);
+      socket.off("error", stopThinking);
+      socket.off("credits_exhausted", stopThinking);
     };
   }, [socket]);
 
@@ -86,6 +93,7 @@ export function ConsolePanel({
       content: inputValue,
     });
     setInputValue("");
+    setIsAiThinking(true);
   };
 
   return (
@@ -192,16 +200,13 @@ export function ConsolePanel({
           className="h-full m-0 flex flex-col overflow-hidden data-[state=inactive]:hidden"
         >
           <AIChatTab
-            socket={socket}
-            sessionId={sessionId}
             messages={messages}
             currentPhase={currentPhase}
-            user={user}
-            onSendMessage={() => {}}
             inputValue={inputValue}
             onInputChange={setInputValue}
             onSubmit={handleSendMessage}
             scrollRef={scrollRef}
+            isAiThinking={isAiThinking}
           />
         </TabsContent>
       </div>

@@ -13,6 +13,7 @@ import { DescriptionTab } from "./problem-panel/description-tab";
 import { SubmissionsTab } from "./problem-panel/submissions-tab";
 import { SubmissionDetail } from "./submission-detail";
 import type { SubmissionResponse } from "../types";
+import type { Problem } from "./problem-panel/types";
 
 /**
  * ProblemPanel - Main container component
@@ -20,7 +21,7 @@ import type { SubmissionResponse } from "../types";
  * State: selectedSubmission for tracking detail view in Submissions tab
  */
 interface ProblemPanelProps {
-  problem: any;
+  problem?: Problem;
   submissions: SubmissionResponse[];
   acceptedSubmission?: SubmissionResponse | null;
   activeTab?: string;

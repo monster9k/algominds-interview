@@ -67,7 +67,7 @@ npm run preview
 
 ### Frontend features (`client/src/features/*`)
 - `auth` — login/register/Google OAuth pages, `use-auth-store` (Zustand), `ProtectedRoute`.
-- `problems` — problem list/table; `problem-filters.tsx` renders filter UI but is not yet wired to the query.
+- `problems` — problem list/table; `problem-filters.tsx` renders filter UI and is wired to `useProblems(filters)`.
 - `interview` — the core interview room: Monaco editor, AI chat panel, submission/result panels, evaluation. `pages/interview-room.tsx` is the main page composing most of this feature's state and hooks.
 
 Path alias `@/` → `client/src/` (see `vite.config.ts`, `tsconfig.json`). Server state via TanStack Query, client/UI state via Zustand (`stores/`), components via shadcn/ui + Tailwind v4.

@@ -9,8 +9,11 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async findByEmail(email: string) {
+    // Extended whereUnique: `email` vẫn là điều kiện unique, `deletedAt`
+    // chỉ là filter thêm — user đã soft-delete không được tìm thấy qua
+    // đường này (login/register đều dùng chung hàm này).
     return this.prisma.user.findUnique({
-      where: { email },
+      where: { email, deletedAt: null },
     });
   }
 
@@ -57,14 +60,14 @@ export class UsersService {
     });
 
     // 4. Xóa password khỏi kết quả trả về
-    const { password: _, ...result } = newUser;
+    const { password: _password, ...result } = newUser;
 
     return result;
   }
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: {
         stats: true,
       },
@@ -73,7 +76,18 @@ export class UsersService {
 
     // Loại bỏ password trước khi trả về
     const { password, ...result } = user;
-    return result;
+
+    // Rank theo totalSolved — không có bảng leaderboard riêng nên tính trực
+    // tiếp: rank = số user có totalSolved cao hơn + 1.
+    let rank: number | null = null;
+    if (user.stats) {
+      const higherRankedCount = await this.prisma.userStats.count({
+        where: { totalSolved: { gt: user.stats.totalSolved } },
+      });
+      rank = higherRankedCount + 1;
+    }
+
+    return { ...result, rank };
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {

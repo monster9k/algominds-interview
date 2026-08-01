@@ -6,7 +6,7 @@ export class CodeGeneratorService {
   public prepareRunnableCode(
     language: string,
     userCode: string,
-    input: any,
+    input: Record<string, unknown>,
     functionName: string,
   ): { code: string; stdin?: string } {
     const inputValues = Object.values(input);
@@ -222,7 +222,7 @@ ${sanitizedUserCode}
     return { code, stdin: stdinLines.join('\n') };
   }
 
-  private buildJavaInputReader(args: any[]): {
+  private buildJavaInputReader(args: unknown[]): {
     readerCode: string;
     argNames: string[];
     stdinLines: string[];

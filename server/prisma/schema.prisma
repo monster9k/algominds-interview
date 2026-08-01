@@ -200,6 +200,7 @@ model Session {
   evaluation  Evaluation?
 
   @@index([userId, status])
+  @@index([problemId])
   @@map("sessions")
 }
 
@@ -213,6 +214,7 @@ model SessionEvent {
 
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
+  @@index([sessionId])
   @@map("session_events")
 }
 

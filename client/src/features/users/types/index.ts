@@ -21,6 +21,7 @@ export interface UserProfileResponse {
   bio: string | null;
   isPro: boolean;
   stats: UserStats | null;
+  rank: number | null;
 }
 
 export interface DifficultyStat {
@@ -34,17 +35,20 @@ export interface HeatmapDay {
   count: number;
 }
 
+// Khớp với enum SubmissionStatus của Prisma (server/prisma/schema.prisma)
 export type SubmissionStatus =
   | "ACCEPTED"
   | "WRONG_ANSWER"
-  | "TIME_LIMIT_EXCEEDED";
+  | "COMPILE_ERROR"
+  | "RUNTIME_ERROR"
+  | "TLE";
 
 export interface RecentSubmission {
   id: string;
   title: string;
   difficulty: Difficulty;
   status: SubmissionStatus;
-  timeAgo: string;
+  createdAt: string;
 }
 
 export interface BadgeInfo {

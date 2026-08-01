@@ -37,6 +37,7 @@
     "@nestjs/websockets": "^11.1.12",
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
+    "@sentry/nestjs": "^10.69.0",
     "axios": "^1.13.3",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.66.5",

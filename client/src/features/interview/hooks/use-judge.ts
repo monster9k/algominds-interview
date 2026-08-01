@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { judgeApi } from "../api/judge-api";
 import { toast } from "sonner";
 import { SubmissionResponse } from "../types";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 
 interface UseSubmitCodeOptions {
   onSuccess?: (data: SubmissionResponse) => void;
@@ -22,10 +23,12 @@ export const useSubmitCode = ({ onSuccess }: UseSubmitCodeOptions = {}) => {
       }
       onSuccess?.(data);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast.error("Lỗi khi chấm bài", {
-        description:
-          error.response?.data?.message || "Hệ thống chấm lỗi (Piston Error)",
+        description: getApiErrorMessage(
+          error,
+          "Hệ thống chấm bài (Piston) đang gặp sự cố.",
+        ),
       });
     },
   });
@@ -42,6 +45,7 @@ export const useSessionSubmissions = (sessionId?: string) => {
     },
     enabled: !!sessionId,
     refetchOnWindowFocus: false,
+    meta: { fallbackMessage: "Không tải được lịch sử bài nộp." },
   });
 };
 
@@ -56,5 +60,6 @@ export const useProblemSubmissions = (problemSlug?: string) => {
     },
     enabled: !!problemSlug,
     refetchOnWindowFocus: false,
+    meta: { fallbackMessage: "Không tải được lịch sử bài nộp." },
   });
 };

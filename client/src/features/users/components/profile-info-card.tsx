@@ -49,7 +49,10 @@ export function ProfileInfoCard() {
               {email}
             </span>
             <span className="text-xs text-muted-foreground mt-1.5">
-              Rank <span className="text-foreground">#1,364,526</span>
+              Rank{" "}
+              <span className="text-foreground">
+                {profile?.rank ? `#${profile.rank.toLocaleString()}` : "N/A"}
+              </span>
             </span>
           </div>
         </div>

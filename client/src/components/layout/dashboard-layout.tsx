@@ -46,7 +46,7 @@ export function DashboardLayout() {
 
         <ResizableHandle
           withHandle
-          className="hidden lg:flex"
+          className="hidden lg:flex hover:bg-primary/40 transition-colors"
           onDoubleClick={toggleSidebar}
         />
 

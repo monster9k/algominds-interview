@@ -29,7 +29,7 @@ export function TestcaseTab({
         <div className="space-y-3">
           {/* Test Case Selection Buttons */}
           <div className="flex gap-2 flex-wrap">
-            {testCases.map((_: any, index: number) => (
+            {testCases.map((_, index) => (
               <Button
                 key={index}
                 size="sm"
@@ -49,18 +49,18 @@ export function TestcaseTab({
           {/* Test Case Input Display */}
           <div className="space-y-1">
             {currentCase &&
-              Object.entries(currentCase.input || {}).map(
-                ([key, value]: any) => (
-                  <div key={key} className="space-y-1">
-                    <span className="text-xs text-zinc-500 font-medium">
-                      {key} =
-                    </span>
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-md p-3 font-mono text-sm text-zinc-300">
-                      {Array.isArray(value) ? `[${value.join(", ")}]` : value}
-                    </div>
+              Object.entries(currentCase.input || {}).map(([key, value]) => (
+                <div key={key} className="space-y-1">
+                  <span className="text-xs text-zinc-500 font-medium">
+                    {key} =
+                  </span>
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-md p-3 font-mono text-sm text-zinc-300">
+                    {Array.isArray(value)
+                      ? `[${value.join(", ")}]`
+                      : String(value)}
                   </div>
-                ),
-              )}
+                </div>
+              ))}
           </div>
         </div>
       </div>

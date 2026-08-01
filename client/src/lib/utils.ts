@@ -3,17 +3,8 @@
  * Các hàm tiện ích chung được sử dụng trong toàn bộ ứng dụng
  * Bao gồm việc hợp nhất tên lớp CSS của Tailwind và các hàm trợ giúp khác
  */
-import { clsx } from "clsx";
+import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-
-type ClassValue =
-  | string
-  | number
-  | boolean
-  | undefined
-  | null
-  | { [key: string]: any }
-  | ClassValue[];
 
 /**
  * Kết hợp các tên lớp và hợp nhất các lớp Tailwind một cách thông minh
@@ -45,11 +36,11 @@ export function formatDate(date: Date | string): string {
 /**
  * Hàm debounce để giới hạn các lệnh gọi API
  */
-export function debounce<T extends (...args: any[]) => void>(
+export function debounce<T extends (...args: never[]) => void>(
   func: T,
   delay: number,
 ): (...args: Parameters<T>) => void {
-  let timeoutId: any;
+  let timeoutId: ReturnType<typeof setTimeout>;
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);

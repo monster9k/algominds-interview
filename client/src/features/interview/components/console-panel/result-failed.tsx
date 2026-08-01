@@ -1,15 +1,10 @@
 import { ResultFailedProps } from "./types";
 import { TestCaseItem } from "./test-case-item";
-import { RESULT_MESSAGES } from "./constants";
 
 /**
  * ResultFailed - Displays the result view for FAILED/WRONG_ANSWER submissions
  */
-export function ResultFailed({
-  submissionResult,
-  onAnalysis,
-  onSolution,
-}: ResultFailedProps) {
+export function ResultFailed({ submissionResult }: ResultFailedProps) {
   return (
     <div className="space-y-4 pb-4">
       {/* Status Alert */}

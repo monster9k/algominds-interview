@@ -1,5 +1,5 @@
 import { TestCaseItemProps } from "./types";
-import { isTestCasePassed, formatTestCaseStatus } from "./helpers";
+import { isTestCasePassed } from "./helpers";
 
 /**
  * TestCaseItem - Displays a single test case result

@@ -3,10 +3,29 @@
  * Global configuration for React Query (TanStack Query)
  * Handles default query and mutation options for server state management
  */
-import { QueryClient } from "@tanstack/react-query";
+import { QueryCache, QueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getApiErrorMessage } from "./get-api-error-message";
+
+interface QueryErrorMeta {
+  // Bỏ qua toast lỗi tự động — dùng khi component đã tự render 1 error state riêng.
+  silent?: boolean;
+  // Message hiển thị khi request fail vì lý do "chung chung" (không phải network/auth/rate-limit/5xx).
+  fallbackMessage?: string;
+}
 
 // Create and configure the query client
 export const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      const meta = query.meta as QueryErrorMeta | undefined;
+      if (meta?.silent) return;
+
+      toast.error(
+        getApiErrorMessage(error, meta?.fallbackMessage ?? "Không thể tải dữ liệu"),
+      );
+    },
+  }),
   defaultOptions: {
     queries: {
       // Stale time - how long queries stay fresh (5 minutes)
@@ -46,7 +65,7 @@ export const queryKeys = {
   // Problems related queries
   problems: {
     all: () => ["problems"] as const,
-    list: (filters: Record<string, any>) =>
+    list: (filters: Record<string, unknown>) =>
       ["problems", "list", filters] as const,
     detail: (id: string) => ["problems", "detail", id] as const,
   },

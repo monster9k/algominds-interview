@@ -2,6 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GenerativeModel, GoogleGenerativeAI } from '@google/generative-ai';
 
+// Shape Gemini is instructed to return for evaluateCode() — see the
+// evaluationModel's systemInstruction below. Fields stay loosely typed
+// since this is untrusted model output, validated below before use.
+interface GeminiEvaluationResponse {
+  scores?: {
+    logic?: unknown;
+    cleanCode?: unknown;
+    performance?: unknown;
+    bestPractices?: unknown;
+  };
+  feedback?: string;
+  pros?: unknown;
+  cons?: unknown;
+}
+
 @Injectable()
 export class AiService {
   private genAI: GoogleGenerativeAI;
@@ -122,7 +137,7 @@ export class AiService {
       });
       // gửi tin nhắn mới
       const result = await chat.sendMessage(newMessage);
-      const response = await result.response;
+      const response = result.response;
       return response.text();
     } catch (error) {
       console.error('Gemini Error:', error);
@@ -163,11 +178,11 @@ Hãy đánh giá code này theo 4 tiêu chí: logic, cleanCode, performance, bes
       });
 
       const result = await chat.sendMessage(prompt);
-      const response = await result.response;
+      const response = result.response;
       const rawResponse = response.text();
 
       // Parse JSON response
-      const evaluation = JSON.parse(rawResponse);
+      const evaluation = JSON.parse(rawResponse) as GeminiEvaluationResponse;
 
       // Validate structure
       if (
@@ -181,10 +196,19 @@ Hãy đánh giá code này theo 4 tiêu chí: logic, cleanCode, performance, bes
       }
 
       return {
-        scores: evaluation.scores,
+        scores: {
+          logic: evaluation.scores.logic,
+          cleanCode: evaluation.scores.cleanCode,
+          performance: evaluation.scores.performance,
+          bestPractices: evaluation.scores.bestPractices,
+        },
         feedback: evaluation.feedback || '',
-        pros: Array.isArray(evaluation.pros) ? evaluation.pros : [],
-        cons: Array.isArray(evaluation.cons) ? evaluation.cons : [],
+        pros: Array.isArray(evaluation.pros)
+          ? (evaluation.pros as string[])
+          : [],
+        cons: Array.isArray(evaluation.cons)
+          ? (evaluation.cons as string[])
+          : [],
       };
     } catch (error) {
       console.error('Code Evaluation Error:', error);

@@ -10,16 +10,13 @@ import { cn } from "@/lib/utils";
  * Handles messaging with phase-aware empty state
  */
 export function AIChatTab({
-  socket,
-  sessionId,
   messages,
   currentPhase,
-  user,
-  onSendMessage,
   inputValue,
   onInputChange,
   onSubmit,
   scrollRef,
+  isAiThinking = false,
 }: AIChatTabProps) {
   const emptyStateConfig =
     currentPhase === "PHASE_1_STRATEGY"
@@ -53,9 +50,9 @@ export function AIChatTab({
 
           {messages.length > 0 && (
             <div className="space-y-4">
-              {messages.map((msg, idx) => (
+              {messages.map((msg) => (
                 <div
-                  key={idx}
+                  key={msg.id}
                   className={`flex ${
                     msg.sender === "USER" ? "justify-end" : "justify-start"
                   }`}
@@ -72,6 +69,20 @@ export function AIChatTab({
                   </div>
                 </div>
               ))}
+              {isAiThinking && (
+                <div className="flex justify-start">
+                  <div
+                    className={cn(
+                      "max-w-[85%] p-3 rounded-lg rounded-bl-none text-sm flex items-center gap-1.5",
+                      STYLES.CHAT_MESSAGE_AI,
+                    )}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-current animate-bounce [animation-delay:-0.3s]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-current animate-bounce [animation-delay:-0.15s]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-current animate-bounce" />
+                  </div>
+                </div>
+              )}
               <div ref={scrollRef} />
             </div>
           )}
@@ -85,14 +96,15 @@ export function AIChatTab({
             type="text"
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
-            placeholder="Nhập tin nhắn..."
+            placeholder={isAiThinking ? "AI đang trả lời..." : "Nhập tin nhắn..."}
+            disabled={isAiThinking}
             className={`${STYLES.CHAT_INPUT}`}
             autoComplete="off"
           />
           <Button
             type="submit"
             size="icon"
-            disabled={!inputValue.trim()}
+            disabled={!inputValue.trim() || isAiThinking}
             className="bg-rose-600 hover:bg-rose-700 text-white shrink-0"
           >
             <Send className="h-4 w-4" />

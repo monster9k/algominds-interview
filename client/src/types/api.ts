@@ -5,7 +5,7 @@
  */
 
 // Generic API response wrapper
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data: T;
   message: string;
   success: boolean;
@@ -16,7 +16,7 @@ export interface ApiResponse<T = any> {
 export interface ApiError {
   message: string;
   code: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp: string;
 }
 
@@ -43,7 +43,7 @@ export interface ListQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
 }
 
 // Base entity with common fields

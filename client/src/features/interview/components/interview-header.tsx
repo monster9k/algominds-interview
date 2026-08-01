@@ -184,7 +184,7 @@ export function InterviewHeader({
                       <button
                         type="button"
                         onClick={() => setSearchTerm("")}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-zinc-300"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -235,9 +235,6 @@ export function InterviewHeader({
                   {!isLoadingProblems &&
                     !isProblemError &&
                     filteredProblems.map((problem) => {
-                      const problemIndex = (problems ?? []).findIndex(
-                        (item) => item.id === problem.id,
-                      );
                       const isActive = problem.slug === currentProblemSlug;
 
                       return (

@@ -1,11 +1,8 @@
 import { Fragment } from "react";
 import { ChevronDown, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  MOCK_ACTIVE_DAYS,
-  MOCK_HEATMAP_DAYS,
-  MOCK_MAX_STREAK,
-} from "../utils/mock-data";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useSubmissionHeatmap } from "../hooks/use-submission-heatmap";
 import type { HeatmapDay } from "../types";
 
 const MONTH_LABELS = [
@@ -37,10 +34,37 @@ function getWeekMonthLabel(weeks: HeatmapDay[][], weekIndex: number): string {
   return month !== prevMonth ? MONTH_LABELS[month] : "";
 }
 
-// TODO: Requires backend schema — no per-day submission activity model exists yet, stays mocked.
+function computeActiveDaysAndMaxStreak(days: HeatmapDay[]) {
+  const activeDays = days.filter((d) => d.count > 0).length;
+  const maxStreak = days.reduce(
+    (acc, day) => {
+      const streak = day.count > 0 ? acc.current + 1 : 0;
+      return { current: streak, max: Math.max(acc.max, streak) };
+    },
+    { current: 0, max: 0 },
+  ).max;
+  return { activeDays, maxStreak };
+}
+
 export function SubmissionHeatmap() {
-  const totalSubmissions = MOCK_HEATMAP_DAYS.reduce((sum, d) => sum + d.count, 0);
-  const weeks = chunkIntoWeeks(MOCK_HEATMAP_DAYS);
+  const { data: heatmapDays, isLoading } = useSubmissionHeatmap();
+
+  if (isLoading || !heatmapDays) {
+    return (
+      <Card>
+        <CardHeader className="p-4">
+          <Skeleton className="h-5 w-48" />
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          <Skeleton className="h-[100px] w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const totalSubmissions = heatmapDays.reduce((sum, d) => sum + d.count, 0);
+  const weeks = chunkIntoWeeks(heatmapDays);
+  const { activeDays, maxStreak } = computeActiveDaysAndMaxStreak(heatmapDays);
 
   return (
     <Card>
@@ -52,14 +76,14 @@ export function SubmissionHeatmap() {
 
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground shrink-0">
           <span>
-            Total active days: <span className="text-foreground">{MOCK_ACTIVE_DAYS}</span>
+            Total active days: <span className="text-foreground">{activeDays}</span>
           </span>
           <span>
-            Max streak: <span className="text-foreground">{MOCK_MAX_STREAK}</span>
+            Max streak: <span className="text-foreground">{maxStreak}</span>
           </span>
           <button
             type="button"
-            className="flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-xs hover:bg-accent"
+            className="flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-xs transition-colors hover:bg-accent"
           >
             Current
             <ChevronDown className="h-3 w-3" />

@@ -2,7 +2,7 @@ import { ResultAcceptedProps } from "./types";
 import { ActionButtons } from "./action-buttons";
 import { ResultStatsCards } from "./result-stats-cards";
 import { TestCaseItem } from "./test-case-item";
-import { formatTimestamp, formatMemoryToMB } from "./helpers";
+import { formatTimestamp } from "./helpers";
 import { DEFAULT_VALUES } from "./constants";
 
 /**
@@ -22,7 +22,10 @@ export function ResultAccepted({
           <span className="font-medium text-zinc-300">
             {DEFAULT_VALUES.USERNAME_FALLBACK}
           </span>{" "}
-          submitted at {formatTimestamp(submissionResult.timestamp)}
+          submitted at{" "}
+          {submissionResult.createdAt
+            ? formatTimestamp(submissionResult.createdAt)
+            : "just now"}
         </p>
         <p className="text-xs text-zinc-500">
           {submissionResult.passedTests}/{submissionResult.totalTests} testcases
@@ -32,8 +35,8 @@ export function ResultAccepted({
 
       {/* Stats Cards */}
       <ResultStatsCards
-        executionTime={submissionResult.executionTime}
-        memoryUsage={submissionResult.memoryUsage}
+        executionTime={submissionResult.executionTime ?? 0}
+        memoryUsage={submissionResult.memoryUsage ?? 0}
       />
 
       {/* Action Buttons */}

@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import type { JwtUser } from '../auth/type/jwt-user.type';
+import type { RequestUser } from '../../common/types/request-user.type';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Users') // lam viec voi swagger
@@ -16,7 +16,7 @@ export class UsersController {
   // 1. API: Lấy thông tin bản thân
   // GET http://localhost:3000/users/me
   @Get('me')
-  getProfile(@CurrentUser() user: JwtUser) {
+  getProfile(@CurrentUser() user: RequestUser) {
     // req.user từ Token chỉ có email, id, role.
     // Ta cần gọi xuống DB để lấy full info (avatar, bio, stats...)
     return this.usersService.findOne(user.userId);
@@ -26,7 +26,7 @@ export class UsersController {
   // PATCH http://localhost:3000/users/me
   @Patch('me')
   updateProfile(
-    @CurrentUser() user: JwtUser,
+    @CurrentUser() user: RequestUser,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(user.userId, updateUserDto);

@@ -7,6 +7,11 @@ build/
 .env
 .env.local
 .env.*
+# ...nhưng file mẫu .env.example vẫn phải commit được (CLAUDE.md hướng dẫn
+# copy server/.env.example -> server/.env) — nếu không có exception này thì
+# .env.* ở trên chặn luôn cả .env.example, khiến file mẫu không bao giờ vào
+# được git.
+!.env.example
 
 # IDE & System
 .vscode/

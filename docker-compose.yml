@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # SERVICE 1: DATABASE (PostgreSQL)
   postgres:
@@ -8,13 +6,22 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: algominds
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin123}
+      POSTGRES_DB: ${POSTGRES_DB:-algominds}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - algominds-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-algominds}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # SERVICE 3: CODE EXECUTION SANDBOX (Piston)
   piston:
@@ -27,9 +34,25 @@ services:
     tty: true
     stdin_open: true
     restart: unless-stopped
-    privileged: true # QUAN TRỌNG: Cấp quyền để Piston tạo môi trường isolate
+    # QUAN TRỌNG: Piston tự chạy code trong isolate/nsjail sandbox bên trong
+    # container này — cần `privileged` để tạo được cgroup/namespace cho từng
+    # lần chấm bài. Không tắt được nếu vẫn muốn tính năng chấm code hoạt
+    # động; nếu deploy production thật, nên tách Piston ra 1 host/VM riêng
+    # bị cô lập mạng thay vì chỉ dựa vào docker-compose này.
+    privileged: true
     volumes:
       - piston_data:/piston
+    healthcheck:
+      # Image không có curl/wget, chỉ có node — dùng http module thay thế.
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"require('http').get('http://localhost:2000/api/v2/runtimes',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))\"",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   # SERVICE 2: CACHE & QUEUE (Redis)
   redis:
@@ -41,6 +64,11 @@ services:
       - redis_data:/data
     networks:
       - algominds-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

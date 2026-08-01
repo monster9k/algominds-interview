@@ -11,7 +11,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SessionsService } from './sessions.service';
 
-import type { JwtUser } from '../auth/type/jwt-user.type';
+import type { RequestUser } from '../../common/types/request-user.type';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -25,14 +25,17 @@ export class SessionsController {
 
   @Post()
   create(
-    @CurrentUser() user: JwtUser,
+    @CurrentUser() user: RequestUser,
     @Body() createSessionDto: CreateSessionDto,
   ) {
     return this.sessionsService.create(user.userId, createSessionDto);
   }
 
   @Post('start/:slug')
-  startWorkspace(@CurrentUser() user: JwtUser, @Param('slug') slug: string) {
+  startWorkspace(
+    @CurrentUser() user: RequestUser,
+    @Param('slug') slug: string,
+  ) {
     console.log(
       `Starting session for user ${user.userId} with problem slug: ${slug}`,
     );
@@ -40,13 +43,13 @@ export class SessionsController {
   }
 
   @Get(':id')
-  findOne(@CurrentUser() user: JwtUser, @Param('id') id: string) {
+  findOne(@CurrentUser() user: RequestUser, @Param('id') id: string) {
     return this.sessionsService.findOne(id, user.userId);
   }
 
   @Patch(':id')
   update(
-    @CurrentUser() user: JwtUser,
+    @CurrentUser() user: RequestUser,
     @Param('id') id: string,
     @Body() updateSessionDto: UpdateSessionDto,
   ) {

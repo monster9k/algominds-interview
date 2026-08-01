@@ -8,9 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 
-export function CodeEditorPanel({
+export const CodeEditorPanel = memo(function CodeEditorPanel({
   initialCode,
   isLocked,
   code,
@@ -131,4 +131,4 @@ export function CodeEditorPanel({
       </div>
     </div>
   );
-}
+});

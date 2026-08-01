@@ -71,6 +71,7 @@ export class ProblemsService {
     const sortDirection = this.parseSortDirection(filters?.sortDirection);
 
     const where: Prisma.ProblemWhereInput = {
+      deletedAt: null,
       ...(difficulty && { difficulty }),
       ...(tags.length > 0 && {
         tags: { some: { tag: { name: { in: tags } } } },
@@ -146,7 +147,7 @@ export class ProblemsService {
   // LẤY CHI TIẾT 1 BÀI (Theo Slug)
   async findOne(slug: string) {
     const problem = await this.prisma.problem.findUnique({
-      where: { slug },
+      where: { slug, deletedAt: null },
       select: {
         id: true,
         displayId: true,

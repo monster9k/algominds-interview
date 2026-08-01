@@ -6,6 +6,8 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { randomUUID } from 'crypto';
+import { GoogleValidatedUser } from '../../common/types/google-validated-user.type';
+import { JwtPayload } from '../../common/types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -104,15 +106,23 @@ export class AuthService {
     return this.issueTokensForUser(user);
   }
 
-  async validateGoogleUser(googleUser: any) {
+  async validateGoogleUser(googleUser: GoogleValidatedUser) {
     const { email, name, avatarUrl, providerId } = googleUser;
 
     // A. Kiểm tra user đã tồn tại chưa?
     const user = await this.usersService.findByEmail(email);
 
     if (user) {
-      // Nếu đã có -> Trả về luôn để login
-      // (Optional: Update avatar nếu muốn, nhưng để đơn giản ta cứ return)
+      // Chặn account takeover: 1 email đã đăng ký bằng email/password (provider
+      // "email") không được phép đăng nhập thẳng qua Google mà không có bước
+      // liên kết tường minh trước.
+      if (user.provider !== 'google') {
+        throw new UnauthorizedException(
+          'Email này đã được đăng ký bằng mật khẩu. Vui lòng đăng nhập bằng email/mật khẩu.',
+        );
+      }
+
+      // Đã liên kết Google từ trước -> Trả về luôn để login
       return user;
     }
 
@@ -132,17 +142,20 @@ export class AuthService {
   }
 
   async refreshTokens(refreshToken: string) {
-    const payload = await this.jwtService.verifyAsync(refreshToken, {
-      secret: process.env.JWT_SECRET,
-    });
+    const payload = await this.jwtService.verifyAsync<JwtPayload>(
+      refreshToken,
+      {
+        secret: process.env.JWT_SECRET,
+      },
+    );
 
     if (payload?.type !== 'refresh' || !payload?.jti) {
       throw new UnauthorizedException('Refresh Token không hợp lệ');
     }
 
-    // 1) Xác thực user tồn tại
+    // 1) Xác thực user tồn tại (và chưa bị soft-delete)
     const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
+      where: { id: payload.sub, deletedAt: null },
     });
     if (!user) {
       throw new UnauthorizedException('User không tồn tại');
@@ -193,9 +206,12 @@ export class AuthService {
   }
 
   async revokeRefreshToken(refreshToken: string) {
-    const payload = await this.jwtService.verifyAsync(refreshToken, {
-      secret: process.env.JWT_SECRET,
-    });
+    const payload = await this.jwtService.verifyAsync<JwtPayload>(
+      refreshToken,
+      {
+        secret: process.env.JWT_SECRET,
+      },
+    );
 
     if (payload?.type !== 'refresh' || !payload?.jti) {
       throw new UnauthorizedException('Refresh Token không hợp lệ');

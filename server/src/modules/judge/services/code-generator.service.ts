@@ -13,6 +13,20 @@ export class CodeGeneratorService {
 
     switch (language) {
       case 'typescript':
+        // Piston's tsc invocation has no explicit --target/--lib, so it
+        // falls back to an old default that excludes ES2015+ globals
+        // (Map/Set/etc.), causing TS2583. This directive adds the type
+        // declarations for a single file without needing a tsconfig or
+        // CLI flags — it doesn't affect runtime behavior (Node always has
+        // Map regardless of tsc's target), only what the checker can see.
+        return {
+          code: this.generateJsDriver(
+            `/// <reference lib="es2022" />\n${userCode}`,
+            inputValues,
+            functionName,
+          ),
+        };
+
       case 'javascript':
         return {
           code: this.generateJsDriver(userCode, inputValues, functionName),
@@ -119,14 +133,53 @@ except Exception as e:
 #include <map>
 #include <unordered_map>
 #include <set>
+#include <unordered_set>
 #include <stack>
 #include <queue>
+#include <deque>
+#include <list>
+#include <utility>
+#include <numeric>
+#include <climits>
+#include <cmath>
+#include <cstring>
+#include <functional>
+#include <sstream>
+#include <bitset>
+#include <array>
 using namespace std;
 
-// Helper in vector (Debug)
-void printVector(const vector<int>& v) {
+// Result printers (JSON-compatible output). Non-template overloads below
+// handle scalar leaves; the vector<T>/pair<A,B> templates recurse into
+// their elements, so any LeetCode-style return type composed from these
+// (vector<string>, vector<vector<int>>, vector<pair<int,int>>, ...) is
+// covered without enumerating every combination by hand. Overload
+// resolution (not runtime dispatch) picks the right one at compile time.
+void printResult(bool v) { cout << (v ? "true" : "false"); }
+void printResult(char v) { cout << "\\"" << v << "\\""; }
+void printResult(int v) { cout << v; }
+void printResult(long v) { cout << v; }
+void printResult(long long v) { cout << v; }
+void printResult(unsigned long long v) { cout << v; }
+void printResult(double v) { cout << v; }
+void printResult(const string& v) { cout << "\\"" << v << "\\""; }
+
+template <typename A, typename B>
+void printResult(const pair<A, B>& p) {
     cout << "[";
-    for(int i=0; i<v.size(); ++i) cout << v[i] << (i<v.size()-1 ? "," : "");
+    printResult(p.first);
+    cout << ",";
+    printResult(p.second);
+    cout << "]";
+}
+
+template <typename T>
+void printResult(const vector<T>& v) {
+    cout << "[";
+    for (size_t i = 0; i < v.size(); ++i) {
+        printResult(v[i]);
+        if (i + 1 < v.size()) cout << ",";
+    }
     cout << "]";
 }
 
@@ -139,7 +192,7 @@ int main() {
 ${argDeclarations}
     auto result = sol.${functionName}(${argNames});
 
-    printVector(result);
+    printResult(result);
     cout << endl;
 
     return 0;

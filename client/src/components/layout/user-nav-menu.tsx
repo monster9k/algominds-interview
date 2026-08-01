@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useLogout } from "@/features/auth/hooks/use-auth";
+import { useUserProfile } from "@/features/users/hooks/use-user-profile";
 
 const gridItems = [
   {
@@ -61,8 +62,15 @@ const listItems = [
 
 export function UserNavMenu() {
   const user = useAuthStore((state) => state.user);
+  const { data: profile } = useUserProfile();
   const logout = useLogout();
   const navigate = useNavigate();
+
+  // Prefer the `/users/me` profile query for name/email: the login response's
+  // JWT-derived user object only carries {userId, email, role}, so the auth
+  // store's `user.name` is unset until this query resolves.
+  const name = profile?.name ?? user?.name ?? "Guest";
+  const avatarUrl = profile?.avatarUrl ?? user?.avatarUrl;
 
   return (
     <DropdownMenu>
@@ -72,12 +80,9 @@ export function UserNavMenu() {
           className="relative h-9 w-9 rounded-full ring-2 ring-primary/20 hover:ring-primary/50 transition-all"
         >
           <Avatar className="h-9 w-9">
-            <AvatarImage
-              src={user?.avatarUrl || "https://github.com/shadcn.png"}
-              alt={user?.name || "User"}
-            />
+            <AvatarImage src={avatarUrl} alt={name} />
             <AvatarFallback className="bg-primary/10 text-primary">
-              {user?.name?.charAt(0).toUpperCase() || "U"}
+              {name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </button>
@@ -90,17 +95,14 @@ export function UserNavMenu() {
           className="flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-muted/30"
         >
           <Avatar className="h-12 w-12 shrink-0">
-            <AvatarImage
-              src={user?.avatarUrl || "https://github.com/shadcn.png"}
-              alt={user?.name || "User"}
-            />
+            <AvatarImage src={avatarUrl} alt={name} />
             <AvatarFallback className="bg-primary/10 text-primary">
-              {user?.name?.charAt(0).toUpperCase() || "U"}
+              {name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex flex-col gap-0.5">
             <p className="text-base font-semibold text-foreground truncate">
-              {user?.name || "Guest"}
+              {name}
             </p>
             <p className="text-xs leading-snug text-amber-500">
               Access all features with our Premium subscription!

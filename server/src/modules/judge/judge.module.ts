@@ -11,7 +11,6 @@ import { PrismaModule } from '../../prisma/prisma.module';
   imports: [
     HttpModule, // Để gọi API Piston
     PrismaModule,
-    
   ],
   controllers: [JudgeController],
   providers: [JudgeService, CodeGeneratorService, PistonService],

@@ -1,14 +1,17 @@
 import { ArrowRight, Award } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { MOCK_BADGE } from "../utils/mock-data";
 
 // TODO: Requires backend schema — no Badge model exists yet, stays mocked.
 export function BadgesCard() {
+  const { t } = useTranslation("users");
+
   return (
     <Card className="h-full">
       <CardContent className="p-4 flex flex-col h-full">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Badges</span>
+          <span className="text-xs text-muted-foreground">{t("badges.title")}</span>
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
 
@@ -21,7 +24,7 @@ export function BadgesCard() {
             <Award className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] text-muted-foreground">Most Recent Badge</p>
+            <p className="text-[10px] text-muted-foreground">{t("badges.mostRecentBadge")}</p>
             <p className="text-xs font-medium text-foreground truncate">
               {MOCK_BADGE.mostRecentName}
             </p>

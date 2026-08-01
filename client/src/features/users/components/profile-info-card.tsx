@@ -1,4 +1,5 @@
 import { Flame, Coins, ListChecks, BarChart3 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,28 +9,34 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { useUserProfile } from "../hooks/use-user-profile";
 
 export function ProfileInfoCard() {
+  const { t } = useTranslation("users");
   const user = useAuthStore((s) => s.user);
   const { data: profile, isLoading } = useUserProfile();
 
   // Prefer the `/users/me` profile query for name/email: the login response's
   // JWT-derived user object only carries {userId, email, role}, so the auth
   // store's `user.name` is unset until this query resolves.
-  const name = profile?.name ?? user?.name ?? "Guest";
-  const email = profile?.email ?? user?.email ?? "Not signed in";
+  const name = profile?.name ?? user?.name ?? t("profile.guest");
+  const email = profile?.email ?? user?.email ?? t("profile.notSignedIn");
   const avatarUrl = profile?.avatarUrl ?? user?.avatarUrl;
   const initial = name.charAt(0).toUpperCase();
 
   const stats = profile?.stats;
   const statItems = [
-    { id: "streak", label: "Streak", value: stats?.streakDays ?? 0, icon: Flame },
-    { id: "sessions", label: "Sessions", value: stats?.totalSessions ?? 0, icon: ListChecks },
+    { id: "streak", label: t("profile.statLabels.streak"), value: stats?.streakDays ?? 0, icon: Flame },
+    {
+      id: "sessions",
+      label: t("profile.statLabels.sessions"),
+      value: stats?.totalSessions ?? 0,
+      icon: ListChecks,
+    },
     {
       id: "avgScore",
-      label: "Avg Score",
+      label: t("profile.statLabels.avgScore"),
       value: stats ? Math.round(stats.averageScore) : 0,
       icon: BarChart3,
     },
-    { id: "credits", label: "Credits", value: stats?.credits ?? 0, icon: Coins },
+    { id: "credits", label: t("profile.statLabels.credits"), value: stats?.credits ?? 0, icon: Coins },
   ];
 
   return (
@@ -49,22 +56,22 @@ export function ProfileInfoCard() {
               {email}
             </span>
             <span className="text-xs text-muted-foreground mt-1.5">
-              Rank{" "}
+              {t("profile.rank")}{" "}
               <span className="text-foreground">
-                {profile?.rank ? `#${profile.rank.toLocaleString()}` : "N/A"}
+                {profile?.rank ? `#${profile.rank.toLocaleString()}` : t("profile.rankNotAvailable")}
               </span>
             </span>
           </div>
         </div>
 
         <Button variant="secondary" size="sm" className="w-full mt-3">
-          Edit Profile
+          {t("profile.editProfile")}
         </Button>
 
         <Separator className="my-3" />
 
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-foreground">Your Stats</h3>
+          <h3 className="text-xs font-semibold text-foreground">{t("profile.yourStats")}</h3>
           {isLoading ? (
             <div className="space-y-2.5">
               {Array.from({ length: 4 }).map((_, i) => (

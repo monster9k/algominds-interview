@@ -4,8 +4,10 @@ import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export const GoogleCallbackPage = () => {
+  const { t } = useTranslation("auth");
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
 
@@ -14,21 +16,21 @@ export const GoogleCallbackPage = () => {
       .refresh()
       .then(({ accessToken, user }) => {
         setAuth(user, accessToken);
-        toast.success("Đăng nhập Google thành công!");
+        toast.success(t("googleCallback.success"));
         navigate("/dashboard", { replace: true });
       })
       .catch((error) => {
         console.error("Lỗi xác thực Google:", error);
         navigate("/auth/login", { replace: true });
-        toast.error("Đăng nhập thất bại");
+        toast.error(t("googleCallback.failed"));
       });
-  }, [setAuth, navigate]);
+  }, [setAuth, navigate, t]);
 
   return (
     <div className="h-screen w-full flex flex-col items-center justify-center bg-background space-y-4">
       <Loader2 className="h-10 w-10 animate-spin text-primary" />
       <p className="text-muted-foreground animate-pulse">
-        Đang xử lý đăng nhập Google...
+        {t("googleCallback.processing")}
       </p>
     </div>
   );

@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChatMessage } from "../types";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 // Import from new modular components
@@ -10,12 +11,8 @@ import { TestcaseTab } from "./console-panel/testcase-tab";
 import { ResultTab } from "./console-panel/result-tab";
 import { AIChatTab } from "./console-panel/ai-chat-tab";
 import { ConsolePanelProps } from "./console-panel/types";
-import {
-  isTabAccessible,
-  getDefaultTab,
-  getTabTooltip,
-} from "./console-panel/helpers";
-import { PHASE_LABELS, STYLES } from "./console-panel/constants";
+import { isTabAccessible, getDefaultTab } from "./console-panel/helpers";
+import { STYLES } from "./console-panel/constants";
 
 /**
  * ConsolePanel - Main container for console panel
@@ -29,6 +26,7 @@ export function ConsolePanel({
   currentPhase,
   submissionResult,
 }: ConsolePanelProps) {
+  const { t } = useTranslation("interview");
   const user = useAuthStore((state) => state.user);
 
   // State management
@@ -101,17 +99,22 @@ export function ConsolePanel({
       value={activeTab}
       onValueChange={setActiveTab}
       key={currentPhase}
-      className="h-full flex flex-col bg-zinc-950 overflow-hidden"
+      className="h-full flex flex-col bg-background overflow-hidden"
     >
       {/* HEADER TABS */}
-      <div className="bg-zinc-900/50 border-b border-zinc-800 px-2 flex items-center justify-between relative shrink-0">
+      <div className="bg-card/50 border-b border-border px-2 flex items-center justify-between relative shrink-0">
         <TabsList className="h-9 w-full bg-transparent p-0 gap-1">
           <div className="flex gap-1">
             {/* Testcase Tab Trigger */}
             <TabsTrigger
               value="testcase"
               disabled={!isTabAccessible("testcase", currentPhase)}
-              title={getTabTooltip("testcase", currentPhase)}
+              title={
+                !isTabAccessible("testcase", currentPhase) &&
+                currentPhase === "PHASE_1_STRATEGY"
+                  ? t("console.tabLockedTooltip")
+                  : undefined
+              }
               className={cn(
                 STYLES.TAB_TRIGGER_BASE,
                 isTabAccessible("testcase", currentPhase)
@@ -125,14 +128,19 @@ export function ConsolePanel({
               <div className="h-3 w-3 bg-emerald-500/20 text-emerald-500 rounded flex items-center justify-center border border-emerald-500/30">
                 <span className="text-[8px]">✓</span>
               </div>
-              Testcase
+              {t("console.testcaseTab")}
             </TabsTrigger>
 
             {/* Result Tab Trigger */}
             <TabsTrigger
               value="result"
               disabled={!isTabAccessible("result", currentPhase)}
-              title={getTabTooltip("result", currentPhase)}
+              title={
+                !isTabAccessible("result", currentPhase) &&
+                currentPhase === "PHASE_1_STRATEGY"
+                  ? t("console.tabLockedTooltip")
+                  : undefined
+              }
               className={cn(
                 STYLES.TAB_TRIGGER_BASE,
                 isTabAccessible("result", currentPhase)
@@ -143,13 +151,13 @@ export function ConsolePanel({
               {!isTabAccessible("result", currentPhase) && (
                 <Lock className="h-3 w-3" />
               )}
-              <Bug className="h-3.5 w-3.5" /> Result
+              <Bug className="h-3.5 w-3.5" /> {t("console.resultTab")}
             </TabsTrigger>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="text-[10px] text-zinc-500 bg-zinc-800 px-2 py-1 rounded">
-              {PHASE_LABELS[currentPhase]}
+            <div className="text-[10px] text-muted-foreground bg-muted px-2 py-1 rounded">
+              {t(`phaseLabels.${currentPhase}`)}
             </div>
 
             {/* AI Chat Tab Trigger */}
@@ -160,11 +168,11 @@ export function ConsolePanel({
                 STYLES.TAB_TRIGGER_ACCESSIBLE,
               )}
             >
-              AI Chat
+              {t("console.aiChatTab")}
               {currentPhase === "PHASE_1_STRATEGY" && (
                 <div
                   className="h-2 w-2 bg-rose-500 rounded-full animate-pulse"
-                  title="Bắt buộc sử dụng trong Phase 1"
+                  title={t("console.phase1RequiredTooltip")}
                 />
               )}
             </TabsTrigger>

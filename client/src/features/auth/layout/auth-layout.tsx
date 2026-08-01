@@ -1,5 +1,6 @@
 import { Logo } from "@/components/ui/logo";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -16,12 +17,14 @@ export function AuthLayout({
   alternativeLinkText,
   alternativeLink,
 }: AuthLayoutProps) {
+  const { t } = useTranslation("auth");
+
   return (
     <div className="container relative grid min-h-screen flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0">
       {/* --- CỘT TRÁI: BRANDING (Đã nâng cấp) --- */}
-      <div className="relative hidden h-full flex-col p-10 text-white lg:flex overflow-hidden">
+      <div className="relative hidden h-full flex-col p-10 text-foreground lg:flex overflow-hidden">
         {/* Layer 1: Background đen sâu */}
-        <div className="absolute inset-0 bg-zinc-950" />
+        <div className="absolute inset-0 bg-background" />
 
         {/* Layer 2: Grid Pattern tinh tế */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
@@ -41,33 +44,31 @@ export function AuthLayout({
             {/* Hiệu ứng Glow xoay vòng */}
             <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-rose-600 to-orange-600 opacity-30 group-hover:opacity-60 blur-lg transition duration-1000 group-hover:duration-200"></div>
 
-            <div className="relative p-8 rounded-full bg-zinc-900/80 border border-zinc-800 backdrop-blur-xl shadow-2xl">
+            <div className="relative p-8 rounded-full bg-card/80 border border-border backdrop-blur-xl shadow-2xl">
               <Logo size="xl" iconOnly />
             </div>
           </div>
 
-          <h2 className="text-4xl font-bold tracking-tight text-white mb-4 drop-shadow-lg">
-            Master Algorithms <br />
+          <h2 className="text-4xl font-bold tracking-tight text-foreground mb-4 drop-shadow-lg">
+            {t("layout.heading1")} <br />
             <span className="bg-gradient-to-r from-rose-400 to-orange-400 bg-clip-text text-transparent">
-              The Smart Way
+              {t("layout.headingHighlight")}
             </span>
           </h2>
 
-          <p className="text-zinc-400 max-w-md text-lg leading-relaxed">
-            Tham gia cùng hàng ngàn kỹ sư chinh phục Big Tech với sự trợ giúp
-            của AI Interviewer.
+          <p className="text-muted-foreground max-w-md text-lg leading-relaxed">
+            {t("layout.subtitle")}
           </p>
         </div>
 
         {/* Footer Quote */}
         <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2 border-l-2 border-rose-500 pl-6 bg-zinc-900/50 p-4 rounded-r-lg backdrop-blur-sm">
-            <p className="text-lg italic text-zinc-200">
-              "AlgoMinds không chỉ là nơi giải bài tập, đó là một đấu trường
-              thực thụ giúp tôi rèn luyện tư duy."
+          <blockquote className="space-y-2 border-l-2 border-rose-500 pl-6 bg-card/50 p-4 rounded-r-lg backdrop-blur-sm">
+            <p className="text-lg italic text-foreground">
+              "{t("layout.quote")}"
             </p>
             <footer className="text-sm font-semibold text-rose-400">
-              — Senior Engineer @ Netflix
+              {t("layout.quoteAuthor")}
             </footer>
           </blockquote>
         </div>
@@ -77,7 +78,7 @@ export function AuthLayout({
       <div className="lg:p-8 flex items-center justify-center bg-background h-full relative">
         {/* Trang trí nhẹ bên phải */}
         <div className="absolute top-0 right-0 p-4 opacity-20 pointer-events-none">
-          <Logo size="xl" iconOnly className="text-zinc-800" />
+          <Logo size="xl" iconOnly className="text-muted-foreground" />
         </div>
 
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] relative z-10">

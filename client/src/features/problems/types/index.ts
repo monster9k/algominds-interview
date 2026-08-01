@@ -25,6 +25,13 @@ export interface Problem {
   hasSolution: boolean;
 }
 
+export interface Company {
+  id: string;
+  name: string;
+  slug: string;
+  count: number;
+}
+
 // Params dùng để filter danh sách problems (query params gửi lên GET /problems)
 export interface ProblemFilterParams {
   difficulty?: Difficulty;

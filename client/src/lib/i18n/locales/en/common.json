@@ -1,0 +1,44 @@
+{
+  "nav": {
+    "problems": "Problems",
+    "contest": "Contest",
+    "discuss": "Discuss",
+    "interview": "Interview",
+    "store": "Store"
+  },
+  "sidebar": {
+    "library": "Library",
+    "quest": "Quest",
+    "explore": "Explore",
+    "studyPlan": "Study Plan",
+    "myLists": "My Lists",
+    "favorite": "Favorite"
+  },
+  "userMenu": {
+    "guest": "Guest",
+    "premiumHint": "Access all features with our Premium subscription!",
+    "myLists": "My Lists",
+    "notebook": "Notebook",
+    "progress": "Progress",
+    "points": "Points",
+    "tryNewFeatures": "Try New Features",
+    "orders": "Orders",
+    "myPlaygrounds": "My Playgrounds",
+    "settings": "Settings",
+    "appearance": "Appearance",
+    "signOut": "Sign Out"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "description": "The app ran into an unexpected error. Please reload the page — if the issue persists, contact support.",
+    "reload": "Reload page"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "close": "Close"
+  }
+}

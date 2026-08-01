@@ -1,0 +1,45 @@
+{
+  "appearance": {
+    "title": "外観",
+    "description": "デバイス上でのAlgoMindsの表示方法をカスタマイズします。",
+    "themeLabel": "テーマ",
+    "light": "ライト",
+    "dark": "ダーク",
+    "system": "システム"
+  },
+  "language": {
+    "title": "言語",
+    "description": "アプリ全体で使用する言語を選択してください。",
+    "selectLabel": "言語",
+    "en": "English",
+    "vi": "Tiếng Việt",
+    "ja": "日本語"
+  },
+  "sidebar": {
+    "title": "設定",
+    "account": "アカウント",
+    "privacy": "プライバシー",
+    "billing": "サブスクリプションと請求",
+    "points": "ポイント",
+    "orders": "注文",
+    "notifications": "通知",
+    "profileSettings": "プロフィール設定"
+  },
+  "general": {
+    "title": "一般",
+    "description": "メールアドレス、電話番号、またはLeetCode IDでログインできます。",
+    "leetcodeId": "LeetCode ID",
+    "email": "メールアドレス",
+    "phoneNumber": "電話番号",
+    "password": "パスワード"
+  },
+  "social": {
+    "title": "ソーシャルアカウント",
+    "description": "ソーシャルアカウントを連携してLeetCodeにサインインします。",
+    "connect": "連携する"
+  },
+  "danger": {
+    "title": "危険な操作",
+    "deleteAccount": "アカウントを削除"
+  }
+}

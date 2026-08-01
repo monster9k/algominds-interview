@@ -4,6 +4,7 @@
  */
 
 import { XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { SubmissionResponse } from "../../types";
 import {
   formatStatusText,
@@ -15,6 +16,7 @@ interface SubmissionHeaderProps {
 }
 
 export function SubmissionHeader({ submission }: SubmissionHeaderProps) {
+  const { t } = useTranslation("interview");
   const isAccepted = submission.status === "ACCEPTED";
 
   return (
@@ -24,14 +26,17 @@ export function SubmissionHeader({ submission }: SubmissionHeaderProps) {
         <h3
           className={`text-2xl font-bold ${getStatusColor(submission.status)}`}
         >
-          {isAccepted ? "Accepted" : formatStatusText(submission.status)}
+          {isAccepted ? t("submissionDetail.accepted") : formatStatusText(submission.status)}
         </h3>
         {isAccepted && submission.passedTests ? (
-          <p className="text-xs text-zinc-400">
-            {submission.passedTests} / {submission.totalTests} testcases passed
+          <p className="text-xs text-muted-foreground">
+            {t("submissionDetail.testcasesPassed", {
+              passed: submission.passedTests,
+              total: submission.totalTests,
+            })}
           </p>
         ) : null}
-        <p className="text-zinc-500 text-xs flex items-center gap-2 mt-2">
+        <p className="text-muted-foreground text-xs flex items-center gap-2 mt-2">
           <img
             src="https://github.com/shadcn.png"
             alt="Avatar"
@@ -39,7 +44,7 @@ export function SubmissionHeader({ submission }: SubmissionHeaderProps) {
           />
           dokhoaminh{" "}
           <span className="opacity-60">
-            submitted at {submission.createdAt}
+            {t("submissionDetail.submittedAt")} {submission.createdAt}
           </span>
         </p>
       </div>

@@ -1,0 +1,58 @@
+{
+  "filters": {
+    "allTopics": "All Topics",
+    "searchPlaceholder": "Search questions...",
+    "sortAscending": "Sorting ascending (1 → 9)",
+    "sortDescending": "Sorting descending (9 → 1)",
+    "difficultyPlaceholder": "Difficulty",
+    "statusPlaceholder": "Status",
+    "loginToFilterStatus": "Log in to filter by status",
+    "all": "All",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "statusTodo": "Todo",
+    "statusSolved": "Solved",
+    "statusAttempted": "Attempted"
+  },
+  "table": {
+    "loading": "Loading problems...",
+    "errorLoading": "Failed to load the problem list. Please check the backend connection.",
+    "emptyState": "No problems in the database yet.",
+    "columnStatus": "Status",
+    "columnTitle": "Title",
+    "columnAcceptance": "Acceptance",
+    "columnDifficulty": "Difficulty",
+    "columnSolution": "Solution",
+    "notAvailable": "N/A"
+  },
+  "calendar": {
+    "dayLabel": "Day {{day}}",
+    "streakLabel": "{{count}} Day Streak 🔥",
+    "submissionsCount": "{{count}} submissions",
+    "weekdays": ["S", "M", "T", "W", "T", "F", "S"]
+  },
+  "banners": {
+    "fingertips": {
+      "title": "AlgoMinds at Your Fingertips",
+      "caption": "Practice anywhere, anytime."
+    },
+    "systemDesign": {
+      "title": "Interview Crash Course:",
+      "caption": "System Design and Beyond"
+    },
+    "dsa": {
+      "title": "Interview Crash Course:",
+      "caption": "Data Structures and Algorithms"
+    },
+    "topInterview": {
+      "title": "Top Interview",
+      "caption": "Questions"
+    }
+  },
+  "companies": {
+    "title": "Trending Companies",
+    "searchPlaceholder": "Search for a company...",
+    "errorLoading": "Failed to load companies."
+  }
+}

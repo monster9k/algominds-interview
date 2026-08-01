@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProblemsModule } from './modules/problems/problems.module';
+import { CompaniesModule } from './modules/companies/companies.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AiModule } from './modules/ai/ai.module';
@@ -30,6 +31,7 @@ import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
     UsersModule,
     AuthModule,
     ProblemsModule,
+    CompaniesModule,
     SessionsModule,
     ChatModule,
     AiModule,

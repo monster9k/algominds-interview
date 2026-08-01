@@ -3,24 +3,24 @@ import { LoginForm } from "@/features/auth/components/login-form";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export function LoginPage() {
+  const { t } = useTranslation("auth");
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     if (searchParams.get("error") === "google_account_conflict") {
-      toast.error(
-        "Email này đã được đăng ký bằng mật khẩu. Vui lòng đăng nhập bằng email/mật khẩu.",
-      );
+      toast.error(t("login.googleAccountConflict"));
       setSearchParams({}, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, t]);
 
   return (
     <AuthLayout
-      title="Welcome back"
-      description="Enter your email to sign in to your account"
-      alternativeLinkText="Don't have an account? Sign Up"
+      title={t("login.title")}
+      description={t("login.description")}
+      alternativeLinkText={t("login.alternativeLinkText")}
       alternativeLink="/auth/register"
     >
       <LoginForm />

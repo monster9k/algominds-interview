@@ -2,12 +2,13 @@
  * Trình bao bọc các Provider toàn cục
  * Bao bọc toàn bộ ứng dụng với các provider cần thiết:
  * - React Query Client để quản lý trạng thái từ server
- * - Theme Provider (nếu sử dụng hệ thống theme)
+ * - Theme Provider cho light/dark/system theme
  * - Auth Provider cho ngữ cảnh xác thực
  */
 import React, { useEffect } from "react";
 import axios from "axios";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { queryClient } from "@/lib/query-client";
 import { Toaster } from "sonner";
 import { env } from "@/config/env";
@@ -40,9 +41,16 @@ function AuthHydrator() {
 export function Providers({ children }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthHydrator />
-      {children}
-      <Toaster position="top-right" richColors />
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="dark"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <AuthHydrator />
+        {children}
+        <Toaster position="top-right" richColors />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

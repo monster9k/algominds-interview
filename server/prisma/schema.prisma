@@ -142,8 +142,9 @@ model Problem {
   // VD: ["number[]", "number"] -> Giúp convert JSON sang C++ Vector
   inputSignature Json?
   // Relations
-  tags     ProblemTag[]
-  sessions Session[]
+  tags      ProblemTag[]
+  sessions  Session[]
+  companies ProblemCompany[]
 
   @@map("problems")
 }
@@ -169,6 +170,31 @@ model ProblemTag {
 
   @@id([problemId, tagId])
   @@map("problem_tags")
+}
+
+model Company {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  logoUrl   String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  problems ProblemCompany[]
+
+  @@map("companies")
+}
+
+// Bảng trung gian Many-to-Many giữa Problem và Company
+model ProblemCompany {
+  problemId String
+  companyId String
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([problemId, companyId])
+  @@map("problem_companies")
 }
 
 model Session {

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CheckCircle2, Clock, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,47 +11,48 @@ import type { SubmissionStatus } from "../types";
 
 const STATUS_CONFIG: Record<
   SubmissionStatus,
-  { label: string; className: string; Icon: typeof CheckCircle2 }
+  { labelKey: string; className: string; Icon: typeof CheckCircle2 }
 > = {
   ACCEPTED: {
-    label: "Accepted",
+    labelKey: "submissions.status.accepted",
     className: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
     Icon: CheckCircle2,
   },
   WRONG_ANSWER: {
-    label: "Wrong Answer",
+    labelKey: "submissions.status.wrongAnswer",
     className: "bg-red-500/10 text-red-400 border-red-500/20",
     Icon: XCircle,
   },
   COMPILE_ERROR: {
-    label: "Compile Error",
+    labelKey: "submissions.status.compileError",
     className: "bg-orange-500/10 text-orange-400 border-orange-500/20",
     Icon: XCircle,
   },
   RUNTIME_ERROR: {
-    label: "Runtime Error",
+    labelKey: "submissions.status.runtimeError",
     className: "bg-orange-500/10 text-orange-400 border-orange-500/20",
     Icon: XCircle,
   },
   TLE: {
-    label: "Time Limit Exceeded",
+    labelKey: "submissions.status.tle",
     className: "bg-orange-500/10 text-orange-400 border-orange-500/20",
     Icon: Clock,
   },
 };
 
 export function RecentSubmissionsCard() {
+  const { t } = useTranslation("users");
   const { data: submissions, isLoading } = useRecentSubmissions();
 
   return (
     <Card>
       <CardHeader className="p-4 flex-col sm:flex-row sm:items-center justify-between gap-2 space-y-0">
-        <CardTitle className="text-base">Recent Submissions</CardTitle>
+        <CardTitle className="text-base">{t("submissions.recentTitle")}</CardTitle>
         <Link
           to="/problems"
           className="text-xs text-primary hover:underline shrink-0"
         >
-          View all submissions
+          {t("submissions.viewAll")}
         </Link>
       </CardHeader>
       <CardContent className="p-4 pt-0 divide-y divide-border">
@@ -62,7 +64,7 @@ export function RecentSubmissionsCard() {
           </div>
         ) : !submissions || submissions.length === 0 ? (
           <p className="text-xs text-muted-foreground py-4 text-center">
-            Chưa có bài nộp nào.
+            {t("submissions.empty")}
           </p>
         ) : (
           submissions.map((submission) => {
@@ -81,8 +83,7 @@ export function RecentSubmissionsCard() {
                   <span
                     className={`text-xs font-medium ${DIFFICULTY_TEXT_COLOR[submission.difficulty]}`}
                   >
-                    {submission.difficulty.charAt(0) +
-                      submission.difficulty.slice(1).toLowerCase()}
+                    {t(`difficulty.${submission.difficulty.toLowerCase()}`)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2.5 shrink-0">
@@ -91,7 +92,7 @@ export function RecentSubmissionsCard() {
                     className={`gap-1 font-normal text-[10px] px-2 py-0.5 ${status.className}`}
                   >
                     <StatusIcon className="h-3 w-3" />
-                    {status.label}
+                    {t(status.labelKey)}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
                     {formatTimeAgo(submission.createdAt)}

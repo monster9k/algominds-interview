@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Play,
   Send,
-  Settings,
   List,
   Loader2,
   Search,
@@ -18,7 +17,28 @@ import { Logo } from "@/components/ui/logo";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useProblems } from "@/features/problems/hooks/use-problems";
+import { TOPICS } from "@/features/problems/utils/topics";
+import type {
+  Difficulty,
+  ProblemFilterParams,
+  SortDirection,
+} from "@/features/problems/types";
+import { UserNavMenu } from "@/components/layout/user-nav-menu";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useTranslation } from "react-i18next";
+
+const ALL_DIFFICULTIES = "ALL";
 
 interface InterviewHeaderProps {
   onSubmit?: () => void;
@@ -37,14 +57,41 @@ export function InterviewHeader({
   currentProblemTitle,
   currentProblemDisplayId,
 }: InterviewHeaderProps) {
+  const { t } = useTranslation("interview");
   const navigate = useNavigate();
   const [isProblemPanelOpen, setIsProblemPanelOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 400);
+  const [difficultyFilter, setDifficultyFilter] = useState<Difficulty>();
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  // Danh sách đầy đủ, KHÔNG filter — chỉ dùng để hiển thị tiêu đề/đếm bài đã
+  // giải ở nút header, không được phép bị ảnh hưởng bởi filter của panel chọn bài.
+  const { data: problems } = useProblems();
+
+  const hasActivePickerFilter =
+    Boolean(debouncedSearch) ||
+    Boolean(difficultyFilter) ||
+    selectedTags.length > 0 ||
+    sortDirection !== "asc";
+
+  // undefined khi chưa filter gì -> trùng query key với useProblems() ở trên,
+  // TanStack Query dedupe nên không tốn thêm request khi vừa mở panel.
+  const pickerFilters: ProblemFilterParams | undefined = hasActivePickerFilter
+    ? {
+        search: debouncedSearch || undefined,
+        difficulty: difficultyFilter,
+        tags: selectedTags.length ? selectedTags : undefined,
+        sortDirection,
+      }
+    : undefined;
+
   const {
-    data: problems,
-    isLoading: isLoadingProblems,
-    isError: isProblemError,
-  } = useProblems();
+    data: pickerProblems,
+    isLoading: isLoadingPickerProblems,
+    isError: isPickerProblemsError,
+  } = useProblems(pickerFilters);
 
   const solvedCount = useMemo(() => {
     return (problems ?? []).filter((problem) => problem.status === "Solved")
@@ -63,8 +110,8 @@ export function InterviewHeader({
     if (activeProblemIndex >= 0 && problems) {
       return problems[activeProblemIndex].title;
     }
-    return currentProblemTitle || "Problem";
-  }, [activeProblemIndex, currentProblemTitle, problems]);
+    return currentProblemTitle || t("header.problemFallback");
+  }, [activeProblemIndex, currentProblemTitle, problems, t]);
 
   const activeProblemNumber = useMemo(() => {
     if (typeof currentProblemDisplayId === "number") {
@@ -78,22 +125,11 @@ export function InterviewHeader({
     return 1;
   }, [activeProblemIndex, currentProblemDisplayId]);
 
-  const filteredProblems = useMemo(() => {
-    if (!problems) {
-      return [];
-    }
-
-    const normalizedTerm = searchTerm.trim().toLowerCase();
-    if (!normalizedTerm) {
-      return problems;
-    }
-
-    return problems.filter((problem, index) => {
-      const searchableText =
-        `${index + 1} ${problem.title} ${problem.slug}`.toLowerCase();
-      return searchableText.includes(normalizedTerm);
-    });
-  }, [problems, searchTerm]);
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     if (difficulty === "EASY") {
@@ -109,24 +145,27 @@ export function InterviewHeader({
 
   const getDifficultyLabel = (difficulty: string) => {
     if (difficulty === "EASY") {
-      return "Easy";
+      return t("header.difficulty.easy");
     }
 
     if (difficulty === "MEDIUM") {
-      return "Med.";
+      return t("header.difficulty.medium");
     }
 
-    return "Hard";
+    return t("header.difficulty.hard");
   };
 
   const handleSelectProblem = (slug: string) => {
     setIsProblemPanelOpen(false);
     setSearchTerm("");
+    setDifficultyFilter(undefined);
+    setSelectedTags([]);
+    setSortDirection("asc");
     navigate(`/interview/${slug}`);
   };
 
   return (
-    <header className="h-12 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 shrink-0">
+    <header className="h-12 border-b border-border bg-background flex items-center justify-between px-4 shrink-0">
       {/* Left: Navigation */}
       <div className="flex items-center gap-4">
         <Link
@@ -135,13 +174,13 @@ export function InterviewHeader({
         >
           <Logo size="sm" iconOnly />
         </Link>
-        <div className="h-4 w-px bg-zinc-800 " />
+        <div className="h-4 w-px bg-border " />
 
         <Sheet open={isProblemPanelOpen} onOpenChange={setIsProblemPanelOpen}>
           <Button
             type="button"
             variant="ghost"
-            className="h-8 px-2 text-zinc-200 hover:bg-zinc-900 text-xs"
+            className="h-8 px-2 text-foreground hover:bg-accent text-xs"
             onClick={() => setIsProblemPanelOpen(true)}
           >
             <List className="mr-2 h-4 w-4" />
@@ -152,16 +191,16 @@ export function InterviewHeader({
 
           <SheetContent
             side="left"
-            className="w-105 sm:max-w-105 bg-zinc-950 border-zinc-800 p-0 text-zinc-100"
+            className="w-105 sm:max-w-105 bg-background border-border p-0 text-foreground"
           >
             <div className="flex h-full flex-col">
-              <div className="border-b border-zinc-800 px-4 py-3 pr-14">
+              <div className="border-b border-border px-4 py-3 pr-14">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center text-lg font-semibold">
-                    <span>Problem List</span>
-                    <ChevronRight className="ml-1 h-4 w-4 text-zinc-500" />
+                    <span>{t("header.problemListTitle")}</span>
+                    <ChevronRight className="ml-1 h-4 w-4 text-muted-foreground" />
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-zinc-400">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="h-2 w-2 rounded-full bg-emerald-500/70" />
                     <span className="whitespace-nowrap text-xs">
                       {solvedCount}/{problems?.length ?? 0}
@@ -170,21 +209,21 @@ export function InterviewHeader({
                 </div>
               </div>
 
-              <div className="border-b border-zinc-800 px-4 py-3">
+              <div className="border-b border-border px-4 py-3">
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Search questions"
-                      className="h-9 border-zinc-700 bg-zinc-900 pl-9 pr-8 text-zinc-100 placeholder:text-zinc-500"
+                      placeholder={t("header.searchPlaceholder")}
+                      className="h-9 border-border bg-card pl-9 pr-8 text-foreground placeholder:text-muted-foreground"
                     />
                     {searchTerm && (
                       <button
                         type="button"
                         onClick={() => setSearchTerm("")}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-zinc-300"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -194,47 +233,108 @@ export function InterviewHeader({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 border border-zinc-800 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
+                    className="h-9 w-9 border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+                    title={
+                      sortDirection === "asc"
+                        ? t("header.sortAscending")
+                        : t("header.sortDescending")
+                    }
+                    onClick={() =>
+                      setSortDirection((prev) =>
+                        prev === "asc" ? "desc" : "asc",
+                      )
+                    }
                   >
                     <ArrowUpDown className="h-4 w-4" />
                   </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 border border-zinc-800 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
-                  >
-                    <SlidersHorizontal className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        title={t("header.filterByTags")}
+                        className={`h-9 w-9 border text-muted-foreground hover:bg-accent hover:text-foreground ${
+                          difficultyFilter || selectedTags.length > 0
+                            ? "border-primary text-primary"
+                            : "border-border"
+                        }`}
+                      >
+                        <SlidersHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>
+                        {t("header.filterByDifficulty")}
+                      </DropdownMenuLabel>
+                      <DropdownMenuRadioGroup
+                        value={difficultyFilter ?? ALL_DIFFICULTIES}
+                        onValueChange={(value) =>
+                          setDifficultyFilter(
+                            value === ALL_DIFFICULTIES
+                              ? undefined
+                              : (value as Difficulty),
+                          )
+                        }
+                      >
+                        <DropdownMenuRadioItem value={ALL_DIFFICULTIES}>
+                          {t("header.difficulty.all")}
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="EASY">
+                          {t("header.difficulty.easy")}
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="MEDIUM">
+                          {t("header.difficulty.medium")}
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="HARD">
+                          {t("header.difficulty.hard")}
+                        </DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>
+                        {t("header.filterByTags")}
+                      </DropdownMenuLabel>
+                      {TOPICS.map((topic) => (
+                        <DropdownMenuCheckboxItem
+                          key={topic}
+                          checked={selectedTags.includes(topic)}
+                          onCheckedChange={() => toggleTag(topic)}
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          {topic}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
               <ScrollArea className="h-[calc(100%-120px)]">
                 <div className="px-2 py-2">
-                  {isLoadingProblems && (
-                    <div className="flex items-center justify-center gap-2 py-10 text-zinc-500">
+                  {isLoadingPickerProblems && (
+                    <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Loading problem list...</span>
+                      <span>{t("header.loadingProblems")}</span>
                     </div>
                   )}
 
-                  {isProblemError && (
+                  {isPickerProblemsError && (
                     <div className="px-3 py-8 text-center text-sm text-rose-400">
-                      Không thể tải danh sách bài tập.
+                      {t("errors.loadProblemsFailed")}
                     </div>
                   )}
 
-                  {!isLoadingProblems &&
-                    !isProblemError &&
-                    filteredProblems.length === 0 && (
-                      <div className="px-3 py-8 text-center text-sm text-zinc-500">
-                        Không tìm thấy bài phù hợp.
+                  {!isLoadingPickerProblems &&
+                    !isPickerProblemsError &&
+                    (pickerProblems ?? []).length === 0 && (
+                      <div className="px-3 py-8 text-center text-sm text-muted-foreground">
+                        {t("header.noProblemsFound")}
                       </div>
                     )}
 
-                  {!isLoadingProblems &&
-                    !isProblemError &&
-                    filteredProblems.map((problem) => {
+                  {!isLoadingPickerProblems &&
+                    !isPickerProblemsError &&
+                    (pickerProblems ?? []).map((problem) => {
                       const isActive = problem.slug === currentProblemSlug;
 
                       return (
@@ -244,20 +344,16 @@ export function InterviewHeader({
                           onClick={() => handleSelectProblem(problem.slug)}
                           className={`mb-1 flex w-full items-center justify-between rounded-md border px-2 py-1.5 text-left transition-colors ${
                             isActive
-                              ? "border-zinc-300 bg-zinc-200 text-zinc-950"
-                              : "border-transparent bg-zinc-900/70 text-zinc-100 hover:bg-zinc-900"
+                              ? "border-border bg-accent text-accent-foreground"
+                              : "border-transparent bg-card/70 text-foreground hover:bg-accent"
                           }`}
                         >
                           <div className="flex min-w-0 items-center gap-2 pr-3 text-xs">
                             <span
                               className={`shrink-0 ${
                                 problem.status === "Solved"
-                                  ? isActive
-                                    ? "text-emerald-700"
-                                    : "text-emerald-500"
-                                  : isActive
-                                    ? "text-zinc-600"
-                                    : "text-zinc-700"
+                                  ? "text-emerald-500"
+                                  : "text-muted-foreground"
                               }`}
                             >
                               <Check className="h-4 w-4" />
@@ -286,11 +382,11 @@ export function InterviewHeader({
         <Button
           size="sm"
           variant="secondary"
-          className="h-8 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700/50"
+          className="h-8 bg-secondary text-secondary-foreground hover:bg-muted border border-border/50"
           onClick={onRun}
           disabled={isSubmitting}
         >
-          <Play className="mr-2 h-3.5 w-3.5 fill-current" /> Run
+          <Play className="mr-2 h-3.5 w-3.5 fill-current" /> {t("header.run")}
         </Button>
         <Button
           size="sm"
@@ -303,22 +399,13 @@ export function InterviewHeader({
           ) : (
             <Send className="mr-2 h-3.5 w-3.5" />
           )}
-          {isSubmitting ? "Submitting..." : "Submit"}
+          {isSubmitting ? t("header.submitting") : t("header.submit")}
         </Button>
       </div>
 
       {/* Right: Tools */}
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 text-zinc-400 hover:text-zinc-100"
-        >
-          <Settings className="h-4 w-4" />
-        </Button>
-        <div className="h-8 w-8 rounded-full bg-rose-500/20 flex items-center justify-center text-xs font-bold text-rose-500 border border-rose-500/30">
-          U
-        </div>
+        <UserNavMenu />
       </div>
     </header>
   );

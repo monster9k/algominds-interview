@@ -1,0 +1,45 @@
+{
+  "appearance": {
+    "title": "Appearance",
+    "description": "Customize how AlgoMinds looks on your device.",
+    "themeLabel": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "title": "Language",
+    "description": "Choose the language used across the app.",
+    "selectLabel": "Language",
+    "en": "English",
+    "vi": "Tiếng Việt",
+    "ja": "日本語"
+  },
+  "sidebar": {
+    "title": "Settings",
+    "account": "Account",
+    "privacy": "Privacy",
+    "billing": "Subscription & Billing",
+    "points": "Points",
+    "orders": "Orders",
+    "notifications": "Notifications",
+    "profileSettings": "Profile Settings"
+  },
+  "general": {
+    "title": "General",
+    "description": "You can log in using your email, phone number, or LeetCode ID.",
+    "leetcodeId": "LeetCode ID",
+    "email": "Email",
+    "phoneNumber": "Phone Number",
+    "password": "Password"
+  },
+  "social": {
+    "title": "Social Accounts",
+    "description": "Connect a social account to sign in to LeetCode.",
+    "connect": "Connect"
+  },
+  "danger": {
+    "title": "Danger Zone",
+    "deleteAccount": "Delete Account"
+  }
+}

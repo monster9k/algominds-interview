@@ -250,8 +250,10 @@ export class JudgeService {
       },
       orderBy: { createdAt: 'desc' },
     });
+    // Chưa nộp bài nào cho problem này là trạng thái hợp lệ (vừa vào phòng
+    // phỏng vấn) - trả mảng rỗng thay vì 404 để tránh toast lỗi giả ở FE.
     if (!submissions.length) {
-      throw new NotFoundException('Không tìm thấy submission nào cho bài này');
+      return [];
     }
     //vì mọi problemId trong submissions đều same nên lấy submissions[0] để lấy problemId => không cần phải gọi db
     const problemId = submissions[0].session.problemId;

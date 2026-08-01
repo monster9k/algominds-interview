@@ -36,7 +36,9 @@ export function SubmissionResultChart({
           />
         ))}
       </div>
-      <div className="text-xs text-zinc-500 mt-2 text-center">{label}</div>
+      <div className="text-xs text-muted-foreground mt-2 text-center">
+        {label}
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { PrismaClient, Difficulty } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
+import slugify from 'slugify';
 
 dotenv.config();
 
@@ -131,6 +132,57 @@ public:
       },
     },
   });
+
+  // ===============================
+  // COMPANIES
+  // ===============================
+  console.log('🏢 Seeding companies...');
+
+  const COMPANY_NAMES = [
+    'Google',
+    'Amazon',
+    'Meta',
+    'Microsoft',
+    'Apple',
+    'Bloomberg',
+    'TikTok',
+    'Uber',
+    'Adobe',
+    'Oracle',
+  ];
+
+  const companies = await Promise.all(
+    COMPANY_NAMES.map((name) =>
+      prisma.company.upsert({
+        where: { slug: slugify(name, { lower: true, strict: true }) },
+        update: {},
+        create: { name, slug: slugify(name, { lower: true, strict: true }) },
+      }),
+    ),
+  );
+
+  // Gán ngẫu nhiên problem hiện có trong DB (bao gồm cả problem nạp qua
+  // sync-problems.ts, không chỉ 2 problem seed ở trên) cho từng company.
+  const allProblems = await prisma.problem.findMany({ select: { id: true } });
+
+  if (allProblems.length > 0) {
+    for (const company of companies) {
+      const shuffled = [...allProblems].sort(() => Math.random() - 0.5);
+      const pickCount = Math.min(
+        allProblems.length,
+        Math.floor(Math.random() * 8) + 3, // 3..10 problem/company
+      );
+      const picked = shuffled.slice(0, pickCount);
+
+      await prisma.problemCompany.createMany({
+        data: picked.map((p) => ({
+          companyId: company.id,
+          problemId: p.id,
+        })),
+        skipDuplicates: true,
+      });
+    }
+  }
 
   console.log('✅ Seeding finished.');
 }

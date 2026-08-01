@@ -12,6 +12,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -28,36 +29,36 @@ import { useUserProfile } from "@/features/users/hooks/use-user-profile";
 const gridItems = [
   {
     icon: ListChecks,
-    label: "My Lists",
+    labelKey: "userMenu.myLists",
     iconBg: "bg-white",
     iconColor: "text-rose-500",
   },
   {
     icon: BookMarked,
-    label: "Notebook",
+    labelKey: "userMenu.notebook",
     iconBg: "bg-blue-500",
     iconColor: "text-white",
   },
   {
     icon: PieChart,
-    label: "Progress",
+    labelKey: "userMenu.progress",
     iconBg: "bg-emerald-500",
     iconColor: "text-white",
   },
   {
     icon: Coins,
-    label: "Points",
+    labelKey: "userMenu.points",
     iconBg: "bg-amber-400",
     iconColor: "text-amber-950",
   },
 ];
 
 const listItems = [
-  { icon: Sparkles, label: "Try New Features", href: undefined },
-  { icon: Package, label: "Orders", href: "/settings/orders" },
-  { icon: Code2, label: "My Playgrounds", href: undefined },
-  { icon: SettingsIcon, label: "Settings", href: "/settings" },
-  { icon: SunMoon, label: "Appearance", href: undefined, chevron: true },
+  { icon: Sparkles, labelKey: "userMenu.tryNewFeatures", href: undefined },
+  { icon: Package, labelKey: "userMenu.orders", href: "/settings/orders" },
+  { icon: Code2, labelKey: "userMenu.myPlaygrounds", href: undefined },
+  { icon: SettingsIcon, labelKey: "userMenu.settings", href: "/settings" },
+  { icon: SunMoon, labelKey: "userMenu.appearance", href: undefined, chevron: true },
 ];
 
 export function UserNavMenu() {
@@ -65,11 +66,12 @@ export function UserNavMenu() {
   const { data: profile } = useUserProfile();
   const logout = useLogout();
   const navigate = useNavigate();
+  const { t } = useTranslation("common");
 
   // Prefer the `/users/me` profile query for name/email: the login response's
   // JWT-derived user object only carries {userId, email, role}, so the auth
   // store's `user.name` is unset until this query resolves.
-  const name = profile?.name ?? user?.name ?? "Guest";
+  const name = profile?.name ?? user?.name ?? t("userMenu.guest");
   const avatarUrl = profile?.avatarUrl ?? user?.avatarUrl;
 
   return (
@@ -105,7 +107,7 @@ export function UserNavMenu() {
               {name}
             </p>
             <p className="text-xs leading-snug text-amber-500">
-              Access all features with our Premium subscription!
+              {t("userMenu.premiumHint")}
             </p>
           </div>
         </button>
@@ -113,7 +115,7 @@ export function UserNavMenu() {
         <div className="grid grid-cols-3 gap-2 px-4 pb-4">
           {gridItems.map((item) => (
             <button
-              key={item.label}
+              key={item.labelKey}
               type="button"
               className="flex flex-col items-center justify-center gap-2 rounded-xl bg-muted/50 py-3 transition-colors hover:bg-muted"
             >
@@ -126,7 +128,7 @@ export function UserNavMenu() {
                 <item.icon className={cn("h-5 w-5", item.iconColor)} />
               </div>
               <span className="text-xs text-muted-foreground">
-                {item.label}
+                {t(item.labelKey)}
               </span>
             </button>
           ))}
@@ -137,12 +139,12 @@ export function UserNavMenu() {
         <div className="p-2">
           {listItems.map((item) => (
             <DropdownMenuItem
-              key={item.label}
+              key={item.labelKey}
               className="cursor-pointer py-2"
               onClick={item.href ? () => navigate(item.href!) : undefined}
             >
               <item.icon className="h-4 w-4 text-muted-foreground" />
-              {item.label}
+              {t(item.labelKey)}
               {item.chevron && (
                 <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
               )}
@@ -154,7 +156,7 @@ export function UserNavMenu() {
             onClick={logout}
           >
             <LogOut className="h-4 w-4" />
-            Sign Out
+            {t("userMenu.signOut")}
           </DropdownMenuItem>
         </div>
       </DropdownMenuContent>

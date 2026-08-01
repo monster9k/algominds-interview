@@ -8,14 +8,15 @@ import {
   Plus,
   Lock,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
 
 const sidebarItems = [
-  { icon: Library, label: "Library", href: "/problems" },
-  { icon: Swords, label: "Quest", href: "#" },
-  { icon: Compass, label: "Explore", href: "#" },
-  { icon: GraduationCap, label: "Study Plan", href: "#" },
+  { icon: Library, labelKey: "sidebar.library", href: "/problems" },
+  { icon: Swords, labelKey: "sidebar.quest", href: "#" },
+  { icon: Compass, labelKey: "sidebar.explore", href: "#" },
+  { icon: GraduationCap, labelKey: "sidebar.studyPlan", href: "#" },
 ];
 
 const itemClasses = (isActive: boolean) =>
@@ -23,14 +24,15 @@ const itemClasses = (isActive: boolean) =>
     "flex w-full items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150",
     isActive
       ? "bg-primary/10 text-primary border border-primary/20"
-      : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900",
+      : "text-muted-foreground hover:text-foreground hover:bg-muted",
   );
 
 export function DashboardSidebar() {
   const location = useLocation();
+  const { t } = useTranslation("common");
 
   return (
-    <div className="flex h-full flex-col bg-zinc-950 border-r border-zinc-800 text-sm">
+    <div className="flex h-full flex-col bg-background border-r border-border text-sm">
       <div className="p-4">
         <Logo size="sm" />
       </div>
@@ -43,41 +45,41 @@ export function DashboardSidebar() {
           if (item.href === "#") {
             return (
               <button
-                key={item.label}
+                key={item.labelKey}
                 type="button"
                 className={itemClasses(isActive)}
               >
-                <item.icon className="h-4 w-4 text-zinc-500" />
-                {item.label}
+                <item.icon className="h-4 w-4 text-muted-foreground" />
+                {t(item.labelKey)}
               </button>
             );
           }
 
           return (
-            <Link key={item.label} to={item.href} className={itemClasses(isActive)}>
+            <Link key={item.labelKey} to={item.href} className={itemClasses(isActive)}>
               <item.icon
-                className={cn("h-4 w-4", isActive ? "text-primary" : "text-zinc-500")}
+                className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")}
               />
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         })}
 
-        <div className="mt-3 pt-3 border-t border-zinc-900">
-          <div className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            My Lists
+        <div className="mt-3 pt-3 border-t border-border">
+          <div className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {t("sidebar.myLists")}
             <Plus className="h-3.5 w-3.5" />
           </div>
 
           <button
             type="button"
-            className="flex w-full items-center justify-between gap-2.5 rounded-lg px-3 py-2 text-zinc-400 transition-colors duration-150 hover:bg-zinc-900 hover:text-zinc-100"
+            className="flex w-full items-center justify-between gap-2.5 rounded-lg px-3 py-2 text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
           >
             <span className="flex items-center gap-2.5">
               <Star className="h-4 w-4 text-amber-400" />
-              Favorite
+              {t("sidebar.favorite")}
             </span>
-            <Lock className="h-3.5 w-3.5 text-zinc-600" />
+            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
         </div>
       </div>

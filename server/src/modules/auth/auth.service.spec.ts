@@ -120,6 +120,7 @@ describe('AuthService', () => {
       name: 'User',
       avatarUrl: 'http://avatar',
       providerId: 'google-123',
+      provider: 'google' as const,
     };
 
     it('rejects logging in via Google when the email was registered with a password (account takeover guard)', async () => {

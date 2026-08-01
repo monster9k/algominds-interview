@@ -8,6 +8,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
@@ -15,6 +16,8 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { RequestUser } from '../../common/types/request-user.type';
+import type { GoogleValidatedUser } from '../../common/types/google-validated-user.type';
 import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
 
@@ -46,7 +49,10 @@ export class AuthController {
 
   @Throttle(AUTH_THROTTLE)
   @Post('login')
-  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const result = await this.authService.login(loginDto);
 
     res.cookie(
@@ -63,7 +69,7 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard) //BẮT BUỘC PHẢI CÓ TOKEN MỚI ĐƯỢC VÀO
-  getProfile(@CurrentUser() user: any) {
+  getProfile(@CurrentUser() user: RequestUser) {
     return {
       message: 'Đây là thông tin mật',
       user: user, // User này được lấy từ Token giải mã ra
@@ -74,20 +80,25 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) {
+  googleAuth() {
     // Guard tự chuyển hướng, không cần code
   }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req, @Res() res) {
+  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
 
     // Đây là 1 browser redirect flow, không phải JSON API — nếu throw thẳng
     // exception thì user sẽ thấy trang lỗi 401 thô thay vì quay lại app.
-    let user;
+    let user: Awaited<ReturnType<typeof this.authService.validateGoogleUser>>;
     try {
-      user = await this.authService.validateGoogleUser(req.user);
+      // This route is guarded by AuthGuard('google'), so req.user is always
+      // the GoogleValidatedUser shape GoogleStrategy.validate() set — not
+      // the JWT RequestUser shape most other guarded routes see.
+      user = await this.authService.validateGoogleUser(
+        req.user as GoogleValidatedUser,
+      );
     } catch {
       return res.redirect(
         `${frontendUrl}/auth/login?error=google_account_conflict`,
@@ -108,8 +119,11 @@ export class AuthController {
 
   @Throttle(AUTH_THROTTLE)
   @Post('refresh')
-  async refreshToken(@Req() req, @Res({ passthrough: true }) res) {
-    const refreshToken = req.cookies['refreshToken'];
+  async refreshToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies['refreshToken'] as string | undefined;
     if (!refreshToken) {
       throw new UnauthorizedException(
         'Không tìm thấy Refresh Token trong Cookie',
@@ -131,8 +145,8 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@Req() req, @Res({ passthrough: true }) res) {
-    const refreshToken = req.cookies['refreshToken'];
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies['refreshToken'] as string | undefined;
 
     if (refreshToken) {
       await this.authService.revokeRefreshToken(refreshToken);

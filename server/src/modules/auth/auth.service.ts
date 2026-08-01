@@ -6,6 +6,8 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { randomUUID } from 'crypto';
+import { GoogleValidatedUser } from '../../common/types/google-validated-user.type';
+import { JwtPayload } from '../../common/types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -104,7 +106,7 @@ export class AuthService {
     return this.issueTokensForUser(user);
   }
 
-  async validateGoogleUser(googleUser: any) {
+  async validateGoogleUser(googleUser: GoogleValidatedUser) {
     const { email, name, avatarUrl, providerId } = googleUser;
 
     // A. Kiểm tra user đã tồn tại chưa?
@@ -140,9 +142,12 @@ export class AuthService {
   }
 
   async refreshTokens(refreshToken: string) {
-    const payload = await this.jwtService.verifyAsync(refreshToken, {
-      secret: process.env.JWT_SECRET,
-    });
+    const payload = await this.jwtService.verifyAsync<JwtPayload>(
+      refreshToken,
+      {
+        secret: process.env.JWT_SECRET,
+      },
+    );
 
     if (payload?.type !== 'refresh' || !payload?.jti) {
       throw new UnauthorizedException('Refresh Token không hợp lệ');
@@ -201,9 +206,12 @@ export class AuthService {
   }
 
   async revokeRefreshToken(refreshToken: string) {
-    const payload = await this.jwtService.verifyAsync(refreshToken, {
-      secret: process.env.JWT_SECRET,
-    });
+    const payload = await this.jwtService.verifyAsync<JwtPayload>(
+      refreshToken,
+      {
+        secret: process.env.JWT_SECRET,
+      },
+    );
 
     if (payload?.type !== 'refresh' || !payload?.jti) {
       throw new UnauthorizedException('Refresh Token không hợp lệ');

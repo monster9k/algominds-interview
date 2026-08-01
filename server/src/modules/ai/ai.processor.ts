@@ -6,6 +6,22 @@ import { AiService } from './ai.service';
 import { ChatGateway } from '../chat/chat/chat.gateway';
 import { MessageSender, SessionStatus } from '@prisma/client';
 
+interface ChatJobData {
+  sessionId: string;
+  userId: string;
+  content: string;
+}
+
+interface EvaluateCodeJobData {
+  submissionId?: string;
+  sessionId: string;
+  userId: string;
+  code: string;
+  language: string;
+}
+
+type AiJobData = ChatJobData | EvaluateCodeJobData;
+
 @Processor('ai-queue')
 export class AiProcessor extends WorkerHost {
   private readonly logger = new Logger(AiProcessor.name);
@@ -19,23 +35,16 @@ export class AiProcessor extends WorkerHost {
     super();
   }
 
-  async process(job: Job): Promise<any> {
+  async process(job: Job<AiJobData>): Promise<unknown> {
     const jobName = job.name;
-    const data = job.data as {
-      submissionId?: string;
-      sessionId: string;
-      userId: string;
-      content?: string;
-      code?: string;
-      language?: string;
-    };
+    const data = job.data;
 
     this.logger.log(`Processing ${jobName} for session: ${data.sessionId}`);
 
     if (jobName === 'chat-job') {
-      return this.processChat(data as any);
+      return this.processChat(data as ChatJobData);
     } else if (jobName === 'evaluate-code') {
-      return this.processEvaluateCode(data as any);
+      return this.processEvaluateCode(data as EvaluateCodeJobData);
     } else {
       this.logger.warn(`Unknown job type: ${jobName}`);
     }
@@ -44,11 +53,7 @@ export class AiProcessor extends WorkerHost {
   /**
    * PHASE 1-2: Chat Strategy Evaluation & Phase Transition
    */
-  private async processChat(data: {
-    sessionId: string;
-    userId: string;
-    content: string;
-  }) {
+  private async processChat(data: ChatJobData) {
     const { sessionId, content } = data;
 
     const session = await this.prisma.session.findUnique({
@@ -98,8 +103,11 @@ export class AiProcessor extends WorkerHost {
     let isApproved = false;
 
     try {
-      const parsedResponse = JSON.parse(rawAiResponse);
-      aiMessageContent = parsedResponse.message;
+      const parsedResponse = JSON.parse(rawAiResponse) as {
+        message?: string;
+        status?: string;
+      };
+      aiMessageContent = parsedResponse.message ?? '';
       const normalizedStatus = String(
         parsedResponse.status || '',
       ).toUpperCase();
@@ -144,14 +152,8 @@ export class AiProcessor extends WorkerHost {
   /**
    * PHASE 3: Code Evaluation (Clean Code + Performance + Best Practices)
    */
-  private async processEvaluateCode(data: {
-    submissionId?: string;
-    sessionId: string;
-    userId: string;
-    code: string;
-    language: string;
-  }) {
-    const { sessionId, submissionId, userId, code, language } = data;
+  private async processEvaluateCode(data: EvaluateCodeJobData) {
+    const { sessionId, submissionId, code, language } = data;
 
     try {
       // 1. Lấy Session + Problem

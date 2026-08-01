@@ -20,24 +20,7 @@ import { InterviewRoom } from "@/features/interview/pages/interview-room";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { GoogleCallbackPage } from "@/features/auth/pages/google-callback-page";
 
-// TODO: Import các component của route khi các tính năng được xây dựng
-// import { AuthRoutes } from '@/features/auth';
-// import { ProblemsRoutes } from '@/features/problems';
-// import { InterviewRoutes } from '@/features/interview';
-
 const router = createBrowserRouter([
-  // {
-  //   path: "/",
-  //   element: (
-  //     <div className="p-8 text-center">
-  //       AlgoMinds - Feature-Based Architecture Setup Complete!
-  //       <br />
-  //       <a href="/auth/login" className="text-primary hover:underline">
-  //         Go to Login
-  //       </a>
-  //     </div>
-  //   ),
-  // },
   {
     path: "/test-landPage",
     element: <LandingPage />,
@@ -81,10 +64,6 @@ const router = createBrowserRouter([
     path: "*",
     element: <Navigate to="/auth/login" replace />,
   },
-  // TODO: Thêm các route của tính năng tại đây
-  // ...AuthRoutes,
-  // ...ProblemsRoutes,
-  // ...InterviewRoutes,
 ]);
 
 export function AppRouter() {

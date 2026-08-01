@@ -108,7 +108,8 @@
   `queryClient` gốc (`lib/query-client.ts`) đã có `defaultOptions.queries.staleTime = 5 * 60 * 1000` từ đầu, nên hành vi runtime không đổi — nhưng dòng comment ở `use-problems.ts` khiến người đọc tưởng caching đang tắt. Bỏ comment để khai báo tường minh ngay tại query, không phụ thuộc ngầm vào default global.
 - [x] **Dọn dead code**: `client/src/features/interview/components/problem-panel/mockData.ts` (xác nhận còn dùng không), nút "Undo" trong toast login hiện không có chức năng thật (`onClick: () => console.log("Undo")`).
   Xác nhận `mockData.ts` không còn importer nào (grep toàn `client/src`) → xoá file. Nút "Undo" chỉ gọi `console.log`, không rollback được gì → xoá luôn action đó khỏi toast thay vì giả vờ có chức năng.
-- [ ] **Xử lý các TODO còn sót** trong `client/src/app/router.tsx` (dòng ~23, 84).
+- [x] **Xử lý các TODO còn sót** trong `client/src/app/router.tsx` (dòng ~23, 84).
+  Cả 2 TODO đều là scaffolding cũ cho 1 pattern route-grouping (`AuthRoutes`/`ProblemsRoutes`/`InterviewRoutes`) chưa từng được áp dụng — routes thực tế đã khai báo trực tiếp, riêng lẻ trong `createBrowserRouter([...])`. Xoá 2 block comment chết đó cùng 1 route landing-page mẫu bị comment-out ở giữa (dòng ~29-40) vì cùng loại "kế hoạch cũ không còn liên quan", không viết lại theo pattern đã bỏ.
 - [ ] **Rà soát dependency `dompurify`** trong `client/package.json` — không tìm thấy nơi sử dụng thực tế trong `client/src`, cân nhắc xoá nếu thật sự không cần hoặc áp dụng đúng chỗ nếu vẫn cần sanitize nội dung đề bài (`content` là HTML).
 - [ ] **Animation & performance polish** cho interview room, dashboard — sau khi các mục P0/P1 đã ổn định.
 - [ ] **Chuyển bước lint trong CI (`.github/workflows/ci.yml`) từ non-blocking sang blocking** — hiện để `continue-on-error: true` vì repo có ~180 lỗi `@typescript-eslint/no-unsafe-*`/`no-explicit-any` tồn đọng từ trước (server + client); dọn hết nợ này rồi mới bật gate cứng.

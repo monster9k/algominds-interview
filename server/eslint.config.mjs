@@ -29,6 +29,12 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
+      // Lets `const { password, ...result } = user;` exclude a field from a
+      // rest spread without tripping unused-var on `password` itself.
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { ignoreRestSiblings: true },
+      ],
       "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
   },

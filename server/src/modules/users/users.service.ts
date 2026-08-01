@@ -60,7 +60,7 @@ export class UsersService {
     });
 
     // 4. Xóa password khỏi kết quả trả về
-    const { password: _, ...result } = newUser;
+    const { password: _password, ...result } = newUser;
 
     return result;
   }

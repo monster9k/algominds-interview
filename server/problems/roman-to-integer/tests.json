@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"s\":\"III\"}",
+    "expected": 3,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"LVIII\"}",
+    "expected": 58,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"MCMXCIV\"}",
+    "expected": 1994,
+    "isHidden": true
+  }
+]

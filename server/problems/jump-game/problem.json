@@ -1,0 +1,8 @@
+{
+  "title": "Jump Game",
+  "difficulty": "MEDIUM",
+  "functionName": "canJump",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Array", "Greedy"]
+}

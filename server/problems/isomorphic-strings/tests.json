@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"s\":\"egg\",\"t\":\"add\"}",
+    "expected": true,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"foo\",\"t\":\"bar\"}",
+    "expected": false,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"paper\",\"t\":\"title\"}",
+    "expected": true,
+    "isHidden": true
+  }
+]

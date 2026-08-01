@@ -1,0 +1,8 @@
+{
+  "title": "Wildcard Matching",
+  "difficulty": "HARD",
+  "functionName": "isMatch",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["String", "Dynamic Programming"]
+}

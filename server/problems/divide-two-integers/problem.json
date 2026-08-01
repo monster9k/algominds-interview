@@ -1,0 +1,8 @@
+{
+  "title": "Divide Two Integers",
+  "difficulty": "MEDIUM",
+  "functionName": "divide",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Math", "Bit Manipulation"]
+}

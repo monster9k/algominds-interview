@@ -1,0 +1,8 @@
+{
+  "title": "Maximum Subarray",
+  "difficulty": "MEDIUM",
+  "functionName": "maxSubArray",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Array", "Dynamic Programming"]
+}

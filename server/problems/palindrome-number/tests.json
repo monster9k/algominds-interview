@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"x\":121}",
+    "expected": true,
+    "isHidden": false
+  },
+  {
+    "input": "{\"x\":-121}",
+    "expected": false,
+    "isHidden": false
+  },
+  {
+    "input": "{\"x\":10}",
+    "expected": false,
+    "isHidden": true
+  }
+]

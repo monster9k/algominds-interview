@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"dividend\":10,\"divisor\":3}",
+    "expected": 3,
+    "isHidden": false
+  },
+  {
+    "input": "{\"dividend\":7,\"divisor\":-3}",
+    "expected": -2,
+    "isHidden": false
+  },
+  {
+    "input": "{\"dividend\":0,\"divisor\":1}",
+    "expected": 0,
+    "isHidden": true
+  }
+]

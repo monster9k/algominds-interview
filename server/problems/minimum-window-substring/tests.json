@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"s\":\"ADOBECODEBANC\",\"t\":\"ABC\"}",
+    "expected": "BANC",
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"a\",\"t\":\"a\"}",
+    "expected": "a",
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"a\",\"t\":\"aa\"}",
+    "expected": "",
+    "isHidden": true
+  }
+]

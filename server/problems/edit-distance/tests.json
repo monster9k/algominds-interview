@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"word1\":\"horse\",\"word2\":\"ros\"}",
+    "expected": 3,
+    "isHidden": false
+  },
+  {
+    "input": "{\"word1\":\"intention\",\"word2\":\"execution\"}",
+    "expected": 5,
+    "isHidden": false
+  },
+  {
+    "input": "{\"word1\":\"\",\"word2\":\"a\"}",
+    "expected": 1,
+    "isHidden": true
+  }
+]

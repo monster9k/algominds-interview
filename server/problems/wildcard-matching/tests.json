@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"s\":\"aa\",\"p\":\"a\"}",
+    "expected": false,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"aa\",\"p\":\"*\"}",
+    "expected": true,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"cb\",\"p\":\"?a\"}",
+    "expected": false,
+    "isHidden": true
+  }
+]

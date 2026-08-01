@@ -1,0 +1,8 @@
+{
+  "title": "Longest Valid Parentheses",
+  "difficulty": "HARD",
+  "functionName": "longestValidParentheses",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["String", "Stack", "Dynamic Programming"]
+}

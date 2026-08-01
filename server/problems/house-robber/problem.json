@@ -1,0 +1,8 @@
+{
+  "title": "House Robber",
+  "difficulty": "MEDIUM",
+  "functionName": "rob",
+  "timeLimit": 2000,
+  "memoryLimit": 256,
+  "tags": ["Array", "Dynamic Programming"]
+}

@@ -143,6 +143,7 @@ except Exception as e:
 #include <climits>
 #include <cmath>
 #include <cstring>
+#include <cctype>
 #include <functional>
 #include <sstream>
 #include <bitset>

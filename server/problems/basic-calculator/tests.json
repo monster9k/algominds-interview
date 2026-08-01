@@ -1,0 +1,17 @@
+[
+  {
+    "input": "{\"s\":\"1 + 1\"}",
+    "expected": 2,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\" 2-1 + 2 \"}",
+    "expected": 3,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"(1+(4+5+2)-3)+(6+8)\"}",
+    "expected": 23,
+    "isHidden": true
+  }
+]

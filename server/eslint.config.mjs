@@ -6,7 +6,10 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    // Problem starter templates are learner-facing stub code shown in the
+    // editor (unimplemented function bodies with intentionally unused
+    // params) — not application source, so app lint rules don't apply.
+    ignores: ['eslint.config.mjs', 'problems/**/templates/**'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

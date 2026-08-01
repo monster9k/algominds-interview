@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { isAxiosError } from 'axios';
 import { lastValueFrom } from 'rxjs';
 
 export interface ExecutionResult {
@@ -8,6 +9,34 @@ export interface ExecutionResult {
   error: string | null;
   timeMs?: number | null;
   memoryKb?: number | null;
+}
+
+// Shape of a single compile/run stage in Piston's response. `time`/`memory`
+// are only present on custom Piston builds (see piston_src/ at repo root) —
+// upstream Piston doesn't return them, hence the defensive parsing below.
+interface PistonStageResult {
+  stdout?: string;
+  stderr?: string;
+  output?: string;
+  code?: number;
+  signal?: string | null;
+  time?: number | string;
+  memory?: number | string;
+}
+
+interface PistonExecuteResponse {
+  language?: string;
+  version?: string;
+  compile?: PistonStageResult;
+  run?: PistonStageResult;
+}
+
+// Piston error responses (e.g. unsupported runtime/version) — shape is
+// {message: string} per Piston's API docs, but not all error paths are
+// guaranteed to match, hence the fallback chain where this is used.
+interface PistonErrorResponse {
+  message?: string;
+  error?: string;
 }
 
 @Injectable()
@@ -59,7 +88,10 @@ export class PistonService {
 
     try {
       const response = await lastValueFrom(
-        this.httpService.post(this.pistonApiUrl, payload),
+        this.httpService.post<PistonExecuteResponse>(
+          this.pistonApiUrl,
+          payload,
+        ),
       );
 
       const compile = response.data?.compile;
@@ -122,10 +154,8 @@ export class PistonService {
         timeMs,
         memoryKb,
       };
-    } catch (error: any) {
-      const isAxiosError = !!error.response;
-
-      if (isAxiosError) {
+    } catch (error: unknown) {
+      if (isAxiosError<PistonErrorResponse>(error) && error.response) {
         this.logger.error('Piston API returned an error response', {
           status: error.response.status,
           data: JSON.stringify(error.response.data),
@@ -145,14 +175,17 @@ export class PistonService {
       }
 
       // Network-level failure (ECONNREFUSED, timeout, etc.)
+      const errorCode = isAxiosError(error) ? error.code : undefined;
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error('Piston unreachable', {
-        code: error.code,
-        message: error.message,
+        code: errorCode,
+        message: errorMessage,
       });
 
       return {
         output: '',
-        error: `Piston unreachable: ${error.code ?? error.message}`,
+        error: `Piston unreachable: ${errorCode ?? errorMessage}`,
         timeMs: null,
         memoryKb: null,
       };

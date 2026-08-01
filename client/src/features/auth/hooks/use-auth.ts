@@ -23,10 +23,6 @@ export const useLogin = () => {
       setAuth(data.user, data.accessToken);
       toast("Đăng nhập thành công!", {
         description: `Chào mừng trở lại, ${data.user.name || data.user.email}`,
-        action: {
-          label: "Undo",
-          onClick: () => console.log("Undo"),
-        },
       });
       navigate("/");
     },

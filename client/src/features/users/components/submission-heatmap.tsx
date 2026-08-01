@@ -83,7 +83,7 @@ export function SubmissionHeatmap() {
           </span>
           <button
             type="button"
-            className="flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-xs hover:bg-accent"
+            className="flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-xs transition-colors hover:bg-accent"
           >
             Current
             <ChevronDown className="h-3 w-3" />

@@ -65,7 +65,7 @@ export const queryKeys = {
   // Problems related queries
   problems: {
     all: () => ["problems"] as const,
-    list: (filters: Record<string, any>) =>
+    list: (filters: Record<string, unknown>) =>
       ["problems", "list", filters] as const,
     detail: (id: string) => ["problems", "detail", id] as const,
   },

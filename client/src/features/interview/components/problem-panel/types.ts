@@ -2,19 +2,11 @@
  * Type definitions for ProblemPanel feature
  */
 
-export interface Problem {
-  id: string;
-  displayId?: number;
-  title: string;
-  difficulty: "EASY" | "MEDIUM" | "HARD";
-  content: string; // HTML content
-  tags?: Array<{
-    tag: {
-      id: string;
-      name: string;
-    };
-  }>;
-}
+import type { SessionResponse } from "../../types";
+
+// The only "problem" shape ProblemPanel actually receives is
+// session.problem from interview-room.tsx — no separate /problems fetch.
+export type Problem = SessionResponse["problem"];
 
 export interface EvaluationScores {
   logic: number;

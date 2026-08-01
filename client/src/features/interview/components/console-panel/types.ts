@@ -1,41 +1,24 @@
 import { Socket } from "socket.io-client";
-import { ChatMessage, SessionPhase } from "../../types";
-import { User } from "@/features/auth/types";
+import {
+  ChatMessage,
+  ProblemTestCase,
+  SessionPhase,
+  SubmissionResponse,
+  TestCaseResult,
+} from "../../types";
 
 // Main Console Panel Props
 export interface ConsolePanelProps {
   socket: Socket | null;
   sessionId?: string;
   initialMessages?: ChatMessage[];
-  sessionProblem?: any;
+  sessionProblem?: { testCases: ProblemTestCase[] };
   currentPhase: SessionPhase;
-  submissionResult?: SubmissionResult;
+  submissionResult?: SubmissionResponse | null;
 }
 
 // Test Case Related
-export interface TestCase {
-  input: Record<string, any>;
-  output: any;
-}
-
-export interface TestCaseResult {
-  status: "ACCEPTED" | "FAILED" | "ERROR";
-  input: any;
-  expected: any;
-  actual: any;
-  error?: string;
-}
-
-// Submission Result
-export interface SubmissionResult {
-  status: "ACCEPTED" | "WRONG_ANSWER" | "RUNTIME_ERROR" | "TIME_LIMIT_EXCEEDED";
-  timestamp: string;
-  passedTests: number;
-  totalTests: number;
-  executionTime: number;
-  memoryUsage: number;
-  testCaseResults?: TestCaseResult[];
-}
+export type TestCase = ProblemTestCase;
 
 // Testcase Tab
 export interface TestcaseTabProps {
@@ -44,21 +27,22 @@ export interface TestcaseTabProps {
   onCaseSelect: (index: number) => void;
 }
 
-// Result Tab
+// Result Tab — submissionResult mirrors the SubmissionResponse actually
+// produced by useSubmitCode()'s onSuccess (see interview-room.tsx).
 export interface ResultTabProps {
-  submissionResult?: SubmissionResult;
+  submissionResult?: SubmissionResponse | null;
   onAnalysis?: () => void;
   onSolution?: () => void;
 }
 
 export interface ResultAcceptedProps {
-  submissionResult: SubmissionResult;
+  submissionResult: SubmissionResponse;
   onAnalysis?: () => void;
   onSolution?: () => void;
 }
 
 export interface ResultFailedProps {
-  submissionResult: SubmissionResult;
+  submissionResult: SubmissionResponse;
   onAnalysis?: () => void;
   onSolution?: () => void;
 }
@@ -81,14 +65,11 @@ export interface ActionButtonsProps {
   onSolution?: () => void;
 }
 
-// AI Chat Tab
+// AI Chat Tab — messaging goes through onSubmit/onInputChange; the socket
+// connection and session identity live one level up in ConsolePanel.
 export interface AIChatTabProps {
-  socket: Socket | null;
-  sessionId?: string;
   messages: ChatMessage[];
   currentPhase: SessionPhase;
-  user: User | null;
-  onSendMessage: (message: ChatMessage) => void;
   inputValue: string;
   onInputChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;

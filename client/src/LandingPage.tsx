@@ -1,7 +1,5 @@
 // filepath: d:\algominds\client\src\pages\landing-page.tsx
 import { hello } from "@/lib/utils";
-import { TestPage } from "@/components/common/test-page";
-import { ShadcnShowcase } from "@/components/common/shadcn-showcase";
 
 export function LandingPage() {
   // Test the path alias functionality

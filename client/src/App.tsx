@@ -3,7 +3,6 @@
  * Entry point for the React application using feature-based architecture
  * Tests path aliases and Tailwind CSS functionality
  */
-import { hello } from "@/lib/utils";
 import { AppRouter } from "@/app/router";
 import { Providers } from "@/app/provider";
 import { ErrorBoundary } from "@/components/common/error-boundary";

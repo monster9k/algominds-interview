@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { authApi } from "../api/auth-api";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/get-api-error-message";
 
 // useMutation là:
 // Chỉ chạy khi mày gọi
@@ -43,10 +44,9 @@ export const useRegister = () => {
       });
       navigate("/auth/login");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("Đăng ký thất bại", {
-        description:
-          error.response?.data?.message || "Email có thể đã tồn tại.",
+        description: getApiErrorMessage(error, "Email có thể đã tồn tại."),
       });
     },
   });

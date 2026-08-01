@@ -10,12 +10,8 @@ import { cn } from "@/lib/utils";
  * Handles messaging with phase-aware empty state
  */
 export function AIChatTab({
-  socket,
-  sessionId,
   messages,
   currentPhase,
-  user,
-  onSendMessage,
   inputValue,
   onInputChange,
   onSubmit,
@@ -54,9 +50,9 @@ export function AIChatTab({
 
           {messages.length > 0 && (
             <div className="space-y-4">
-              {messages.map((msg, idx) => (
+              {messages.map((msg) => (
                 <div
-                  key={idx}
+                  key={msg.id}
                   className={`flex ${
                     msg.sender === "USER" ? "justify-end" : "justify-start"
                   }`}

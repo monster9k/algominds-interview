@@ -1,7 +1,6 @@
 import { Bug, Lock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Socket } from "socket.io-client";
-import { ChatMessage, SessionPhase } from "../types";
+import { ChatMessage } from "../types";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -10,17 +9,13 @@ import { cn } from "@/lib/utils";
 import { TestcaseTab } from "./console-panel/testcase-tab";
 import { ResultTab } from "./console-panel/result-tab";
 import { AIChatTab } from "./console-panel/ai-chat-tab";
-import { ConsolePanelProps, TabValue } from "./console-panel/types";
+import { ConsolePanelProps } from "./console-panel/types";
 import {
   isTabAccessible,
   getDefaultTab,
   getTabTooltip,
 } from "./console-panel/helpers";
-import {
-  TAB_ACCESSIBILITY,
-  PHASE_LABELS,
-  STYLES,
-} from "./console-panel/constants";
+import { PHASE_LABELS, STYLES } from "./console-panel/constants";
 
 /**
  * ConsolePanel - Main container for console panel
@@ -205,12 +200,8 @@ export function ConsolePanel({
           className="h-full m-0 flex flex-col overflow-hidden data-[state=inactive]:hidden"
         >
           <AIChatTab
-            socket={socket}
-            sessionId={sessionId}
             messages={messages}
             currentPhase={currentPhase}
-            user={user}
-            onSendMessage={() => {}}
             inputValue={inputValue}
             onInputChange={setInputValue}
             onSubmit={handleSendMessage}

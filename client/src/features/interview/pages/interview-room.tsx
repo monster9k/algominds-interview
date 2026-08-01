@@ -52,7 +52,8 @@ export function InterviewRoom() {
   // Code state management
   const [currentCode, setCurrentCode] = useState<string>("");
   const [currentLanguage, setCurrentLanguage] = useState<string>("typescript");
-  const [submissionResult, setSubmissionResult] = useState<any>(null);
+  const [submissionResult, setSubmissionResult] =
+    useState<SubmissionResponse | null>(null);
   const [acceptedSubmission, setAcceptedSubmission] =
     useState<SubmissionResponse | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);

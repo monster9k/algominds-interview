@@ -13,6 +13,11 @@ export interface ChatMessage {
   createdAt: string;
 }
 
+export interface ProblemTestCase {
+  input: Record<string, unknown>;
+  output: unknown;
+}
+
 export interface SessionResponse {
   id: string;
   userId: string;
@@ -26,6 +31,7 @@ export interface SessionResponse {
     content: string;
     initialCode: Record<string, string>; // { "typescript": "...", "python": "..." }
     displayId: number;
+    testCases: ProblemTestCase[];
   };
   messages: ChatMessage[];
   submissions?: SubmissionResponse[];
@@ -58,8 +64,8 @@ export interface Evaluation {
 }
 
 export interface TestCaseResult {
-  input: any;
-  expected: any;
+  input: unknown;
+  expected: unknown;
   actual: string;
   status: SubmissionStatus;
   error: string | null;

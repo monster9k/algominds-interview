@@ -6,7 +6,7 @@
 import axios from "axios";
 import { env } from "@/config/env";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { router } from "@/app/router";
+import { router } from "@/app/router-instance";
 
 declare module "axios" {
   export interface AxiosRequestConfig {

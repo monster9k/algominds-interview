@@ -235,9 +235,6 @@ export function InterviewHeader({
                   {!isLoadingProblems &&
                     !isProblemError &&
                     filteredProblems.map((problem) => {
-                      const problemIndex = (problems ?? []).findIndex(
-                        (item) => item.id === problem.id,
-                      );
                       const isActive = problem.slug === currentProblemSlug;
 
                       return (

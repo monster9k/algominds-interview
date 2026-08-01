@@ -110,7 +110,8 @@
   Xác nhận `mockData.ts` không còn importer nào (grep toàn `client/src`) → xoá file. Nút "Undo" chỉ gọi `console.log`, không rollback được gì → xoá luôn action đó khỏi toast thay vì giả vờ có chức năng.
 - [x] **Xử lý các TODO còn sót** trong `client/src/app/router.tsx` (dòng ~23, 84).
   Cả 2 TODO đều là scaffolding cũ cho 1 pattern route-grouping (`AuthRoutes`/`ProblemsRoutes`/`InterviewRoutes`) chưa từng được áp dụng — routes thực tế đã khai báo trực tiếp, riêng lẻ trong `createBrowserRouter([...])`. Xoá 2 block comment chết đó cùng 1 route landing-page mẫu bị comment-out ở giữa (dòng ~29-40) vì cùng loại "kế hoạch cũ không còn liên quan", không viết lại theo pattern đã bỏ.
-- [ ] **Rà soát dependency `dompurify`** trong `client/package.json` — không tìm thấy nơi sử dụng thực tế trong `client/src`, cân nhắc xoá nếu thật sự không cần hoặc áp dụng đúng chỗ nếu vẫn cần sanitize nội dung đề bài (`content` là HTML).
+- [x] **Rà soát dependency `dompurify`** trong `client/package.json` — không tìm thấy nơi sử dụng thực tế trong `client/src`, cân nhắc xoá nếu thật sự không cần hoặc áp dụng đúng chỗ nếu vẫn cần sanitize nội dung đề bài (`content` là HTML).
+  `problem.content` (markdown, không phải raw HTML) chỉ được render qua `<ReactMarkdown remarkPlugins={[remarkGfm]}>` ở `description-tab.tsx` — không dùng `rehype-raw` nên không có đường nào cho raw HTML lọt qua, và không còn `dangerouslySetInnerHTML` nào trong `client/src` (đã xác nhận ở mục P1/"Đã xác minh"). Dependency thật sự không dùng ở đâu → gỡ khỏi `package.json`/lockfile qua `npm uninstall`.
 - [ ] **Animation & performance polish** cho interview room, dashboard — sau khi các mục P0/P1 đã ổn định.
 - [ ] **Chuyển bước lint trong CI (`.github/workflows/ci.yml`) từ non-blocking sang blocking** — hiện để `continue-on-error: true` vì repo có ~180 lỗi `@typescript-eslint/no-unsafe-*`/`no-explicit-any` tồn đọng từ trước (server + client); dọn hết nợ này rồi mới bật gate cứng.
 

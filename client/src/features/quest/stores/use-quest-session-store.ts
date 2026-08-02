@@ -64,24 +64,29 @@ export const useQuestSessionStore = create<QuestSessionState>((set, get) => ({
 
   answerCorrect: (points) => {
     const nextCombo = get().combo + 1;
+    const nextIndex = get().currentSnippetIndex + 1;
     set((state) => ({
       score: state.score + points,
       combo: nextCombo,
       bestCombo: Math.max(state.bestCombo, nextCombo),
       correctCount: state.correctCount + 1,
-      currentSnippetIndex: state.currentSnippetIndex + 1,
+      currentSnippetIndex: nextIndex,
     }));
+    if (nextIndex >= get().totalSnippets) {
+      get().finishGame();
+    }
   },
 
   answerWrong: () => {
     const remainingLives = get().lives - 1;
+    const nextIndex = get().currentSnippetIndex + 1;
     set((state) => ({
       combo: 0,
       wrongCount: state.wrongCount + 1,
       lives: remainingLives,
-      currentSnippetIndex: state.currentSnippetIndex + 1,
+      currentSnippetIndex: nextIndex,
     }));
-    if (remainingLives <= 0) {
+    if (remainingLives <= 0 || nextIndex >= get().totalSnippets) {
       get().finishGame();
     }
   },

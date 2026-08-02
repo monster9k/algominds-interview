@@ -14,6 +14,7 @@ import { ProblemsPage } from "@/features/problems/pages/problems-page";
 import { ProfilePage } from "@/features/users/pages/profile-page";
 import { SettingsPage } from "@/features/settings/pages/settings-page";
 import { InterviewRoom } from "@/features/interview/pages/interview-room";
+import { QuestHubPage } from "@/features/quest/pages/quest-hub-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { GoogleCallbackPage } from "@/features/auth/pages/google-callback-page";
 
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
     element: <DashboardLayout />,
     children: [
       { path: "problems", element: <ProblemsPage /> },
+      { path: "quest", element: <QuestHubPage /> },
       { path: "profile", element: <ProfilePage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "dashboard", element: <Navigate to="/problems" replace /> },

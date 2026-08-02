@@ -81,7 +81,7 @@
   📍 `client/src/features/quest/components/bug-whacker-board.tsx`.
   Hiển thị đoạn code (tái dùng cách render của `client/src/features/interview/components/problem-panel/code-block.tsx`: `<pre><code>` + `font-mono`, KHÔNG thêm lib syntax-highlight mới — repo hiện chưa có shiki/prism, giữ tối giản) + lưới ô tương ứng số dòng, click ô = chọn dòng đó là bug.
 
-- [ ] **FE: màn chọn độ khó + route `/quest`**
+- [x] **FE: màn chọn độ khó + route `/quest`**
   📍 `client/src/features/quest/pages/quest-hub-page.tsx` + router (tìm nơi khai báo route chính, theo pattern `interview-room.tsx`).
   Đổi `client/src/components/layout/dashboard-sidebar.tsx` dòng `{ icon: Swords, labelKey: "sidebar.quest", href: "#" }` → `href: "/quest"` (mục sidebar đã có sẵn, chỉ cần nối route — không cần thêm UI nav mới).
 

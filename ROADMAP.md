@@ -67,13 +67,13 @@
   - `POST /quest/attempts` — lưu kết quả tổng kết 1 ván, gắn `JwtAuthGuard` + `@CurrentUser()` (không tự parse JWT thủ công, theo `tech-defaults.md`).
   - `GET /quest/attempts/me?limit=` — lịch sử chơi của user hiện tại (dùng cho FE hiển thị "lần chơi gần nhất" trên Quest Hub).
 
-- [ ] **FE: scaffold feature folder `quest`**
+- [x] **FE: scaffold feature folder `quest`**
   📍 `client/src/features/quest/` — dùng skill `add-frontend-feature` để đúng convention `api/hooks/components/pages/types/utils` như `design.md` mô tả.
   - `types/index.ts` — `QuestDifficulty`, `BugSnippetPublic` (không có `buggyLine`), `QuestAttemptResult`.
   - `api/quest-api.ts` — `getSnippets()`, `submitAnswer(id, selectedLine)`, `submitAttempt(payload)`, `getMyAttempts()`.
   - `hooks/use-quest-snippets.ts`, `use-submit-quest-attempt.ts` — bọc TanStack Query quanh `api/`.
 
-- [ ] **FE: Zustand store cho phiên chơi (client/UI state, không phải server state)**
+- [x] **FE: Zustand store cho phiên chơi (client/UI state, không phải server state)**
   📍 `client/src/features/quest/stores/use-quest-session-store.ts` (hoặc `client/src/stores/` nếu muốn dùng chung — nhưng vì dữ liệu chỉ thuộc feature `quest`, nên đặt trong feature theo đúng tinh thần `design.md`: "không tự ý tạo store Zustand mới cho dữ liệu server-driven" — đây là state cục bộ của ván chơi, không phải dữ liệu server nên hợp lệ).
   Quản lý: `currentSnippetIndex`, `score`, `combo`, `lives`, `timeLeftMs`, `status: 'idle' | 'playing' | 'finished'`.
 

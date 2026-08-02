@@ -76,6 +76,7 @@ model User {
   stats    UserStats?
   sessions Session[]
   refreshTokens RefreshToken[]
+  questAttempts QuestAttempt[]
 
   // Indexes
   @@index([provider, providerId])
@@ -214,6 +215,23 @@ model BugSnippet {
 
   @@index([language, difficulty, isActive])
   @@map("bug_snippets")
+}
+
+model QuestAttempt {
+  id           String     @id @default(uuid())
+  userId       String
+  difficulty   Difficulty
+  score        Int
+  correctCount Int
+  wrongCount   Int
+  bestCombo    Int
+  durationMs   Int
+  createdAt    DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("quest_attempts")
 }
 
 model Session {

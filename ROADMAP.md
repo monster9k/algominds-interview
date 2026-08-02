@@ -77,7 +77,7 @@
   📍 `client/src/features/quest/stores/use-quest-session-store.ts` (hoặc `client/src/stores/` nếu muốn dùng chung — nhưng vì dữ liệu chỉ thuộc feature `quest`, nên đặt trong feature theo đúng tinh thần `design.md`: "không tự ý tạo store Zustand mới cho dữ liệu server-driven" — đây là state cục bộ của ván chơi, không phải dữ liệu server nên hợp lệ).
   Quản lý: `currentSnippetIndex`, `score`, `combo`, `lives`, `timeLeftMs`, `status: 'idle' | 'playing' | 'finished'`.
 
-- [ ] **FE: component chơi chính — "Line Sweeper"**
+- [x] **FE: component chơi chính — "Line Sweeper"**
   📍 `client/src/features/quest/components/bug-whacker-board.tsx`.
   Hiển thị đoạn code (tái dùng cách render của `client/src/features/interview/components/problem-panel/code-block.tsx`: `<pre><code>` + `font-mono`, KHÔNG thêm lib syntax-highlight mới — repo hiện chưa có shiki/prism, giữ tối giản) + lưới ô tương ứng số dòng, click ô = chọn dòng đó là bug.
 

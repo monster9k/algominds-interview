@@ -4,6 +4,7 @@ import {
   Beaker,
   History,
   CheckCircle2,
+  XCircle,
   X,
   Lightbulb,
 } from "lucide-react";
@@ -15,32 +16,36 @@ import { SubmissionDetail } from "./submission-detail";
 import type { SubmissionResponse } from "../types";
 import type { Problem } from "./problem-panel/types";
 import { useTranslation } from "react-i18next";
+import { formatStatusText } from "../utils/submissionFormatters";
 
 /**
  * ProblemPanel - Main container component
- * Manages tabs: Description, Editorial, Solutions, Submissions, Accepted
+ * Manages tabs: Description, Editorial, Solutions, Submissions, Result
  * State: selectedSubmission for tracking detail view in Submissions tab
  */
 interface ProblemPanelProps {
   problem?: Problem;
   submissions: SubmissionResponse[];
-  acceptedSubmission?: SubmissionResponse | null;
+  // Bài submit gần nhất (bất kể ACCEPTED hay không) — hiển thị trong tab
+  // "Result" ngay khi bấm Submit, không cần mở popup riêng.
+  latestSubmission?: SubmissionResponse | null;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
-  onCloseAccepted?: () => void;
+  onCloseResult?: () => void;
 }
 
 export function ProblemPanel({
   problem,
   submissions,
-  acceptedSubmission,
+  latestSubmission,
   activeTab = "description",
   onTabChange,
-  onCloseAccepted,
+  onCloseResult,
 }: ProblemPanelProps) {
   const { t } = useTranslation("interview");
   const [selectedSubmission, setSelectedSubmission] =
     useState<SubmissionResponse | null>(null);
+  const isLatestAccepted = latestSubmission?.status === "ACCEPTED";
 
   if (!problem) return null;
 
@@ -83,19 +88,29 @@ export function ProblemPanel({
             {t("problemPanel.tabs.submissions")}
           </TabsTrigger>
 
-          {/* Dynamic Accepted Tab */}
-          {acceptedSubmission && (
+          {/* Dynamic Result Tab — bài submit gần nhất, ACCEPTED hoặc không */}
+          {latestSubmission && (
             <TabsTrigger
-              value="accepted"
-              className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 rounded-none h-full px-4 text-emerald-400 font-medium text-xs flex gap-2 group"
+              value="result"
+              className={`data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 rounded-none h-full px-4 font-medium text-xs flex gap-2 group ${
+                isLatestAccepted
+                  ? "text-emerald-400 data-[state=active]:border-emerald-500"
+                  : "text-rose-400 data-[state=active]:border-rose-500"
+              }`}
             >
-              <CheckCircle2 className="h-3.5 w-3.5" />{" "}
-              {t("problemPanel.tabs.accepted")}
+              {isLatestAccepted ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <XCircle className="h-3.5 w-3.5" />
+              )}{" "}
+              {isLatestAccepted
+                ? t("problemPanel.tabs.accepted")
+                : formatStatusText(latestSubmission.status)}
               <span
                 role="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onCloseAccepted?.();
+                  onCloseResult?.();
                 }}
                 className="ml-1 hover:bg-accent rounded p-0.5 transition-colors opacity-0 group-hover:opacity-100"
                 title={t("problemPanel.closeTooltip")}
@@ -143,13 +158,13 @@ export function ProblemPanel({
             onClearSelection={() => setSelectedSubmission(null)}
           />
 
-          {/* TAB: ACCEPTED (Dynamic) */}
-          {acceptedSubmission && (
-            <TabsContent value="accepted" className="mt-0 p-0">
+          {/* TAB: RESULT (Dynamic) */}
+          {latestSubmission && (
+            <TabsContent value="result" className="mt-0 p-0">
               <ScrollArea className="h-full">
                 <SubmissionDetail
-                  submission={acceptedSubmission}
-                  onBack={() => onCloseAccepted?.()}
+                  submission={latestSubmission}
+                  onBack={() => onCloseResult?.()}
                 />
               </ScrollArea>
             </TabsContent>

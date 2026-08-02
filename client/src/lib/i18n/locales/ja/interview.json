@@ -81,8 +81,7 @@
     "memoryDistributionUnavailable": "メモリ分布データはありません",
     "beats": "{{language}}ユーザーの{{percent}}%より高速",
     "beatsPercent": "上位<percent>{{percent}}%</percent>",
-    "code": "コード",
-    "dialogTitle": "提出結果"
+    "code": "コード"
   },
   "console": {
     "testcaseTab": "テストケース",

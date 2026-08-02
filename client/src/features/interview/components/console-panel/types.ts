@@ -14,8 +14,8 @@ export interface ConsolePanelProps {
   initialMessages?: ChatMessage[];
   sessionProblem?: { sampleTestCases: ProblemTestCase[] };
   currentPhase: SessionPhase;
-  // Kết quả "Run" (sample testcase) — KHÔNG phải kết quả Submit, đổ ra popup
-  // riêng (xem SubmitResultDialog trong interview-room.tsx).
+  // Kết quả "Run" (sample testcase) — KHÔNG phải kết quả Submit, kết quả
+  // Submit hiển thị trong tab "Result" của ProblemPanel (xem interview-room.tsx).
   runResult?: RunCodeResponse | null;
 }
 
@@ -29,9 +29,8 @@ export interface TestcaseTabProps {
   onCaseSelect: (index: number) => void;
 }
 
-// Result Tab — nhận RunCodeResponse (Run) hoặc SubmissionResponse (Submit,
-// dùng lại trong SubmitResultDialog) vì SubmissionResponse là superset field
-// của RunCodeResponse.
+// Result Tab — nhận RunCodeResponse (Run) hoặc SubmissionResponse (Submit)
+// vì SubmissionResponse là superset field của RunCodeResponse.
 export interface ResultTabProps {
   submissionResult?: RunCodeResponse | null;
   onAnalysis?: () => void;

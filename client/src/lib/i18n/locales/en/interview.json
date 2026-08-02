@@ -81,8 +81,7 @@
     "memoryDistributionUnavailable": "Memory distribution not available",
     "beats": "Beats {{percent}}% of users with {{language}}",
     "beatsPercent": "Beats <percent>{{percent}}%</percent>",
-    "code": "Code",
-    "dialogTitle": "Submission result"
+    "code": "Code"
   },
   "console": {
     "testcaseTab": "Testcase",

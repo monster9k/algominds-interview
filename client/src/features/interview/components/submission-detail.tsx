@@ -12,6 +12,7 @@ import { SubmissionHeader } from "./problem-panel/submission-header";
 import { SubmissionMetrics } from "./problem-panel/submission-metrics";
 import { AIEvaluationSection } from "./problem-panel/ai-evaluation-section";
 import { CodeBlock } from "./problem-panel/code-block";
+import { TestCaseItem } from "./console-panel/test-case-item";
 
 interface SubmissionDetailProps {
   submission: SubmissionResponse;
@@ -50,7 +51,21 @@ export function SubmissionDetail({
       {/* Metrics (Only for Accepted submissions) */}
       {isAccepted && <SubmissionMetrics submission={submission} />}
 
-      {/* AI Evaluation (if available) */}
+      {/* Test Cases (only shown when the submission didn't pass everything) */}
+      {!isAccepted && submission.testCaseResults.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-foreground mb-3">
+            {t("console.testCasesLabel")}
+          </h4>
+          <div className="space-y-2">
+            {submission.testCaseResults.map((testResult, index) => (
+              <TestCaseItem key={index} testResult={testResult} index={index} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* AI Evaluation (if available — only ever set for ACCEPTED submissions) */}
       {submission.evaluation && (
         <AIEvaluationSection evaluation={submission.evaluation} />
       )}

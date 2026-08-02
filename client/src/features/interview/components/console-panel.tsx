@@ -24,7 +24,7 @@ export function ConsolePanel({
   initialMessages = [],
   sessionProblem,
   currentPhase,
-  submissionResult,
+  runResult,
 }: ConsolePanelProps) {
   const { t } = useTranslation("interview");
   const user = useAuthStore((state) => state.user);
@@ -36,15 +36,15 @@ export function ConsolePanel({
   const [isAiThinking, setIsAiThinking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const testCases = sessionProblem?.testCases || [];
+  const testCases = sessionProblem?.sampleTestCases || [];
   const [activeTab, setActiveTab] = useState<string>(
     getDefaultTab(currentPhase),
   );
 
-  // Switch to result tab when submission completes
+  // Switch to result tab when a Run completes
   useEffect(() => {
-    if (submissionResult) setActiveTab("result");
-  }, [submissionResult]);
+    if (runResult) setActiveTab("result");
+  }, [runResult]);
 
   // Reset to default tab when phase changes
   useEffect(() => {
@@ -199,7 +199,7 @@ export function ConsolePanel({
           value="result"
           className="h-full m-0 data-[state=inactive]:hidden"
         >
-          <ResultTab submissionResult={submissionResult} />
+          <ResultTab submissionResult={runResult} />
         </TabsContent>
 
         {/* AI Chat Tab */}

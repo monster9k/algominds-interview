@@ -28,7 +28,7 @@ export function SubmissionHeader({ submission }: SubmissionHeaderProps) {
         >
           {isAccepted ? t("submissionDetail.accepted") : formatStatusText(submission.status)}
         </h3>
-        {isAccepted && submission.passedTests ? (
+        {submission.totalTests > 0 ? (
           <p className="text-xs text-muted-foreground">
             {t("submissionDetail.testcasesPassed", {
               passed: submission.passedTests,

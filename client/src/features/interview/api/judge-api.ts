@@ -1,5 +1,9 @@
 import api from "@/lib/axios";
-import { SessionEvaluationResponse, SubmissionResponse } from "../types";
+import {
+  RunCodeResponse,
+  SessionEvaluationResponse,
+  SubmissionResponse,
+} from "../types";
 
 export interface SubmitCodePayload {
   sessionId: string;
@@ -7,7 +11,16 @@ export interface SubmitCodePayload {
   language: string;
 }
 
+// Cùng shape với SubmitCodePayload nhưng tách type riêng để không lẫn lộn
+// 2 luồng khi đọc call site.
+export type RunCodePayload = SubmitCodePayload;
+
 export const judgeApi = {
+  runCode: async (payload: RunCodePayload): Promise<RunCodeResponse> => {
+    const response = await api.post("/judge/run", payload);
+    return response.data;
+  },
+
   submitCode: async (
     payload: SubmitCodePayload,
   ): Promise<SubmissionResponse> => {

@@ -1,0 +1,14 @@
+[
+  { "input": { "s": "", "t": "" } },
+  { "input": { "s": "a", "t": "a" } },
+  { "input": { "s": "ab", "t": "ba" } },
+  { "input": { "s": "abc", "t": "abd" } },
+  { "input": { "s": "aacc", "t": "ccac" } },
+  { "input": { "s": "listen", "t": "silent" } },
+  { "input": { "s": "hello", "t": "bello" } },
+  { "input": { "s": "aabbcc", "t": "abcabc" } },
+  { "input": { "s": "aa", "t": "a" } },
+  { "input": { "s": "racecar", "t": "carrace" } },
+  { "input": { "s": "abcdefg", "t": "gfedcba" } },
+  { "input": { "s": "AaBbCc", "t": "aAbBcC" } }
+]

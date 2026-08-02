@@ -10,8 +10,63 @@
     "isHidden": false
   },
   {
-    "input": "{\"prices\":[2,4,1]}",
-    "expected": 2,
+    "input": "{\"prices\":[1,2]}",
+    "expected": 1,
+    "isHidden": false
+  },
+  {
+    "input": "{\"prices\":[1,2,3,4,5]}",
+    "expected": 4,
+    "isHidden": false
+  },
+  {
+    "input": "{\"prices\":[1]}",
+    "expected": 0,
+    "isHidden": true
+  },
+  {
+    "input": "{\"prices\":[]}",
+    "expected": 0,
+    "isHidden": true
+  },
+  {
+    "input": "{\"prices\":[2,1]}",
+    "expected": 0,
+    "isHidden": true
+  },
+  {
+    "input": "{\"prices\":[3,3,3,3]}",
+    "expected": 0,
+    "isHidden": true
+  },
+  {
+    "input": "{\"prices\":[5,4,3,2,1]}",
+    "expected": 0,
+    "isHidden": true
+  },
+  {
+    "input": "{\"prices\":[3,2,6,5,0,3]}",
+    "expected": 4,
+    "isHidden": true
+  },
+  {
+    "input": "{\"prices\":[1,4,2,8]}",
+    "expected": 7,
+    "isHidden": true
+  },
+  {
+    "input": "{\"prices\":[10,7,5,3,1]}",
+    "expected": 0,
+    "isHidden": true
+  },
+  {
+    "input": "{\"prices\":[1,7,2,9,3,10]}",
+    "expected": 9,
+    "isHidden": true
+  },
+  {
+    "input": "{\"prices\":[100,1,100]}",
+    "expected": 99,
     "isHidden": true
   }
 ]

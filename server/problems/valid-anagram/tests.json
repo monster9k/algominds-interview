@@ -10,8 +10,63 @@
     "isHidden": false
   },
   {
-    "input": "{\"s\":\"a\",\"t\":\"ab\"}",
+    "input": "{\"s\":\"a\",\"t\":\"a\"}",
+    "expected": true,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"listen\",\"t\":\"silent\"}",
+    "expected": true,
+    "isHidden": false
+  },
+  {
+    "input": "{\"s\":\"\",\"t\":\"\"}",
+    "expected": true,
+    "isHidden": true
+  },
+  {
+    "input": "{\"s\":\"ab\",\"t\":\"ba\"}",
+    "expected": true,
+    "isHidden": true
+  },
+  {
+    "input": "{\"s\":\"abc\",\"t\":\"abd\"}",
     "expected": false,
+    "isHidden": true
+  },
+  {
+    "input": "{\"s\":\"aacc\",\"t\":\"ccac\"}",
+    "expected": false,
+    "isHidden": true
+  },
+  {
+    "input": "{\"s\":\"hello\",\"t\":\"bello\"}",
+    "expected": false,
+    "isHidden": true
+  },
+  {
+    "input": "{\"s\":\"aabbcc\",\"t\":\"abcabc\"}",
+    "expected": true,
+    "isHidden": true
+  },
+  {
+    "input": "{\"s\":\"aa\",\"t\":\"a\"}",
+    "expected": false,
+    "isHidden": true
+  },
+  {
+    "input": "{\"s\":\"racecar\",\"t\":\"carrace\"}",
+    "expected": true,
+    "isHidden": true
+  },
+  {
+    "input": "{\"s\":\"abcdefg\",\"t\":\"gfedcba\"}",
+    "expected": true,
+    "isHidden": true
+  },
+  {
+    "input": "{\"s\":\"AaBbCc\",\"t\":\"aAbBcC\"}",
+    "expected": true,
     "isHidden": true
   }
 ]

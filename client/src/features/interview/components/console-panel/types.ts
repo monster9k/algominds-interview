@@ -2,8 +2,8 @@ import { Socket } from "socket.io-client";
 import {
   ChatMessage,
   ProblemTestCase,
+  RunCodeResponse,
   SessionPhase,
-  SubmissionResponse,
   TestCaseResult,
 } from "../../types";
 
@@ -12,9 +12,11 @@ export interface ConsolePanelProps {
   socket: Socket | null;
   sessionId?: string;
   initialMessages?: ChatMessage[];
-  sessionProblem?: { testCases: ProblemTestCase[] };
+  sessionProblem?: { sampleTestCases: ProblemTestCase[] };
   currentPhase: SessionPhase;
-  submissionResult?: SubmissionResponse | null;
+  // Kết quả "Run" (sample testcase) — KHÔNG phải kết quả Submit, kết quả
+  // Submit hiển thị trong tab "Result" của ProblemPanel (xem interview-room.tsx).
+  runResult?: RunCodeResponse | null;
 }
 
 // Test Case Related
@@ -27,22 +29,22 @@ export interface TestcaseTabProps {
   onCaseSelect: (index: number) => void;
 }
 
-// Result Tab — submissionResult mirrors the SubmissionResponse actually
-// produced by useSubmitCode()'s onSuccess (see interview-room.tsx).
+// Result Tab — nhận RunCodeResponse (Run) hoặc SubmissionResponse (Submit)
+// vì SubmissionResponse là superset field của RunCodeResponse.
 export interface ResultTabProps {
-  submissionResult?: SubmissionResponse | null;
+  submissionResult?: RunCodeResponse | null;
   onAnalysis?: () => void;
   onSolution?: () => void;
 }
 
 export interface ResultAcceptedProps {
-  submissionResult: SubmissionResponse;
+  submissionResult: RunCodeResponse;
   onAnalysis?: () => void;
   onSolution?: () => void;
 }
 
 export interface ResultFailedProps {
-  submissionResult: SubmissionResponse;
+  submissionResult: RunCodeResponse;
   onAnalysis?: () => void;
   onSolution?: () => void;
 }

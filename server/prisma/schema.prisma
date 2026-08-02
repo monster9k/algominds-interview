@@ -33,6 +33,7 @@ enum SubmissionStatus {
   COMPILE_ERROR
   RUNTIME_ERROR
   TLE // Time Limit Exceeded
+  MLE // Memory Limit Exceeded
 }
 
 enum MessageSender {
@@ -123,8 +124,12 @@ model Problem {
   // JSON Flexibility
   initialCode   Json // {ts: "...", py: "..."}
   solution      Json?
-  testCases     Json // Full test suite
-  exampleCases  Json?
+  // @deprecated — thay bằng sampleTestCases + hiddenTestCases (giữ tạm để rollback an toàn).
+  testCases     Json?
+  // Public/sample test case — hiển thị trên đề bài + dùng cho "Run". KHÔNG bao giờ chứa hidden case.
+  sampleTestCases Json
+  // Hidden test case — chỉ dùng nội bộ khi "Submit", KHÔNG được select ra bất kỳ response nào trả về client.
+  hiddenTestCases Json?
   timeLimitMs   Int     @default(1000)
   memoryLimitMb Int     @default(256)
 

@@ -24,6 +24,7 @@
     "loadingProblems": "問題リストを読み込み中...",
     "noProblemsFound": "一致する問題が見つかりません。",
     "run": "実行",
+    "running": "実行中...",
     "submit": "提出",
     "submitting": "提出中...",
     "sortAscending": "昇順で並び替え",

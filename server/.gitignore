@@ -3,3 +3,7 @@ node_modules
 .env
 
 /generated/prisma
+
+# Transient oracle output from generate-hidden-testcases.ts — reviewed by
+# hand, then merged into problems/<slug>/tests.json; not meant to be committed.
+problems/*/tests.generated.json

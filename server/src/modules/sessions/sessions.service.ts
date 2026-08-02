@@ -7,6 +7,20 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { Prisma, SessionStatus } from '@prisma/client';
 import { UpdateSessionDto } from './dto/update-session.dto';
+
+// Đề bài trả về cho FE qua session — CHỈ chứa sampleTestCases, không bao giờ
+// select testCases (deprecated)/hiddenTestCases để tránh lộ đáp án hidden test.
+const SESSION_PROBLEM_SELECT = {
+  displayId: true,
+  title: true,
+  slug: true,
+  difficulty: true,
+  content: true,
+  initialCode: true,
+  sampleTestCases: true,
+  tags: { include: { tag: true } },
+} satisfies Prisma.ProblemSelect;
+
 @Injectable()
 export class SessionsService {
   constructor(private prisma: PrismaService) {}
@@ -61,15 +75,7 @@ export class SessionsService {
       },
       orderBy: { startedAt: 'desc' }, // Lấy session mới nhất
       include: {
-        problem: {
-          include: {
-            tags: {
-              include: {
-                tag: true,
-              },
-            },
-          },
-        },
+        problem: { select: SESSION_PROBLEM_SELECT },
         messages: { orderBy: { createdAt: 'asc' } }, // Lấy luôn tin nhắn để hiển thị lại cuộc trò chuyện
       },
     });
@@ -84,15 +90,7 @@ export class SessionsService {
           version: 1,
         },
         include: {
-          problem: {
-            include: {
-              tags: {
-                include: {
-                  tag: true,
-                },
-              },
-            },
-          },
+          problem: { select: SESSION_PROBLEM_SELECT },
           messages: true,
         },
       });
@@ -106,7 +104,7 @@ export class SessionsService {
     const session = await this.prisma.session.findUnique({
       where: { id },
       include: {
-        problem: true, // Lấy full đề bài
+        problem: { select: SESSION_PROBLEM_SELECT }, // Đề bài — KHÔNG bao giờ select hiddenTestCases ở đây
         user: { select: { id: true, name: true, avatarUrl: true } }, // Lấy info user
       },
     });

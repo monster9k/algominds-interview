@@ -9,7 +9,13 @@ export default tseslint.config(
     // Problem starter templates are learner-facing stub code shown in the
     // editor (unimplemented function bodies with intentionally unused
     // params) — not application source, so app lint rules don't apply.
-    ignores: ['eslint.config.mjs', 'problems/**/templates/**'],
+    // Same for solution/ — standalone reference solutions used as the
+    // oracle by generate-hidden-testcases.ts, never imported as a module.
+    ignores: [
+      'eslint.config.mjs',
+      'problems/**/templates/**',
+      'problems/**/solution/**',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

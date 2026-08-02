@@ -48,8 +48,10 @@ public:
 };`,
       },
 
-      testCases: [
+      sampleTestCases: [
         { input: { nums: [2, 7, 11, 15], target: 9 }, output: [0, 1] },
+      ],
+      hiddenTestCases: [
         { input: { nums: [3, 2, 4], target: 6 }, output: [1, 2] },
         { input: { nums: [3, 3], target: 6 }, output: [0, 1] },
       ],
@@ -110,8 +112,8 @@ public:
 };`,
       },
 
-      testCases: [
-        { input: { s: '()' }, output: true },
+      sampleTestCases: [{ input: { s: '()' }, output: true }],
+      hiddenTestCases: [
         { input: { s: '()[]{}' }, output: true },
         { input: { s: '(]' }, output: false },
         { input: { s: '([)]' }, output: false },

@@ -12,13 +12,22 @@
  *   └── two-sum/
  *       ├── problem.json    – metadata (title, difficulty, functionName, …)
  *       ├── statement.md    – markdown description rendered as HTML on the FE
- *       ├── tests.json      – array of { input, expected, isHidden? }
- *       └── templates/
- *           ├── typescript.ts
- *           ├── javascript.js
- *           ├── python.py
- *           ├── java.java
- *           └── cpp.cpp
+ *       ├── tests.json      – array of { input, expected, isHidden? }.
+ *       │                     isHidden: false (mặc định) -> Problem.sampleTestCases
+ *       │                     (public, dùng cho "Run"); isHidden: true -> Problem.hiddenTestCases
+ *       │                     (chỉ dùng khi "Submit", không bao giờ trả về client).
+ *       ├── templates/
+ *       │   ├── typescript.ts
+ *       │   ├── javascript.js
+ *       │   ├── python.py
+ *       │   ├── java.java
+ *       │   └── cpp.cpp
+ *       └── solution/        – optional, same layout as templates/. A correct,
+ *                               working reference solution per language (not just
+ *                               a stub) — used as the oracle by
+ *                               generate-hidden-testcases.ts to compute expected
+ *                               output for admin-supplied inputs. Stored on
+ *                               Problem.solution, never exposed to the client.
  */
 
 import * as fs from 'fs';
@@ -132,14 +141,37 @@ async function syncProblem(
     }
   }
 
+  // --- 2b. Build solution map from solution/ (optional oracle for generate-hidden-testcases.ts) ---
+  const solutionDir = path.join(problemDir, 'solution');
+  const solution: Record<string, string> = {};
+
+  if (fs.existsSync(solutionDir)) {
+    for (const file of fs.readdirSync(solutionDir)) {
+      const filePath = path.join(solutionDir, file);
+      if (fs.statSync(filePath).isFile()) {
+        const lang = langKeyFromFile(file);
+        solution[lang] = fs.readFileSync(filePath, 'utf-8');
+      }
+    }
+  }
+
   // --- 3. Normalise test cases ---
   // The judge uses `Object.values(input)`, so `input` must be an object, not a string.
   // `output` is what the judge compares against (stored as the canonical field name).
-  const testCases = rawTests.map((t) => ({
-    input: parseInput(t.input),
-    output: t.expected,
-    isHidden: t.isHidden ?? false,
-  }));
+  // `isHidden` chọn cột lưu — sample (public, dùng cho "Run") vs hidden
+  // (chỉ dùng khi "Submit", không bao giờ trả về client).
+  const sampleTestCases = rawTests
+    .filter((t) => !t.isHidden)
+    .map((t) => ({ input: parseInput(t.input), output: t.expected }));
+  const hiddenTestCases = rawTests
+    .filter((t) => t.isHidden)
+    .map((t) => ({ input: parseInput(t.input), output: t.expected }));
+
+  if (sampleTestCases.length === 0) {
+    console.warn(
+      `  ⚠️  "${folderName}" không có testcase sample nào (isHidden: false) — nút "Run" sẽ không chạy được cho bài này.`,
+    );
+  }
 
   // --- 4. Ensure tags exist (upsert) ---
   const tagIds: string[] = [];
@@ -172,7 +204,11 @@ async function syncProblem(
     difficulty,
     content,
     initialCode: initialCode as unknown as Prisma.InputJsonValue,
-    testCases: testCases as unknown as Prisma.InputJsonValue,
+    ...(Object.keys(solution).length > 0
+      ? { solution: solution as unknown as Prisma.InputJsonValue }
+      : {}),
+    sampleTestCases: sampleTestCases as unknown as Prisma.InputJsonValue,
+    hiddenTestCases: hiddenTestCases as unknown as Prisma.InputJsonValue,
     functionName: meta.functionName ?? folderName,
     timeLimitMs: meta.timeLimit ?? 1000,
     memoryLimitMb: meta.memoryLimit ?? 256,
@@ -196,7 +232,10 @@ async function syncProblem(
   }
 
   console.log(
-    `  ✅  "${folderName}" synced (${testCases.length} test cases, ${Object.keys(initialCode).length} templates)`,
+    `  ✅  "${folderName}" synced (${sampleTestCases.length} sample + ${hiddenTestCases.length} hidden test cases, ${Object.keys(initialCode).length} templates` +
+      (Object.keys(solution).length > 0
+        ? `, oracle solution: ${Object.keys(solution).join(', ')})`
+        : ', no oracle solution)'),
   );
 }
 

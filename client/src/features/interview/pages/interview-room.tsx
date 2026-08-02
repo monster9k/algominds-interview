@@ -11,13 +11,18 @@ import { ProblemPanel } from "../components/problem-panel";
 import { CodeEditorPanel } from "../components/code-editor-panel";
 import { ConsolePanel } from "../components/console-panel";
 import { useStartSession } from "../hooks/use-session";
-import { useProblemSubmissions, useSubmitCode } from "../hooks/use-judge";
+import {
+  useProblemSubmissions,
+  useRunCode,
+  useSubmitCode,
+} from "../hooks/use-judge";
 import { useSessionEvaluation } from "../hooks/use-evaluation";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   CodeEvaluationCompleteEvent,
+  RunCodeResponse,
   SessionPhase,
   type SubmissionResponse,
 } from "../types";
@@ -54,9 +59,12 @@ export function InterviewRoom() {
   // Code state management
   const [currentCode, setCurrentCode] = useState<string>("");
   const [currentLanguage, setCurrentLanguage] = useState<string>("typescript");
-  const [submissionResult, setSubmissionResult] =
-    useState<SubmissionResponse | null>(null);
-  const [acceptedSubmission, setAcceptedSubmission] =
+  // Kết quả "Run" — tách riêng khỏi kết quả Submit để 2 luồng không ghi đè
+  // kết quả của nhau (xem roadmap Run/Submit).
+  const [runResult, setRunResult] = useState<RunCodeResponse | null>(null);
+  // Bài submit gần nhất (bất kể ACCEPTED hay không) — hiển thị trong tab
+  // "Result" của ProblemPanel, không còn popup dialog riêng.
+  const [latestSubmission, setLatestSubmission] =
     useState<SubmissionResponse | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);
   const [problemPanelTab, setProblemPanelTab] = useState<string>("description");
@@ -84,7 +92,7 @@ export function InterviewRoom() {
 
       const normalizedEvaluation = normalizeEvaluation(payload.evaluation);
 
-      setAcceptedSubmission((prev) => {
+      setLatestSubmission((prev) => {
         if (!prev) {
           return prev;
         }
@@ -129,36 +137,42 @@ export function InterviewRoom() {
     onCodeEvaluationComplete: handleCodeEvaluationComplete,
   });
 
-  // Submission hook
+  // "Run" — chỉ chấm sampleTestCases, không lưu DB, không cập nhật
+  // submissions/UserStats. Kết quả đổ vào ConsolePanel (không blocking).
+  const runCodeMutation = useRunCode({
+    onSuccess: (result: RunCodeResponse) => {
+      setRunResult(result);
+    },
+  });
+
+  // Submission hook — bất kể ACCEPTED hay không, kết quả hiện trong tab
+  // "Result" của ProblemPanel (không còn popup dialog riêng).
   const submitCodeMutation = useSubmitCode({
     onSuccess: (result: SubmissionResponse) => {
-      setSubmissionResult(result);
+      if (!session) return;
 
-      // If ACCEPTED, create submission object and show in ProblemPanel
-      if (result.status === "ACCEPTED" && session) {
-        const newSubmission = mapSubmissionForUi({
-          ...result,
-          sessionId: session.id,
-          language: result.language || currentLanguage,
-          code: result.code || currentCode,
-          createdAt: result.createdAt || new Date().toISOString(),
-          evaluationStatus: result.evaluationStatus || "PENDING",
-          evaluation: null,
-        });
+      const newSubmission = mapSubmissionForUi({
+        ...result,
+        sessionId: session.id,
+        language: result.language || currentLanguage,
+        code: result.code || currentCode,
+        createdAt: result.createdAt || new Date().toISOString(),
+        evaluationStatus: result.evaluationStatus || "PENDING",
+        evaluation: null,
+      });
 
-        setSubmissions((prev) => [
-          newSubmission,
-          ...prev.filter((submission) => submission.id !== newSubmission.id),
-        ]);
-        setAcceptedSubmission(newSubmission);
-        setProblemPanelTab("accepted"); // Auto switch to Accepted tab
-        void refetchSubmissions();
-      }
+      setSubmissions((prev) => [
+        newSubmission,
+        ...prev.filter((submission) => submission.id !== newSubmission.id),
+      ]);
+      setLatestSubmission(newSubmission);
+      setProblemPanelTab("result"); // Auto switch to Result tab
+      void refetchSubmissions();
     },
   });
 
   const handleSubmit = useCallback(() => {
-    if (submitCodeMutation.isPending) return;
+    if (submitCodeMutation.isPending || runCodeMutation.isPending) return;
 
     if (!session?.id || !currentCode.trim()) {
       toast.error(t("errors.emptyCode"));
@@ -177,6 +191,7 @@ export function InterviewRoom() {
     });
   }, [
     submitCodeMutation,
+    runCodeMutation.isPending,
     session?.id,
     currentCode,
     currentPhase,
@@ -185,8 +200,32 @@ export function InterviewRoom() {
   ]);
 
   const handleRun = useCallback(() => {
-    handleSubmit();
-  }, [handleSubmit]);
+    if (submitCodeMutation.isPending || runCodeMutation.isPending) return;
+
+    if (!session?.id || !currentCode.trim()) {
+      toast.error(t("errors.emptyCode"));
+      return;
+    }
+
+    if (currentPhase !== "PHASE_2_IMPLEMENT") {
+      toast.error(t("errors.phase1Incomplete"));
+      return;
+    }
+
+    runCodeMutation.mutate({
+      sessionId: session.id,
+      code: currentCode,
+      language: currentLanguage,
+    });
+  }, [
+    runCodeMutation,
+    submitCodeMutation.isPending,
+    session?.id,
+    currentCode,
+    currentPhase,
+    currentLanguage,
+    t,
+  ]);
 
   useEffect(() => {
     if (!session) {
@@ -205,12 +244,12 @@ export function InterviewRoom() {
     const normalizedSubmissions = submissionData.map(mapSubmissionForUi);
     setSubmissions(normalizedSubmissions);
 
-    const latestAccepted = normalizedSubmissions.find(
-      (submission) => submission.status === "ACCEPTED",
-    );
+    // submissionData được backend trả về sắp xếp createdAt desc, nên phần tử
+    // đầu là bài nộp gần nhất — bất kể ACCEPTED hay không.
+    const latest = normalizedSubmissions[0];
 
-    if (latestAccepted) {
-      setAcceptedSubmission((prev) => prev || latestAccepted);
+    if (latest) {
+      setLatestSubmission((prev) => prev || latest);
     }
   }, [submissionData]);
 
@@ -219,7 +258,7 @@ export function InterviewRoom() {
       return;
     }
 
-    setAcceptedSubmission((prev) => {
+    setLatestSubmission((prev) => {
       if (!prev || prev.status !== "ACCEPTED") {
         return prev;
       }
@@ -233,7 +272,7 @@ export function InterviewRoom() {
 
     setSubmissions((prev) =>
       prev.map((submission) => {
-        if (submission.id !== acceptedSubmission?.id) {
+        if (submission.id !== latestSubmission?.id) {
           return submission;
         }
 
@@ -244,7 +283,7 @@ export function InterviewRoom() {
         };
       }),
     );
-  }, [evaluationData, acceptedSubmission?.id]);
+  }, [evaluationData, latestSubmission?.id]);
 
   if (isLoading) {
     return (
@@ -268,6 +307,7 @@ export function InterviewRoom() {
         onSubmit={handleSubmit}
         onRun={handleRun}
         isSubmitting={submitCodeMutation.isPending}
+        isRunning={runCodeMutation.isPending}
         currentProblemSlug={slug}
         currentProblemTitle={session.problem.title}
         currentProblemDisplayId={session.problem.displayId}
@@ -288,11 +328,11 @@ export function InterviewRoom() {
             <ProblemPanel
               problem={session.problem}
               submissions={submissions}
-              acceptedSubmission={acceptedSubmission}
+              latestSubmission={latestSubmission}
               activeTab={problemPanelTab}
               onTabChange={setProblemPanelTab}
-              onCloseAccepted={() => {
-                setAcceptedSubmission(null);
+              onCloseResult={() => {
+                setLatestSubmission(null);
                 setProblemPanelTab("description");
               }}
             />
@@ -347,7 +387,7 @@ export function InterviewRoom() {
                   initialMessages={session?.messages}
                   sessionProblem={session?.problem}
                   currentPhase={currentPhase}
-                  submissionResult={submissionResult}
+                  runResult={runResult}
                 />
               </ResizablePanel>
             </ResizablePanelGroup>

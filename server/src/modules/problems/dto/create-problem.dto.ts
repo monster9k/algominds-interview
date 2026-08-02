@@ -27,11 +27,11 @@ export class CreateProblemDto {
 
   @IsObject()
   @IsNotEmpty()
-  testCases: object;
+  sampleTestCases: object;
 
   @IsOptional()
   @IsObject()
-  exampleCases?: object;
+  hiddenTestCases?: object;
 
   @IsOptional()
   @IsInt()

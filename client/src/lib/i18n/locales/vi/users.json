@@ -38,6 +38,14 @@
       "tle": "Quá thời gian"
     }
   },
+  "questHistory": {
+    "title": "Lịch sử Quest",
+    "playQuest": "Chơi Quest",
+    "empty": "Chưa chơi Quest lần nào.",
+    "scoreLabel": "điểm",
+    "correctOfWrong": "{{correct}} đúng / {{wrong}} sai",
+    "bestCombo": "Combo cao nhất {{combo}}"
+  },
   "heatmap": {
     "title": "{{count}} lượt nộp bài trong năm qua",
     "activeDays": "Tổng số ngày hoạt động:",

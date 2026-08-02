@@ -104,7 +104,7 @@
 - [x] **FE: responsive mobile cho lưới**
   📍 `bug-whacker-board.tsx` — `grid-cols-1` mobile, layout dòng-code dọc thay vì lưới vuông (vì mỗi ô tương ứng 1 dòng code dài, không phải ô vuông Minesweeper thật).
 
-- [ ] **BE+FE: hiển thị lịch sử Quest trên profile**
+- [x] **BE+FE: hiển thị lịch sử Quest trên profile**
   📍 `server/src/modules/quest/quest.controller.ts` (`GET /quest/attempts/me` đã có ở P0) → nối vào `client/src/features/users/pages/profile-page.tsx`, thêm card mới cạnh `recent-submissions-card.tsx` (không sửa card đó — Quest là data riêng, không phải judge submission).
 
 ---

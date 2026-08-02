@@ -38,6 +38,14 @@
       "tle": "Time Limit Exceeded"
     }
   },
+  "questHistory": {
+    "title": "Quest History",
+    "playQuest": "Play Quest",
+    "empty": "No Quest plays yet.",
+    "scoreLabel": "pts",
+    "correctOfWrong": "{{correct}} correct / {{wrong}} wrong",
+    "bestCombo": "Best combo {{combo}}"
+  },
   "heatmap": {
     "title": "{{count}} submissions in the past year",
     "activeDays": "Total active days:",

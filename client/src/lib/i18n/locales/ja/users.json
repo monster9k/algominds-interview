@@ -38,6 +38,14 @@
       "tle": "時間切れ"
     }
   },
+  "questHistory": {
+    "title": "クエスト履歴",
+    "playQuest": "クエストをプレイ",
+    "empty": "まだクエストをプレイしていません。",
+    "scoreLabel": "点",
+    "correctOfWrong": "正解 {{correct}} / 不正解 {{wrong}}",
+    "bestCombo": "最高コンボ {{combo}}"
+  },
   "heatmap": {
     "title": "過去1年間の提出数: {{count}}件",
     "activeDays": "アクティブ日数:",

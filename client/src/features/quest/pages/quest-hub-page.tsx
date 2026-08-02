@@ -204,7 +204,10 @@ export function QuestHubPage() {
 
       <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
         <div
-          className="h-full bg-primary transition-all"
+          className={cn(
+            "h-full transition-all",
+            timeLeftPercent < 20 ? "bg-destructive" : "bg-primary",
+          )}
           style={{ width: `${timeLeftPercent}%` }}
         />
       </div>
@@ -215,6 +218,7 @@ export function QuestHubPage() {
           language={currentSnippet.language}
           selectedLine={selectedLine}
           disabled={!!feedback}
+          result={feedback}
           onSelectLine={handleSelectLine}
         />
       ) : (

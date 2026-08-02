@@ -92,7 +92,7 @@
 - [x] **FE: `QuestResultDialog` — tổng kết ván chơi**
   📍 `client/src/features/quest/components/quest-result-dialog.tsx`. Không có sẵn dialog kết quả nào trong repo để tái dùng — kết quả submission hiện hiển thị inline (`client/src/features/interview/components/console-panel/result-accepted.tsx` + `result-stats-cards.tsx`, không phải modal). Tái dùng token/pattern trình bày số liệu (`bg-card border border-border rounded-lg p-4`, `text-2xl font-semibold`) của `result-stats-cards.tsx` cho phần thẻ điểm số, dựng trong shadcn `Dialog` có sẵn (`client/src/components/ui/dialog.tsx`). Hiện điểm, đúng/sai, best combo, nút "Chơi lại" / "Về Quest Hub".
 
-- [ ] **FE: hiệu ứng feedback tức thời**
+- [x] **FE: hiệu ứng feedback tức thời**
   📍 trong `bug-whacker-board.tsx`. Ô đúng flash `bg-emerald-500/20`, ô sai flash `bg-destructive/20` (dùng token màu Tailwind/shadcn có sẵn, không hardcode hex mới — theo `design.md`). Thanh thời gian dạng progress bar đổi `bg-primary` → `bg-destructive` khi còn < 20%, giống pattern cảnh báo đã dùng ở `console-panel`.
 
 - [ ] **BE: chặn gian lận điểm ở tầng validate**

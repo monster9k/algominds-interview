@@ -1,11 +1,13 @@
 import { FileCode2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SubmitAnswerResult } from "../types";
 
 interface BugWhackerBoardProps {
   code: string;
   language: string;
   selectedLine: number | null;
   disabled?: boolean;
+  result?: SubmitAnswerResult | null;
   onSelectLine: (lineIndex: number) => void;
 }
 
@@ -17,6 +19,7 @@ export function BugWhackerBoard({
   language,
   selectedLine,
   disabled,
+  result,
   onSelectLine,
 }: BugWhackerBoardProps) {
   const lines = code.split("\n");
@@ -32,24 +35,36 @@ export function BugWhackerBoard({
       </div>
       <pre className="overflow-x-auto text-xs font-mono leading-relaxed pb-2">
         <code>
-          {lines.map((line, index) => (
-            <button
-              key={index}
-              type="button"
-              disabled={disabled}
-              onClick={() => onSelectLine(index)}
-              className={cn(
-                "flex w-full items-start gap-3 px-4 py-1 text-left transition-colors",
-                "hover:bg-muted/50 disabled:cursor-not-allowed",
-                selectedLine === index && "bg-primary/10 border-l-2 border-primary",
-              )}
-            >
-              <span className="select-none text-muted-foreground w-6 shrink-0 text-right">
-                {index + 1}
-              </span>
-              <span className="whitespace-pre text-foreground">{line}</span>
-            </button>
-          ))}
+          {lines.map((line, index) => {
+            const isBuggyLine = result?.buggyLine === index;
+            const isWrongSelection =
+              !!result && !result.correct && selectedLine === index;
+
+            return (
+              <button
+                key={index}
+                type="button"
+                disabled={disabled}
+                onClick={() => onSelectLine(index)}
+                className={cn(
+                  "flex w-full items-start gap-3 px-4 py-1 text-left transition-colors",
+                  "hover:bg-muted/50 disabled:cursor-not-allowed",
+                  !result &&
+                    selectedLine === index &&
+                    "bg-primary/10 border-l-2 border-primary",
+                  isBuggyLine &&
+                    "bg-emerald-500/20 border-l-2 border-emerald-500",
+                  isWrongSelection &&
+                    "bg-destructive/20 border-l-2 border-destructive",
+                )}
+              >
+                <span className="select-none text-muted-foreground w-6 shrink-0 text-right">
+                  {index + 1}
+                </span>
+                <span className="whitespace-pre text-foreground">{line}</span>
+              </button>
+            );
+          })}
         </code>
       </pre>
     </div>

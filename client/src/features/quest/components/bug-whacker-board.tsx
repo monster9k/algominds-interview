@@ -33,7 +33,7 @@ export function BugWhackerBoard({
           {displayLanguage}
         </span>
       </div>
-      <pre className="overflow-x-auto text-xs font-mono leading-relaxed pb-2">
+      <pre className="sm:overflow-x-auto text-xs font-mono leading-relaxed pb-2">
         <code>
           {lines.map((line, index) => {
             const isBuggyLine = result?.buggyLine === index;
@@ -61,7 +61,11 @@ export function BugWhackerBoard({
                 <span className="select-none text-muted-foreground w-6 shrink-0 text-right">
                   {index + 1}
                 </span>
-                <span className="whitespace-pre text-foreground">{line}</span>
+                {/* Mobile: bọc dòng dài để đọc/click trọn 1 dòng không cần cuộn
+                    ngang. Từ sm trở lên giữ 1 dòng + cuộn ngang như code-block.tsx. */}
+                <span className="whitespace-pre-wrap break-all sm:whitespace-pre sm:break-normal text-foreground">
+                  {line}
+                </span>
               </button>
             );
           })}

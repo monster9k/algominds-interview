@@ -101,7 +101,7 @@
 - [x] **i18n: `quest.json` cho 3 ngôn ngữ**
   📍 `client/src/lib/i18n/locales/{en,vi,ja}/quest.json`, theo đúng pattern file hiện có (`interview.json`, `users.json`). Namespace `t("quest.xxx")` dùng `useTranslation("quest")` giống các feature khác.
 
-- [ ] **FE: responsive mobile cho lưới**
+- [x] **FE: responsive mobile cho lưới**
   📍 `bug-whacker-board.tsx` — `grid-cols-1` mobile, layout dòng-code dọc thay vì lưới vuông (vì mỗi ô tương ứng 1 dòng code dài, không phải ô vuông Minesweeper thật).
 
 - [ ] **BE+FE: hiển thị lịch sử Quest trên profile**

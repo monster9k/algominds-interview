@@ -202,6 +202,20 @@ model ProblemCompany {
   @@map("problem_companies")
 }
 
+model BugSnippet {
+  id          String     @id @default(uuid())
+  language    String // "javascript" | "python" | "java" — khớp PistonService.getLanguageConfig()
+  difficulty  Difficulty
+  code        String // toàn bộ đoạn code (nhiều dòng)
+  buggyLine   Int // index dòng chứa bug, 0-based, tách theo "\n"
+  explanation String? // hiện sau khi trả lời, giải thích bug là gì
+  isActive    Boolean    @default(true) // để tắt câu hỏi lỗi mà không xoá (giữ lịch sử QuestAttempt tham chiếu được)
+  createdAt   DateTime   @default(now())
+
+  @@index([language, difficulty, isActive])
+  @@map("bug_snippets")
+}
+
 model Session {
   id        String        @id @default(uuid())
   userId    String

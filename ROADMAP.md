@@ -95,7 +95,7 @@
 - [x] **FE: hiệu ứng feedback tức thời**
   📍 trong `bug-whacker-board.tsx`. Ô đúng flash `bg-emerald-500/20`, ô sai flash `bg-destructive/20` (dùng token màu Tailwind/shadcn có sẵn, không hardcode hex mới — theo `design.md`). Thanh thời gian dạng progress bar đổi `bg-primary` → `bg-destructive` khi còn < 20%, giống pattern cảnh báo đã dùng ở `console-panel`.
 
-- [ ] **BE: chặn gian lận điểm ở tầng validate**
+- [x] **BE: chặn gian lận điểm ở tầng validate**
   📍 `server/src/modules/quest/dto/create-attempt.dto.ts` + `quest.service.ts`. `class-validator` giới hạn: `score` không vượt quá `correctCount × điểm-tối-đa-mỗi-câu-theo-difficulty`, `durationMs` tối thiểu hợp lý theo `correctCount + wrongCount` (không thể trả lời nhanh hơn X ms/câu). Đây là lý do endpoint `POST /quest/snippets/:id/answer` phải tách riêng ở P0 thay vì để FE tự tính điểm và chỉ gửi tổng kết — server phải là nguồn xác nhận "đúng/sai" cho từng câu.
 
 - [ ] **i18n: `quest.json` cho 3 ngôn ngữ**

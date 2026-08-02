@@ -60,7 +60,7 @@
   📍 File mới `server/seed-quest.ts` (theo pattern `server/sync-problems.ts` đã có — script riêng, không nhét vào `prisma/seed.ts` để tránh chạy lại làm trùng dữ liệu mỗi lần `db seed`).
   Tối thiểu 5 snippet/độ khó × 3 độ khó × 3 ngôn ngữ ưu tiên (`javascript`, `python`, `java` — 3 ngôn ngữ đơn giản, dễ đọc nhanh trong game timed, đã được `PistonService` hỗ trợ sẵn nên không lệch với phần judge chính) = tối thiểu ~45 câu để không lặp quá nhanh.
 
-- [ ] **BE: module `quest` mới**
+- [x] **BE: module `quest` mới**
   📍 `server/src/modules/quest/` theo đúng pattern NestJS trong repo (dùng skill `add-nestjs-module`): `quest.module.ts`, `quest.controller.ts`, `quest.service.ts`, `dto/`.
   - `GET /quest/snippets?difficulty=&language=&count=` — trả về N snippet ngẫu nhiên (ẩn field `buggyLine`/`explanation` khỏi response, chỉ trả về sau khi FE submit đáp án của từng câu — tránh xem trước DevTools Network tab).
   - `POST /quest/snippets/:id/answer` — body `{ selectedLine: number }`, trả về `{ correct: boolean, buggyLine: number, explanation?: string }`. Endpoint riêng biệt (không gộp vào GET) chính là chỗ chặn gian lận score ở P1.

@@ -13,7 +13,7 @@
 
 ## 🔴 P0 — Lõi (chơi được 1 ván end-to-end)
 
-- [ ] **DB: model `BugSnippet` — ngân hàng câu hỏi**
+- [x] **DB: model `BugSnippet` — ngân hàng câu hỏi**
   Bảng chứa các đoạn code mẫu, mỗi bản ghi có đúng 1 dòng chứa bug.
   📍 `server/prisma/schema.prisma` (thêm cạnh các model hiện có, không đụng `Session`/`SessionEvent`).
   Repo đã có sẵn `enum Difficulty { EASY MEDIUM HARD }` dùng cho `Problem.difficulty` — tái dùng lại thay vì tạo thêm `QuestDifficulty` trùng giá trị (tránh 2 enum cùng ý nghĩa).
@@ -34,7 +34,7 @@
   ```
   Dùng skill `add-prisma-model` để chạy migration đúng quy trình repo (không tự tay viết SQL migration).
 
-- [ ] **DB: model `QuestAttempt` — kết quả mỗi ván chơi**
+- [x] **DB: model `QuestAttempt` — kết quả mỗi ván chơi**
   📍 `server/prisma/schema.prisma`.
   ```prisma
   model QuestAttempt {
@@ -56,7 +56,7 @@
   ```
   Cần thêm quan hệ ngược `questAttempts QuestAttempt[]` vào `model User`.
 
-- [ ] **DB: seed dữ liệu mẫu**
+- [x] **DB: seed dữ liệu mẫu**
   📍 File mới `server/seed-quest.ts` (theo pattern `server/sync-problems.ts` đã có — script riêng, không nhét vào `prisma/seed.ts` để tránh chạy lại làm trùng dữ liệu mỗi lần `db seed`).
   Tối thiểu 5 snippet/độ khó × 3 độ khó × 3 ngôn ngữ ưu tiên (`javascript`, `python`, `java` — 3 ngôn ngữ đơn giản, dễ đọc nhanh trong game timed, đã được `PistonService` hỗ trợ sẵn nên không lệch với phần judge chính) = tối thiểu ~45 câu để không lặp quá nhanh.
 

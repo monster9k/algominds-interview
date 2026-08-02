@@ -14,11 +14,25 @@ import { Throttle } from '@nestjs/throttler';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../common/types/request-user.type';
 import { SubmitCodeDto } from './dto/submit-code.dto';
+import { RunCodeDto } from './dto/run-code.dto';
 
 @Controller('judge')
 @UseGuards(JwtAuthGuard)
 export class JudgeController {
   constructor(private judgeService: JudgeService) {}
+
+  // Throttle nhẹ hơn /submit vì Run dùng để lặp lại nhanh khi debug, chỉ
+  // chấm bằng sampleTestCases (ít test hơn) nên rẻ hơn cho Piston.
+  @Throttle({ default: { limit: 1, ttl: 1500 } }) // 1 request mỗi 1.5s
+  @Post('run')
+  async run(@CurrentUser() user: RequestUser, @Body() body: RunCodeDto) {
+    return this.judgeService.runCode(
+      user.userId,
+      body.sessionId,
+      body.code,
+      body.language,
+    );
+  }
 
   @Throttle({ default: { limit: 1, ttl: 5000 } }) // 1 request mỗi 5s
   @Post('submit')

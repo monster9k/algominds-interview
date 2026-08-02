@@ -24,6 +24,7 @@
     "loadingProblems": "Đang tải danh sách bài tập...",
     "noProblemsFound": "Không tìm thấy bài phù hợp.",
     "run": "Chạy",
+    "running": "Đang chạy...",
     "submit": "Nộp bài",
     "submitting": "Đang nộp...",
     "sortAscending": "Sắp xếp tăng dần",
@@ -80,7 +81,8 @@
     "memoryDistributionUnavailable": "Chưa có dữ liệu phân bố bộ nhớ",
     "beats": "Vượt qua {{percent}}% người dùng {{language}}",
     "beatsPercent": "Vượt qua <percent>{{percent}}%</percent>",
-    "code": "Code"
+    "code": "Code",
+    "dialogTitle": "Kết quả bài nộp"
   },
   "console": {
     "testcaseTab": "Testcase",

@@ -11,15 +11,21 @@ export interface ExecutionResult {
   memoryKb?: number | null;
 }
 
-// Shape of a single compile/run stage in Piston's response. `time`/`memory`
-// are only present on custom Piston builds (see piston_src/ at repo root) —
-// upstream Piston doesn't return them, hence the defensive parsing below.
+// Shape of a single compile/run stage in Piston's response. Verified live
+// against the image actually running in docker-compose (ghcr.io/engineer-man/piston)
+// via a direct POST /api/v2/execute call: it returns `wall_time`/`cpu_time`
+// in milliseconds and `memory` in BYTES — NOT `time` (seconds) as an earlier
+// version of this file assumed for a hypothetical custom build. `time` is
+// kept as a last-resort fallback only in case a differently-configured
+// Piston instance sends it, but is treated the same unit as wall_time (ms).
 interface PistonStageResult {
   stdout?: string;
   stderr?: string;
   output?: string;
   code?: number;
   signal?: string | null;
+  wall_time?: number | string;
+  cpu_time?: number | string;
   time?: number | string;
   memory?: number | string;
 }
@@ -123,36 +129,22 @@ export class PistonService {
         };
       }
 
-      // Runtime error (non-zero exit code from the run stage)
+      // Runtime error (non-zero exit code from the run stage) — vẫn parse
+      // time/memory ở đây vì 1 process bị kill do vượt run_timeout/run_memory_limit
+      // cũng đi qua nhánh này; JudgeService cần 2 số liệu này để phân biệt
+      // TLE/MLE với lỗi runtime thông thường.
       if (run.code !== 0 && run.stderr) {
         return {
           output: run.stdout ?? '',
           error: run.stderr,
-          timeMs: null,
-          memoryKb: null,
+          ...this.parseStageMetrics(run),
         };
       }
-
-      const rawTime = run.time;
-      const rawMemory = run.memory;
-      const timeMs =
-        typeof rawTime === 'number'
-          ? Math.round(rawTime * 1000)
-          : rawTime
-            ? Math.round(Number(rawTime) * 1000)
-            : null;
-      const memoryKb =
-        typeof rawMemory === 'number'
-          ? Math.round(rawMemory)
-          : rawMemory
-            ? Math.round(Number(rawMemory))
-            : null;
 
       return {
         output: run.stdout ?? '',
         error: run.stderr || null,
-        timeMs,
-        memoryKb,
+        ...this.parseStageMetrics(run),
       };
     } catch (error: unknown) {
       if (isAxiosError<PistonErrorResponse>(error) && error.response) {
@@ -190,6 +182,32 @@ export class PistonService {
         memoryKb: null,
       };
     }
+  }
+
+  // Parse wall_time (đã là ms) / memory (byte -> kb) từ 1 stage result của
+  // Piston. Dùng chung cho cả nhánh success và runtime-error vì cả 2 đều cần
+  // time/memory để JudgeService so sánh với timeLimitMs/memoryLimitMb (phát
+  // hiện TLE/MLE).
+  private parseStageMetrics(stage: PistonStageResult): {
+    timeMs: number | null;
+    memoryKb: number | null;
+  } {
+    const rawTime = stage.wall_time ?? stage.cpu_time ?? stage.time;
+    const rawMemory = stage.memory;
+    const timeMs =
+      typeof rawTime === 'number'
+        ? Math.round(rawTime)
+        : rawTime
+          ? Math.round(Number(rawTime))
+          : null;
+    const memoryKb =
+      typeof rawMemory === 'number'
+        ? Math.round(rawMemory / 1024)
+        : rawMemory
+          ? Math.round(Number(rawMemory) / 1024)
+          : null;
+
+    return { timeMs, memoryKb };
   }
 
   private getLanguageConfig(language: string): {

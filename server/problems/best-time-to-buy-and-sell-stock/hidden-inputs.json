@@ -1,0 +1,14 @@
+[
+  { "input": { "prices": [1] } },
+  { "input": { "prices": [] } },
+  { "input": { "prices": [1, 2] } },
+  { "input": { "prices": [2, 1] } },
+  { "input": { "prices": [3, 3, 3, 3] } },
+  { "input": { "prices": [1, 2, 3, 4, 5] } },
+  { "input": { "prices": [5, 4, 3, 2, 1] } },
+  { "input": { "prices": [3, 2, 6, 5, 0, 3] } },
+  { "input": { "prices": [1, 4, 2, 8] } },
+  { "input": { "prices": [10, 7, 5, 3, 1] } },
+  { "input": { "prices": [1, 7, 2, 9, 3, 10] } },
+  { "input": { "prices": [100, 1, 100] } }
+]

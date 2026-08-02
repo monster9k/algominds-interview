@@ -11,19 +11,25 @@ import { ProblemPanel } from "../components/problem-panel";
 import { CodeEditorPanel } from "../components/code-editor-panel";
 import { ConsolePanel } from "../components/console-panel";
 import { useStartSession } from "../hooks/use-session";
-import { useProblemSubmissions, useSubmitCode } from "../hooks/use-judge";
+import {
+  useProblemSubmissions,
+  useRunCode,
+  useSubmitCode,
+} from "../hooks/use-judge";
 import { useSessionEvaluation } from "../hooks/use-evaluation";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   CodeEvaluationCompleteEvent,
+  RunCodeResponse,
   SessionPhase,
   type SubmissionResponse,
 } from "../types";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useInterviewSocket } from "../hooks/use-interview-socket";
+import { SubmitResultDialog } from "../components/submit-result-dialog";
 import {
   mapSubmissionForUi,
   normalizeEvaluation,
@@ -56,6 +62,10 @@ export function InterviewRoom() {
   const [currentLanguage, setCurrentLanguage] = useState<string>("typescript");
   const [submissionResult, setSubmissionResult] =
     useState<SubmissionResponse | null>(null);
+  // Kết quả "Run" — tách riêng khỏi submissionResult để 2 luồng không ghi đè
+  // kết quả của nhau (xem roadmap Run/Submit).
+  const [runResult, setRunResult] = useState<RunCodeResponse | null>(null);
+  const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
   const [acceptedSubmission, setAcceptedSubmission] =
     useState<SubmissionResponse | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);
@@ -129,10 +139,19 @@ export function InterviewRoom() {
     onCodeEvaluationComplete: handleCodeEvaluationComplete,
   });
 
+  // "Run" — chỉ chấm sampleTestCases, không lưu DB, không cập nhật
+  // submissions/UserStats. Kết quả đổ vào ConsolePanel (không blocking).
+  const runCodeMutation = useRunCode({
+    onSuccess: (result: RunCodeResponse) => {
+      setRunResult(result);
+    },
+  });
+
   // Submission hook
   const submitCodeMutation = useSubmitCode({
     onSuccess: (result: SubmissionResponse) => {
       setSubmissionResult(result);
+      setIsSubmitDialogOpen(true);
 
       // If ACCEPTED, create submission object and show in ProblemPanel
       if (result.status === "ACCEPTED" && session) {
@@ -158,7 +177,7 @@ export function InterviewRoom() {
   });
 
   const handleSubmit = useCallback(() => {
-    if (submitCodeMutation.isPending) return;
+    if (submitCodeMutation.isPending || runCodeMutation.isPending) return;
 
     if (!session?.id || !currentCode.trim()) {
       toast.error(t("errors.emptyCode"));
@@ -177,6 +196,7 @@ export function InterviewRoom() {
     });
   }, [
     submitCodeMutation,
+    runCodeMutation.isPending,
     session?.id,
     currentCode,
     currentPhase,
@@ -185,8 +205,32 @@ export function InterviewRoom() {
   ]);
 
   const handleRun = useCallback(() => {
-    handleSubmit();
-  }, [handleSubmit]);
+    if (submitCodeMutation.isPending || runCodeMutation.isPending) return;
+
+    if (!session?.id || !currentCode.trim()) {
+      toast.error(t("errors.emptyCode"));
+      return;
+    }
+
+    if (currentPhase !== "PHASE_2_IMPLEMENT") {
+      toast.error(t("errors.phase1Incomplete"));
+      return;
+    }
+
+    runCodeMutation.mutate({
+      sessionId: session.id,
+      code: currentCode,
+      language: currentLanguage,
+    });
+  }, [
+    runCodeMutation,
+    submitCodeMutation.isPending,
+    session?.id,
+    currentCode,
+    currentPhase,
+    currentLanguage,
+    t,
+  ]);
 
   useEffect(() => {
     if (!session) {
@@ -268,6 +312,7 @@ export function InterviewRoom() {
         onSubmit={handleSubmit}
         onRun={handleRun}
         isSubmitting={submitCodeMutation.isPending}
+        isRunning={runCodeMutation.isPending}
         currentProblemSlug={slug}
         currentProblemTitle={session.problem.title}
         currentProblemDisplayId={session.problem.displayId}
@@ -347,7 +392,7 @@ export function InterviewRoom() {
                   initialMessages={session?.messages}
                   sessionProblem={session?.problem}
                   currentPhase={currentPhase}
-                  submissionResult={submissionResult}
+                  runResult={runResult}
                 />
               </ResizablePanel>
             </ResizablePanelGroup>
@@ -371,6 +416,12 @@ export function InterviewRoom() {
           <span>{t("common.console")}</span>
         </div>
       </footer>
+
+      <SubmitResultDialog
+        open={isSubmitDialogOpen}
+        onOpenChange={setIsSubmitDialogOpen}
+        result={submissionResult}
+      />
     </div>
   );
 }

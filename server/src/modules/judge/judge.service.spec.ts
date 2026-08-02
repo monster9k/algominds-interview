@@ -27,7 +27,8 @@ describe('JudgeService', () => {
   const problem = {
     id: 'problem-1',
     functionName: 'twoSum',
-    testCases: [{ input: { nums: [2, 7], target: 9 }, output: [0, 1] }],
+    sampleTestCases: [{ input: { nums: [2, 7], target: 9 }, output: [0, 1] }],
+    hiddenTestCases: [] as unknown[],
     timeLimitMs: 1000,
     memoryLimitMb: 256,
   };
@@ -36,6 +37,7 @@ describe('JudgeService', () => {
     id: 'session-1',
     userId: 'user-1',
     problemId: 'problem-1',
+    version: 1,
     problem,
   };
 
@@ -118,8 +120,11 @@ describe('JudgeService', () => {
       expect(prisma.userStats.upsert).toHaveBeenCalled();
       expect(prisma.session.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: 'session-1' },
-          data: expect.objectContaining({ status: 'COMPLETED' }),
+          where: { id: 'session-1', version: 1 },
+          data: expect.objectContaining({
+            status: 'COMPLETED',
+            version: { increment: 1 },
+          }),
         }),
       );
       expect(eventEmitter.emit).toHaveBeenCalledWith(
@@ -195,11 +200,89 @@ describe('JudgeService', () => {
     it('throws NotFoundException when the problem has no test cases', async () => {
       prisma.session.findUnique.mockResolvedValueOnce({
         ...session,
-        problem: { ...problem, testCases: [] },
+        problem: { ...problem, sampleTestCases: [], hiddenTestCases: [] },
       });
 
       await expect(
         service.submitCode('user-1', 'session-1', 'code', 'javascript'),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('grades against sampleTestCases combined with hiddenTestCases', async () => {
+      prisma.session.findUnique.mockResolvedValueOnce({
+        ...session,
+        problem: {
+          ...problem,
+          hiddenTestCases: [
+            { input: { nums: [3, 3], target: 6 }, output: [0, 1] },
+          ],
+        },
+      });
+      pistonService.execute.mockResolvedValue({
+        output: '[0,1]',
+        error: null,
+        timeMs: 12,
+        memoryKb: 1000,
+      });
+      prisma.submission.create.mockResolvedValue({
+        id: 'sub-4',
+        status: SubmissionStatus.ACCEPTED,
+        language: 'javascript',
+      });
+
+      await service.submitCode('user-1', 'session-1', 'code', 'javascript');
+
+      expect(pistonService.execute).toHaveBeenCalledTimes(2);
+      expect(prisma.submission.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ totalTests: 2 }),
+        }),
+      );
+    });
+  });
+
+  describe('runCode', () => {
+    it('grades against sampleTestCases only and never touches the DB or emits events', async () => {
+      prisma.session.findUnique.mockResolvedValueOnce({
+        ...session,
+        problem: {
+          ...problem,
+          hiddenTestCases: [
+            { input: { nums: [3, 3], target: 6 }, output: [0, 1] },
+          ],
+        },
+      });
+      pistonService.execute.mockResolvedValue({
+        output: '[0,1]',
+        error: null,
+        timeMs: 12,
+        memoryKb: 1000,
+      });
+
+      const result = await service.runCode(
+        'user-1',
+        'session-1',
+        'code',
+        'javascript',
+      );
+
+      expect(pistonService.execute).toHaveBeenCalledTimes(1); // chỉ sampleTestCases (1 case), bỏ qua hiddenTestCases
+      expect(result.status).toBe(SubmissionStatus.ACCEPTED);
+      expect(result.totalTests).toBe(1);
+      expect(prisma.submission.create).not.toHaveBeenCalled();
+      expect(prisma.userStats.upsert).not.toHaveBeenCalled();
+      expect(prisma.session.update).not.toHaveBeenCalled();
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when the problem has no sample test cases', async () => {
+      prisma.session.findUnique.mockResolvedValueOnce({
+        ...session,
+        problem: { ...problem, sampleTestCases: [] },
+      });
+
+      await expect(
+        service.runCode('user-1', 'session-1', 'code', 'javascript'),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });

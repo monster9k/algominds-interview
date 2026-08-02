@@ -24,6 +24,7 @@
     "loadingProblems": "Loading problem list...",
     "noProblemsFound": "No matching problems found.",
     "run": "Run",
+    "running": "Running...",
     "submit": "Submit",
     "submitting": "Submitting...",
     "sortAscending": "Sort ascending",
@@ -80,7 +81,8 @@
     "memoryDistributionUnavailable": "Memory distribution not available",
     "beats": "Beats {{percent}}% of users with {{language}}",
     "beatsPercent": "Beats <percent>{{percent}}%</percent>",
-    "code": "Code"
+    "code": "Code",
+    "dialogTitle": "Submission result"
   },
   "console": {
     "testcaseTab": "Testcase",

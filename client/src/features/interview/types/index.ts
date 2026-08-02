@@ -31,7 +31,9 @@ export interface SessionResponse {
     content: string;
     initialCode: Record<string, string>; // { "typescript": "...", "python": "..." }
     displayId: number;
-    testCases: ProblemTestCase[];
+    // Chỉ chứa sample/public testcase — hiddenTestCases không bao giờ được
+    // backend trả về client (xem sessions.service.ts SESSION_PROBLEM_SELECT).
+    sampleTestCases: ProblemTestCase[];
   };
   messages: ChatMessage[];
   submissions?: SubmissionResponse[];
@@ -44,8 +46,7 @@ export type SubmissionStatus =
   | "COMPILE_ERROR"
   | "RUNTIME_ERROR"
   | "TLE"
-  | "TIME_LIMIT_EXCEEDED"
-  | "MEMORY_LIMIT_EXCEEDED";
+  | "MLE";
 
 export type EvaluationStatus = "NOT_AVAILABLE" | "PENDING" | "COMPLETED";
 
@@ -93,6 +94,20 @@ export interface SubmissionResponse {
     memory: number;
   };
   runtimeDistribution?: number[];
+}
+
+// Kết quả "Run" — chỉ chấm bằng sampleTestCases, KHÔNG được lưu DB ở backend.
+// Cố ý là 1 type con của SubmissionResponse (thiếu id/sessionId/evaluation...)
+// để code không lỡ đối xử 1 lần Run như 1 Submission đã persist. Cấu trúc
+// vẫn đủ field để tái dùng ResultAccepted/ResultFailed/TestCaseItem.
+export interface RunCodeResponse {
+  status: SubmissionStatus;
+  passedTests: number;
+  totalTests: number;
+  testCaseResults: TestCaseResult[];
+  executionTime?: number | null;
+  memoryUsage?: number | null;
+  createdAt?: string;
 }
 
 export interface CodeEvaluationCompleteEvent {

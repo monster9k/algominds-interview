@@ -44,6 +44,7 @@ interface InterviewHeaderProps {
   onSubmit?: () => void;
   onRun?: () => void;
   isSubmitting?: boolean;
+  isRunning?: boolean;
   currentProblemSlug?: string;
   currentProblemTitle?: string;
   currentProblemDisplayId?: number;
@@ -53,6 +54,7 @@ export function InterviewHeader({
   onSubmit,
   onRun,
   isSubmitting = false,
+  isRunning = false,
   currentProblemSlug,
   currentProblemTitle,
   currentProblemDisplayId,
@@ -384,15 +386,20 @@ export function InterviewHeader({
           variant="secondary"
           className="h-8 bg-secondary text-secondary-foreground hover:bg-muted border border-border/50"
           onClick={onRun}
-          disabled={isSubmitting}
+          disabled={isRunning || isSubmitting}
         >
-          <Play className="mr-2 h-3.5 w-3.5 fill-current" /> {t("header.run")}
+          {isRunning ? (
+            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Play className="mr-2 h-3.5 w-3.5 fill-current" />
+          )}
+          {isRunning ? t("header.running") : t("header.run")}
         </Button>
         <Button
           size="sm"
           className="h-8 bg-linear-to-r from-rose-600 to-orange-600 hover:opacity-90 text-white font-semibold border-0 shadow-[0_0_15px_-3px_rgba(225,29,72,0.4)]"
           onClick={onSubmit}
-          disabled={isSubmitting}
+          disabled={isRunning || isSubmitting}
         >
           {isSubmitting ? (
             <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />

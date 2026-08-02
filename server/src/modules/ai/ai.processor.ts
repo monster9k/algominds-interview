@@ -179,7 +179,10 @@ Description:
 ${problem.content}
 
 Function Name: ${problem.functionName}
-Test Cases: ${JSON.stringify(problem.testCases)}
+Test Cases: ${JSON.stringify([
+        ...((problem.sampleTestCases as unknown[]) ?? []),
+        ...((problem.hiddenTestCases as unknown[]) ?? []),
+      ])}
       `;
 
       // 3. Gọi AI để evaluate code

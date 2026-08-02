@@ -4,7 +4,7 @@ import { CodeGeneratorService } from './services/code-generator.service';
 import { PistonService } from './services/piston.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
-import { TestCase } from './types';
+import { RunCodeResult, TestCase, TestCaseResult } from './types';
 
 type EvaluationStatus = 'NOT_AVAILABLE' | 'PENDING' | 'COMPLETED';
 
@@ -16,6 +16,46 @@ export class JudgeService {
     private pistonService: PistonService, // Inject Service mới
     private eventEmitter: EventEmitter2,
   ) {}
+
+  // "Run" — chấm nhanh bằng sampleTestCases, không transaction, không ghi
+  // Submission/UserStats/Session, không emit event AI evaluation.
+  async runCode(
+    userId: string,
+    sessionId: string,
+    code: string,
+    language: string,
+  ): Promise<RunCodeResult> {
+    const session = await this.prisma.session.findUnique({
+      where: { id: sessionId },
+      include: { problem: true },
+    });
+    if (!session) throw new NotFoundException('Phiên họp không tồn tại');
+    if (session.userId !== userId) {
+      throw new NotFoundException('Bạn không có quyền truy cập phiên này');
+    }
+
+    const { functionName, sampleTestCases, timeLimitMs, memoryLimitMb } =
+      session.problem;
+    const tests = sampleTestCases as unknown as TestCase[];
+    if (!tests || tests.length === 0) {
+      throw new NotFoundException('Không tìm thấy test case mẫu nào');
+    }
+
+    const { results, passedTests, finalStatus, executionTime, memoryUsage } =
+      await this.runTestCases(language, code, functionName, tests, {
+        timeLimitMs,
+        memoryLimitMb,
+      });
+
+    return {
+      status: finalStatus,
+      passedTests,
+      totalTests: tests.length,
+      testCaseResults: results,
+      executionTime,
+      memoryUsage,
+    };
+  }
 
   async submitCode(
     userId: string,
@@ -33,61 +73,30 @@ export class JudgeService {
       throw new NotFoundException('Bạn không có quyền truy cập phiên này');
     }
 
-    const { functionName, testCases, timeLimitMs, memoryLimitMb } =
-      session.problem;
-    const tests = testCases as unknown as TestCase[];
-    if (!tests || tests.length === 0)
+    const {
+      functionName,
+      sampleTestCases,
+      hiddenTestCases,
+      timeLimitMs,
+      memoryLimitMb,
+    } = session.problem;
+    // Submit chấm bằng toàn bộ testcase (sample + hidden) — khác Run chỉ
+    // dùng sampleTestCases.
+    const tests = [
+      ...((sampleTestCases as unknown as TestCase[]) ?? []),
+      ...((hiddenTestCases as unknown as TestCase[]) ?? []),
+    ];
+    if (tests.length === 0)
       throw new NotFoundException('Không tìm thấy test case nào');
 
     // 2. Chạy Test Cases (Tuần tự để tránh Rate Limit)
-    const results: Array<{
-      input: unknown;
-      expected: unknown;
-      actual: string;
-      status: SubmissionStatus;
-      error: string | null;
-      executionTimeMs?: number | null;
-      memoryUsageKb?: number | null;
-    }> = [];
-    let totalExecutionTimeMs = 0;
-    let hasExecutionTime = false;
-    let maxMemoryUsageKb: number | null = null;
-    for (const testCase of tests) {
-      const result = await this.runSingleTestCase(
-        language,
-        code,
-        testCase,
-        functionName,
-        { timeLimitMs, memoryLimitMb },
-      );
-      if (
-        result.executionTimeMs !== null &&
-        result.executionTimeMs !== undefined
-      ) {
-        hasExecutionTime = true;
-        totalExecutionTimeMs += result.executionTimeMs;
-      }
-      if (result.memoryUsageKb !== null && result.memoryUsageKb !== undefined) {
-        maxMemoryUsageKb =
-          maxMemoryUsageKb === null
-            ? result.memoryUsageKb
-            : Math.max(maxMemoryUsageKb, result.memoryUsageKb);
-      }
-      results.push(result);
-    }
+    const { results, passedTests, finalStatus, executionTime, memoryUsage } =
+      await this.runTestCases(language, code, functionName, tests, {
+        timeLimitMs,
+        memoryLimitMb,
+      });
 
-    // 3. Tính toán kết quả tổng
-    const passedTests = results.filter(
-      (r) => r.status === SubmissionStatus.ACCEPTED,
-    ).length;
-    const isAllPassed = passedTests === tests.length;
-
-    const finalStatus = isAllPassed
-      ? SubmissionStatus.ACCEPTED
-      : results.find((r) => r.status !== SubmissionStatus.ACCEPTED)?.status ||
-        SubmissionStatus.WRONG_ANSWER;
-
-    // 4. Lưu DB
+    // 3. Lưu DB
     const submission = await this.prisma.$transaction(async (tx) => {
       // A. Lưu Submission
       const savedSubmission = await tx.submission.create({
@@ -98,8 +107,8 @@ export class JudgeService {
           status: finalStatus,
           passedTests,
           totalTests: tests.length,
-          executionTime: hasExecutionTime ? totalExecutionTimeMs : null,
-          memoryUsage: maxMemoryUsageKb,
+          executionTime,
+          memoryUsage,
           testCaseResults: results as unknown as Prisma.InputJsonValue,
         },
       });
@@ -125,12 +134,14 @@ export class JudgeService {
           },
         });
 
-        // C. Update Session thành COMPLETED
+        // C. Update Session thành COMPLETED — kèm tăng version (optimistic
+        // lock, xem workflow.md) vì đây cũng là 1 lần chuyển phase.
         await tx.session.update({
-          where: { id: sessionId },
+          where: { id: sessionId, version: session.version },
           data: {
             status: 'COMPLETED',
             finishedAt: new Date(),
+            version: { increment: 1 },
           },
         });
       }
@@ -342,6 +353,69 @@ export class JudgeService {
     return result;
   }
 
+  // Vòng lặp chạy 1 danh sách testcase — dùng chung cho cả runCode() (chỉ
+  // sample) và submitCode() (sample + hidden), khác nhau ở testCases đầu vào
+  // và phần xử lý sau khi có kết quả (submitCode mới persist DB).
+  private async runTestCases(
+    language: string,
+    code: string,
+    functionName: string,
+    testCases: TestCase[],
+    limits: { timeLimitMs?: number; memoryLimitMb?: number },
+  ): Promise<{
+    results: TestCaseResult[];
+    passedTests: number;
+    finalStatus: SubmissionStatus;
+    executionTime: number | null;
+    memoryUsage: number | null;
+  }> {
+    const results: TestCaseResult[] = [];
+    let totalExecutionTimeMs = 0;
+    let hasExecutionTime = false;
+    let maxMemoryUsageKb: number | null = null;
+
+    for (const testCase of testCases) {
+      const result = await this.runSingleTestCase(
+        language,
+        code,
+        testCase,
+        functionName,
+        limits,
+      );
+      if (
+        result.executionTimeMs !== null &&
+        result.executionTimeMs !== undefined
+      ) {
+        hasExecutionTime = true;
+        totalExecutionTimeMs += result.executionTimeMs;
+      }
+      if (result.memoryUsageKb !== null && result.memoryUsageKb !== undefined) {
+        maxMemoryUsageKb =
+          maxMemoryUsageKb === null
+            ? result.memoryUsageKb
+            : Math.max(maxMemoryUsageKb, result.memoryUsageKb);
+      }
+      results.push(result);
+    }
+
+    const passedTests = results.filter(
+      (r) => r.status === SubmissionStatus.ACCEPTED,
+    ).length;
+    const isAllPassed = passedTests === testCases.length;
+    const finalStatus = isAllPassed
+      ? SubmissionStatus.ACCEPTED
+      : results.find((r) => r.status !== SubmissionStatus.ACCEPTED)?.status ||
+        SubmissionStatus.WRONG_ANSWER;
+
+    return {
+      results,
+      passedTests,
+      finalStatus,
+      executionTime: hasExecutionTime ? totalExecutionTimeMs : null,
+      memoryUsage: maxMemoryUsageKb,
+    };
+  }
+
   // Helper xử lý logic 1 test case
   private async runSingleTestCase(
     language: string,
@@ -352,9 +426,10 @@ export class JudgeService {
   ) {
     const { input, output: expectedOutput } = testCase;
 
-    // A. Generate Code — testCase.input is loaded from the Problem.testCases
-    // JSON blob, always an object of named params (see CodeGeneratorService,
-    // which does Object.values(input) to positionally order them).
+    // A. Generate Code — testCase.input is loaded from the Problem
+    // sampleTestCases/hiddenTestCases JSON blobs, always an object of named
+    // params (see CodeGeneratorService, which does Object.values(input) to
+    // positionally order them).
     const { code: runnableCode, stdin } =
       this.codeGenerator.prepareRunnableCode(
         language,
@@ -377,14 +452,30 @@ export class JudgeService {
         ? execResult.timeMs
         : Math.max(endTime - startTime, 0);
 
-    // C. Compare
-    let status: SubmissionStatus = SubmissionStatus.ACCEPTED;
+    // C. Compare — kiểm tra vượt time/memory limit TRƯỚC khi phân loại lỗi
+    // khác, vì 1 process bị Piston kill do vượt run_timeout/run_memory_limit
+    // cũng trả về qua nhánh runtime-error (execResult.error có giá trị).
+    const exceededTime =
+      limits?.timeLimitMs != null &&
+      execResult.timeMs != null &&
+      execResult.timeMs >= limits.timeLimitMs;
+    const exceededMemory =
+      limits?.memoryLimitMb != null &&
+      execResult.memoryKb != null &&
+      execResult.memoryKb >= limits.memoryLimitMb * 1024;
 
-    if (execResult.error) {
+    let status: SubmissionStatus;
+
+    if (exceededTime) {
+      status = SubmissionStatus.TLE;
+    } else if (exceededMemory) {
+      status = SubmissionStatus.MLE;
+    } else if (execResult.error) {
       status = execResult.output.includes('error')
         ? SubmissionStatus.COMPILE_ERROR
         : SubmissionStatus.RUNTIME_ERROR;
     } else {
+      status = SubmissionStatus.ACCEPTED;
       const actual = execResult.output.trim();
       const expected = JSON.stringify(expectedOutput);
 

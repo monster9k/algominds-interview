@@ -157,8 +157,9 @@ export class ProblemsService {
         content: true,
         initialCode: true,
         solution: true,
-        testCases: true,
-        exampleCases: true,
+        // KHÔNG select hiddenTestCases/testCases (deprecated) ở đây — đây là
+        // endpoint public GET /problems/:slug, lộ hidden testcase = lộ đáp án.
+        sampleTestCases: true,
         timeLimitMs: true,
         memoryLimitMb: true,
         submitCount: true,

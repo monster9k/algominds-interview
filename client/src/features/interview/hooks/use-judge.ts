@@ -1,8 +1,29 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { judgeApi } from "../api/judge-api";
 import { toast } from "sonner";
-import { SubmissionResponse } from "../types";
+import { RunCodeResponse, SubmissionResponse } from "../types";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
+
+interface UseRunCodeOptions {
+  onSuccess?: (data: RunCodeResponse) => void;
+}
+
+// "Run" — chỉ chấm sampleTestCases, không lưu DB ở backend. Không toast
+// Accepted/Failed to như Submit vì đây là chạy thử, không phải kết quả cuối.
+export const useRunCode = ({ onSuccess }: UseRunCodeOptions = {}) => {
+  return useMutation({
+    mutationFn: judgeApi.runCode,
+    onSuccess,
+    onError: (error) => {
+      toast.error("Lỗi khi chạy thử", {
+        description: getApiErrorMessage(
+          error,
+          "Hệ thống chấm bài (Piston) đang gặp sự cố.",
+        ),
+      });
+    },
+  });
+};
 
 interface UseSubmitCodeOptions {
   onSuccess?: (data: SubmissionResponse) => void;

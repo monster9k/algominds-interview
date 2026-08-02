@@ -16,22 +16,17 @@
 - [ ] **DB: model `BugSnippet` — ngân hàng câu hỏi**
   Bảng chứa các đoạn code mẫu, mỗi bản ghi có đúng 1 dòng chứa bug.
   📍 `server/prisma/schema.prisma` (thêm cạnh các model hiện có, không đụng `Session`/`SessionEvent`).
+  Repo đã có sẵn `enum Difficulty { EASY MEDIUM HARD }` dùng cho `Problem.difficulty` — tái dùng lại thay vì tạo thêm `QuestDifficulty` trùng giá trị (tránh 2 enum cùng ý nghĩa).
   ```prisma
-  enum QuestDifficulty {
-    EASY
-    MEDIUM
-    HARD
-  }
-
   model BugSnippet {
-    id          String          @id @default(uuid())
-    language    String          // "javascript" | "python" | "java" — khớp PistonService.getLanguageConfig()
-    difficulty  QuestDifficulty
-    code        String          // toàn bộ đoạn code (nhiều dòng)
-    buggyLine   Int             // index dòng chứa bug, 0-based, tách theo "\n"
-    explanation String?         // hiện sau khi trả lời, giải thích bug là gì
-    isActive    Boolean         @default(true) // để tắt câu hỏi lỗi mà không xoá (giữ lịch sử QuestAttempt tham chiếu được)
-    createdAt   DateTime        @default(now())
+    id          String     @id @default(uuid())
+    language    String     // "javascript" | "python" | "java" — khớp PistonService.getLanguageConfig()
+    difficulty  Difficulty
+    code        String     // toàn bộ đoạn code (nhiều dòng)
+    buggyLine   Int        // index dòng chứa bug, 0-based, tách theo "\n"
+    explanation String?    // hiện sau khi trả lời, giải thích bug là gì
+    isActive    Boolean    @default(true) // để tắt câu hỏi lỗi mà không xoá (giữ lịch sử QuestAttempt tham chiếu được)
+    createdAt   DateTime   @default(now())
 
     @@index([language, difficulty, isActive])
     @@map("bug_snippets")
@@ -43,15 +38,15 @@
   📍 `server/prisma/schema.prisma`.
   ```prisma
   model QuestAttempt {
-    id           String          @id @default(uuid())
+    id           String     @id @default(uuid())
     userId       String
-    difficulty   QuestDifficulty
+    difficulty   Difficulty
     score        Int
     correctCount Int
     wrongCount   Int
     bestCombo    Int
     durationMs   Int
-    createdAt    DateTime        @default(now())
+    createdAt    DateTime   @default(now())
 
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -95,7 +90,7 @@
 ## 🟡 P1 — Trải nghiệm & tích hợp chuẩn app
 
 - [ ] **FE: `QuestResultDialog` — tổng kết ván chơi**
-  📍 `client/src/features/quest/components/quest-result-dialog.tsx`, tái dùng pattern layout của `client/src/features/interview/components/submit-result-dialog.tsx` (dialog vừa thêm trong nhánh hiện tại) để đồng bộ UI thay vì thiết kế mới. Hiện điểm, đúng/sai, best combo, nút "Chơi lại" / "Về Quest Hub".
+  📍 `client/src/features/quest/components/quest-result-dialog.tsx`. Không có sẵn dialog kết quả nào trong repo để tái dùng — kết quả submission hiện hiển thị inline (`client/src/features/interview/components/console-panel/result-accepted.tsx` + `result-stats-cards.tsx`, không phải modal). Tái dùng token/pattern trình bày số liệu (`bg-card border border-border rounded-lg p-4`, `text-2xl font-semibold`) của `result-stats-cards.tsx` cho phần thẻ điểm số, dựng trong shadcn `Dialog` có sẵn (`client/src/components/ui/dialog.tsx`). Hiện điểm, đúng/sai, best combo, nút "Chơi lại" / "Về Quest Hub".
 
 - [ ] **FE: hiệu ứng feedback tức thời**
   📍 trong `bug-whacker-board.tsx`. Ô đúng flash `bg-emerald-500/20`, ô sai flash `bg-destructive/20` (dùng token màu Tailwind/shadcn có sẵn, không hardcode hex mới — theo `design.md`). Thanh thời gian dạng progress bar đổi `bg-primary` → `bg-destructive` khi còn < 20%, giống pattern cảnh báo đã dùng ở `console-panel`.

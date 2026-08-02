@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { BugWhackerBoard } from "../components/bug-whacker-board";
+import { QuestResultDialog } from "../components/quest-result-dialog";
 import { useQuestSnippets } from "../hooks/use-quest-snippets";
 import { useSubmitQuestAnswer } from "../hooks/use-submit-quest-answer";
 import { useSubmitQuestAttempt } from "../hooks/use-submit-quest-attempt";
@@ -143,7 +144,7 @@ export function QuestHubPage() {
     [timeLeftMs],
   );
 
-  if (status === "idle") {
+  if (status === "idle" || status === "finished") {
     return (
       <div className="w-full pb-10 max-w-2xl mx-auto">
         <div className="flex items-center gap-2 mb-6">
@@ -170,28 +171,16 @@ export function QuestHubPage() {
             </Card>
           ))}
         </div>
-      </div>
-    );
-  }
 
-  if (status === "finished") {
-    return (
-      <div className="w-full pb-10 max-w-lg mx-auto text-center">
-        <h1 className="text-2xl font-semibold text-foreground mb-4">
-          Kết thúc ván chơi
-        </h1>
-        <Card>
-          <CardContent className="p-6 space-y-2">
-            <p className="text-3xl font-bold text-foreground">{score} điểm</p>
-            <p className="text-sm text-muted-foreground">
-              Đúng {correctCount} / Sai {wrongCount} — Combo cao nhất:{" "}
-              {bestCombo}
-            </p>
-          </CardContent>
-        </Card>
-        <Button className="mt-6" onClick={resetGame}>
-          Về Quest Hub
-        </Button>
+        <QuestResultDialog
+          open={status === "finished"}
+          score={score}
+          correctCount={correctCount}
+          wrongCount={wrongCount}
+          bestCombo={bestCombo}
+          onPlayAgain={() => difficulty && handleStart(difficulty)}
+          onBackToHub={resetGame}
+        />
       </div>
     );
   }

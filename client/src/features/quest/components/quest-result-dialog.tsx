@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -29,24 +30,31 @@ export function QuestResultDialog({
   onPlayAgain,
   onBackToHub,
 }: QuestResultDialogProps) {
+  const { t } = useTranslation("quest");
+
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onBackToHub()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Kết thúc ván chơi</DialogTitle>
+          <DialogTitle>{t("result.title")}</DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-card border border-border rounded-lg p-4 text-center">
             <p className="text-2xl font-semibold text-foreground">{score}</p>
-            <p className="text-xs text-muted-foreground mt-1">Điểm</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("result.score")}
+            </p>
           </div>
           <div className="bg-card border border-border rounded-lg p-4 text-center">
             <p className="text-2xl font-semibold text-emerald-400">
               {correctCount}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Đúng / {wrongCount} Sai
+              {t("result.correctOfWrong", {
+                correct: correctCount,
+                wrong: wrongCount,
+              })}
             </p>
           </div>
           <div className="bg-card border border-border rounded-lg p-4 text-center">
@@ -54,16 +62,16 @@ export function QuestResultDialog({
               {bestCombo}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Combo cao nhất
+              {t("result.bestCombo")}
             </p>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onBackToHub}>
-            Về Quest Hub
+            {t("result.backToHub")}
           </Button>
-          <Button onClick={onPlayAgain}>Chơi lại</Button>
+          <Button onClick={onPlayAgain}>{t("result.playAgain")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

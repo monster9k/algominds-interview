@@ -98,7 +98,7 @@
 - [x] **BE: chặn gian lận điểm ở tầng validate**
   📍 `server/src/modules/quest/dto/create-attempt.dto.ts` + `quest.service.ts`. `class-validator` giới hạn: `score` không vượt quá `correctCount × điểm-tối-đa-mỗi-câu-theo-difficulty`, `durationMs` tối thiểu hợp lý theo `correctCount + wrongCount` (không thể trả lời nhanh hơn X ms/câu). Đây là lý do endpoint `POST /quest/snippets/:id/answer` phải tách riêng ở P0 thay vì để FE tự tính điểm và chỉ gửi tổng kết — server phải là nguồn xác nhận "đúng/sai" cho từng câu.
 
-- [ ] **i18n: `quest.json` cho 3 ngôn ngữ**
+- [x] **i18n: `quest.json` cho 3 ngôn ngữ**
   📍 `client/src/lib/i18n/locales/{en,vi,ja}/quest.json`, theo đúng pattern file hiện có (`interview.json`, `users.json`). Namespace `t("quest.xxx")` dùng `useTranslation("quest")` giống các feature khác.
 
 - [ ] **FE: responsive mobile cho lưới**

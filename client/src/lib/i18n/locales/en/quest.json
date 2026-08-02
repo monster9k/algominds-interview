@@ -1,0 +1,25 @@
+{
+  "title": "Quest: Bug Whacker",
+  "subtitle": "Find the buggy line before time or lives run out. Pick a difficulty to start.",
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "startPlaying": "Start playing",
+  "loadingQuestion": "Loading question...",
+  "combo": "Combo x{{count}}",
+  "next": "Next",
+  "feedback": {
+    "correct": "Correct!",
+    "wrongLine": "Wrong — the bug is on line {{line}}"
+  },
+  "result": {
+    "title": "Game over",
+    "score": "Score",
+    "correctOfWrong": "{{correct}} Correct / {{wrong}} Wrong",
+    "bestCombo": "Best combo",
+    "playAgain": "Play again",
+    "backToHub": "Back to Quest Hub"
+  }
+}

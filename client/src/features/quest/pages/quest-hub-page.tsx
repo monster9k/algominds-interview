@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Award, Heart, Swords, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +24,7 @@ const TIME_LIMIT_MS = 60_000;
 const TICK_MS = 250;
 
 export function QuestHubPage() {
+  const { t } = useTranslation("quest");
   const status = useQuestSessionStore((s) => s.status);
   const difficulty = useQuestSessionStore((s) => s.difficulty);
   const currentSnippetIndex = useQuestSessionStore(
@@ -150,22 +152,19 @@ export function QuestHubPage() {
         <div className="flex items-center gap-2 mb-6">
           <Swords className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-semibold text-foreground">
-            Quest: Bug Whacker
+            {t("title")}
           </h1>
         </div>
-        <p className="text-sm text-muted-foreground mb-6">
-          Tìm dòng code chứa bug trước khi hết thời gian hoặc hết mạng. Chọn độ
-          khó để bắt đầu.
-        </p>
+        <p className="text-sm text-muted-foreground mb-6">{t("subtitle")}</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {DIFFICULTIES.map((d) => (
             <Card key={d} className="hover:border-primary transition-colors">
               <CardContent className="p-4 flex flex-col items-center gap-3">
                 <span className="text-sm font-semibold text-foreground">
-                  {d}
+                  {t(`difficulty.${d.toLowerCase()}`)}
                 </span>
                 <Button onClick={() => handleStart(d)} className="w-full">
-                  Bắt đầu chơi
+                  {t("startPlaying")}
                 </Button>
               </CardContent>
             </Card>
@@ -195,7 +194,9 @@ export function QuestHubPage() {
           <span className="flex items-center gap-1 text-muted-foreground">
             <Heart className="h-4 w-4" /> {lives}
           </span>
-          <span className="text-muted-foreground">Combo x{combo}</span>
+          <span className="text-muted-foreground">
+            {t("combo", { count: combo })}
+          </span>
         </div>
         <span className="flex items-center gap-1 text-muted-foreground">
           <Timer className="h-4 w-4" /> {Math.ceil(timeLeftMs / 1000)}s
@@ -222,7 +223,9 @@ export function QuestHubPage() {
           onSelectLine={handleSelectLine}
         />
       ) : (
-        <p className="text-sm text-muted-foreground">Đang tải câu hỏi...</p>
+        <p className="text-sm text-muted-foreground">
+          {t("loadingQuestion")}
+        </p>
       )}
 
       {feedback && (
@@ -234,15 +237,15 @@ export function QuestHubPage() {
           <CardContent className="p-4 space-y-2">
             <p className="font-semibold text-foreground">
               {feedback.correct
-                ? "Chính xác!"
-                : `Sai rồi — bug nằm ở dòng ${feedback.buggyLine + 1}`}
+                ? t("feedback.correct")
+                : t("feedback.wrongLine", { line: feedback.buggyLine + 1 })}
             </p>
             {feedback.explanation && (
               <p className="text-sm text-muted-foreground">
                 {feedback.explanation}
               </p>
             )}
-            <Button onClick={handleNext}>Tiếp theo</Button>
+            <Button onClick={handleNext}>{t("next")}</Button>
           </CardContent>
         </Card>
       )}

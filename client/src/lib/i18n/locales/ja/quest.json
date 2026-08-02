@@ -1,0 +1,25 @@
+{
+  "title": "クエスト: バグハンター",
+  "subtitle": "時間切れ、またはライフがなくなる前にバグのある行を見つけよう。難易度を選んで開始。",
+  "difficulty": {
+    "easy": "簡単",
+    "medium": "普通",
+    "hard": "難しい"
+  },
+  "startPlaying": "プレイ開始",
+  "loadingQuestion": "問題を読み込み中...",
+  "combo": "コンボ x{{count}}",
+  "next": "次へ",
+  "feedback": {
+    "correct": "正解!",
+    "wrongLine": "不正解 — バグは{{line}}行目にあります"
+  },
+  "result": {
+    "title": "ゲーム終了",
+    "score": "スコア",
+    "correctOfWrong": "正解 {{correct}} / 不正解 {{wrong}}",
+    "bestCombo": "最高コンボ",
+    "playAgain": "もう一度プレイ",
+    "backToHub": "クエストハブに戻る"
+  }
+}

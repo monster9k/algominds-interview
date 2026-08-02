@@ -1,0 +1,25 @@
+{
+  "title": "Quest: Bug Whacker",
+  "subtitle": "Tìm dòng code chứa bug trước khi hết thời gian hoặc hết mạng. Chọn độ khó để bắt đầu.",
+  "difficulty": {
+    "easy": "Dễ",
+    "medium": "Trung bình",
+    "hard": "Khó"
+  },
+  "startPlaying": "Bắt đầu chơi",
+  "loadingQuestion": "Đang tải câu hỏi...",
+  "combo": "Combo x{{count}}",
+  "next": "Tiếp theo",
+  "feedback": {
+    "correct": "Chính xác!",
+    "wrongLine": "Sai rồi — bug nằm ở dòng {{line}}"
+  },
+  "result": {
+    "title": "Kết thúc ván chơi",
+    "score": "Điểm",
+    "correctOfWrong": "Đúng {{correct}} / Sai {{wrong}}",
+    "bestCombo": "Combo cao nhất",
+    "playAgain": "Chơi lại",
+    "backToHub": "Về Quest Hub"
+  }
+}

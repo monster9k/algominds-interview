@@ -58,4 +58,10 @@ export class QuestController {
   getMyBadges(@CurrentUser() user: RequestUser) {
     return this.questService.getMyBadges(user.userId);
   }
+
+  // GET /quest/leaderboard?difficulty=EASY
+  @Get('leaderboard')
+  getLeaderboard(@Query('difficulty') difficulty?: string) {
+    return this.questService.getLeaderboard(difficulty);
+  }
 }

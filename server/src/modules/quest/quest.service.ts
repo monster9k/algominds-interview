@@ -30,6 +30,8 @@ const MAX_POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {
 // này coi như không thể là người chơi thật (script gửi kết quả giả).
 const MIN_MS_PER_QUESTION = 800;
 
+const LEADERBOARD_LIMIT = 10;
+
 interface BadgeRuleContext {
   attempt: CreateAttemptDto;
   isFirstAttempt: boolean;
@@ -193,6 +195,43 @@ export class QuestService {
       iconKey: ub.badge.iconKey,
       earnedAt: ub.earnedAt,
     }));
+  }
+
+  // GET /quest/leaderboard?difficulty= — điểm cao nhất của mỗi user theo độ
+  // khó (không phải top N attempt, để 1 user chơi nhiều ván không chiếm hết
+  // bảng xếp hạng).
+  async getLeaderboard(difficultyParam?: string) {
+    const difficulty = this.parseDifficulty(difficultyParam) ?? Difficulty.EASY;
+
+    const topPerUser = await this.prisma.questAttempt.groupBy({
+      by: ['userId'],
+      where: { difficulty },
+      _max: { score: true },
+      orderBy: { _max: { score: 'desc' } },
+      take: LEADERBOARD_LIMIT,
+    });
+    if (topPerUser.length === 0) return [];
+
+    const rows = await Promise.all(
+      topPerUser.map(async ({ userId, _max }) => {
+        const bestAttempt = await this.prisma.questAttempt.findFirst({
+          where: { userId, difficulty, score: _max.score! },
+          orderBy: { createdAt: 'desc' },
+          include: { user: { select: { name: true, avatarUrl: true } } },
+        });
+
+        return {
+          userId,
+          name: bestAttempt?.user.name ?? 'Người chơi ẩn danh',
+          avatarUrl: bestAttempt?.user.avatarUrl ?? null,
+          score: _max.score ?? 0,
+          bestCombo: bestAttempt?.bestCombo ?? 0,
+          achievedAt: bestAttempt?.createdAt ?? null,
+        };
+      }),
+    );
+
+    return rows.sort((a, b) => b.score - a.score);
   }
 
   private parseDifficulty(value?: string): Difficulty | undefined {

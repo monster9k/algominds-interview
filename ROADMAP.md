@@ -139,8 +139,10 @@
 
   Đã triển khai với 1 điều chỉnh so với schema gợi ý: thêm field `Badge.key` (unique, machine-stable) — cần 1 định danh ổn định để `BADGE_RULES` trong `quest.service.ts` và `server/seed-badges.ts` đối chiếu, tách khỏi `name` (text hiển thị, có thể đổi/dịch). 5 badge khởi tạo: `first_attempt`, `combo_5`, `perfect_run`, `hard_master`, `speed_runner`. Endpoint mới `GET /quest/badges/me` cấp dữ liệu cho `badges-card.tsx` (đã bỏ `MOCK_BADGE`). Verify bằng flow HTTP thật (register → login → POST /quest/attempts → GET /quest/badges/me) qua user throwaway, xác nhận đúng 4/5 badge ăn ở ván EASY hoàn hảo, thêm `hard_master` ở ván HARD hoàn hảo, không trùng lặp UserBadge ở lần gọi lại — sau đó xoá user test.
 
-- [ ] **BE: `GET /quest/leaderboard?difficulty=`**
+- [x] **BE: `GET /quest/leaderboard?difficulty=`**
   📍 `quest.service.ts` — top N `QuestAttempt.score` theo difficulty, join `User` lấy tên hiển thị.
+
+  Dedupe theo user (lấy điểm cao nhất mỗi user, không phải top N attempt) để 1 người chơi nhiều ván không chiếm hết bảng — dùng `groupBy` lấy `_max.score` mỗi `userId`, sau đó join `QuestAttempt` + `User` để lấy `bestCombo`/`achievedAt`/tên hiển thị đúng của lượt đạt điểm đó. Verify qua HTTP thật với 2 user throwaway: user chơi 2 ván (40 rồi 90 điểm) chỉ xuất hiện 1 dòng với điểm 90, sắp xếp đúng thứ tự giảm dần.
 
 - [ ] **FE: leaderboard UI trong Quest Hub**
   📍 `quest-hub-page.tsx`, tab hoặc card riêng cạnh nút "Bắt đầu chơi".

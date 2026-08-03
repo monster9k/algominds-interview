@@ -2,6 +2,7 @@ import api from "@/lib/axios";
 import {
   BugSnippetPublic,
   CreateAttemptPayload,
+  EarnedBadge,
   QuestAttemptResult,
   QuestDifficulty,
   SubmitAnswerResult,
@@ -42,6 +43,11 @@ export const questApi = {
     const response = await api.get("/quest/attempts/me", {
       params: { limit },
     });
+    return response.data;
+  },
+
+  getMyBadges: async (): Promise<EarnedBadge[]> => {
+    const response = await api.get("/quest/badges/me");
     return response.data;
   },
 };

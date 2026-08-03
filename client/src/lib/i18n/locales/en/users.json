@@ -1,7 +1,8 @@
 {
   "badges": {
     "title": "Badges",
-    "mostRecentBadge": "Most Recent Badge"
+    "mostRecentBadge": "Most Recent Badge",
+    "none": "No badges yet"
   },
   "stats": {
     "solvedProblems": "Solved Problems",

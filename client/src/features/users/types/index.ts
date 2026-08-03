@@ -50,8 +50,3 @@ export interface RecentSubmission {
   status: SubmissionStatus;
   createdAt: string;
 }
-
-export interface BadgeInfo {
-  totalCount: number;
-  mostRecentName: string;
-}

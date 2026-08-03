@@ -52,4 +52,10 @@ export class QuestController {
   ) {
     return this.questService.getMyAttempts(user.userId, limit);
   }
+
+  // GET /quest/badges/me
+  @Get('badges/me')
+  getMyBadges(@CurrentUser() user: RequestUser) {
+    return this.questService.getMyBadges(user.userId);
+  }
 }

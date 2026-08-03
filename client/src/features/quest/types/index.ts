@@ -29,3 +29,12 @@ export interface QuestAttemptResult extends CreateAttemptPayload {
   userId: string;
   createdAt: string;
 }
+
+export interface EarnedBadge {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  iconKey: string;
+  earnedAt: string;
+}

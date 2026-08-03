@@ -1,7 +1,8 @@
 {
   "badges": {
     "title": "バッジ",
-    "mostRecentBadge": "最新のバッジ"
+    "mostRecentBadge": "最新のバッジ",
+    "none": "バッジはまだありません"
   },
   "stats": {
     "solvedProblems": "解決した問題",

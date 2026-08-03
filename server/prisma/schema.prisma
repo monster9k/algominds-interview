@@ -77,6 +77,7 @@ model User {
   sessions Session[]
   refreshTokens RefreshToken[]
   questAttempts QuestAttempt[]
+  userBadges    UserBadge[]
 
   // Indexes
   @@index([provider, providerId])
@@ -232,6 +233,34 @@ model QuestAttempt {
 
   @@index([userId, createdAt])
   @@map("quest_attempts")
+}
+
+model Badge {
+  id          String   @id @default(uuid())
+  // Định danh ổn định dùng để đối chiếu earning-rule trong quest.service.ts —
+  // tách khỏi `name` vì name là text hiển thị, có thể đổi/dịch sau này.
+  key         String   @unique
+  name        String
+  description String
+  iconKey     String // map sang lucide-react icon ở FE, không lưu SVG blob
+  createdAt   DateTime @default(now())
+
+  users UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id       String   @id @default(uuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
 }
 
 model Session {

@@ -149,8 +149,10 @@
 
   `quest-leaderboard-card.tsx` — card riêng dưới lưới độ khó, dùng shadcn `Tabs` để chuyển độ khó (mặc định EASY), `Avatar` cho từng người chơi. Verify bằng claude-in-chrome thật trên `/quest`: chuyển tab Dễ/Trung bình/Khó cập nhật đúng dữ liệu, tab chưa có điểm nào hiện đúng empty state.
 
-- [ ] **Content: mở rộng ngân hàng câu hỏi + script quản lý**
+- [x] **Content: mở rộng ngân hàng câu hỏi + script quản lý**
   📍 mở rộng `server/seed-quest.ts` theo pattern `server/sync-problems.ts` (script sync riêng, chạy thủ công khi cần thêm nội dung — không cần trang admin UI riêng ở giai đoạn này, giữ đơn giản đúng scope hiện tại của `problems` module vốn cũng quản trị qua seed/admin API, không phải qua UI).
+
+  "Script quản lý" chính là `seed-quest.ts` hiện có (idempotent, upsert-by-code) — không cần script/trang riêng. Thêm 5 concept bug mới mỗi độ khó (× 3 ngôn ngữ = 45 snippet mới), gấp đôi ngân hàng từ 45 → 90 (30/độ khó, 30/ngôn ngữ). Verify: chạy seed thật vào dev DB (45 created, 45 already present — không trùng lặp), kiểm tra phân bố qua Prisma, và chơi thử 1 snippet mới (`contains_duplicate`, Python) qua claude-in-chrome — chọn đúng dòng bug hiện đúng feedback/explanation.
 
 - [ ] **BE+FE: (tuỳ chọn, cần quyết định sản phẩm) tích hợp `UserStats.credits`/`streakDays`**
   📍 `server/src/modules/users/*`. Quyết định: chơi Quest có trừ `credits` không, thắng ván tốt có cộng `streakDays` không. Để P2 vì đây là quyết định sản phẩm, không phải kỹ thuật — làm sau khi core game đã chơi ổn.

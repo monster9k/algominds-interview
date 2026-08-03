@@ -64,8 +64,8 @@ function extractBuggyLine(snippet: RawSnippet): {
 }
 
 // ---------------------------------------------------------------------------
-// Snippets — 5 problems x 3 difficulties x 3 languages = 45 total.
-// Same 5 conceptual bugs per difficulty tier are ported across languages so
+// Snippets — 10 problems x 3 difficulties x 3 languages = 90 total.
+// Same conceptual bugs per difficulty tier are ported across languages so
 // the bank stays easy to audit and extend.
 // ---------------------------------------------------------------------------
 
@@ -274,6 +274,208 @@ public int countVowels(String s) {
         if (vowels.indexOf(s.charAt(i)) >= 0) count++; // __BUG__
     }
     return count;
+}
+`,
+  },
+
+  {
+    language: 'javascript',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'The multiplicative identity should be 1, not 0 — starting at 0 makes the loop multiply everything by zero, so the function always returns 0.',
+    raw: `
+function factorial(n) {
+  let result = 0; // __BUG__
+  for (let i = 1; i <= n; i++) {
+    result *= i;
+  }
+  return result;
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'Starting the divisor check at 1 means n % 1 is always 0, so the function returns false for every n — it should start at 2.',
+    raw: `
+function isPrime(n) {
+  if (n < 2) return false;
+  for (let i = 1; i < n; i++) { // __BUG__
+    if (n % i === 0) return false;
+  }
+  return true;
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'This returns true when there are NO duplicates (sizes match) — the condition is inverted; it should return true when seen.size is less than arr.length.',
+    raw: `
+function containsDuplicate(arr) {
+  const seen = new Set(arr);
+  return seen.size === arr.length; // __BUG__
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'Comparing against toLowerCase() counts lowercase (and non-letter) characters instead of uppercase ones — it should compare against toUpperCase().',
+    raw: `
+function countUppercase(str) {
+  let count = 0;
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === str[i].toLowerCase()) count++; // __BUG__
+  }
+  return count;
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'slice(0) returns the whole string again, so the first letter gets duplicated — it should be slice(1) to skip the character already capitalized.',
+    raw: `
+function capitalizeFirstLetter(str) {
+  return str[0].toUpperCase() + str.slice(0); // __BUG__
+}
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'The multiplicative identity should be 1, not 0 — starting at 0 makes the loop multiply everything by zero, so the function always returns 0.',
+    raw: `
+def factorial(n):
+    result = 0  # __BUG__
+    for i in range(1, n + 1):
+        result *= i
+    return result
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'Starting the divisor check at 1 means n % 1 is always 0, so the function returns False for every n — it should start at 2.',
+    raw: `
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(1, n):  # __BUG__
+        if n % i == 0:
+            return False
+    return True
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'This returns True when there are NO duplicates (sizes match) — the condition is inverted; it should return True when len(seen) is less than len(nums).',
+    raw: `
+def contains_duplicate(nums):
+    seen = set(nums)
+    return len(seen) == len(nums)  # __BUG__
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'Comparing against ch.lower() counts lowercase (and non-letter) characters instead of uppercase ones — it should compare against ch.upper().',
+    raw: `
+def count_uppercase(s):
+    count = 0
+    for ch in s:
+        if ch == ch.lower():  # __BUG__
+            count += 1
+    return count
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.EASY,
+    explanation:
+      's[0:] returns the whole string again, so the first letter gets duplicated — it should be s[1:] to skip the character already capitalized.',
+    raw: `
+def capitalize_first_letter(s):
+    return s[0].upper() + s[0:]  # __BUG__
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'The multiplicative identity should be 1, not 0 — starting at 0 makes the loop multiply everything by zero, so the method always returns 0.',
+    raw: `
+public int factorial(int n) {
+    int result = 0; // __BUG__
+    for (int i = 1; i <= n; i++) {
+        result *= i;
+    }
+    return result;
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'Starting the divisor check at 1 means n % 1 is always 0, so the method returns false for every n — it should start at 2.',
+    raw: `
+public boolean isPrime(int n) {
+    if (n < 2) return false;
+    for (int i = 1; i < n; i++) { // __BUG__
+        if (n % i == 0) return false;
+    }
+    return true;
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'This returns true when there are NO duplicates (sizes match) — the condition is inverted; it should return true when seen.size() is less than nums.length.',
+    raw: `
+public boolean containsDuplicate(int[] nums) {
+    Set<Integer> seen = new HashSet<>();
+    for (int n : nums) seen.add(n);
+    return seen.size() == nums.length; // __BUG__
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'Checking isLowerCase counts lowercase (and non-letter) characters instead of uppercase ones — it should check isUpperCase.',
+    raw: `
+public int countUppercase(String s) {
+    int count = 0;
+    for (int i = 0; i < s.length(); i++) {
+        char c = s.charAt(i);
+        if (Character.isLowerCase(c)) count++; // __BUG__
+    }
+    return count;
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.EASY,
+    explanation:
+      'substring(0) returns the whole string again, so the first letter gets duplicated — it should be substring(1) to skip the character already capitalized.',
+    raw: `
+public String capitalizeFirstLetter(String s) {
+    return Character.toUpperCase(s.charAt(0)) + s.substring(0); // __BUG__
 }
 `,
   },
@@ -541,6 +743,244 @@ public int[] twoSum(int[] nums, int target) {
         seen.put(nums[i], i);
     }
     return new int[0];
+}
+`,
+  },
+
+  {
+    language: 'javascript',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'Closing brackets should pop the stack and check they match the corresponding opening bracket — pushing them instead means the stack never shrinks, so this only returns true for an empty string.',
+    raw: `
+function isBalanced(s) {
+  const stack = [];
+  const pairs = { ')': '(', ']': '[', '}': '{' };
+  for (const char of s) {
+    if (char in pairs) {
+      stack.push(char); // __BUG__
+    } else {
+      stack.push(char);
+    }
+  }
+  return stack.length === 0;
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'currentSum should reset to nums[i] whenever the running sum drops below it (Math.max(nums[i], currentSum + nums[i])) — without that, one very negative prefix drags every future sum down instead of starting fresh.',
+    raw: `
+function maxSubArray(nums) {
+  let maxSum = nums[0];
+  let currentSum = nums[0];
+  for (let i = 1; i < nums.length; i++) {
+    currentSum = currentSum + nums[i]; // __BUG__
+    maxSum = Math.max(maxSum, currentSum);
+  }
+  return maxSum;
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'This copies an element forward only when it EQUALS the previous one, keeping duplicates and dropping new values — the condition should be nums[i] !== nums[i - 1].',
+    raw: `
+function removeDuplicates(nums) {
+  let write = 1;
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i] === nums[i - 1]) { // __BUG__
+      nums[write] = nums[i];
+      write++;
+    }
+  }
+  return write;
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'Only `a` gets sorted before comparing — `b` needs the same split/sort/join treatment too, otherwise this only matches when b happens to already be sorted.',
+    raw: `
+function isAnagram(a, b) {
+  if (a.length !== b.length) return false;
+  return a.split("").sort().join("") === b; // __BUG__
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      "k isn't bounded to the array length — when k > n this produces a wrong (or empty) slice; it should use k % n.",
+    raw: `
+function rotateRight(arr, k) {
+  const n = arr.length;
+  const shift = k; // __BUG__
+  return arr.slice(-shift).concat(arr.slice(0, n - shift));
+}
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'Closing brackets should pop the stack and check they match the corresponding opening bracket — appending them instead means the stack never shrinks, so this only returns True for an empty string.',
+    raw: `
+def is_balanced(s):
+    stack = []
+    pairs = {')': '(', ']': '[', '}': '{'}
+    for char in s:
+        if char in pairs:
+            stack.append(char)  # __BUG__
+        else:
+            stack.append(char)
+    return len(stack) == 0
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'current_sum should reset to n whenever the running sum drops below it (max(n, current_sum + n)) — without that, one very negative prefix drags every future sum down instead of starting fresh.',
+    raw: `
+def max_sub_array(nums):
+    max_sum = nums[0]
+    current_sum = nums[0]
+    for n in nums[1:]:
+        current_sum = current_sum + n  # __BUG__
+        max_sum = max(max_sum, current_sum)
+    return max_sum
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'This copies an element forward only when it EQUALS the previous one, keeping duplicates and dropping new values — the condition should be nums[i] != nums[i - 1].',
+    raw: `
+def remove_duplicates(nums):
+    write = 1
+    for i in range(1, len(nums)):
+        if nums[i] == nums[i - 1]:  # __BUG__
+            nums[write] = nums[i]
+            write += 1
+    return write
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'Only `a` gets sorted before comparing — `b` needs the same sorted()/join treatment too, otherwise this only matches when b happens to already be sorted.',
+    raw: `
+def is_anagram(a, b):
+    if len(a) != len(b):
+        return False
+    return "".join(sorted(a)) == b  # __BUG__
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      "k isn't bounded to the array length — when k > n this produces a wrong (or empty) slice; it should use k % n.",
+    raw: `
+def rotate_right(arr, k):
+    n = len(arr)
+    shift = k  # __BUG__
+    return arr[-shift:] + arr[:n - shift]
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'Closing brackets should pop the stack and check they match the corresponding opening bracket — pushing them instead means the stack never shrinks, so this only returns true for an empty string.',
+    raw: `
+public boolean isBalanced(String s) {
+    Deque<Character> stack = new ArrayDeque<>();
+    Map<Character, Character> pairs = Map.of(')', '(', ']', '[', '}', '{');
+    for (char c : s.toCharArray()) {
+        if (pairs.containsKey(c)) {
+            stack.push(c); // __BUG__
+        } else {
+            stack.push(c);
+        }
+    }
+    return stack.isEmpty();
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'currentSum should reset to nums[i] whenever the running sum drops below it (Math.max(nums[i], currentSum + nums[i])) — without that, one very negative prefix drags every future sum down instead of starting fresh.',
+    raw: `
+public int maxSubArray(int[] nums) {
+    int maxSum = nums[0];
+    int currentSum = nums[0];
+    for (int i = 1; i < nums.length; i++) {
+        currentSum = currentSum + nums[i]; // __BUG__
+        maxSum = Math.max(maxSum, currentSum);
+    }
+    return maxSum;
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'This copies an element forward only when it EQUALS the previous one, keeping duplicates and dropping new values — the condition should be nums[i] != nums[i - 1].',
+    raw: `
+public int removeDuplicates(int[] nums) {
+    int write = 1;
+    for (int i = 1; i < nums.length; i++) {
+        if (nums[i] == nums[i - 1]) { // __BUG__
+            nums[write] = nums[i];
+            write++;
+        }
+    }
+    return write;
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      'Only `a` gets sorted before comparing — `b` needs the same char-array-sort treatment too, otherwise this only matches when b happens to already be sorted.',
+    raw: `
+public boolean isAnagram(String a, String b) {
+    if (a.length() != b.length()) return false;
+    char[] aChars = a.toCharArray();
+    Arrays.sort(aChars);
+    return new String(aChars).equals(b); // __BUG__
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.MEDIUM,
+    explanation:
+      "k isn't bounded to the array length — when k > n this indexes out of bounds; it should use k % n.",
+    raw: `
+public int[] rotateRight(int[] arr, int k) {
+    int n = arr.length;
+    int shift = k; // __BUG__
+    int[] result = new int[n];
+    for (int i = 0; i < n; i++) {
+        result[(i + shift) % n] = arr[i];
+    }
+    return result;
 }
 `,
   },
@@ -874,6 +1314,326 @@ public List<String> topoSort(List<String> nodes, Map<String, List<String>> adj, 
         }
     }
     return order;
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'When characters match, the length should extend by 1 over the diagonal (dp[i-1][j-1] + 1) — without the +1, matching characters never actually grow the subsequence.',
+    raw: `
+function longestCommonSubsequence(a, b) {
+  const dp = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1]; // __BUG__
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+  return dp[a.length][b.length];
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'Filling dp with 0 makes every amount look already reachable with zero coins, so Math.min never updates — unreachable amounts should start at Infinity, with only dp[0] = 0.',
+    raw: `
+function coinChange(coins, amount) {
+  const dp = new Array(amount + 1).fill(0); // __BUG__
+  dp[0] = 0;
+  for (let i = 1; i <= amount; i++) {
+    for (const coin of coins) {
+      if (coin <= i) {
+        dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+      }
+    }
+  }
+  return dp[amount] === Infinity ? -1 : dp[amount];
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.HARD,
+    explanation:
+      "The outer scan should trigger a new island on '1' (land), not '0' (water) — with the condition inverted, it counts water cells and DFS immediately returns without sinking any land.",
+    raw: `
+function numIslands(grid) {
+  let count = 0;
+  const rows = grid.length, cols = grid[0].length;
+  function dfs(r, c) {
+    if (r < 0 || c < 0 || r >= rows || c >= cols || grid[r][c] === '0') return;
+    grid[r][c] = '0';
+    dfs(r + 1, c);
+    dfs(r - 1, c);
+    dfs(r, c + 1);
+    dfs(r, c - 1);
+  }
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (grid[r][c] === '0') { // __BUG__
+        count++;
+        dfs(r, c);
+      }
+    }
+  }
+  return count;
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'dp[0] represents the empty prefix, which is always breakable — it must be true; setting it to false means no word starting at index 0 can ever be matched.',
+    raw: `
+function wordBreak(s, wordDict) {
+  const words = new Set(wordDict);
+  const dp = new Array(s.length + 1).fill(false);
+  dp[0] = false; // __BUG__
+  for (let i = 1; i <= s.length; i++) {
+    for (let j = 0; j < i; j++) {
+      if (dp[j] && words.has(s.slice(j, i))) {
+        dp[i] = true;
+        break;
+      }
+    }
+  }
+  return dp[s.length];
+}
+`,
+  },
+  {
+    language: 'javascript',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'This overwrites dp[i] with every qualifying j instead of keeping the best one — it should be dp[i] = Math.max(dp[i], dp[j] + 1), otherwise a later, shorter chain can clobber a longer one already found.',
+    raw: `
+function lengthOfLIS(nums) {
+  const dp = new Array(nums.length).fill(1);
+  for (let i = 1; i < nums.length; i++) {
+    for (let j = 0; j < i; j++) {
+      if (nums[j] < nums[i]) {
+        dp[i] = dp[j] + 1; // __BUG__
+      }
+    }
+  }
+  return Math.max(...dp);
+}
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'When characters match, the length should extend by 1 over the diagonal (dp[i-1][j-1] + 1) — without the +1, matching characters never actually grow the subsequence.',
+    raw: `
+def longest_common_subsequence(a, b):
+    dp = [[0] * (len(b) + 1) for _ in range(len(a) + 1)]
+    for i in range(1, len(a) + 1):
+        for j in range(1, len(b) + 1):
+            if a[i - 1] == b[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1]  # __BUG__
+            else:
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+    return dp[len(a)][len(b)]
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'Filling dp with 0 makes every amount look already reachable with zero coins, so min() never updates — unreachable amounts should start at infinity, with only dp[0] = 0.',
+    raw: `
+def coin_change(coins, amount):
+    dp = [0] * (amount + 1)  # __BUG__
+    dp[0] = 0
+    for i in range(1, amount + 1):
+        for coin in coins:
+            if coin <= i:
+                dp[i] = min(dp[i], dp[i - coin] + 1)
+    return dp[amount] if dp[amount] != float('inf') else -1
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.HARD,
+    explanation:
+      "The outer scan should trigger a new island on '1' (land), not '0' (water) — with the condition inverted, it counts water cells and dfs immediately returns without sinking any land.",
+    raw: `
+def num_islands(grid):
+    rows, cols = len(grid), len(grid[0])
+    count = 0
+
+    def dfs(r, c):
+        if r < 0 or c < 0 or r >= rows or c >= cols or grid[r][c] == '0':
+            return
+        grid[r][c] = '0'
+        dfs(r + 1, c)
+        dfs(r - 1, c)
+        dfs(r, c + 1)
+        dfs(r, c - 1)
+
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == '0':  # __BUG__
+                count += 1
+                dfs(r, c)
+    return count
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'dp[0] represents the empty prefix, which is always breakable — it must be True; setting it to False means no word starting at index 0 can ever be matched.',
+    raw: `
+def word_break(s, word_dict):
+    words = set(word_dict)
+    dp = [False] * (len(s) + 1)
+    dp[0] = False  # __BUG__
+    for i in range(1, len(s) + 1):
+        for j in range(i):
+            if dp[j] and s[j:i] in words:
+                dp[i] = True
+                break
+    return dp[len(s)]
+`,
+  },
+  {
+    language: 'python',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'This overwrites dp[i] with every qualifying j instead of keeping the best one — it should be max(dp[i], dp[j] + 1), otherwise a later, shorter chain can clobber a longer one already found.',
+    raw: `
+def length_of_lis(nums):
+    dp = [1] * len(nums)
+    for i in range(1, len(nums)):
+        for j in range(i):
+            if nums[j] < nums[i]:
+                dp[i] = dp[j] + 1  # __BUG__
+    return max(dp)
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'When characters match, the length should extend by 1 over the diagonal (dp[i-1][j-1] + 1) — without the +1, matching characters never actually grow the subsequence.',
+    raw: `
+public int longestCommonSubsequence(String a, String b) {
+    int[][] dp = new int[a.length() + 1][b.length() + 1];
+    for (int i = 1; i <= a.length(); i++) {
+        for (int j = 1; j <= b.length(); j++) {
+            if (a.charAt(i - 1) == b.charAt(j - 1)) {
+                dp[i][j] = dp[i - 1][j - 1]; // __BUG__
+            } else {
+                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+    return dp[a.length()][b.length()];
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'Filling dp with 0 makes every amount look already reachable with zero coins, so Math.min never updates — unreachable amounts should start at a large sentinel, with only dp[0] = 0.',
+    raw: `
+public int coinChange(int[] coins, int amount) {
+    int[] dp = new int[amount + 1];
+    Arrays.fill(dp, 0); // __BUG__
+    dp[0] = 0;
+    for (int i = 1; i <= amount; i++) {
+        for (int coin : coins) {
+            if (coin <= i) {
+                dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+            }
+        }
+    }
+    return dp[amount] >= amount + 1 ? -1 : dp[amount];
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.HARD,
+    explanation:
+      "The outer scan should trigger a new island on '1' (land), not '0' (water) — with the condition inverted, it counts water cells and dfs immediately returns without sinking any land.",
+    raw: `
+public int numIslands(char[][] grid) {
+    int rows = grid.length, cols = grid[0].length;
+    int count = 0;
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] == '0') { // __BUG__
+                count++;
+                dfs(grid, r, c, rows, cols);
+            }
+        }
+    }
+    return count;
+}
+
+private void dfs(char[][] grid, int r, int c, int rows, int cols) {
+    if (r < 0 || c < 0 || r >= rows || c >= cols || grid[r][c] == '0') return;
+    grid[r][c] = '0';
+    dfs(grid, r + 1, c, rows, cols);
+    dfs(grid, r - 1, c, rows, cols);
+    dfs(grid, r, c + 1, rows, cols);
+    dfs(grid, r, c - 1, rows, cols);
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'dp[0] represents the empty prefix, which is always breakable — it must be true; setting it to false means no word starting at index 0 can ever be matched.',
+    raw: `
+public boolean wordBreak(String s, List<String> wordDict) {
+    Set<String> words = new HashSet<>(wordDict);
+    boolean[] dp = new boolean[s.length() + 1];
+    dp[0] = false; // __BUG__
+    for (int i = 1; i <= s.length(); i++) {
+        for (int j = 0; j < i; j++) {
+            if (dp[j] && words.contains(s.substring(j, i))) {
+                dp[i] = true;
+                break;
+            }
+        }
+    }
+    return dp[s.length()];
+}
+`,
+  },
+  {
+    language: 'java',
+    difficulty: Difficulty.HARD,
+    explanation:
+      'This overwrites dp[i] with every qualifying j instead of keeping the best one — it should be Math.max(dp[i], dp[j] + 1), otherwise a later, shorter chain can clobber a longer one already found.',
+    raw: `
+public int lengthOfLIS(int[] nums) {
+    int[] dp = new int[nums.length];
+    Arrays.fill(dp, 1);
+    for (int i = 1; i < nums.length; i++) {
+        for (int j = 0; j < i; j++) {
+            if (nums[j] < nums[i]) {
+                dp[i] = dp[j] + 1; // __BUG__
+            }
+        }
+    }
+    int max = 0;
+    for (int v : dp) max = Math.max(max, v);
+    return max;
 }
 `,
   },

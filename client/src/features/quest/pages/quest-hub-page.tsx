@@ -7,13 +7,13 @@ import { cn } from "@/lib/utils";
 import { BugWhackerBoard } from "../components/bug-whacker-board";
 import { QuestLeaderboardCard } from "../components/quest-leaderboard-card";
 import { QuestResultDialog } from "../components/quest-result-dialog";
+import { QuestSetupPanel } from "../components/quest-setup-panel";
 import { useQuestSnippets } from "../hooks/use-quest-snippets";
 import { useSubmitQuestAnswer } from "../hooks/use-submit-quest-answer";
 import { useSubmitQuestAttempt } from "../hooks/use-submit-quest-attempt";
 import { useQuestSessionStore } from "../stores/use-quest-session-store";
 import { QuestDifficulty, QuestLanguage, SubmitAnswerResult } from "../types";
 
-const DIFFICULTIES: QuestDifficulty[] = ["EASY", "MEDIUM", "HARD"];
 const POINTS_BY_DIFFICULTY: Record<QuestDifficulty, number> = {
   EASY: 10,
   MEDIUM: 20,
@@ -166,20 +166,7 @@ export function QuestHubPage() {
           </h1>
         </div>
         <p className="text-sm text-muted-foreground mb-6">{t("subtitle")}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {DIFFICULTIES.map((d) => (
-            <Card key={d} className="hover:border-primary transition-colors">
-              <CardContent className="p-4 flex flex-col items-center gap-3">
-                <span className="text-sm font-semibold text-foreground">
-                  {t(`difficulty.${d.toLowerCase()}`)}
-                </span>
-                <Button onClick={() => handleStart(d)} className="w-full">
-                  {t("startPlaying")}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <QuestSetupPanel onPlay={handleStart} />
 
         <div className="mt-6">
           <QuestLeaderboardCard />

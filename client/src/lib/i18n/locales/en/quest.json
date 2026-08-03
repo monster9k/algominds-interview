@@ -1,12 +1,22 @@
 {
   "title": "Quest: Bug Whacker",
-  "subtitle": "Find the buggy line before time or lives run out. Pick a difficulty to start.",
+  "subtitle": "Find the buggy line before time or lives run out. Choose your difficulty and language, then press Play.",
   "difficulty": {
     "easy": "Easy",
     "medium": "Medium",
     "hard": "Hard"
   },
-  "startPlaying": "Start playing",
+  "setup": {
+    "chooseDifficulty": "Difficulty",
+    "chooseLanguage": "Language",
+    "play": "Play"
+  },
+  "language": {
+    "random": "Random",
+    "javascript": "JavaScript",
+    "python": "Python",
+    "java": "Java"
+  },
   "loadingQuestion": "Loading question...",
   "combo": "Combo x{{count}}",
   "next": "Next",

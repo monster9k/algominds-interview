@@ -170,8 +170,10 @@
 
   Chỉ phần "plumbing" (types/store/hook) — chưa có UI để chọn ngôn ngữ (`handleStart` nhận `chosenLanguage` optional, mặc định `null`/Ngẫu nhiên, các nút hiện tại chưa truyền giá trị khác). UI chọn thật ở mục "game menu" ngay dưới đây — verify E2E bằng browser sẽ làm ở đó vì cần UI mới tồn tại trước.
 
-- [ ] **FE: dựng lại màn setup thành "game menu" thật (chọn → bấm Play)**
+- [x] **FE: dựng lại màn setup thành "game menu" thật (chọn → bấm Play)**
   📍 `client/src/features/quest/components/quest-setup-panel.tsx` (component mới) — 2 hàng `Tabs` (độ khó + ngôn ngữ, tái dùng pattern từ `quest-leaderboard-card.tsx`), bấm tab chỉ để *chọn* (không tự chơi), 1 nút "▶ Chơi" lớn ở giữa mới thực sự gọi `startGame`. `quest-hub-page.tsx` thay khối 3 card hiện tại bằng component này.
+
+  Verify bằng claude-in-chrome thật với user throwaway: chọn Python + Dễ, bấm Play, xác nhận 3 câu liên tiếp đều là Python (trước đó pool ngẫu nhiên trộn cả 3 ngôn ngữ) — hoàn thành luôn phần verify còn thiếu của mục ngôn ngữ ở trên vì cần UI này mới test được thật.
 
 - [ ] **FE: gameplay juice — micro-interaction, không thêm dependency**
   📍 `client/src/app/index.css` (thêm `@keyframes shake`, `@keyframes pop-in` — file hiện chưa có custom keyframes nào), áp dụng vào `bug-whacker-board.tsx` (dòng sai rung, dòng đúng pop-in), `quest-hub-page.tsx` (combo ≥ 5 đổi icon `Flame` màu cam, số điểm "+N" nổi lên khi trả lời đúng, thanh thời gian thêm `animate-pulse` khi dưới 20%, toast mừng mốc combo qua `sonner` — hiện chỉ dùng `toast.error` trong quest, chưa có `toast.success`).

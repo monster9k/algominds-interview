@@ -28,7 +28,11 @@ export function QuestLeaderboardCard() {
         >
           <TabsList>
             {DIFFICULTIES.map((d) => (
-              <TabsTrigger key={d} value={d}>
+              <TabsTrigger
+                key={d}
+                value={d}
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+              >
                 {t(`difficulty.${d.toLowerCase()}`)}
               </TabsTrigger>
             ))}

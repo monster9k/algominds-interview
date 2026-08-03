@@ -42,7 +42,11 @@ export function QuestSetupPanel({ onPlay }: QuestSetupPanelProps) {
           >
             <TabsList>
               {DIFFICULTIES.map((d) => (
-                <TabsTrigger key={d} value={d}>
+                <TabsTrigger
+                  key={d}
+                  value={d}
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                >
                   {t(`difficulty.${d.toLowerCase()}`)}
                 </TabsTrigger>
               ))}
@@ -62,7 +66,11 @@ export function QuestSetupPanel({ onPlay }: QuestSetupPanelProps) {
           >
             <TabsList>
               {LANGUAGE_OPTIONS.map((l) => (
-                <TabsTrigger key={l} value={l}>
+                <TabsTrigger
+                  key={l}
+                  value={l}
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                >
                   {t(`language.${l}`)}
                 </TabsTrigger>
               ))}

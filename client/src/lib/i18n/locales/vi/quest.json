@@ -30,7 +30,8 @@
     "correctOfWrong": "Đúng {{correct}} / Sai {{wrong}}",
     "bestCombo": "Combo cao nhất",
     "playAgain": "Chơi lại",
-    "backToHub": "Về Quest Hub"
+    "backToHub": "Về Quest Hub",
+    "newBadgesTitle": "🎉 Mở khoá huy hiệu mới!"
   },
   "leaderboard": {
     "title": "Bảng xếp hạng",

@@ -30,7 +30,8 @@
     "correctOfWrong": "{{correct}} Correct / {{wrong}} Wrong",
     "bestCombo": "Best combo",
     "playAgain": "Play again",
-    "backToHub": "Back to Quest Hub"
+    "backToHub": "Back to Quest Hub",
+    "newBadgesTitle": "🎉 New badge unlocked!"
   },
   "leaderboard": {
     "title": "Leaderboard",

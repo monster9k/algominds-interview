@@ -30,7 +30,8 @@
     "correctOfWrong": "正解 {{correct}} / 不正解 {{wrong}}",
     "bestCombo": "最高コンボ",
     "playAgain": "もう一度プレイ",
-    "backToHub": "クエストハブに戻る"
+    "backToHub": "クエストハブに戻る",
+    "newBadgesTitle": "🎉 新しいバッジを獲得しました！"
   },
   "leaderboard": {
     "title": "ランキング",

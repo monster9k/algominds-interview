@@ -1,3 +1,4 @@
+import { Award } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -7,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { UnlockedBadge } from "../types";
 
 interface QuestResultDialogProps {
   open: boolean;
@@ -14,6 +16,7 @@ interface QuestResultDialogProps {
   correctCount: number;
   wrongCount: number;
   bestCombo: number;
+  newBadges: UnlockedBadge[];
   onPlayAgain: () => void;
   onBackToHub: () => void;
 }
@@ -27,6 +30,7 @@ export function QuestResultDialog({
   correctCount,
   wrongCount,
   bestCombo,
+  newBadges,
   onPlayAgain,
   onBackToHub,
 }: QuestResultDialogProps) {
@@ -66,6 +70,29 @@ export function QuestResultDialog({
             </p>
           </div>
         </div>
+
+        {newBadges.length > 0 && (
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+            <p className="text-sm font-semibold text-primary">
+              {t("result.newBadgesTitle")}
+            </p>
+            {newBadges.map((badge) => (
+              <div key={badge.id} className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
+                  <Award className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {badge.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {badge.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={onBackToHub}>

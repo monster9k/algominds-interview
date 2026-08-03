@@ -12,7 +12,12 @@ import { useQuestSnippets } from "../hooks/use-quest-snippets";
 import { useSubmitQuestAnswer } from "../hooks/use-submit-quest-answer";
 import { useSubmitQuestAttempt } from "../hooks/use-submit-quest-attempt";
 import { useQuestSessionStore } from "../stores/use-quest-session-store";
-import { QuestDifficulty, QuestLanguage, SubmitAnswerResult } from "../types";
+import {
+  QuestDifficulty,
+  QuestLanguage,
+  SubmitAnswerResult,
+  UnlockedBadge,
+} from "../types";
 
 const POINTS_BY_DIFFICULTY: Record<QuestDifficulty, number> = {
   EASY: 10,
@@ -49,6 +54,7 @@ export function QuestHubPage() {
 
   const [selectedLine, setSelectedLine] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<SubmitAnswerResult | null>(null);
+  const [newBadges, setNewBadges] = useState<UnlockedBadge[]>([]);
   const attemptSubmittedRef = useRef(false);
 
   const { data: snippets } = useQuestSnippets(
@@ -87,6 +93,7 @@ export function QuestHubPage() {
   useEffect(() => {
     if (status === "playing") {
       attemptSubmittedRef.current = false;
+      setNewBadges([]);
       return;
     }
     if (
@@ -96,14 +103,17 @@ export function QuestHubPage() {
       startedAt
     ) {
       attemptSubmittedRef.current = true;
-      submitAttempt.mutate({
-        difficulty,
-        score,
-        correctCount,
-        wrongCount,
-        bestCombo,
-        durationMs: Date.now() - startedAt,
-      });
+      submitAttempt.mutate(
+        {
+          difficulty,
+          score,
+          correctCount,
+          wrongCount,
+          bestCombo,
+          durationMs: Date.now() - startedAt,
+        },
+        { onSuccess: (result) => setNewBadges(result.newBadges) },
+      );
     }
   }, [
     status,
@@ -178,6 +188,7 @@ export function QuestHubPage() {
           correctCount={correctCount}
           wrongCount={wrongCount}
           bestCombo={bestCombo}
+          newBadges={newBadges}
           onPlayAgain={() => difficulty && handleStart(difficulty, language)}
           onBackToHub={resetGame}
         />

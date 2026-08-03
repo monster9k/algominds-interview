@@ -32,15 +32,21 @@ export interface QuestAttemptResult extends CreateAttemptPayload {
   id: string;
   userId: string;
   createdAt: string;
+  newBadges: UnlockedBadge[];
 }
 
-export interface EarnedBadge {
+export interface EarnedBadge extends UnlockedBadge {
+  earnedAt: string;
+}
+
+// Badge vừa mở khoá trong ván vừa xong — không có earnedAt vì đây là dữ liệu
+// trả thẳng từ POST /quest/attempts, không phải từ GET /quest/badges/me.
+export interface UnlockedBadge {
   id: string;
   key: string;
   name: string;
   description: string;
   iconKey: string;
-  earnedAt: string;
 }
 
 export interface LeaderboardEntry {

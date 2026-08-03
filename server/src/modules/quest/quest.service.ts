@@ -134,14 +134,16 @@ export class QuestService {
       },
     });
 
-    await this.awardBadges(userId, dto);
+    const newBadges = await this.awardBadges(userId, dto);
 
-    return attempt;
+    return { ...attempt, newBadges };
   }
 
   // Kiểm tra rule từng badge trong BADGE_RULES so với ván vừa hoàn thành, tạo
-  // UserBadge cho những badge đạt được mà user chưa có (skipDuplicates lo việc
-  // idempotent thay vì phải query trước để loại trừ).
+  // UserBadge cho những badge đạt được mà user CHƯA có, trả về đúng những
+  // badge mới mở khoá lần này (dùng cho FE hiện banner "mở khoá huy hiệu" —
+  // cần biết chính xác cái nào mới, không thể suy ra từ createMany vì
+  // skipDuplicates không báo lại bản ghi nào bị bỏ qua).
   private async awardBadges(userId: string, attempt: CreateAttemptDto) {
     const attemptCount = await this.prisma.questAttempt.count({
       where: { userId },
@@ -154,18 +156,41 @@ export class QuestService {
     const earnedKeys = Object.entries(BADGE_RULES)
       .filter(([, rule]) => rule(ctx))
       .map(([key]) => key);
-    if (earnedKeys.length === 0) return;
+    if (earnedKeys.length === 0) return [];
 
-    const badges = await this.prisma.badge.findMany({
+    const matchingBadges = await this.prisma.badge.findMany({
       where: { key: { in: earnedKeys } },
-      select: { id: true },
     });
-    if (badges.length === 0) return;
+    if (matchingBadges.length === 0) return [];
+
+    const existingUserBadges = await this.prisma.userBadge.findMany({
+      where: {
+        userId,
+        badgeId: { in: matchingBadges.map((badge) => badge.id) },
+      },
+      select: { badgeId: true },
+    });
+    const alreadyOwnedIds = new Set(existingUserBadges.map((ub) => ub.badgeId));
+
+    const newlyAwardedBadges = matchingBadges.filter(
+      (badge) => !alreadyOwnedIds.has(badge.id),
+    );
+    if (newlyAwardedBadges.length === 0) return [];
 
     await this.prisma.userBadge.createMany({
-      data: badges.map((badge) => ({ userId, badgeId: badge.id })),
-      skipDuplicates: true,
+      data: newlyAwardedBadges.map((badge) => ({
+        userId,
+        badgeId: badge.id,
+      })),
     });
+
+    return newlyAwardedBadges.map((badge) => ({
+      id: badge.id,
+      key: badge.key,
+      name: badge.name,
+      description: badge.description,
+      iconKey: badge.iconKey,
+    }));
   }
 
   // GET /quest/attempts/me — lịch sử chơi gần nhất của user hiện tại

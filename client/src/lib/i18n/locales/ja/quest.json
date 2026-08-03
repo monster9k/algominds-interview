@@ -19,6 +19,7 @@
   },
   "loadingQuestion": "問題を読み込み中...",
   "combo": "コンボ x{{count}}",
+  "comboMilestone": "🔥 {{count}}連続正解!",
   "next": "次へ",
   "feedback": {
     "correct": "正解!",

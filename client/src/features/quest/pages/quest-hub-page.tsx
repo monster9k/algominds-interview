@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Award, Heart, Swords, Timer } from "lucide-react";
+import { toast } from "sonner";
+import { Award, Flame, Heart, Swords, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,8 @@ const TOTAL_SNIPPETS = 10;
 const LIVES = 3;
 const TIME_LIMIT_MS = 60_000;
 const TICK_MS = 250;
+const HOT_COMBO_THRESHOLD = 5;
+const COMBO_MILESTONE_STEP = 5;
 
 export function QuestHubPage() {
   const { t } = useTranslation("quest");
@@ -55,7 +58,12 @@ export function QuestHubPage() {
   const [selectedLine, setSelectedLine] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<SubmitAnswerResult | null>(null);
   const [newBadges, setNewBadges] = useState<UnlockedBadge[]>([]);
+  const [scorePopup, setScorePopup] = useState<{
+    key: number;
+    points: number;
+  } | null>(null);
   const attemptSubmittedRef = useRef(false);
+  const scorePopupKeyRef = useRef(0);
 
   const { data: snippets } = useQuestSnippets(
     {
@@ -138,7 +146,16 @@ export function QuestHubPage() {
   const handleNext = () => {
     if (!feedback) return;
     if (feedback.correct) {
-      answerCorrect(POINTS_BY_DIFFICULTY[difficulty ?? "EASY"]);
+      const points = POINTS_BY_DIFFICULTY[difficulty ?? "EASY"];
+      answerCorrect(points);
+
+      scorePopupKeyRef.current += 1;
+      setScorePopup({ key: scorePopupKeyRef.current, points });
+
+      const nextCombo = combo + 1;
+      if (nextCombo > 0 && nextCombo % COMBO_MILESTONE_STEP === 0) {
+        toast.success(t("comboMilestone", { count: nextCombo }));
+      }
     } else {
       answerWrong();
     }
@@ -152,6 +169,7 @@ export function QuestHubPage() {
   ) => {
     setSelectedLine(null);
     setFeedback(null);
+    setScorePopup(null);
     startGame({
       difficulty: chosenDifficulty,
       language: chosenLanguage,
@@ -200,13 +218,30 @@ export function QuestHubPage() {
     <div className="w-full pb-10 max-w-3xl mx-auto space-y-4">
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1 font-semibold text-foreground">
+          <span className="relative flex items-center gap-1 font-semibold text-foreground">
             <Award className="h-4 w-4 text-primary" /> {score}
+            {scorePopup && (
+              <span
+                key={scorePopup.key}
+                onAnimationEnd={() => setScorePopup(null)}
+                className="animate-float-up-fade absolute -top-4 left-0 text-xs font-bold text-emerald-500"
+              >
+                +{scorePopup.points}
+              </span>
+            )}
           </span>
           <span className="flex items-center gap-1 text-muted-foreground">
             <Heart className="h-4 w-4" /> {lives}
           </span>
-          <span className="text-muted-foreground">
+          <span
+            className={cn(
+              "flex items-center gap-1",
+              combo >= HOT_COMBO_THRESHOLD
+                ? "text-orange-500 font-semibold animate-pop-in"
+                : "text-muted-foreground",
+            )}
+          >
+            {combo >= HOT_COMBO_THRESHOLD && <Flame className="h-4 w-4" />}
             {t("combo", { count: combo })}
           </span>
         </div>
@@ -219,7 +254,7 @@ export function QuestHubPage() {
         <div
           className={cn(
             "h-full transition-all",
-            timeLeftPercent < 20 ? "bg-destructive" : "bg-primary",
+            timeLeftPercent < 20 ? "bg-destructive animate-pulse" : "bg-primary",
           )}
           style={{ width: `${timeLeftPercent}%` }}
         />

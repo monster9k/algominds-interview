@@ -19,6 +19,7 @@
   },
   "loadingQuestion": "Đang tải câu hỏi...",
   "combo": "Combo x{{count}}",
+  "comboMilestone": "🔥 {{count}} câu liên tiếp!",
   "next": "Tiếp theo",
   "feedback": {
     "correct": "Chính xác!",

@@ -19,6 +19,7 @@
   },
   "loadingQuestion": "Loading question...",
   "combo": "Combo x{{count}}",
+  "comboMilestone": "🔥 {{count}} in a row!",
   "next": "Next",
   "feedback": {
     "correct": "Correct!",

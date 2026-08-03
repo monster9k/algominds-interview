@@ -53,9 +53,9 @@ export function BugWhackerBoard({
                     selectedLine === index &&
                     "bg-primary/10 border-l-2 border-primary",
                   isBuggyLine &&
-                    "bg-emerald-500/20 border-l-2 border-emerald-500",
+                    "bg-emerald-500/20 border-l-2 border-emerald-500 animate-pop-in",
                   isWrongSelection &&
-                    "bg-destructive/20 border-l-2 border-destructive",
+                    "bg-destructive/20 border-l-2 border-destructive animate-shake",
                 )}
               >
                 <span className="select-none text-muted-foreground w-6 shrink-0 text-right">

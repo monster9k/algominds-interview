@@ -175,8 +175,10 @@
 
   Verify bằng claude-in-chrome thật với user throwaway: chọn Python + Dễ, bấm Play, xác nhận 3 câu liên tiếp đều là Python (trước đó pool ngẫu nhiên trộn cả 3 ngôn ngữ) — hoàn thành luôn phần verify còn thiếu của mục ngôn ngữ ở trên vì cần UI này mới test được thật.
 
-- [ ] **FE: gameplay juice — micro-interaction, không thêm dependency**
+- [x] **FE: gameplay juice — micro-interaction, không thêm dependency**
   📍 `client/src/app/index.css` (thêm `@keyframes shake`, `@keyframes pop-in` — file hiện chưa có custom keyframes nào), áp dụng vào `bug-whacker-board.tsx` (dòng sai rung, dòng đúng pop-in), `quest-hub-page.tsx` (combo ≥ 5 đổi icon `Flame` màu cam, số điểm "+N" nổi lên khi trả lời đúng, thanh thời gian thêm `animate-pulse` khi dưới 20%, toast mừng mốc combo qua `sonner` — hiện chỉ dùng `toast.error` trong quest, chưa có `toast.success`).
+
+  Thêm 1 keyframe nữa ngoài dự kiến: `float-up-fade` cho số điểm "+N" nổi lên rồi mờ dần (dùng `onAnimationEnd` để tự dọn state, không cần `setTimeout`). Verify bằng claude-in-chrome thật: chơi liên tiếp 5 câu đúng, xác nhận combo chuyển màu cam + icon `Flame` đúng lúc combo=5, toast "🔥 5 in a row!" hiện đúng lúc, thanh thời gian chuyển đỏ + nhấp nháy khi còn dưới 20% thời gian, và bắt được đúng khung hình số "+10" nổi lên cạnh điểm.
 
 - [x] **BE+FE: hiển thị "mở khoá badge mới" trong màn kết quả**
   📍 `quest.service.ts#awardBadges` trả về danh sách badge mới thật sự vừa mở khoá (thay vì fire-and-forget `createMany`), `createAttempt` gắn vào response thành `newBadges`. FE: `QuestAttemptResult` thêm field `newBadges: EarnedBadge[]`, `quest-hub-page.tsx` đọc từ `onSuccess` của `submitAttempt`, `quest-result-dialog.tsx` hiện banner "🎉 Mở khoá huy hiệu mới" khi có.

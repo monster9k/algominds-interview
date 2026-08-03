@@ -21,5 +21,10 @@
     "bestCombo": "最高コンボ",
     "playAgain": "もう一度プレイ",
     "backToHub": "クエストハブに戻る"
+  },
+  "leaderboard": {
+    "title": "ランキング",
+    "empty": "この難易度のスコアはまだありません。",
+    "scorePoints": "{{score}} 点"
   }
 }

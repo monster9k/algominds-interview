@@ -3,6 +3,7 @@ import {
   BugSnippetPublic,
   CreateAttemptPayload,
   EarnedBadge,
+  LeaderboardEntry,
   QuestAttemptResult,
   QuestDifficulty,
   SubmitAnswerResult,
@@ -48,6 +49,15 @@ export const questApi = {
 
   getMyBadges: async (): Promise<EarnedBadge[]> => {
     const response = await api.get("/quest/badges/me");
+    return response.data;
+  },
+
+  getLeaderboard: async (
+    difficulty: QuestDifficulty,
+  ): Promise<LeaderboardEntry[]> => {
+    const response = await api.get("/quest/leaderboard", {
+      params: { difficulty },
+    });
     return response.data;
   },
 };

@@ -21,5 +21,10 @@
     "bestCombo": "Combo cao nhất",
     "playAgain": "Chơi lại",
     "backToHub": "Về Quest Hub"
+  },
+  "leaderboard": {
+    "title": "Bảng xếp hạng",
+    "empty": "Chưa có điểm nào ở độ khó này.",
+    "scorePoints": "{{score}} điểm"
   }
 }

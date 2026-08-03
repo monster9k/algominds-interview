@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { BugWhackerBoard } from "../components/bug-whacker-board";
+import { QuestLeaderboardCard } from "../components/quest-leaderboard-card";
 import { QuestResultDialog } from "../components/quest-result-dialog";
 import { useQuestSnippets } from "../hooks/use-quest-snippets";
 import { useSubmitQuestAnswer } from "../hooks/use-submit-quest-answer";
@@ -169,6 +170,10 @@ export function QuestHubPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        <div className="mt-6">
+          <QuestLeaderboardCard />
         </div>
 
         <QuestResultDialog

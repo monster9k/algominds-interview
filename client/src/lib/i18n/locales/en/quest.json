@@ -21,5 +21,10 @@
     "bestCombo": "Best combo",
     "playAgain": "Play again",
     "backToHub": "Back to Quest Hub"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "empty": "No scores yet for this difficulty.",
+    "scorePoints": "{{score}} pts"
   }
 }

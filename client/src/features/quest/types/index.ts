@@ -38,3 +38,12 @@ export interface EarnedBadge {
   iconKey: string;
   earnedAt: string;
 }
+
+export interface LeaderboardEntry {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  score: number;
+  bestCombo: number;
+  achievedAt: string | null;
+}

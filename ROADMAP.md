@@ -144,8 +144,10 @@
 
   Dedupe theo user (lấy điểm cao nhất mỗi user, không phải top N attempt) để 1 người chơi nhiều ván không chiếm hết bảng — dùng `groupBy` lấy `_max.score` mỗi `userId`, sau đó join `QuestAttempt` + `User` để lấy `bestCombo`/`achievedAt`/tên hiển thị đúng của lượt đạt điểm đó. Verify qua HTTP thật với 2 user throwaway: user chơi 2 ván (40 rồi 90 điểm) chỉ xuất hiện 1 dòng với điểm 90, sắp xếp đúng thứ tự giảm dần.
 
-- [ ] **FE: leaderboard UI trong Quest Hub**
+- [x] **FE: leaderboard UI trong Quest Hub**
   📍 `quest-hub-page.tsx`, tab hoặc card riêng cạnh nút "Bắt đầu chơi".
+
+  `quest-leaderboard-card.tsx` — card riêng dưới lưới độ khó, dùng shadcn `Tabs` để chuyển độ khó (mặc định EASY), `Avatar` cho từng người chơi. Verify bằng claude-in-chrome thật trên `/quest`: chuyển tab Dễ/Trung bình/Khó cập nhật đúng dữ liệu, tab chưa có điểm nào hiện đúng empty state.
 
 - [ ] **Content: mở rộng ngân hàng câu hỏi + script quản lý**
   📍 mở rộng `server/seed-quest.ts` theo pattern `server/sync-problems.ts` (script sync riêng, chạy thủ công khi cần thêm nội dung — không cần trang admin UI riêng ở giai đoạn này, giữ đơn giản đúng scope hiện tại của `problems` module vốn cũng quản trị qua seed/admin API, không phải qua UI).

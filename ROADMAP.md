@@ -154,8 +154,10 @@
 
   "Script quản lý" chính là `seed-quest.ts` hiện có (idempotent, upsert-by-code) — không cần script/trang riêng. Thêm 5 concept bug mới mỗi độ khó (× 3 ngôn ngữ = 45 snippet mới), gấp đôi ngân hàng từ 45 → 90 (30/độ khó, 30/ngôn ngữ). Verify: chạy seed thật vào dev DB (45 created, 45 already present — không trùng lặp), kiểm tra phân bố qua Prisma, và chơi thử 1 snippet mới (`contains_duplicate`, Python) qua claude-in-chrome — chọn đúng dòng bug hiện đúng feedback/explanation.
 
-- [ ] **BE+FE: (tuỳ chọn, cần quyết định sản phẩm) tích hợp `UserStats.credits`/`streakDays`**
+- [x] **BE+FE: (tuỳ chọn, cần quyết định sản phẩm) tích hợp `UserStats.credits`/`streakDays`**
   📍 `server/src/modules/users/*`. Quyết định: chơi Quest có trừ `credits` không, thắng ván tốt có cộng `streakDays` không. Để P2 vì đây là quyết định sản phẩm, không phải kỹ thuật — làm sau khi core game đã chơi ổn.
+
+  **Quyết định (2026-08-03, hỏi trực tiếp user): không tích hợp.** Quest giữ nguyên là mini-game miễn phí, tách biệt hoàn toàn khỏi `credits`/`streakDays` của luồng phỏng vấn chính — không có thay đổi code nào cho mục này.
 
 ---
 

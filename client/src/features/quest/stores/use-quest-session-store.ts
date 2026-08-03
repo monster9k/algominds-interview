@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { QuestDifficulty } from "../types";
+import { QuestDifficulty, QuestLanguage } from "../types";
 
 // State cục bộ của 1 ván chơi (không phải dữ liệu server) — điểm/combo/mạng/thời
 // gian chỉ tồn tại trong lúc chơi, được lưu lại bằng POST /quest/attempts khi
@@ -9,6 +9,7 @@ type QuestSessionStatus = "idle" | "playing" | "finished";
 interface QuestSessionState {
   status: QuestSessionStatus;
   difficulty: QuestDifficulty | null;
+  language: QuestLanguage | null;
   totalSnippets: number;
   currentSnippetIndex: number;
   score: number;
@@ -22,6 +23,7 @@ interface QuestSessionState {
 
   startGame(params: {
     difficulty: QuestDifficulty;
+    language: QuestLanguage | null;
     totalSnippets: number;
     lives: number;
     timeLimitMs: number;
@@ -36,6 +38,7 @@ interface QuestSessionState {
 const INITIAL_STATE = {
   status: "idle" as QuestSessionStatus,
   difficulty: null,
+  language: null,
   totalSnippets: 0,
   currentSnippetIndex: 0,
   score: 0,
@@ -51,11 +54,12 @@ const INITIAL_STATE = {
 export const useQuestSessionStore = create<QuestSessionState>((set, get) => ({
   ...INITIAL_STATE,
 
-  startGame: ({ difficulty, totalSnippets, lives, timeLimitMs }) =>
+  startGame: ({ difficulty, language, totalSnippets, lives, timeLimitMs }) =>
     set({
       ...INITIAL_STATE,
       status: "playing",
       difficulty,
+      language,
       totalSnippets,
       lives,
       timeLeftMs: timeLimitMs,

@@ -1,5 +1,9 @@
 export type QuestDifficulty = "EASY" | "MEDIUM" | "HARD";
 
+// null = Random — matches the backend's "omit filter" behavior in
+// quest.service.ts#getRandomSnippets when `language` isn't passed.
+export type QuestLanguage = "javascript" | "python" | "java";
+
 // Không có buggyLine/explanation — server chỉ trả các field này khi list câu
 // hỏi, tránh lộ đáp án qua DevTools Network tab trước khi trả lời.
 export interface BugSnippetPublic {

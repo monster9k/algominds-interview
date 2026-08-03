@@ -11,7 +11,7 @@ import { useQuestSnippets } from "../hooks/use-quest-snippets";
 import { useSubmitQuestAnswer } from "../hooks/use-submit-quest-answer";
 import { useSubmitQuestAttempt } from "../hooks/use-submit-quest-attempt";
 import { useQuestSessionStore } from "../stores/use-quest-session-store";
-import { QuestDifficulty, SubmitAnswerResult } from "../types";
+import { QuestDifficulty, QuestLanguage, SubmitAnswerResult } from "../types";
 
 const DIFFICULTIES: QuestDifficulty[] = ["EASY", "MEDIUM", "HARD"];
 const POINTS_BY_DIFFICULTY: Record<QuestDifficulty, number> = {
@@ -28,6 +28,7 @@ export function QuestHubPage() {
   const { t } = useTranslation("quest");
   const status = useQuestSessionStore((s) => s.status);
   const difficulty = useQuestSessionStore((s) => s.difficulty);
+  const language = useQuestSessionStore((s) => s.language);
   const currentSnippetIndex = useQuestSessionStore(
     (s) => s.currentSnippetIndex,
   );
@@ -51,7 +52,11 @@ export function QuestHubPage() {
   const attemptSubmittedRef = useRef(false);
 
   const { data: snippets } = useQuestSnippets(
-    { difficulty: difficulty ?? undefined, count: TOTAL_SNIPPETS },
+    {
+      difficulty: difficulty ?? undefined,
+      language: language ?? undefined,
+      count: TOTAL_SNIPPETS,
+    },
     status !== "idle",
   );
   const submitAnswer = useSubmitQuestAnswer();
@@ -131,11 +136,15 @@ export function QuestHubPage() {
     setFeedback(null);
   };
 
-  const handleStart = (chosenDifficulty: QuestDifficulty) => {
+  const handleStart = (
+    chosenDifficulty: QuestDifficulty,
+    chosenLanguage: QuestLanguage | null = null,
+  ) => {
     setSelectedLine(null);
     setFeedback(null);
     startGame({
       difficulty: chosenDifficulty,
+      language: chosenLanguage,
       totalSnippets: TOTAL_SNIPPETS,
       lives: LIVES,
       timeLimitMs: TIME_LIMIT_MS,
@@ -182,7 +191,7 @@ export function QuestHubPage() {
           correctCount={correctCount}
           wrongCount={wrongCount}
           bestCombo={bestCombo}
-          onPlayAgain={() => difficulty && handleStart(difficulty)}
+          onPlayAgain={() => difficulty && handleStart(difficulty, language)}
           onBackToHub={resetGame}
         />
       </div>

@@ -161,6 +161,29 @@
 
 ---
 
+## 🔵 P3 — Chọn ngôn ngữ + UI "game menu" + gameplay juice
+
+> Bổ sung sau khi chơi thử P0-P2 thật: (1) không chọn được ngôn ngữ dù backend đã hỗ trợ sẵn qua `?language=`, (2) màn chọn độ khó chưa có cảm giác "menu game" (bấm là chơi luôn, không có bước "chọn rồi bấm Play"), (3) gameplay còn phẳng — feedback chỉ đổi màu, không có escalation/celebration. Quyết định phạm vi (hỏi trực tiếp user trước khi lên kế hoạch): có tuỳ chọn "Ngẫu nhiên" trong bộ chọn ngôn ngữ; thêm `canvas-confetti` (~5kb) cho hiệu ứng ăn mừng; **không** làm âm thanh ở P3 (cần asset ngoài, để sau); hiển thị "mở khoá badge mới" ngay trong màn kết quả.
+
+- [x] **FE: bộ chọn ngôn ngữ nối end-to-end**
+  📍 `client/src/features/quest/types/index.ts` (thêm `QuestLanguage`), `stores/use-quest-session-store.ts` (`startGame` nhận thêm `language: QuestLanguage | null`, `null` = Ngẫu nhiên), `pages/quest-hub-page.tsx` (truyền `language` vào `useQuestSnippets`). Backend đã sẵn sàng (`quest.service.ts#getRandomSnippets` đã filter theo `language` query param từ P0) — không cần đổi gì ở server.
+
+  Chỉ phần "plumbing" (types/store/hook) — chưa có UI để chọn ngôn ngữ (`handleStart` nhận `chosenLanguage` optional, mặc định `null`/Ngẫu nhiên, các nút hiện tại chưa truyền giá trị khác). UI chọn thật ở mục "game menu" ngay dưới đây — verify E2E bằng browser sẽ làm ở đó vì cần UI mới tồn tại trước.
+
+- [ ] **FE: dựng lại màn setup thành "game menu" thật (chọn → bấm Play)**
+  📍 `client/src/features/quest/components/quest-setup-panel.tsx` (component mới) — 2 hàng `Tabs` (độ khó + ngôn ngữ, tái dùng pattern từ `quest-leaderboard-card.tsx`), bấm tab chỉ để *chọn* (không tự chơi), 1 nút "▶ Chơi" lớn ở giữa mới thực sự gọi `startGame`. `quest-hub-page.tsx` thay khối 3 card hiện tại bằng component này.
+
+- [ ] **FE: gameplay juice — micro-interaction, không thêm dependency**
+  📍 `client/src/app/index.css` (thêm `@keyframes shake`, `@keyframes pop-in` — file hiện chưa có custom keyframes nào), áp dụng vào `bug-whacker-board.tsx` (dòng sai rung, dòng đúng pop-in), `quest-hub-page.tsx` (combo ≥ 5 đổi icon `Flame` màu cam, số điểm "+N" nổi lên khi trả lời đúng, thanh thời gian thêm `animate-pulse` khi dưới 20%, toast mừng mốc combo qua `sonner` — hiện chỉ dùng `toast.error` trong quest, chưa có `toast.success`).
+
+- [ ] **BE+FE: hiển thị "mở khoá badge mới" trong màn kết quả**
+  📍 `quest.service.ts#awardBadges` trả về danh sách badge mới thật sự vừa mở khoá (thay vì fire-and-forget `createMany`), `createAttempt` gắn vào response thành `newBadges`. FE: `QuestAttemptResult` thêm field `newBadges: EarnedBadge[]`, `quest-hub-page.tsx` đọc từ `onSuccess` của `submitAttempt`, `quest-result-dialog.tsx` hiện banner "🎉 Mở khoá huy hiệu mới" khi có.
+
+- [ ] **FE: confetti ăn mừng khi kết thúc ván tốt**
+  📍 thêm `canvas-confetti` vào `client/package.json`, bắn confetti trong `quest-result-dialog.tsx` khi ván hoàn hảo (`wrongCount === 0`) hoặc có `newBadges` mới (phụ thuộc mục badge ở trên).
+
+---
+
 ## Ghi chú thứ tự ưu tiên
 
 DB đi trước BE, BE đi trước FE trong từng nhóm P vì FE cần contract API thật để gọi (tránh mock rồi phải sửa lại). Trong P0, tách endpoint `answer` riêng khỏi `attempts` ngay từ đầu — nếu để P1 mới tách sẽ phải đổi lại toàn bộ luồng chấm điểm ở FE đã build từ P0, tốn công hơn làm đúng từ đầu.

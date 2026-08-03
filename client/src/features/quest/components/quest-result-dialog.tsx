@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+import confetti from "canvas-confetti";
 import { Award } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -35,6 +37,24 @@ export function QuestResultDialog({
   onBackToHub,
 }: QuestResultDialogProps) {
   const { t } = useTranslation("quest");
+  const hasCelebratedRef = useRef(false);
+
+  // Bắn confetti khi ván đáng ăn mừng: hoàn hảo (không sai câu nào) hoặc vừa
+  // mở khoá badge mới — chỉ 1 lần/ván, không bắn lại khi dialog vẫn mở và
+  // props khác thay đổi (vd newBadges đến muộn hơn 1 nhịp sau khi mở dialog).
+  useEffect(() => {
+    if (!open) {
+      hasCelebratedRef.current = false;
+      return;
+    }
+    if (hasCelebratedRef.current) return;
+
+    const isPerfectRun = correctCount > 0 && wrongCount === 0;
+    if (isPerfectRun || newBadges.length > 0) {
+      hasCelebratedRef.current = true;
+      confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+    }
+  }, [open, correctCount, wrongCount, newBadges]);
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onBackToHub()}>

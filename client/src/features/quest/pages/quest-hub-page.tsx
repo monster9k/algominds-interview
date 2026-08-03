@@ -101,7 +101,6 @@ export function QuestHubPage() {
   useEffect(() => {
     if (status === "playing") {
       attemptSubmittedRef.current = false;
-      setNewBadges([]);
       return;
     }
     if (
@@ -170,6 +169,7 @@ export function QuestHubPage() {
     setSelectedLine(null);
     setFeedback(null);
     setScorePopup(null);
+    setNewBadges([]);
     startGame({
       difficulty: chosenDifficulty,
       language: chosenLanguage,

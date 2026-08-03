@@ -185,8 +185,10 @@
 
   `awardBadges` giờ query trước những badge user đã có (thay vì chỉ dựa vào `skipDuplicates` của `createMany`, vốn không cho biết bản ghi nào bị bỏ qua) để biết chính xác cái nào mới. Kiểu FE tách riêng `UnlockedBadge` (không có `earnedAt`) khỏi `EarnedBadge` (có `earnedAt`, dùng cho `GET /quest/badges/me`) vì 2 nguồn dữ liệu khác nhau. Verify bằng claude-in-chrome thật: user throwaway đã có sẵn 4 badge từ trước (qua curl), chơi 1 ván HARD hoàn hảo (5 đúng/0 sai) để mở khoá `hard_master` — dialog kết quả hiện đúng banner "New badge unlocked! Bậc thầy Hard" với tên/mô tả chính xác; verify qua curl thêm: gọi `POST /quest/attempts` 2 lần cùng dữ liệu, lần 2 `newBadges: []` (không trao lại badge đã có).
 
-- [ ] **FE: confetti ăn mừng khi kết thúc ván tốt**
+- [x] **FE: confetti ăn mừng khi kết thúc ván tốt**
   📍 thêm `canvas-confetti` vào `client/package.json`, bắn confetti trong `quest-result-dialog.tsx` khi ván hoàn hảo (`wrongCount === 0`) hoặc có `newBadges` mới (phụ thuộc mục badge ở trên).
+
+  **Phát hiện quan trọng khi verify**: trong lúc kiểm tra confetti qua claude-in-chrome, console log lộ ra lỗi `Maximum update depth exceeded` xảy ra liên tục trong suốt lúc chơi (không phải do confetti — đã cô lập bằng cách tạm bỏ effect confetti và vẫn tái hiện lỗi y hệt). Root cause: commit badge-unlock trước đó (`setNewBadges([])` bên trong effect "lưu kết quả ván chơi" ở `quest-hub-page.tsx`, chạy mỗi khi `status === "playing"`) tạo state mới liên tục vì `submitAttempt` (object từ `useSubmitQuestAttempt()`) nằm trong dependency array và không ổn định tham chiếu qua mỗi lần render — kết hợp lại thành vòng lặp cập nhật vô hạn trong suốt lúc chơi. Sửa bằng cách dời `setNewBadges([])` ra khỏi effect đó, vào thẳng `handleStart` (cùng chỗ reset `selectedLine`/`feedback`/`scorePopup` mỗi khi bắt đầu ván mới) — effect "lưu kết quả" giờ không còn gọi setState ở nhánh `"playing"` nữa. Verify lại: chơi 1 ván đầy đủ (idle → playing → finished, dialog + confetti), theo dõi console liên tục suốt ván — không còn lỗi nào.
 
 ---
 

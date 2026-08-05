@@ -263,6 +263,29 @@ model UserBadge {
   @@map("user_badges")
 }
 
+// --- CAREER JOURNEY MODELS ---
+
+enum PersonaTone {
+  STRICT
+  FRIENDLY
+  SKEPTICAL
+  LENIENT
+}
+
+model InterviewerPersona {
+  id                String      @id @default(uuid())
+  key               String      @unique // "google_strict", "startup_friendly" — đối chiếu code, không đổi khi dịch tên hiển thị
+  name              String
+  description       String
+  tone              PersonaTone
+  systemPromptExtra String // đoạn chỉ dẫn NỐI VÀO systemInstruction gốc của AiService, không thay thế toàn bộ — giữ nguyên format JSON output bắt buộc
+  unlockCost        Int         @default(0) // 0 = mặc định miễn phí (persona "Default" hiện tại)
+  isActive          Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+
+  @@map("interviewer_personas")
+}
+
 model Session {
   id        String        @id @default(uuid())
   userId    String

@@ -30,7 +30,7 @@ Sau (roadmap này):                Problems | Quest | Career Journey
 
 ## 🔴 P0 — Nền tảng Career Journey (data model + BE tối thiểu + thay sidebar)
 
-- [ ] **DB: model `InterviewerPersona` — cấu hình "tính cách" AI interviewer**
+- [x] **DB: model `InterviewerPersona` — cấu hình "tính cách" AI interviewer**
   📍 `server/prisma/schema.prisma`. Đây là nền cho toàn bộ Persona Marketplace lẫn Onsite Loop nhiều vòng khác persona.
   ```prisma
   enum PersonaTone {
@@ -54,7 +54,7 @@ Sau (roadmap này):                Problems | Quest | Career Journey
     @@map("interviewer_personas")
   }
   ```
-  Dùng skill `add-prisma-model`. Seed tối thiểu 1 persona `key: "default"` map đúng nội dung `systemInstruction` hiện có trong `ai.service.ts` để không phá luồng Phase 1 hiện tại.
+  **Đã làm**: thêm đúng model như trên vào `schema.prisma`, chạy `npx prisma migrate dev --name add_interviewer_persona` (migration `20260805021146_add_interviewer_persona`, DB thật qua docker-compose, không dùng `db push`). Seed 1 persona `key: "default"` trong `seed.ts` với `systemPromptExtra: ""` (chuỗi rỗng) — cố ý để không nối thêm gì vào `systemInstruction` gốc của `AiService`, đảm bảo hành vi Phase 1 hiện tại không đổi khi tích hợp persona ở bước sau. `npx prisma generate` + `npx prisma db seed` + `npm run build` đều pass.
 
 - [ ] **BE: tham số hoá `AiService` theo persona — KHÔNG viết lại luồng đánh giá**
   📍 `server/src/modules/ai/ai.service.ts` (dòng 31-65, `this.model` với `systemInstruction` hardcode). Đổi thành: giữ nguyên khối JSON contract + quy tắc đánh giá cốt lõi (không đổi), chỉ nối thêm `persona.systemPromptExtra` vào cuối system instruction khi build request — vd persona "Google Strict" thêm đoạn "khắt khe hơn với độ phức tạp thời gian, không chấp nhận giải pháp brute-force dù đúng". Method nhận thêm `personaId?: string` (mặc định = persona "default" nếu không truyền — không đổi hành vi Phase 1 hiện tại của `sessions`/`chat` khi chưa tích hợp Career Journey).

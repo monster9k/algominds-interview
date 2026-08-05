@@ -43,6 +43,16 @@ export class CareerController {
     return this.careerService.getStageDigest(id);
   }
 
+  @Get('personas/me/unlocked')
+  getMyUnlockedPersonas(@CurrentUser() user: RequestUser) {
+    return this.careerService.getMyUnlockedPersonas(user.userId);
+  }
+
+  @Post('personas/:id/unlock')
+  unlockPersona(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.careerService.unlockPersona(user.userId, id);
+  }
+
   @Get('journeys/me/active')
   getActiveJourney(@CurrentUser() user: RequestUser) {
     return this.careerService.getActiveJourney(user.userId);

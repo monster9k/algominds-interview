@@ -78,6 +78,7 @@ model User {
   questAttempts  QuestAttempt[]
   userBadges     UserBadge[]
   careerJourneys CareerJourney[]
+  personaUnlocks UserPersonaUnlock[]
 
   // Indexes
   @@index([provider, providerId])
@@ -285,9 +286,26 @@ model InterviewerPersona {
   isActive          Boolean     @default(true)
   createdAt         DateTime    @default(now())
 
-  stages CareerTrackStage[]
+  stages  CareerTrackStage[]
+  unlocks UserPersonaUnlock[]
 
   @@map("interviewer_personas")
+}
+
+// Store thay thế — mở khoá thuần qua tiến trình (PASSED ít nhất 1 stage dùng
+// đúng persona này), KHÔNG đụng UserStats.credits — quyết định sản phẩm đã
+// chốt với user khi bắt đầu implement mục này (xem ROADMAP.md mục P1).
+model UserPersonaUnlock {
+  id         String   @id @default(uuid())
+  userId     String
+  personaId  String
+  unlockedAt DateTime @default(now())
+
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  persona InterviewerPersona @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, personaId])
+  @@map("user_persona_unlocks")
 }
 
 model CareerTrack {

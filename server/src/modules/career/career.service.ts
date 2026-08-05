@@ -324,6 +324,46 @@ export class CareerService {
     return this.prisma.stageDigest.findUnique({ where: { stageId } });
   }
 
+  // Mở khoá thuần qua tiến trình — KHÔNG đụng UserStats.credits (quyết định
+  // sản phẩm đã hỏi lại user trước khi code, xem ROADMAP.md mục P1). Điều
+  // kiện: đã PASSED ít nhất 1 stage dùng đúng persona này ở bất kỳ track nào.
+  async unlockPersona(userId: string, personaId: string) {
+    const persona = await this.prisma.interviewerPersona.findUnique({
+      where: { id: personaId },
+    });
+    if (!persona) throw new NotFoundException('Persona không tồn tại');
+
+    const existing = await this.prisma.userPersonaUnlock.findUnique({
+      where: { userId_personaId: { userId, personaId } },
+    });
+    if (existing) return existing; // idempotent — bấm lại không lỗi
+
+    const eligibleProgress = await this.prisma.journeyStageProgress.findFirst({
+      where: {
+        status: StageStatus.PASSED,
+        stage: { personaId },
+        journey: { userId },
+      },
+    });
+    if (!eligibleProgress) {
+      throw new BadRequestException(
+        'Chưa đủ điều kiện — cần vượt qua (PASSED) ít nhất 1 stage dùng persona này trước khi mở khoá.',
+      );
+    }
+
+    return this.prisma.userPersonaUnlock.create({
+      data: { userId, personaId },
+    });
+  }
+
+  async getMyUnlockedPersonas(userId: string) {
+    return this.prisma.userPersonaUnlock.findMany({
+      where: { userId },
+      include: { persona: true },
+      orderBy: { unlockedAt: 'asc' },
+    });
+  }
+
   // Stage kind=PROBLEM cần 1 Session để user vào làm — tái dùng
   // SessionsService.findOrCreateBySlug (không viết lại luồng Phase 1/2).
   // Stage kind=QUEST không cần tạo gì trước — user tự chơi Quest, gắn

@@ -1,13 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import {
-  Library,
-  Swords,
-  Compass,
-  GraduationCap,
-  Star,
-  Plus,
-  Lock,
-} from "lucide-react";
+import { Library, Swords, Compass, Star, Plus, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
@@ -15,8 +7,7 @@ import { Logo } from "@/components/ui/logo";
 const sidebarItems = [
   { icon: Library, labelKey: "sidebar.library", href: "/problems" },
   { icon: Swords, labelKey: "sidebar.quest", href: "/quest" },
-  { icon: Compass, labelKey: "sidebar.explore", href: "#" },
-  { icon: GraduationCap, labelKey: "sidebar.studyPlan", href: "#" },
+  { icon: Compass, labelKey: "sidebar.career", href: "/career" },
 ];
 
 const itemClasses = (isActive: boolean) =>

@@ -169,8 +169,9 @@ Sau (roadmap này):                Problems | Quest | Career Journey
   - `personaId` của stage: `CareerTrackStage.personaId` được include đầy đủ qua `TRACK_WITH_STAGES_INCLUDE`/`GET /career/tracks` để FE đọc, nhưng **chưa** được truyền vào `AiService.generateResponse()` trong `ai.processor.ts` — `Session` không có cột lưu persona nào để `processChat()` tra ngược lại. Đây là giới hạn đã biết, để lại cho bước tích hợp sâu hơn (nối `chat`/`ai` với `career`), không giả vờ đã xong.
   - Đăng ký `CareerModule` vào `app.module.ts`. Verify: `npm run build` + `npm run lint` (server) pass; boot thử `node dist/src/main.js` — toàn bộ 4 route `/career/*` map đúng, DI resolve sạch (không lỗi circular/module thiếu export), lỗi duy nhất là `EADDRINUSE :3000` vì đã có 1 instance dev khác đang chạy — không phải lỗi code.
 
-- [ ] **FE: thay sidebar item `Explore`/`Study Plan` bằng `Career Journey`**
+- [x] **FE: thay sidebar item `Explore`/`Study Plan` bằng `Career Journey`**
   📍 `client/src/components/layout/dashboard-sidebar.tsx` — 2 item hiện có `{ icon: Compass, labelKey: "sidebar.explore", href: "#" }` và `{ icon: GraduationCap, labelKey: "sidebar.studyPlan", href: "#" }` (chưa nối route, y hệt tình trạng `Quest` trước khi làm roadmap trước) → gộp thành 1 item `{ icon: Compass, labelKey: "sidebar.career", href: "/career" }`.
+  **Đã làm**: gộp đúng như trên, xoá import `GraduationCap` không còn dùng. Đổi key i18n ở cả 3 locale (`locales/{en,vi,ja}/common.json`): xoá `sidebar.explore`/`sidebar.studyPlan`, thêm `sidebar.career` ("Career Journey" / "Hành trình sự nghiệp" / "キャリアジャーニー"). Route `/career` **chưa tồn tại** ở bước này — item sidebar sẽ 404 cho tới khi item cuối (trang pipeline + đăng ký route) hoàn thành, đúng thứ tự roadmap đã định (scaffold trước, trang sau). `npm run lint` + `npm run build` (client, gồm `tsc -b`) đều pass — warning duy nhất là 8 warning có sẵn từ trước trong `interview-room.tsx`, không liên quan thay đổi này.
 
 - [ ] **FE: scaffold feature folder `career`**
   📍 `client/src/features/career/` (dùng skill `add-frontend-feature`, convention `api/hooks/components/pages/types`).

@@ -76,3 +76,34 @@ export interface StageDigest {
   sourceCount: number;
   generatedAt: string;
 }
+
+export interface HiringEvent {
+  id: string;
+  trackId: string;
+  opensAt: string;
+  closesAt: string;
+  track: {
+    id: string;
+    key: string;
+    name: string;
+    description: string;
+  };
+}
+
+export interface HiringEventLeaderboardEntry {
+  userId: string;
+  userName: string;
+  avatarUrl: string | null;
+  journeyStatus: JourneyStatus;
+  stagesPassed: number;
+  messageCount: number;
+  durationMs: number;
+}
+
+export interface UserPersonaUnlock {
+  id: string;
+  userId: string;
+  personaId: string;
+  unlockedAt: string;
+  persona: InterviewerPersona;
+}

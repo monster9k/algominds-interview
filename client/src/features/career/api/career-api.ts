@@ -1,5 +1,12 @@
 import api from "@/lib/axios";
-import { CareerJourney, CareerTrack, StageDigest } from "../types";
+import {
+  CareerJourney,
+  CareerTrack,
+  HiringEvent,
+  HiringEventLeaderboardEntry,
+  StageDigest,
+  UserPersonaUnlock,
+} from "../types";
 
 export const careerApi = {
   getTracks: async (): Promise<CareerTrack[]> => {
@@ -29,6 +36,33 @@ export const careerApi = {
     const response = await api.post(`/career/journeys/${journeyId}/advance`, {
       status,
     });
+    return response.data;
+  },
+
+  getOpenEvents: async (): Promise<HiringEvent[]> => {
+    const response = await api.get("/career/events");
+    return response.data;
+  },
+
+  enterEvent: async (eventId: string): Promise<CareerJourney> => {
+    const response = await api.post(`/career/events/${eventId}/enter`);
+    return response.data;
+  },
+
+  getEventLeaderboard: async (
+    eventId: string,
+  ): Promise<HiringEventLeaderboardEntry[]> => {
+    const response = await api.get(`/career/events/${eventId}/leaderboard`);
+    return response.data;
+  },
+
+  getMyUnlockedPersonas: async (): Promise<UserPersonaUnlock[]> => {
+    const response = await api.get("/career/personas/me/unlocked");
+    return response.data;
+  },
+
+  unlockPersona: async (personaId: string): Promise<UserPersonaUnlock> => {
+    const response = await api.post(`/career/personas/${personaId}/unlock`);
     return response.data;
   },
 };

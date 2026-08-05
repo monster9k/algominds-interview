@@ -17,6 +17,7 @@ import { InterviewRoom } from "@/features/interview/pages/interview-room";
 import { SessionReplayPage } from "@/features/interview/pages/session-replay-page";
 import { QuestHubPage } from "@/features/quest/pages/quest-hub-page";
 import { CareerJourneyPage } from "@/features/career/pages/career-journey-page";
+import { EventLeaderboardPage } from "@/features/career/pages/event-leaderboard-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { GoogleCallbackPage } from "@/features/auth/pages/google-callback-page";
 
@@ -45,6 +46,7 @@ export const router = createBrowserRouter([
       { path: "problems", element: <ProblemsPage /> },
       { path: "quest", element: <QuestHubPage /> },
       { path: "career", element: <CareerJourneyPage /> },
+      { path: "career/events/:eventId/leaderboard", element: <EventLeaderboardPage /> },
       { path: "profile", element: <ProfilePage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "dashboard", element: <Navigate to="/problems" replace /> },

@@ -18,5 +18,26 @@
   },
   "debrief": {
     "title": "Offer Debrief"
+  },
+  "markPassed": "合格にする",
+  "markFailed": "不合格にする",
+  "manualAdvanceHint": "現在は手動です — ステージが実際に完了したかを自動検出する仕組みはまだありません。",
+  "events": {
+    "title": "採用イベント",
+    "closesInDays": "あと{{count}}日で終了",
+    "enter": "参加する",
+    "viewLeaderboard": "リーダーボードを見る",
+    "leaderboardTitle": "リーダーボード",
+    "leaderboardEmpty": "このイベントにはまだ参加者がいません。",
+    "columns": {
+      "user": "ユーザー",
+      "stagesPassed": "合格ステージ数",
+      "messageCount": "メッセージ数",
+      "duration": "所要時間"
+    }
+  },
+  "personaUnlock": {
+    "unlock": "{{name}}を解放",
+    "unlocked": "{{name}}を解放済み"
   }
 }

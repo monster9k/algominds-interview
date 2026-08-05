@@ -19,5 +19,27 @@
   },
   "debrief": {
     "title": "Offer Debrief"
+  },
+  "markPassed": "Mark as Passed",
+  "markFailed": "Mark as Failed",
+  "manualAdvanceHint": "Manual for now — there's no automatic detection of when a stage is actually done yet.",
+  "events": {
+    "title": "Hiring Events",
+    "closesInDays": "Closes in {{count}} day",
+    "closesInDays_other": "Closes in {{count}} days",
+    "enter": "Enter event",
+    "viewLeaderboard": "View leaderboard",
+    "leaderboardTitle": "Leaderboard",
+    "leaderboardEmpty": "No entries yet for this event.",
+    "columns": {
+      "user": "User",
+      "stagesPassed": "Stages passed",
+      "messageCount": "Messages",
+      "duration": "Time"
+    }
+  },
+  "personaUnlock": {
+    "unlock": "Unlock {{name}}",
+    "unlocked": "{{name}} unlocked"
   }
 }

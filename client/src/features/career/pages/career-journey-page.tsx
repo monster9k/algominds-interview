@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Compass, ListChecks } from "lucide-react";
+import { Compass, ListChecks, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,10 @@ import { cn } from "@/lib/utils";
 import { useCareerTracks } from "../hooks/use-career-tracks";
 import { useActiveJourney } from "../hooks/use-active-journey";
 import { useStartTrack } from "../hooks/use-start-track";
+import { useAdvanceJourney } from "../hooks/use-advance-journey";
 import { StageDigest } from "../components/stage-digest";
+import { HiringEventsList } from "../components/hiring-events-list";
+import { PersonaUnlockButton } from "../components/persona-unlock-button";
 import type { CareerTrackStage, StageStatus } from "../types";
 
 const STATUS_BADGE_VARIANT: Record<
@@ -36,6 +39,7 @@ export function CareerJourneyPage() {
   const { data: journey, isLoading: journeyLoading } = useActiveJourney();
   const { data: tracks, isLoading: tracksLoading } = useCareerTracks();
   const startTrack = useStartTrack();
+  const advanceJourney = useAdvanceJourney();
 
   const handleEnterStage = (stage: CareerTrackStage) => {
     if (stage.kind === "PROBLEM" && stage.problem) {
@@ -66,6 +70,8 @@ export function CareerJourneyPage() {
           </h1>
         </div>
         <p className="text-sm text-muted-foreground mb-6">{t("subtitle")}</p>
+
+        <HiringEventsList />
 
         {tracksLoading ? (
           <div className="grid gap-4 sm:grid-cols-2">
@@ -111,11 +117,23 @@ export function CareerJourneyPage() {
 
   return (
     <div className="w-full pb-10 max-w-2xl mx-auto">
-      <div className="flex items-center gap-2 mb-2">
-        <Compass className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-semibold text-foreground">
-          {journey.track?.name ?? t("title")}
-        </h1>
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2">
+          <Compass className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-semibold text-foreground">
+            {journey.track?.name ?? t("title")}
+          </h1>
+        </div>
+        {journey.eventId && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => navigate(`/career/events/${journey.eventId}/leaderboard`)}
+          >
+            <Trophy className="mr-1.5 h-3.5 w-3.5" />
+            {t("events.viewLeaderboard")}
+          </Button>
+        )}
       </div>
       <p className="text-sm text-muted-foreground mb-8">
         {journey.track?.description}
@@ -155,14 +173,55 @@ export function CareerJourneyPage() {
                     </p>
                   )}
                   {status === "ACTIVE" && (
-                    <Button size="sm" onClick={() => handleEnterStage(stage)}>
-                      {t("enterStage")}
-                    </Button>
+                    <div className="space-y-2 pt-1">
+                      <Button size="sm" onClick={() => handleEnterStage(stage)}>
+                        {t("enterStage")}
+                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-emerald-500 hover:text-emerald-500"
+                          disabled={advanceJourney.isPending}
+                          onClick={() =>
+                            advanceJourney.mutate({
+                              journeyId: journey.id,
+                              status: "PASSED",
+                            })
+                          }
+                        >
+                          {t("markPassed")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-destructive hover:text-destructive"
+                          disabled={advanceJourney.isPending}
+                          onClick={() =>
+                            advanceJourney.mutate({
+                              journeyId: journey.id,
+                              status: "FAILED",
+                            })
+                          }
+                        >
+                          {t("markFailed")}
+                        </Button>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground/70">
+                        {t("manualAdvanceHint")}
+                      </p>
+                    </div>
                   )}
                   {stage.kind === "PROBLEM" &&
                     (status === "PASSED" || status === "FAILED") && (
                       <StageDigest stageId={stage.id} />
                     )}
+                  {status === "PASSED" && stage.persona && (
+                    <PersonaUnlockButton
+                      personaId={stage.persona.id}
+                      personaName={stage.persona.name}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </div>

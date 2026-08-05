@@ -60,7 +60,7 @@ Sau (roadmap này):                Problems | Quest | Career Journey
   📍 `server/src/modules/ai/ai.service.ts` (dòng 31-65, `this.model` với `systemInstruction` hardcode). Đổi thành: giữ nguyên khối JSON contract + quy tắc đánh giá cốt lõi (không đổi), chỉ nối thêm `persona.systemPromptExtra` vào cuối system instruction khi build request — vd persona "Google Strict" thêm đoạn "khắt khe hơn với độ phức tạp thời gian, không chấp nhận giải pháp brute-force dù đúng". Method nhận thêm `personaId?: string` (mặc định = persona "default" nếu không truyền — không đổi hành vi Phase 1 hiện tại của `sessions`/`chat` khi chưa tích hợp Career Journey).
   **Đã làm**: tách text `systemInstruction` gốc thành hằng số module-level `STRATEGY_SYSTEM_INSTRUCTION` (nội dung y hệt cũ, không sửa 1 chữ). `this.model` (build ở constructor) vẫn dùng đúng hằng số này — hành vi mặc định giữ nguyên 100%, không thêm Prisma round-trip khi không truyền `personaId`. Thêm `generateResponse(..., personaId?: string)` + private `resolveStrategyModel(personaId?)`: nếu không có `personaId` → trả thẳng `this.model` (no-op); nếu có → tra `InterviewerPersona` qua Prisma, build model mới với `STRATEGY_SYSTEM_INSTRUCTION + "\n\n" + persona.systemPromptExtra`, cache theo `personaId` trong `Map` để không gọi lại Gemini SDK/Prisma mỗi tin nhắn; nếu persona không tồn tại hoặc `systemPromptExtra` rỗng → fallback `this.model` (không chặn chat vì lỗi dữ liệu persona). `ai.processor.ts` (nơi gọi `generateResponse` duy nhất) chưa đổi — chưa truyền `personaId` vì `Session` chưa gắn persona (việc đó thuộc `CareerJourney`/`sessions.service.ts` ở bước sau), nên hành vi Phase 1 hiện tại của `sessions`/`chat` không đổi. `npm run build` + `npm run lint` (server) đều pass; chưa có `ai.service.spec.ts` sẵn có để đối chiếu regression.
 
-- [ ] **DB: model `CareerTrack` + `CareerTrackStage` — định nghĩa 1 "mục tiêu nghề nghiệp"**
+- [x] **DB: model `CareerTrack` + `CareerTrackStage` — định nghĩa 1 "mục tiêu nghề nghiệp"**
   📍 `server/prisma/schema.prisma`.
   ```prisma
   model CareerTrack {
@@ -100,6 +100,7 @@ Sau (roadmap này):                Problems | Quest | Career Journey
   }
   ```
   Track/stage là nội dung do đội ngũ định nghĩa trước (giống `Problem` — quản trị qua seed/admin API, không cần trang admin UI riêng ở giai đoạn này, đúng scope hiện tại của `problems`).
+  **Đã làm**: thêm đúng `StageKind` enum + 2 model như trên, cộng 2 back-relation bắt buộc để Prisma validate quan hệ 2 chiều: `Problem.careerTrackStages CareerTrackStage[]` và `InterviewerPersona.stages CareerTrackStage[]` (chưa có ở item trước vì lúc đó `CareerTrackStage` chưa tồn tại). Chạy `npx prisma format` + `npx prisma validate` trước khi migrate để bắt lỗi quan hệ sớm. Migration `20260805021735_add_career_track_and_stage` áp trực tiếp vào DB dev qua docker-compose. `npx prisma generate` + `npm run build` pass (gặp 1 lần `ENOTEMPTY: directory not empty, rmdir dist` do file handle Windows còn giữ — build lại lần 2 qua ngay, không phải lỗi code).
 
 - [ ] **DB: model `CareerJourney` + `JourneyStageProgress` — tiến trình của 1 user trong 1 track**
   📍 `server/prisma/schema.prisma`. Đây là bảng điều phối mỏng nối vào `Session`/`QuestAttempt` đã có sẵn, KHÔNG thay đổi 2 bảng đó.

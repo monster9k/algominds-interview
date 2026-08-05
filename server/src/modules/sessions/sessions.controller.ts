@@ -47,6 +47,11 @@ export class SessionsController {
     return this.sessionsService.findOne(id, user.userId);
   }
 
+  @Get(':id/replay')
+  getReplay(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.sessionsService.getReplay(id, user.userId);
+  }
+
   @Patch(':id')
   update(
     @CurrentUser() user: RequestUser,

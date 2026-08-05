@@ -14,6 +14,7 @@ import { ProblemsPage } from "@/features/problems/pages/problems-page";
 import { ProfilePage } from "@/features/users/pages/profile-page";
 import { SettingsPage } from "@/features/settings/pages/settings-page";
 import { InterviewRoom } from "@/features/interview/pages/interview-room";
+import { SessionReplayPage } from "@/features/interview/pages/session-replay-page";
 import { QuestHubPage } from "@/features/quest/pages/quest-hub-page";
 import { CareerJourneyPage } from "@/features/career/pages/career-journey-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
@@ -57,6 +58,10 @@ export const router = createBrowserRouter([
       {
         path: "/interview/:slug",
         element: <InterviewRoom />,
+      },
+      {
+        path: "/interview/replay/:sessionId",
+        element: <SessionReplayPage />,
       },
     ],
   },

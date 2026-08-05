@@ -27,6 +27,7 @@
     "running": "実行中...",
     "submit": "提出",
     "submitting": "提出中...",
+    "replay": "面接のリプレイを見る",
     "sortAscending": "昇順で並び替え",
     "sortDescending": "降順で並び替え",
     "filterByDifficulty": "難易度",
@@ -142,5 +143,11 @@
   "submissionsList": {
     "status": "ステータス",
     "language": "言語"
+  },
+  "replay": {
+    "title": "面接のリプレイ",
+    "loadFailed": "この面接の履歴を読み込めませんでした。",
+    "empty": "このセッションにはまだ履歴がありません。",
+    "flagged": "AIがここで戦略の問題を発見しました"
   }
 }

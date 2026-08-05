@@ -311,6 +311,7 @@ export function InterviewRoom() {
         currentProblemSlug={slug}
         currentProblemTitle={session.problem.title}
         currentProblemDisplayId={session.problem.displayId}
+        sessionId={session.id}
       />
 
       {/* 2. WORKSPACE */}

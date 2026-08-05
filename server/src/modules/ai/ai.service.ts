@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GenerativeModel, GoogleGenerativeAI } from '@google/generative-ai';
+import { PrismaService } from '../../prisma/prisma.service';
 
 // Shape Gemini is instructed to return for evaluateCode() — see the
 // evaluationModel's systemInstruction below. Fields stay loosely typed
@@ -17,24 +18,9 @@ interface GeminiEvaluationResponse {
   cons?: unknown;
 }
 
-@Injectable()
-export class AiService {
-  private genAI: GoogleGenerativeAI;
-  private model: GenerativeModel; // For Phase 1 Strategy evaluation
-  private evaluationModel: GenerativeModel; // For Phase 3 Code evaluation
-
-  constructor(private configService: ConfigService) {
-    this.genAI = new GoogleGenerativeAI(
-      this.configService.getOrThrow<string>('GEMINI_API_KEY'),
-    );
-
-    // Model 1: Phase 1 Strategy Evaluation
-    this.model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash-lite',
-      generationConfig: {
-        responseMimeType: 'application/json',
-      },
-      systemInstruction: `
+// Nối vào cuối systemInstruction gốc khi persona có systemPromptExtra —
+// KHÔNG thay đổi khối JSON contract/quy tắc cốt lõi bên trên.
+const STRATEGY_SYSTEM_INSTRUCTION = `
         Bạn là AI interviewer, đánh giá giải pháp (Strategy) của ứng viên cho bài toán.
 
         INPUT: Ngữ cảnh bài toán và câu trả lời của ứng viên.
@@ -61,7 +47,33 @@ export class AiService {
         5. Nếu ứng viên chat linh tinh không liên quan:
           - Gán "status": "Rejected".
           - "message": Nhắc nhở tập trung vào giải pháp cho bài toán.
-      `,
+      `;
+
+@Injectable()
+export class AiService {
+  private genAI: GoogleGenerativeAI;
+  private model: GenerativeModel; // Phase 1 Strategy evaluation, persona "default" (systemPromptExtra rỗng)
+  private evaluationModel: GenerativeModel; // For Phase 3 Code evaluation
+
+  // Cache model đã build theo personaId — tránh gọi lại Gemini SDK + Prisma
+  // mỗi tin nhắn cho cùng 1 persona.
+  private readonly personaModelCache = new Map<string, GenerativeModel>();
+
+  constructor(
+    private configService: ConfigService,
+    private prisma: PrismaService,
+  ) {
+    this.genAI = new GoogleGenerativeAI(
+      this.configService.getOrThrow<string>('GEMINI_API_KEY'),
+    );
+
+    // Model 1: Phase 1 Strategy Evaluation
+    this.model = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      generationConfig: {
+        responseMimeType: 'application/json',
+      },
+      systemInstruction: STRATEGY_SYSTEM_INSTRUCTION,
     });
 
     // Model 2: Phase 3 Code Evaluation (Clean Code + Performance + Best Practices)
@@ -103,10 +115,44 @@ export class AiService {
     });
   }
 
+  // Không truyền personaId -> dùng `this.model` xây sẵn ở constructor (persona
+  // "default"), không tốn thêm round-trip Prisma. Đây là hành vi hiện tại của
+  // sessions/chat trước khi Career Journey tích hợp persona thật.
+  private async resolveStrategyModel(
+    personaId?: string,
+  ): Promise<GenerativeModel> {
+    if (!personaId) return this.model;
+
+    const cached = this.personaModelCache.get(personaId);
+    if (cached) return cached;
+
+    const persona = await this.prisma.interviewerPersona.findUnique({
+      where: { id: personaId },
+    });
+
+    // Persona không tồn tại/không có systemPromptExtra -> fallback model mặc định,
+    // không chặn luồng chat vì lý do dữ liệu persona.
+    if (!persona || !persona.systemPromptExtra) {
+      return this.model;
+    }
+
+    const personaModel = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      generationConfig: {
+        responseMimeType: 'application/json',
+      },
+      systemInstruction: `${STRATEGY_SYSTEM_INSTRUCTION}\n\n${persona.systemPromptExtra}`,
+    });
+
+    this.personaModelCache.set(personaId, personaModel);
+    return personaModel;
+  }
+
   async generateResponse(
     history: { role: 'user' | 'model'; parts: { text: string }[] }[],
     newMessage: string,
     problemContext: string,
+    personaId?: string,
   ) {
     try {
       // 1. TẠO NGỮ CẢNH GIẢ (Context Injection)
@@ -132,7 +178,8 @@ export class AiService {
 
       const fullHistory = [...contextHistory, ...history];
       // khởi tạo đoạn chat với lịch sử cũ
-      const chat = this.model.startChat({
+      const model = await this.resolveStrategyModel(personaId);
+      const chat = model.startChat({
         history: fullHistory,
       });
       // gửi tin nhắn mới

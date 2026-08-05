@@ -1,246 +1,30 @@
 # 🗺️ AlgoMinds — Roadmap: Career Journey & AI-Native Features
 
-> Bản roadmap trước (Quest "Bug Whacker") đã hoàn thành 100% (2026-08-03) — xem lịch sử git nếu cần tham chiếu lại nội dung cũ.
-> Bản này thay thế nó. Xuất phát từ 1 phiên brainstorm sản phẩm (2026-08-05): AlgoMinds không muốn clone các tab kiểu LeetCode (Contest/Discuss/Explore/Study Plan/Store) — 5 tab đó vốn tách rời vì LeetCode không có gì kết nối chúng lại. AlgoMinds thì có: lớp AI evaluation (Gemini chấm chiến lược + code) chạy xuyên suốt `sessions`/`ai`/`chat`. Roadmap này gộp cả 5 tab đó thành **1 hệ thống duy nhất — "Career Journey"** — và bổ sung 3 tính năng hoàn toàn mới không tồn tại ở LeetCode.
+> Bản roadmap Career Journey P0/P1 gốc (gộp 5 tab LeetCode-style thành pipeline, data model nền: `CareerTrack`/`CareerTrackStage`/`CareerJourney`/`JourneyStageProgress`/`InterviewerPersona`/`HiringEvent`/`UserPersonaUnlock`/`StageDigest`) đã hoàn thành 100% (2026-08-05) — xem lịch sử git (`78e8a5d`..`82bdff4`) nếu cần tham chiếu lại nội dung cũ.
+> Bản này thay thế phần plan đó. Sau khi dùng thử, nhận xét (2026-08-06): pipeline UI đầy đủ nhưng "nông" — advance giữa các stage là 2 nút bấm tay (không có auto-grading nào), `InterviewerPersona` không hề ảnh hưởng tới cách AI phỏng vấn thật (chỉ là nhãn hiển thị), stage `QUEST` không liên kết dữ liệu thật (chỉ redirect sang `/quest` chung), leaderboard/Offer Debrief là các chỉ số/nội dung không cá nhân hoá theo người dùng.
+>
+> Data model nền (`CareerTrack` → `CareerTrackStage` → `CareerJourney` → `JourneyStageProgress`, cộng `InterviewerPersona`/`HiringEvent`/`UserPersonaUnlock`/`StageDigest`) **giữ nguyên, không đổi** — vẫn là hạ tầng đúng. Cái cần làm lại là lớp hành vi phía trên: biến pipeline từ "cái vỏ điều hướng bọc quanh `sessions`/`ai` có sẵn" thành 1 hệ thống **thực sự đánh giá và thích ứng theo người dùng** — tận dụng đúng 2 tính năng net-new đã xong ở P2/P3 bên dưới (Confidence Calibration, Weakness data, Live Co-Interview) làm nguyên liệu, thay vì để chúng nằm không.
 
-## Triết lý điều hướng
+## Nhiệm vụ mới của Career Journey
 
-```
-Trước (dự định, LeetCode-style): Problems | Quest | Contest | Discuss | Explore | Study Plan | Store
-Sau (roadmap này):                Problems | Quest | Career Journey
-```
+Không còn là "gộp tab" (việc đó đã xong, giữ nguyên). Từ P4 trở đi, Career Journey phải trả lời đúng 4 nhu cầu thật của người đi phỏng vấn mà bản gốc chưa chạm tới:
 
-`Career Journey` là 1 pipeline mô phỏng quy trình xin việc thật (chọn mục tiêu → Phone Screen → Technical Rounds → Onsite Loop → Offer), mỗi vòng do 1 **AI persona** khác nhau đảm nhiệm. 5 tab cũ không biến mất — chức năng của chúng được hấp thụ vào đúng ngữ cảnh trong pipeline này thay vì làm tab rời:
+| Nhu cầu thật | Cơ chế cũ (nông) | Cơ chế mới |
+|---|---|---|
+| Biết mình qua/rớt dựa trên gì | Tự bấm "Mark as Passed/Failed" | Auto-grade từ `Evaluation`/`QuestAttempt`/`PeerInterviewEvaluation` thật, có ngưỡng (P4) |
+| Cảm giác phỏng vấn viên có "tính cách" thật | `personaId` chỉ hiển thị tên | `personaId` đổi thật system instruction Gemini đang dùng (P4) |
+| Được luyện đúng chỗ yếu, không phải bài cố định | Stage trỏ 1 `problemId` tĩnh | Stage "adaptive" chọn bài theo tag yếu nhất tính từ dữ liệu Submission/Confidence thật (P5) |
+| Vòng cuối giống phỏng vấn thật, không phải máy chấm 1 mình | `QUEST`/`PROBLEM` solo với AI | Vòng Behavioral dùng Live Co-Interview (người thật) làm 1 loại stage (P6) |
 
-| Tab cũ | Hấp thụ vào |
-|---|---|
-| Explore / Study Plan | "Vòng tiếp theo" — do AI Radar chọn từ lịch sử `Evaluation` thật, không phải danh sách/roadmap tĩnh để duyệt. |
-| Contest | **Hiring Event** — khung giờ giới hạn, 1 track "mở tuyển", xếp hạng theo hiệu suất Phase 1 (không chỉ tốc độ code). |
-| Discuss | **Offer Debrief** — AI tổng hợp cách người khác vượt qua đúng persona/stage đó, chỉ hiện sau khi user hoàn thành stage. |
-| Store | **Career Resources** — persona mở khoá qua tiến trình (hoặc credits), không phải shop liệt kê sẵn. |
+Kết thúc journey, thay vì chỉ có Offer Debrief (nội dung chung của người khác), có thêm 1 **Readiness Report** cá nhân hoá tổng hợp toàn bộ hành trình (P7).
 
 ## Cách đọc file này
-- `🔴 P0` — Nền tảng bắt buộc: data model + BE tối thiểu + FE thay được sidebar item hiện tại (`Explore`/`Study Plan` đang trỏ `href: "#"` — xem `client/src/components/layout/dashboard-sidebar.tsx`).
-- `🟡 P1` — Persona thật + 3 cơ chế thay thế Contest/Discuss/Store.
-- `🟢 P2` — Tính năng net-new (đã chốt ý tưởng ở phiên brainstorm, giữ nguyên tinh thần, không rút gọn).
-- `🔵 P3` — Tính năng net-new phức tạp nhất, cần buổi thiết kế kỹ riêng trước khi code (2 user thật + AI quan sát viên trong cùng room).
-- Mỗi task ghi **vị trí code** liên quan, và các chỗ đánh dấu **"cần quyết định sản phẩm"** — không tự ý giả định, hỏi lại user trước khi code (giống cách Quest P2 từng hỏi về việc có đụng `credits`/`streakDays` không).
-
----
-
-## 🔴 P0 — Nền tảng Career Journey (data model + BE tối thiểu + thay sidebar)
-
-- [x] **DB: model `InterviewerPersona` — cấu hình "tính cách" AI interviewer**
-  📍 `server/prisma/schema.prisma`. Đây là nền cho toàn bộ Persona Marketplace lẫn Onsite Loop nhiều vòng khác persona.
-  ```prisma
-  enum PersonaTone {
-    STRICT
-    FRIENDLY
-    SKEPTICAL
-    LENIENT
-  }
-
-  model InterviewerPersona {
-    id                String      @id @default(uuid())
-    key               String      @unique // "google_strict", "startup_friendly" — đối chiếu code, không đổi khi dịch tên hiển thị
-    name              String
-    description       String
-    tone              PersonaTone
-    systemPromptExtra String      // đoạn chỉ dẫn NỐI VÀO systemInstruction gốc của AiService, không thay thế toàn bộ — giữ nguyên format JSON output bắt buộc
-    unlockCost        Int         @default(0) // 0 = mặc định miễn phí (persona "Default" hiện tại)
-    isActive          Boolean     @default(true)
-    createdAt         DateTime    @default(now())
-
-    @@map("interviewer_personas")
-  }
-  ```
-  **Đã làm**: thêm đúng model như trên vào `schema.prisma`, chạy `npx prisma migrate dev --name add_interviewer_persona` (migration `20260805021146_add_interviewer_persona`, DB thật qua docker-compose, không dùng `db push`). Seed 1 persona `key: "default"` trong `seed.ts` với `systemPromptExtra: ""` (chuỗi rỗng) — cố ý để không nối thêm gì vào `systemInstruction` gốc của `AiService`, đảm bảo hành vi Phase 1 hiện tại không đổi khi tích hợp persona ở bước sau. `npx prisma generate` + `npx prisma db seed` + `npm run build` đều pass.
-
-- [x] **BE: tham số hoá `AiService` theo persona — KHÔNG viết lại luồng đánh giá**
-  📍 `server/src/modules/ai/ai.service.ts` (dòng 31-65, `this.model` với `systemInstruction` hardcode). Đổi thành: giữ nguyên khối JSON contract + quy tắc đánh giá cốt lõi (không đổi), chỉ nối thêm `persona.systemPromptExtra` vào cuối system instruction khi build request — vd persona "Google Strict" thêm đoạn "khắt khe hơn với độ phức tạp thời gian, không chấp nhận giải pháp brute-force dù đúng". Method nhận thêm `personaId?: string` (mặc định = persona "default" nếu không truyền — không đổi hành vi Phase 1 hiện tại của `sessions`/`chat` khi chưa tích hợp Career Journey).
-  **Đã làm**: tách text `systemInstruction` gốc thành hằng số module-level `STRATEGY_SYSTEM_INSTRUCTION` (nội dung y hệt cũ, không sửa 1 chữ). `this.model` (build ở constructor) vẫn dùng đúng hằng số này — hành vi mặc định giữ nguyên 100%, không thêm Prisma round-trip khi không truyền `personaId`. Thêm `generateResponse(..., personaId?: string)` + private `resolveStrategyModel(personaId?)`: nếu không có `personaId` → trả thẳng `this.model` (no-op); nếu có → tra `InterviewerPersona` qua Prisma, build model mới với `STRATEGY_SYSTEM_INSTRUCTION + "\n\n" + persona.systemPromptExtra`, cache theo `personaId` trong `Map` để không gọi lại Gemini SDK/Prisma mỗi tin nhắn; nếu persona không tồn tại hoặc `systemPromptExtra` rỗng → fallback `this.model` (không chặn chat vì lỗi dữ liệu persona). `ai.processor.ts` (nơi gọi `generateResponse` duy nhất) chưa đổi — chưa truyền `personaId` vì `Session` chưa gắn persona (việc đó thuộc `CareerJourney`/`sessions.service.ts` ở bước sau), nên hành vi Phase 1 hiện tại của `sessions`/`chat` không đổi. `npm run build` + `npm run lint` (server) đều pass; chưa có `ai.service.spec.ts` sẵn có để đối chiếu regression.
-
-- [x] **DB: model `CareerTrack` + `CareerTrackStage` — định nghĩa 1 "mục tiêu nghề nghiệp"**
-  📍 `server/prisma/schema.prisma`.
-  ```prisma
-  model CareerTrack {
-    id          String   @id @default(uuid())
-    key         String   @unique // "senior_backend_startup", "newgrad_bigtech"
-    name        String
-    description String
-    isActive    Boolean  @default(true)
-    createdAt   DateTime @default(now())
-
-    stages CareerTrackStage[]
-
-    @@map("career_tracks")
-  }
-
-  enum StageKind {
-    PROBLEM // vòng dùng luồng sessions hiện có (Phase1 → Phase2)
-    QUEST   // vòng dùng mini-game Quest hiện có
-  }
-
-  model CareerTrackStage {
-    id        String    @id @default(uuid())
-    trackId   String
-    order     Int       // thứ tự vòng trong track, 0-based
-    label     String    // "Phone Screen", "Onsite - Round 1"...
-    kind      StageKind
-    problemId String?   // bắt buộc khi kind = PROBLEM
-    personaId String
-    createdAt DateTime  @default(now())
-
-    track   CareerTrack         @relation(fields: [trackId], references: [id], onDelete: Cascade)
-    problem Problem?            @relation(fields: [problemId], references: [id])
-    persona InterviewerPersona  @relation(fields: [personaId], references: [id])
-
-    @@unique([trackId, order])
-    @@map("career_track_stages")
-  }
-  ```
-  Track/stage là nội dung do đội ngũ định nghĩa trước (giống `Problem` — quản trị qua seed/admin API, không cần trang admin UI riêng ở giai đoạn này, đúng scope hiện tại của `problems`).
-  **Đã làm**: thêm đúng `StageKind` enum + 2 model như trên, cộng 2 back-relation bắt buộc để Prisma validate quan hệ 2 chiều: `Problem.careerTrackStages CareerTrackStage[]` và `InterviewerPersona.stages CareerTrackStage[]` (chưa có ở item trước vì lúc đó `CareerTrackStage` chưa tồn tại). Chạy `npx prisma format` + `npx prisma validate` trước khi migrate để bắt lỗi quan hệ sớm. Migration `20260805021735_add_career_track_and_stage` áp trực tiếp vào DB dev qua docker-compose. `npx prisma generate` + `npm run build` pass (gặp 1 lần `ENOTEMPTY: directory not empty, rmdir dist` do file handle Windows còn giữ — build lại lần 2 qua ngay, không phải lỗi code).
-
-- [x] **DB: model `CareerJourney` + `JourneyStageProgress` — tiến trình của 1 user trong 1 track**
-  📍 `server/prisma/schema.prisma`. Đây là bảng điều phối mỏng nối vào `Session`/`QuestAttempt` đã có sẵn, KHÔNG thay đổi 2 bảng đó.
-  ```prisma
-  enum JourneyStatus {
-    IN_PROGRESS
-    PASSED
-    FAILED
-    ABANDONED
-  }
-
-  enum StageStatus {
-    PENDING
-    ACTIVE
-    PASSED
-    FAILED
-  }
-
-  model CareerJourney {
-    id         String        @id @default(uuid())
-    userId     String
-    trackId    String
-    status     JourneyStatus @default(IN_PROGRESS)
-    startedAt  DateTime      @default(now())
-    finishedAt DateTime?
-
-    user     User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-    track    CareerTrack            @relation(fields: [trackId], references: [id])
-    progress JourneyStageProgress[]
-
-    @@index([userId, status])
-    @@map("career_journeys")
-  }
-
-  model JourneyStageProgress {
-    id             String      @id @default(uuid())
-    journeyId      String
-    stageId        String
-    sessionId      String?     @unique // set khi stage.kind = PROBLEM
-    questAttemptId String?     @unique // set khi stage.kind = QUEST
-    status         StageStatus @default(PENDING)
-    completedAt    DateTime?
-
-    journey      CareerJourney    @relation(fields: [journeyId], references: [id], onDelete: Cascade)
-    stage        CareerTrackStage @relation(fields: [stageId], references: [id])
-    session      Session?         @relation(fields: [sessionId], references: [id])
-    questAttempt QuestAttempt?    @relation(fields: [questAttemptId], references: [id])
-
-    @@unique([journeyId, stageId])
-    @@map("journey_stage_progress")
-  }
-  ```
-  `SessionEvent` (audit trail append-only) không đổi — 1 session tạo ra trong ngữ cảnh Career Journey vẫn ghi event bình thường, `JourneyStageProgress` chỉ trỏ tới `sessionId` đã tồn tại.
-  **Đã làm**: thêm đúng 2 enum + 2 model như trên, cộng các back-relation Prisma yêu cầu: `User.careerJourneys`, `CareerTrack.journeys`, `CareerTrackStage.progress`, và quan hệ 1-1 optional `Session.journeyProgress` / `QuestAttempt.journeyProgress` (không sửa field nào có sẵn trên 2 model đó, chỉ thêm field quan hệ mới). Migration `20260805021855_add_career_journey_and_stage_progress`. `npx prisma format` + `validate` trước khi migrate, `npx prisma generate` + `npm run build` pass. Tới đây toàn bộ data model P0 đã đủ để module `career` (item tiếp theo) implement business logic mà không cần đổi schema thêm.
-
-- [x] **BE: module `career` mới**
-  📍 `server/src/modules/career/` theo pattern NestJS chuẩn (dùng skill `add-nestjs-module`): `career.module.ts`, `career.controller.ts`, `career.service.ts`, `dto/`.
-  - `GET /career/tracks` — danh sách track đang active.
-  - `POST /career/tracks/:id/start` — tạo `CareerJourney` mới (hoặc resume nếu đã có `IN_PROGRESS`), tạo `JourneyStageProgress` cho stage đầu tiên (`status: ACTIVE`). Khi stage đầu là `PROBLEM`, gọi lại logic tạo `Session` hiện có trong `sessions.service.ts` (không viết lại — Career Journey chỉ điều phối, `sessions` vẫn là nguồn sự thật cho Phase 1/2) kèm `personaId` của stage.
-  - `GET /career/journeys/me/active` — journey đang chạy + stage hiện tại, dùng cho FE hiển thị "vòng tiếp theo".
-  - `POST /career/journeys/:id/advance` — gọi khi stage hiện tại `PASSED`/`FAILED` (`sessions` service emit event này khi session `COMPLETED`, xem `check-phase-flow.md` để tra cứu nhanh trạng thái session khi debug), tạo `JourneyStageProgress` cho stage kế tiếp hoặc đóng journey nếu hết stage.
-  **Đã làm** (và 1 điều chỉnh scope so với mô tả gốc ở trên — giải thích bên dưới):
-  - Tạo đủ 4 file theo convention: `career.module.ts` (imports `PrismaModule` + `SessionsModule`), `career.controller.ts` (toàn bộ route gate bằng `JwtAuthGuard`, giống `SessionsController`), `career.service.ts`, `dto/advance-journey.dto.ts`.
-  - Reuse `Session` thật qua `SessionsService.findOrCreateBySlug(userId, problem.slug)` — **không** dùng `SessionsService.create()` (method đó hiện không được FE nào gọi và không trả về session đã tạo, nên đụng vào nó rủi ro hơn cần thiết cho phạm vi task này). Thêm `exports: [SessionsService]` vào `sessions.module.ts` (dòng duy nhất sửa trong module `sessions` — không đổi logic bên trong) để `CareerModule` import được.
-  - **Phát hiện khi đọc code**: mô tả gốc ở trên giả định "`sessions` service emit event khi session `COMPLETED`" — nhưng grep toàn bộ `server/src` cho thấy **không có bất kỳ chỗ nào trong codebase hiện tại chuyển `Session.status` sang `COMPLETED` hoặc `ABANDONED`** (chỉ có transition `PHASE_1_STRATEGY` → `PHASE_2_IMPLEMENT` trong `ai.processor.ts`). Vì vậy `POST /career/journeys/:id/advance` **không** tự suy luận PASSED/FAILED từ trạng thái `Session`/`QuestAttempt` — nhận tường minh `{ status: "PASSED" | "FAILED" }` trong body (`AdvanceJourneyDto`, validate bằng `@IsIn`). Việc tự động hoá (session/quest hoàn thành → tự advance) là việc riêng, cần thêm cơ chế đánh dấu hoàn thành session trước — không tự ý thêm vào `sessions.service.ts` ở đây vì đó là thay đổi lớn hơn phạm vi 1 module coordinator.
-  - `personaId` của stage: `CareerTrackStage.personaId` được include đầy đủ qua `TRACK_WITH_STAGES_INCLUDE`/`GET /career/tracks` để FE đọc, nhưng **chưa** được truyền vào `AiService.generateResponse()` trong `ai.processor.ts` — `Session` không có cột lưu persona nào để `processChat()` tra ngược lại. Đây là giới hạn đã biết, để lại cho bước tích hợp sâu hơn (nối `chat`/`ai` với `career`), không giả vờ đã xong.
-  - Đăng ký `CareerModule` vào `app.module.ts`. Verify: `npm run build` + `npm run lint` (server) pass; boot thử `node dist/src/main.js` — toàn bộ 4 route `/career/*` map đúng, DI resolve sạch (không lỗi circular/module thiếu export), lỗi duy nhất là `EADDRINUSE :3000` vì đã có 1 instance dev khác đang chạy — không phải lỗi code.
-
-- [x] **FE: thay sidebar item `Explore`/`Study Plan` bằng `Career Journey`**
-  📍 `client/src/components/layout/dashboard-sidebar.tsx` — 2 item hiện có `{ icon: Compass, labelKey: "sidebar.explore", href: "#" }` và `{ icon: GraduationCap, labelKey: "sidebar.studyPlan", href: "#" }` (chưa nối route, y hệt tình trạng `Quest` trước khi làm roadmap trước) → gộp thành 1 item `{ icon: Compass, labelKey: "sidebar.career", href: "/career" }`.
-  **Đã làm**: gộp đúng như trên, xoá import `GraduationCap` không còn dùng. Đổi key i18n ở cả 3 locale (`locales/{en,vi,ja}/common.json`): xoá `sidebar.explore`/`sidebar.studyPlan`, thêm `sidebar.career` ("Career Journey" / "Hành trình sự nghiệp" / "キャリアジャーニー"). Route `/career` **chưa tồn tại** ở bước này — item sidebar sẽ 404 cho tới khi item cuối (trang pipeline + đăng ký route) hoàn thành, đúng thứ tự roadmap đã định (scaffold trước, trang sau). `npm run lint` + `npm run build` (client, gồm `tsc -b`) đều pass — warning duy nhất là 8 warning có sẵn từ trước trong `interview-room.tsx`, không liên quan thay đổi này.
-
-- [x] **FE: scaffold feature folder `career`**
-  📍 `client/src/features/career/` (dùng skill `add-frontend-feature`, convention `api/hooks/components/pages/types`).
-  - `types/index.ts` — `CareerTrack`, `CareerJourney`, `JourneyStageProgress`, `StageKind`.
-  - `api/career-api.ts` — `getTracks()`, `startTrack(trackId)`, `getActiveJourney()`, `advanceJourney(journeyId)`.
-  - `hooks/use-career-tracks.ts`, `use-active-journey.ts` — bọc TanStack Query.
-  **Đã làm**: tạo đúng 3 thư mục trên (chưa tạo `components/`/`pages/` — để dành cho item cuối, không tạo thư mục rỗng "phòng hờ" theo `design.md`). `types/index.ts` khớp sát response thật của `career.service.ts`: phát hiện 1 điểm không đối xứng đáng lưu ý khi đối chiếu code — `CareerTrack.stages[]` (từ `GET /career/tracks`, `/journeys/me/active`) có `persona`/`problem` được JOIN đầy đủ, nhưng `JourneyStageProgress.stage` (từ field `progress[]` trả về bởi `startTrack`/`advanceJourney`) chỉ là record thô không JOIN — nên định nghĩa `persona?`/`problem?` là optional thay vì bắt buộc, tránh FE giả định sai rồi crash khi đọc `stage.persona.name` ở nhánh dữ liệu không JOIN. Chưa thêm hook mutation `use-start-track.ts`/`use-advance-journey.ts` — để làm cùng lúc với trang pipeline (item tiếp theo) vì đó là nơi chúng thực sự được dùng, tránh scaffold hook chưa ai gọi. `npm run lint` + `npm run build` (client) pass, cùng 8 warning có sẵn không liên quan.
-
-- [x] **FE: trang pipeline chính**
-  📍 `client/src/features/career/pages/career-journey-page.tsx`, route `/career`. UI dạng timeline dọc (không phải grid duyệt bài như `problems-page.tsx`) — mỗi node là 1 stage với trạng thái `PENDING`/`ACTIVE`/`PASSED`/`FAILED`, node `ACTIVE` có nút vào làm (route tới `interview-room` hiện có nếu `kind = PROBLEM`, tới `/quest` nếu `kind = QUEST`).
-  **Đã làm**: trang có 2 view — chưa có journey `IN_PROGRESS` thì hiện grid chọn track (`useCareerTracks`, nút "Start track" gọi `useStartTrack`); có journey thì hiện timeline dọc (border-left làm trục, dot màu theo status) build từ `journey.track.stages[]` đối chiếu `journey.progress[]` theo `stageId`. Đăng ký route `career` trong `router-instance.tsx` (cùng nhóm `DashboardLayout` với `problems`/`quest`). Thêm namespace i18n `career` (file mới `locales/{en,vi,ja}/career.json`, đăng ký vào `lib/i18n/index.ts`) — không tái dùng `common.json` vì đây là text riêng của feature, đúng convention `design.md`. Thêm hook mutation `use-start-track.ts` (còn thiếu từ item scaffold trước).
-  **Bug phát hiện khi test tay** (không phải chỉ đọc code): `career.service.ts#startTrack()` trả `CareerJourney` chỉ với `include: { progress: { include: { stage: true } } }` — **thiếu `track`** — trong khi `getActiveJourney()` luôn include `track.stages` đầy đủ. FE mutation `useStartTrack` ghi thẳng response này vào cache `["career-journey-active"]` (dùng chung key với `useActiveJourney`), nên bấm "Start track" xong trang render trắng (thiếu `journey.track`) cho tới khi có refetch khác ghi đè. Bắt được lỗi này bằng cách tự tạo 1 track tạm qua script, đăng nhập test, bấm thật trong Chrome — không phải chỉ đọc code. Fix: gộp include thành 1 hằng số `JOURNEY_FULL_INCLUDE` (`track.stages` + `progress.stage`) dùng nhất quán cho **toàn bộ** điểm trả `CareerJourney` ra ngoài (`startTrack` cả nhánh resume/tạo mới, `getActiveJourney`, và cả 3 nhánh của `advanceJourney` — FAILED/hết-stage-PASSED/tạo stage kế tiếp), không chỉ chỗ vừa phát hiện lỗi.
-  **Verify thật trong Chrome** (không chỉ build pass): tạo track tạm qua script Prisma trực tiếp (`Manual QA Track`, 2 stage: 1 `PROBLEM` trỏ `two-sum` + 1 `QUEST`), đăng ký tài khoản test qua UI, đăng nhập, vào `/career` → thấy đúng "No career tracks..." khi chưa có track (trước khi seed) → sau khi seed thấy card track + "2 stages" → bấm "Start track" → sau fix, timeline hiện đúng "Phone Screen" (ACTIVE, có tên bài + tên interviewer) và "Quest Round" (Locked) → bấm "Enter stage" → điều hướng đúng sang `/interview/two-sum`, trang interview room load bình thường. Không có console error trong suốt flow. Đã xoá sạch track/journey/user test sau khi verify xong — không phải seed data thật. `npm run lint` + `npm run build` (cả client và server, sau fix) đều pass.
-
----
-
-## 🟡 P1 — 3 cơ chế thay thế Contest / Discuss / Store
-
-- [x] **DB+BE: `HiringEvent` — thay thế Contest**
-  📍 `server/prisma/schema.prisma` model mới:
-  ```prisma
-  model HiringEvent {
-    id        String   @id @default(uuid())
-    trackId   String
-    opensAt   DateTime
-    closesAt  DateTime
-    createdAt DateTime @default(now())
-
-    track    CareerTrack @relation(fields: [trackId], references: [id])
-    entries  CareerJourney[] // journey nào gắn eventId thì tính là "đã nộp đơn" event này
-
-    @@map("hiring_events")
-  }
-  ```
-  `CareerJourney` thêm field optional `eventId String?`. Xếp hạng (`GET /career/events/:id/leaderboard`) tính theo: số stage `PASSED`, tổng số lượt chat Phase 1 tới lúc `APPROVED` (đếm `Message` theo `sessionId` — càng ít lượt càng cao điểm, đúng tinh thần "thuyết phục interviewer nhanh hơn" đã brainstorm), tổng thời gian hoàn thành journey.
-  **Đã làm**: thêm đúng model `HiringEvent` như trên + `CareerJourney.eventId String?` (optional, quan hệ tới `HiringEvent`), cộng back-relation `CareerTrack.hiringEvents`. Migration `20260805025027_add_hiring_event`.
-  Phát hiện khi implement: mô tả gốc chỉ định nghĩa data model + leaderboard, nhưng **không có endpoint nào để 1 journey thực sự gắn được `eventId`** — nếu chỉ làm đúng như mô tả, leaderboard sẽ luôn rỗng vì không ai tạo được entry. Vì vậy bổ sung 2 endpoint tối thiểu để tính năng thực sự chạy được, không chỉ là data model chết: `GET /career/events` (liệt kê event đang mở, `opensAt <= now <= closesAt`) và `POST /career/events/:id/enter` (validate event đang mở + track còn active + có stage, sau đó tạo/resume `CareerJourney` với `eventId` gắn sẵn).
-  Để tránh trùng logic tạo journey giữa `startTrack` (không event) và `enterEvent` (có event), refactor phần thân dùng chung thành `private createJourneyForTrack(userId, track, eventId?)` — đây là refactor nội bộ trong chính `career.service.ts` (module tự viết ở P0), không phải "viết lại" `sessions.service.ts` nên không vi phạm nguyên tắc thận trọng đã áp dụng cho module đó. Điều kiện resume journey đang dở giờ khớp theo cặp `(trackId, eventId)` thay vì chỉ `trackId` — để 1 user có thể vừa làm track tự do vừa tham gia hiring event riêng của cùng track đó mà không bị đè lẫn nhau.
-  `GET /career/events/:id/leaderboard`: với mỗi journey gắn `eventId`, tính `stagesPassed` (đếm `JourneyStageProgress.status = PASSED`), `messageCount` (đếm `Message` theo toàn bộ `sessionId` các stage trong journey — xấp xỉ hợp lý cho "số lượt chat Phase 1", không tách riêng được lượt trước/sau `APPROVED` vì `Message` không đánh dấu mốc đó), `durationMs` (tính tới `finishedAt` nếu đã xong, tới thời điểm hiện tại nếu chưa — leaderboard cập nhật sống trong lúc event còn mở). Sort đúng thứ tự ưu tiên đã mô tả: `stagesPassed` giảm dần → `messageCount` tăng dần → `durationMs` tăng dần.
-  Verify: `npx prisma format` + `validate` trước migrate, `npm run build` + `npm run lint` (server) pass, boot thử `node dist/src/main.js` — 3 route `/career/events*` map đúng, DI sạch, lỗi duy nhất vẫn là `EADDRINUSE` do dev server khác đang chạy song song.
-
-- [x] **BE: job nền "Offer Debrief" — thay thế Discuss**
-  📍 module mới `server/src/modules/career/` thêm `career.processor.ts` (theo đúng pattern `ai.processor.ts` — BullMQ worker, queue riêng `debrief-queue` khai báo qua `QueueModule`). Trigger khi `JourneyStageProgress.status` chuyển `PASSED`/`FAILED` cho stage `kind = PROBLEM`: gom các `Session.strategyAnswer` đã `APPROVED` khác của cùng `problemId`, gọi Gemini tổng hợp "N hướng tiếp cận khác nhau + trade-off" — **không** phải job chạy mỗi lần user xem, mà cache kết quả (model mới `StageDigest { stageId, content, generatedAt }`, tái tạo định kỳ khi đủ dữ liệu mới, không phải theo request).
-  FE: hiện digest ngay trên màn "hoàn thành stage" (`career-journey-page.tsx` hoặc dialog kết quả), không phải 1 trang forum riêng để duyệt.
-  **Gap phát hiện khi implement — đã hỏi lại user trước khi sửa**: `Session.strategyAnswer`/`strategyFeedback` tồn tại trong schema (kèm comment mô tả đúng mục đích) nhưng **chưa từng được ghi ở bất kỳ đâu trong codebase** — không `ai.processor.ts`, không FE nào gọi `PATCH /sessions/:id` với field này. Nếu không sửa, job Offer Debrief sẽ luôn có 0 answer để tổng hợp. Đã hỏi user qua `AskUserQuestion`, chọn phương án sửa: thêm đúng 2 field vào `data` của update đã có sẵn trong nhánh `isApproved` ở `ai.processor.ts#processChat()` (không thêm update call mới, không đổi luồng/điều kiện approve hiện tại) — set `strategyAnswer`/`strategyFeedback` đúng tại thời điểm được duyệt. Đây là field trước đó không ai đọc (grep xác nhận), nên bán kính ảnh hưởng gần như bằng 0.
-  **Đã làm**: model `StageDigest { stageId (unique), content, sourceCount, generatedAt }` + back-relation `CareerTrackStage.digest`, migration `20260805030127_add_stage_digest`. `AiService` thêm Model 3 (`debriefModel`, text tự do không JSON contract) + method `generateOfferDebrief(strategyAnswers, problemContext)`, export `AiService` từ `AiModule` để `career` module dùng lại (không tự gọi Gemini SDK riêng trong `career.processor.ts`). `career.service.ts#advanceJourney()` emit event `career.stage.completed` (qua `EventEmitter2`, đúng pattern `judge.service.ts` → `AiListener` đã có) khi stage vừa chuyển PASSED/FAILED có `kind = PROBLEM`; `career.listener.ts` (mới) lắng nghe, enqueue job `generate-offer-debrief` vào `debrief-queue`. `career.processor.ts` (mới): lấy toàn bộ `Session.strategyAnswer` distinct của `problemId` với status `PHASE_2_IMPLEMENT`/`COMPLETED` (cần ≥2 answer mới tổng hợp — không tạo digest "N hướng tiếp cận" từ 1 người; nếu đã có digest cũ, cần ≥2 answer MỚI so với `sourceCount` cũ mới tái tạo, đúng "tái tạo định kỳ" chứ không phải mỗi lần trigger), cap 15 answer/lần gọi Gemini. Endpoint mới `GET /career/stages/:id/digest` (chỉ đọc, không tự trigger generate).
-  FE: `StageDigest` type + `careerApi.getStageDigest` + hook `use-stage-digest.ts` + component `components/stage-digest.tsx`, gắn vào `career-journey-page.tsx` — hiện ngay dưới card của stage `kind=PROBLEM` đã `PASSED`/`FAILED` trong timeline (đúng vị trí roadmap yêu cầu, không tạo trang riêng).
-  **Verify thật, không chỉ code review**: seed 2 session "đã approved" (2 chiến lược khác nhau cho `two-sum`) + enqueue job trực tiếp vào Redis (`debrief-queue`) trỏ tới 1 stage tạm — job chạy qua Gemini thật, gặp 1 lần lỗi thoáng qua `503 Service Unavailable` từ Google, retry tự động (backoff đã cấu hình) thành công ở lần 2, `StageDigest` được ghi đúng, nội dung phân biệt đúng 2 hướng (hash map vs sort+two-pointer) kèm complexity/trade-off, không lộ danh tính, không trích nguyên văn. Sau đó verify tiếp qua browser thật: đăng ký/đăng nhập user test, `start` track 2 stage (1 PROBLEM + 1 QUEST) qua API thật, `advance` stage đầu sang PASSED qua API thật (đúng path code, không mock) → vào `/career` thấy digest hiện đúng trong card "Phone Screen — Passed", stage "Quest Round" chuyển ACTIVE. Phát hiện thêm 1 vấn đề nhỏ lúc xem thật: output Gemini có markdown (`**bold**`) nhưng FE render text thuần nên hiện dấu `**` thô — sửa `OFFER_DEBRIEF_SYSTEM_INSTRUCTION` yêu cầu trả text thuần không markdown, xoá digest cũ, re-run job, xác nhận lại trong browser: hiển thị sạch, không còn ký hiệu thừa. Không có console error trong suốt flow. Đã xoá sạch toàn bộ track/stage/session/user/queue job test sau khi verify — không phải seed thật. `npm run build` + `npm run lint` (server, sau tất cả các sửa) pass.
-
-- [x] **DB+BE: mở khoá persona — thay thế Store**
-  📍 model mới `UserPersonaUnlock { userId, personaId, unlockedAt }` (`@@unique([userId, personaId])`). `POST /career/personas/:id/unlock`.
-  **Cần quyết định sản phẩm trước khi code** (giống cách Quest P2 từng hỏi về `credits`/`streakDays` rồi quyết định không đụng): Career Journey có nên là nơi `UserStats.credits` chính thức có tác dụng không? 2 hướng:
-  1. Mở khoá persona hoàn toàn qua tiến trình (vượt qua 1 track có persona X → tự động unlock, dùng lại ở track khác) — không đụng `credits`.
-  2. Mở khoá bằng cách trừ `credits` trực tiếp (`server/src/modules/users/`) — biến `credits` từ số lượt free thành đơn vị kinh tế thật trong app.
-  Không tự ý chọn — hỏi lại user khi bắt đầu implement mục này.
-  **Quyết định (hỏi lại user qua `AskUserQuestion` trước khi code)**: chọn hướng 1 — mở khoá thuần qua tiến trình, không đụng `credits`/module `users`.
-  **Đã làm**: model `UserPersonaUnlock` đúng như trên (`@@unique([userId, personaId])`), back-relation `User.personaUnlocks` + `InterviewerPersona.unlocks`. Migration `20260805032329_add_user_persona_unlock`.
-  Điều kiện mở khoá cụ thể hoá từ hướng 1: user đã `PASSED` **ít nhất 1 `JourneyStageProgress`** mà `stage.personaId` khớp persona muốn mở khoá (không yêu cầu cả track phải `PASSED` hoàn toàn — đọc "vượt qua 1 track có persona X" theo nghĩa "đã đi qua/vượt qua vòng dùng persona đó", không phải "hoàn thành 100% track"). `POST /career/personas/:id/unlock` idempotent — gọi lại khi đã unlock trả về đúng bản ghi cũ, không lỗi, không tạo trùng (nhờ `@@unique`). Thêm `GET /career/personas/me/unlocked` (không có trong mô tả gốc) vì nếu chỉ có `POST` mở khoá mà không có cách nào đọc lại danh sách đã mở khoá thì tính năng không dùng được cho bất kỳ FE nào sau này — cùng tinh thần "endpoint tối thiểu để chạy được" đã áp dụng ở mục `HiringEvent`.
-  Không làm FE cho mục này — mô tả gốc chỉ ghi `DB+BE`, không có bullet `FE:` (khác mục Offer Debrief ở trên), giữ đúng phạm vi.
-  **Verify thật qua API** (đăng ký user thật, không mock): gọi `unlock` trước khi đủ điều kiện → đúng `400` với message rõ ràng; seed 1 track/stage dùng persona "default", `start` + `advance` sang `PASSED` qua API thật; gọi `unlock` → `201` tạo bản ghi mới; gọi lại `unlock` lần 2 → vẫn `201`, trả đúng cùng 1 `id` (xác nhận idempotent, không tạo bản ghi trùng); gọi `GET /career/personas/me/unlocked` → thấy đúng 1 persona đã mở khoá kèm thông tin `persona` JOIN sẵn. Đã xoá sạch track/journey/user test sau khi verify. `npm run build` + `npm run lint` (server) pass.
-  **P1 hoàn thành** — cả 3 cơ chế thay thế Contest/Discuss/Store đã có BE thật, verify qua API/browser thật (không chỉ code review), không phải data model chết.
-
-  **Bổ sung sau đó (theo yêu cầu user — "build luôn nút bấm cho các luồng đó")**: 3 luồng trên ban đầu chỉ test được qua API trực tiếp (Swagger/curl) vì roadmap P1 chỉ yêu cầu BE, chưa có UI. Đã thêm đủ FE để bấm-để-test hoàn toàn qua click, không cần gọi API tay nữa:
-  - `HiringEventsList` (`hiring-events-list.tsx`) — hiện trên màn chọn track khi chưa có journey active, mỗi event có nút "Enter event" (`useEnterEvent`) + "View leaderboard".
-  - `EventLeaderboardPage` (route `/career/events/:eventId/leaderboard`) — bảng xếp hạng thật, dùng lại `Table`/`Avatar` có sẵn trong `components/ui`.
-  - Nút "Mark as Passed"/"Mark as Failed" (`useAdvanceJourney`) ngay trên stage đang `ACTIVE`, kèm dòng chú thích nhỏ giải thích đây là thao tác thủ công (chưa có auto-detect khi nào 1 stage thực sự xong — đúng gap đã ghi ở mục P0 career module).
-  - `PersonaUnlockButton` (`persona-unlock-button.tsx`) — hiện trên stage đã `PASSED` nếu persona của stage đó chưa mở khoá; tự chuyển sang trạng thái "đã mở khoá" (icon check) sau khi `useUnlockPersona` thành công, BE tự kiểm tra lại điều kiện nên nút này chỉ là lối vào UI, không tự ý giả định đã đủ điều kiện.
-  - Bug tự bắt được khi verify tay: `useAdvanceJourney`'s `onSuccess` lúc đầu set thẳng response vào cache `["career-journey-active"]` bất kể `status` — nếu `advance()` làm journey chuyển `PASSED`/`FAILED` (hết stage hoặc rớt), cache vẫn giữ journey đó như đang active, trang không quay lại được màn chọn track. Sửa: chỉ cache khi `status === "IN_PROGRESS"`, ngược lại set `null` để trang tự fallback đúng.
-  Verify thật qua browser: đăng ký user mới → vào `/career` thấy đúng cả `HiringEventsList` lẫn track picker (data demo seed sẵn trong DB dev) → "Enter event" tạo journey gắn `eventId`, "View leaderboard" hiện đúng ngay → "Mark as Passed" chuyển stage 1 sang Passed, stage 2 tự ACTIVE, nút unlock persona xuất hiện → bấm unlock thành công, chuyển thành badge "đã mở khoá" → vào leaderboard thấy đúng 1 dòng entry của chính mình → quay lại, "Mark as Passed" nốt stage cuối → journey hết stage, trang tự quay về màn chọn track (xác nhận fix bug cache ở trên hoạt động đúng). Không console error trong suốt flow. Đã xoá user test, giữ lại `CareerTrack`/`HiringEvent` demo trong DB dev để dùng tiếp về sau. `npm run lint` + `npm run build` (client) pass.
+- `🟢 P2` / `🔵 P3` — đã hoàn thành, giữ nguyên không sửa. Ghi ở đây vì P5/P7 bên dưới phụ thuộc trực tiếp dữ liệu/hạ tầng 2 phase này (Confidence Calibration, Weakness data, Live Co-Interview).
+- `🔴 P4` — sửa 2 lỗ hổng nông nhất của Career Journey gốc: auto-grading thật + persona ảnh hưởng AI thật. Không cần model/DB lớn, ưu tiên làm trước.
+- `🟡 P5` — Quest liên kết thật vào journey + chọn bài tiếp theo thích ứng theo điểm yếu. Phụ thuộc cơ chế retry vừa thêm ở P4.
+- `🟣 P6` — Track gắn Company thật + vòng Behavioral dùng Live Co-Interview thật thay vì AI/Quest solo. Phụ thuộc `autoGradeStage` dùng chung từ P4, tái dùng nguyên hạ tầng P3.
+- `🟤 P7` — Readiness Report cuối journey, do Gemini tổng hợp. Phụ thuộc dữ liệu attempt/weak-tag/confidence sinh ra từ P4-P6 nên luôn đứng cuối.
+- Mỗi task ghi **vị trí code** liên quan, và các chỗ đánh dấu **"cần quyết định sản phẩm"** đã hỏi lại user trước khi ghi vào đây (xem quyết định trong từng mục) — không tự ý giả định thêm khi implement.
 
 ---
 
@@ -390,10 +174,173 @@ Sau (roadmap này):                Problems | Quest | Career Journey
   Lưu ý riêng cho việc test đa-tài khoản: reload trang (`navigate` full page) trong lúc 1 tab khác vừa đăng nhập sẽ khiến `AuthHydrator` gọi `/auth/refresh` bằng cookie `refreshToken` **dùng chung theo browser profile**, có thể "giật" nhầm danh tính tab đang test (không phải bug sản phẩm — user thật mỗi người 1 trình duyệt/cookie jar riêng) — tránh reload sau khi cả 2 bên đã đăng nhập, chỉ điều hướng trong-app (client-side routing).
   `npm run lint` + `npm run build` (client + server) đều pass.
 
-**P3 hoàn thành** — Live Co-Interview Mode có đủ BE (schema, REST, gateway, AI Model 4) + FE thật, verify bằng 2 tài khoản thật qua Chrome với Gemini thật, không phải chỉ scaffold. Toàn bộ roadmap (P0 → P3) coi như hoàn thành.
+**P3 hoàn thành** — Live Co-Interview Mode có đủ BE (schema, REST, gateway, AI Model 4) + FE thật, verify bằng 2 tài khoản thật qua Chrome với Gemini thật, không phải chỉ scaffold.
+
+---
+
+## 🔴 P4 — Auto-grading thật + Persona ảnh hưởng AI thật
+
+- [ ] **DB: `CareerTrackStage.passThreshold` + `JourneyStageProgress.attemptCount`**
+  📍 `server/prisma/schema.prisma`.
+  ```prisma
+  model CareerTrackStage {
+    // ...giữ nguyên các field hiện có...
+    passThreshold Int @default(70) // 0-100, ngưỡng điểm tối thiểu để PASS stage này
+  }
+
+  model JourneyStageProgress {
+    // ...giữ nguyên các field hiện có...
+    attemptCount Int @default(0) // tăng mỗi lần được evaluate mà chưa đạt threshold
+  }
+  ```
+  `passThreshold` áp dụng cho cả 2 kind hiện có: `PROBLEM` so với điểm trung bình 4 field `Evaluation.scores`; `QUEST` so với tỉ lệ đúng — nhánh QUEST tự động hoá thật ở P5 (P4 chỉ tự động hoá PROBLEM trước, giữ phạm vi migration nhỏ).
+
+- [ ] **BE: auto-grade nhánh PROBLEM qua event, bỏ auto-FAIL — cho retry**
+  📍 `server/src/modules/ai/ai.processor.ts#processEvaluateCode` — sau khi `evaluation.upsert` thành công, emit event `evaluation.completed` (`EventEmitter2`, cần inject vào `AiProcessor`) với payload `{ sessionId, scores: evaluation.scores }`. Không đổi gì khác trong hàm này.
+  📍 `server/src/modules/career/career.listener.ts` — thêm `@OnEvent('evaluation.completed')`: tra `Session.journeyProgress` (relation 1-1 có sẵn) qua `sessionId`; nếu null (session không thuộc career journey) → bỏ qua, không phá hành vi Phase 2 thường của `sessions`/`chat`. Nếu có và `status === ACTIVE`, tính điểm trung bình 4 field `scores`, gọi `CareerService.autoGradeProblemStage(journeyProgressId, avgScore)`.
+  📍 `career.service.ts` — thêm `autoGradeProblemStage(progressId, avgScore)`: so `avgScore` với `stage.passThreshold`.
+    - Đạt: gọi lại logic đóng-stage-mở-stage-kế hiện có trong `advanceJourney` — tách phần thân sau khi đã biết `status: 'PASSED'` thành `private applyStageOutcome(journey, activeProgress, status)` dùng chung cho cả `advanceJourney` (đường thủ công còn lại: "give up") và `autoGradeProblemStage`.
+    - Không đạt (**quyết định đã chốt: cho retry, không tự FAILED**): **không** đổi `JourneyStageProgress.status`, chỉ `update` tăng `attemptCount`, emit socket `career_stage_retry_needed` (`{ journeyId, stageId, avgScore, passThreshold }`) qua `chatGateway`/1 gateway riêng của career (kiểm tra lúc code: tái dùng `ChatGateway.server` sẵn có, room theo `sessionId`, giống cách `ai.processor.ts` đang emit `session_status_update`, không tạo gateway mới).
+  Endpoint mới `POST /career/journeys/:id/give-up`: set `JourneyStageProgress` hiện `ACTIVE` → `FAILED`, đóng `CareerJourney` → `FAILED`, `finishedAt`. Đây là nhánh **duy nhất** còn set `FAILED` thủ công. `advanceJourney` cũ (`POST /career/journeys/:id/advance`) giữ lại nhưng chỉ dùng cho stage `QUEST` tới khi P5 tự động hoá nốt — bỏ khả năng nhận `status: 'PASSED'` thủ công cho stage `PROBLEM` (validate ở DTO: nếu `activeProgress.stage.kind === PROBLEM`, từ chối request thủ công, trả lỗi rõ "stage này auto-grade, không tự đánh dấu passed").
+
+- [ ] **BE: persona ảnh hưởng AI thật**
+  📍 `ai.processor.ts#processChat` — sửa query `prisma.session.findUnique` đầu hàm, thêm include `journeyProgress: { include: { stage: true } }`. Trước khi gọi `this.aiService.generateResponse(...)`, lấy `const personaId = session.journeyProgress?.stage?.personaId`, truyền vào làm tham số thứ 4 — tham số này **đã tồn tại sẵn** trong `AiService.generateResponse`/`resolveStrategyModel` (`ai.service.ts` dòng 226-268, 196-224), chỉ chưa từng được truyền từ đây. Session ngoài career journey: `personaId` là `undefined` → hành vi giữ nguyên y hệt hiện tại (dùng `this.model` mặc định, không tốn thêm Prisma round-trip).
+
+- [ ] **FE: bỏ nút bấm tay cho stage PROBLEM, thêm banner retry**
+  📍 `client/src/features/career/pages/career-journey-page.tsx` — bỏ nút "Mark as Passed" khỏi stage `kind=PROBLEM` (giữ cho `QUEST` tới P5). Đổi nút "Mark as Failed" thành "Give up on this track" (gọi endpoint `give-up` mới), chỉ hiện khi `attemptCount > 0`.
+  Hook mới `use-career-socket.ts` (pattern giống `use-interview-socket.ts` trong feature `interview`) lắng nghe `career_stage_retry_needed`, hiện banner ngay trên stage `ACTIVE`: "Chưa đạt {avgScore}/100, cần tối thiểu {passThreshold} — sửa code và nộp lại."
+
+**Verify khi implement**: track/stage `passThreshold` cao, cố ý nộp code kém qua `/interview/:slug` → xác nhận stage KHÔNG tự FAILED, banner retry hiện đúng số điểm; sửa code tốt hơn nộp lại → tự chuyển PASSED, stage kế tiếp tự `ACTIVE`, không cần bấm gì. Đổi 1 stage sang persona `STRICT` (seed sẵn hoặc tạo tạm) → so sánh phản hồi Gemini với cùng câu trả lời ở persona `default`, xác nhận văn phong/độ khắt khe khác nhau rõ rệt.
+
+---
+
+## 🟡 P5 — Quest liên kết thật + Adaptive next-stage theo điểm yếu
+
+- [ ] **BE: nối `QuestAttempt` vào `JourneyStageProgress` thật + auto-grade nhánh QUEST**
+  📍 `server/src/modules/quest/quest.service.ts#createAttempt` — sau khi `prisma.questAttempt.create(...)`, tìm `JourneyStageProgress` đang `ACTIVE`, `questAttemptId: null`, `stage.kind: QUEST`, `journey.userId: userId` (`findFirst`). Nếu có: `update` gắn `questAttemptId`, tính tỉ lệ đúng `(correctCount/(correctCount+wrongCount))*100`, gọi lại đúng `CareerService.autoGradeProblemStage`-style logic (đổi tên chung thành `autoGradeStage(progressId, score)` để dùng cho cả PROBLEM/QUEST/PEER_INTERVIEW sau này ở P6). Không đạt threshold: theo đúng quyết định retry ở P4 — **không** tạo `JourneyStageProgress` mới, giữ `ACTIVE`, chỉ cập nhật `questAttemptId` thành attempt mới nhất mỗi lần user chơi lại 1 ván Quest mới, tăng `attemptCount`.
+  Import `CareerModule`/`CareerService` vào `QuestModule` (hoặc export `CareerService` từ `CareerModule` giống cách `SessionsModule` đã `export: [SessionsService]` cho career dùng) — kiểm tra chiều phụ thuộc lúc code: `career` đã import `SessionsModule`, nếu `quest` giờ cũng cần gọi ngược vào `career`, xác nhận không tạo cycle (khác tình huống `AiModule`↔`ChatModule` — chiều phụ thuộc ở đây 1 chiều: `quest` → `career`, không ngược lại).
+
+- [ ] **DB: pool bài theo tag cho stage "adaptive"**
+  📍 `schema.prisma`.
+  ```prisma
+  model CareerTrackStage {
+    // ...giữ nguyên...
+    adaptive Boolean @default(false) // true: bỏ qua problemId tĩnh, chọn bài trong pool theo tag yếu nhất
+    problemPool CareerTrackStageProblemPool[]
+  }
+
+  model CareerTrackStageProblemPool {
+    stageId   String
+    problemId String
+
+    stage   CareerTrackStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+    problem Problem          @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+    @@id([stageId, problemId])
+    @@map("career_track_stage_problem_pool")
+  }
+  ```
+  Stage không `adaptive`: hành vi cũ giữ nguyên 100% (`problemId` tĩnh, không đọc pool).
+
+- [ ] **BE: tính "tag yếu nhất" từ dữ liệu thật, chọn bài trong pool**
+  📍 `career.service.ts` — method dùng chung mới `computeWeakTags(userId: string)`:
+  1. `Submission` của user có `status != ACCEPTED`, trong ~90 ngày gần nhất, join `session.problem.tags` (qua `ProblemTag`), group theo `tagId`, đếm số lần.
+  2. Cộng trọng số thêm cho tag nào có `Session.confidenceSignal = 'assertive'` mà vẫn sai (dữ liệu Confidence Calibration đã có sẵn từ P2 — tín hiệu "tưởng chắc mà sai" ưu tiên luyện hơn tag chỉ đơn thuần sai).
+  3. Trả về danh sách tag sắp theo độ yếu giảm dần.
+  `ensureStageSession` (hàm hiện có) sửa: nếu `stage.adaptive`, gọi `pickAdaptiveProblem(userId, stage)` — lấy `problemPool`, join `Tag`, chọn problem thuộc tag yếu nhất trong `computeWeakTags` mà cũng nằm trong pool VÀ user chưa từng có `Session` nào cho problem đó (tránh lặp bài đã làm); nếu user chưa đủ dữ liệu (cold start) → chọn ngẫu nhiên trong pool theo `difficulty` tăng dần. Trả kèm `pickedReasonTag` (tên tag) để FE hiển thị lý do.
+
+- [ ] **FE: hiện lý do chọn bài**
+  📍 `career-journey-page.tsx` — card stage `adaptive` hiện dòng nhỏ: "Chọn riêng cho bạn vì bạn đang yếu ở {pickedReasonTag}".
+
+**Verify khi implement**: seed 1 stage `adaptive` với pool 3 bài thuộc 2 tag khác nhau; tạo vài `Submission` sai thuộc đúng 1 tag cho user test qua `/judge/submit` thật; start track → xác nhận stage `adaptive` chọn đúng bài thuộc tag yếu đó, không phải ngẫu nhiên. Chơi Quest thật qua `/quest` khi có stage `QUEST` đang `ACTIVE` → xác nhận `questAttemptId` tự gắn, stage tự chuyển theo kết quả, không cần bấm "Mark as Passed".
+
+---
+
+## 🟣 P6 — Track gắn Company thật + Behavioral Round dùng Live Co-Interview thật
+
+- [ ] **DB: `CareerTrack` gắn `Company` có sẵn (không tạo model mới)**
+  📍 `schema.prisma`.
+  ```prisma
+  model CareerTrack {
+    // ...giữ nguyên...
+    companyId String?
+    company   Company? @relation(fields: [companyId], references: [id])
+  }
+  ```
+  Back-relation `Company.careerTracks CareerTrack[]`. `companyId` optional — track "generic" không gắn công ty vẫn hợp lệ (hành vi cũ giữ nguyên cho track không set field này).
+
+- [ ] **DB: `StageKind.PEER_INTERVIEW` + liên kết `PeerInterviewSession`**
+  📍 `schema.prisma`.
+  ```prisma
+  enum StageKind {
+    PROBLEM
+    QUEST
+    PEER_INTERVIEW
+  }
+
+  model JourneyStageProgress {
+    // ...giữ nguyên...
+    peerInterviewSessionId String? @unique
+    peerInterviewSession   PeerInterviewSession? @relation(fields: [peerInterviewSessionId], references: [id])
+  }
+  ```
+  Back-relation `PeerInterviewSession.journeyProgress JourneyStageProgress?`.
+
+- [ ] **BE: `ensureStageSession` xử lý nhánh `PEER_INTERVIEW` + auto-grade qua điểm chấm thật**
+  📍 `career.service.ts` — khi `stage.kind = PEER_INTERVIEW`: **không** tự tạo `PeerInterviewSession` lúc vào stage (khác `PROBLEM` — cần candidate chủ động tạo phòng lúc sẵn sàng mời bạn, không phải lúc load trang). Trả `JourneyStageProgress` với `peerInterviewSessionId: null`, FE hiện nút "Tạo phòng phỏng vấn chéo" thay vì "Enter Stage".
+  Endpoint mới `POST /career/journeys/:journeyId/stages/:stageId/peer-session` — gọi `PeerInterviewService.create()` có sẵn (import `PeerInterviewModule`, export `PeerInterviewService` từ đó giống cách `SessionsModule` đã export cho `career`), gắn ngay `id` kết quả vào `JourneyStageProgress.peerInterviewSessionId`, trả về kèm `inviteCode` để FE hiện cho user share.
+  📍 `ai.processor.ts#processGradePeerInterview` — sau khi `upsert` `PeerInterviewEvaluation` xong, emit thêm event `peer-interview.graded` (`{ peerSessionId, candidateScore }`), song song với việc emit `peer_interview_graded` qua socket đã có (P3, không đổi).
+  📍 `career.listener.ts` — `@OnEvent('peer-interview.graded')`: tra `JourneyStageProgress` theo `peerInterviewSessionId`; nếu có và `ACTIVE`, gọi `autoGradeStage(progressId, candidateScore)` — dùng lại đúng hàm chung đã có từ P4/P5 (đạt → `applyStageOutcome`; không đạt → tăng `attemptCount`, giữ `ACTIVE`, FE hiện nút "Tạo phòng mới" để thử lại, đúng quyết định retry đã chốt).
+
+- [ ] **FE**
+  📍 `career-journey-page.tsx` — card track hiện logo/tên `Company` nếu `track.company` có dữ liệu. Stage `kind=PEER_INTERVIEW`: nút "Tạo phòng phỏng vấn chéo" → gọi endpoint mới → hiện `inviteCode` + nút "Vào phòng" (điều hướng `/peer-interview/:id`, tái dùng nguyên `peer-interview-room-page.tsx` đã có ở P3, không viết lại UI phòng chat). Lắng nghe `peer_interview_graded` (event đã có sẵn từ P3) qua `use-career-socket.ts` (đã thêm ở P4) để tự refetch journey sau khi được chấm.
+
+**Verify khi implement**: seed 1 `CareerTrack` gắn `companyId` thật (dữ liệu `companies` có sẵn), 1 stage `PEER_INTERVIEW` cuối track. Dùng 2 tài khoản test tạo phòng + hoàn thành + chấm điểm thật qua Gemini (đúng cách P3 đã verify bằng 2 tab Chrome) → xác nhận stage tự chuyển PASSED/retry theo `candidateScore`, không cần bấm nút thủ công.
+
+---
+
+## 🟤 P7 — Readiness Report cuối journey (Gemini tổng hợp)
+
+- [ ] **DB: model mới**
+  📍 `schema.prisma`.
+  ```prisma
+  model JourneyReadinessReport {
+    id          String   @id @default(uuid())
+    journeyId   String   @unique
+    content     String   // text Gemini tổng hợp, KHÔNG markdown (đúng convention Offer Debrief — FE hiện text thuần)
+    generatedAt DateTime @default(now())
+
+    journey CareerJourney @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+
+    @@map("journey_readiness_reports")
+  }
+  ```
+  Back-relation `CareerJourney.readinessReport JourneyReadinessReport?`.
+
+- [ ] **BE: Model 5 trong `AiService`**
+  📍 `ai.service.ts` — thêm `readinessReportModel` (text tự do, không set `responseMimeType`, cùng pattern `debriefModel`) + `generateReadinessReport(input)`. Input tổng hợp từ dữ liệu đã có sẵn sau P4-P6, không cần bảng mới nào khác:
+  - Danh sách stage: label, PASSED/FAILED, điểm đạt (`avgScore`/`candidateScore`), `attemptCount` (bao nhiêu lần thử mới qua — tín hiệu độ khó thật với người này).
+  - Tổng hợp `confidenceSignal` các session trong journey — tái dùng logic đã có ở `UsersService#getConfidenceCalibration` (P2), không viết lại.
+  - `computeWeakTags(userId)` (đã có từ P5) — danh sách tag yếu nhất.
+  Output: đoạn văn đánh giá mức độ sẵn sàng tổng thể + 2-3 điểm cụ thể cần cải thiện trước khi phỏng vấn thật, tiếng Việt, không markdown (đúng quy tắc `OFFER_DEBRIEF_SYSTEM_INSTRUCTION` đã áp dụng).
+
+- [ ] **BE: job nền, trigger khi journey đóng thật (không trigger khi mới retry)**
+  📍 `career.service.ts` — `applyStageOutcome` (khi hết stage → journey `PASSED`) và endpoint `give-up` (→ `FAILED`) emit thêm `career.journey.finished` `{ journeyId }`.
+  📍 `career.listener.ts` — handler mới enqueue job `generate-readiness-report` vào **`debrief-queue` đã có sẵn** (không tạo queue mới).
+  📍 `career.processor.ts` — thêm nhánh xử lý job `generate-readiness-report` (cạnh nhánh `generate-offer-debrief` hiện có, cùng 1 processor), gom dữ liệu như trên, gọi Gemini, `upsert` `JourneyReadinessReport`.
+  Endpoint mới `GET /career/journeys/:id/readiness-report` — đọc thuần, không tự trigger generate (đúng pattern `getStageDigest`).
+
+- [ ] **FE**
+  📍 `career-journey-page.tsx` — khi journey vừa đóng (PASSED/FAILED), trước khi quay về màn chọn track, hiện section/dialog mới `readiness-report-card.tsx` — poll nhẹ hoặc lắng nghe socket `career_readiness_report_ready` (thêm vào `use-career-socket.ts`) hiện nội dung report ngay khi có.
+
+**Verify khi implement**: hoàn thành trọn 1 track (PASSED tất cả stage qua auto-grade thật P4-P6, cố ý tạo vài lần retry + vài `Submission` sai thuộc 1 tag cụ thể trước đó) → xác nhận job chạy, report sinh ra phản ánh đúng dữ liệu thật: đúng tag yếu đã cố tình tạo, đúng số lần retry, đúng xu hướng confidence.
+
+**P4-P7 hoàn thành khi**: cả 4 phase có BE+FE thật, verify bằng dữ liệu/tài khoản thật qua Chrome (không chỉ code review) — đúng chuẩn đã áp dụng cho toàn bộ P0-P3 trước đó.
 
 ---
 
 ## Ghi chú thứ tự ưu tiên
 
-DB → BE → FE trong từng nhóm P, giữ đúng lý do đã áp dụng ở roadmap Quest: FE cần contract API thật để gọi, tránh mock rồi sửa lại. `Career Journey` (P0-P1) đi trước 2 tính năng net-new đơn giản hơn (P2) vì P2 phụ thuộc dữ liệu `Session`/`Evaluation` đã tồn tại sẵn — không phụ thuộc P0, có thể làm song song nếu cần, nhưng đặt sau P0-P1 vì P0-P1 là thay đổi cấu trúc điều hướng lớn hơn, nên ưu tiên chốt trước khi tinh chỉnh thêm. P3 luôn đứng cuối vì đụng vào phần hạ tầng rủi ro nhất (`chat.gateway.ts` + `forwardRef()` cycle + chưa có test coverage).
+DB → BE → FE trong từng phase, giữ đúng lý do đã áp dụng xuyên suốt roadmap này: FE cần contract API thật để gọi, tránh mock rồi sửa lại.
+
+P4 đứng đầu vì sửa đúng 2 lỗ hổng nông nhất (auto-grade, persona) với chi phí thấp nhất (không cần model/DB lớn, không đụng module ngoài `career`/`ai`) — nền tảng `autoGradeStage`/retry mà P5-P7 đều dùng lại. P5 phụ thuộc trực tiếp cơ chế retry của P4, thêm liên kết Quest thật + chọn bài thích ứng. P6 phụ thuộc `autoGradeStage` từ P4 nhưng độc lập với P5 (có thể làm song song nếu cần) — tái dùng nguyên hạ tầng P3 (Live Co-Interview) nên rủi ro chủ yếu nằm ở việc gọi đúng module đã có, không phải xây mới. P7 luôn đứng cuối vì cần dữ liệu attempt/weak-tag/confidence sinh ra từ chính P4-P6 mới có gì để tổng hợp — làm trước sẽ không có dữ liệu thật để verify.

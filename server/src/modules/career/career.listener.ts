@@ -18,6 +18,11 @@ interface EvaluationCompletedPayload {
   };
 }
 
+interface PeerInterviewGradedPayload {
+  peerSessionId: string;
+  candidateScore: number;
+}
+
 @Injectable()
 export class CareerListener {
   private readonly logger = new Logger(CareerListener.name);
@@ -66,6 +71,25 @@ export class CareerListener {
     } catch (error) {
       this.logger.error(
         `[evaluation.completed] Error auto-grading career stage for session ${payload.sessionId}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  // P6 — emit từ ai.processor.ts#processGradePeerInterview sau mỗi lần
+  // PeerInterviewEvaluation được lưu. peerSessionId không gắn stage
+  // PEER_INTERVIEW đang ACTIVE nào thì handlePeerInterviewGraded tự bỏ qua,
+  // không phá hành vi P3 hiện có (peer interview tự do ngoài career journey).
+  @OnEvent('peer-interview.graded')
+  async handlePeerInterviewGraded(payload: PeerInterviewGradedPayload) {
+    try {
+      await this.careerService.handlePeerInterviewGraded(
+        payload.peerSessionId,
+        payload.candidateScore,
+      );
+    } catch (error) {
+      this.logger.error(
+        `[peer-interview.graded] Error auto-grading career stage for peer session ${payload.peerSessionId}:`,
         error instanceof Error ? error.message : String(error),
       );
     }

@@ -342,6 +342,13 @@ ${problem.content}
           evaluation: savedEvaluation,
         });
 
+      // P6 — auto-grade career journey nếu peer session này gắn với 1 stage
+      // PEER_INTERVIEW đang ACTIVE (career.listener.ts tự bỏ qua nếu không).
+      this.eventEmitter.emit('peer-interview.graded', {
+        peerSessionId,
+        candidateScore: grading.candidateScore,
+      });
+
       return savedEvaluation;
     } catch (error) {
       this.logger.error(

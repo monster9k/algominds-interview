@@ -1,25 +1,53 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, Compass, ListChecks, Trophy } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  AlertTriangle,
+  Building2,
+  Compass,
+  ListChecks,
+  Trophy,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import type { PeerInterviewSession } from "@/features/peer-interview/types";
 import { useCareerTracks } from "../hooks/use-career-tracks";
 import { useActiveJourney } from "../hooks/use-active-journey";
 import { useStartTrack } from "../hooks/use-start-track";
 import { useAdvanceJourney } from "../hooks/use-advance-journey";
 import { useGiveUp } from "../hooks/use-give-up";
+import { useCreatePeerSession } from "../hooks/use-create-peer-session";
 import {
   useCareerSocket,
   type CareerStageRetryNeededPayload,
+  type PeerInterviewGradedPayload,
 } from "../hooks/use-career-socket";
 import { StageDigest } from "../components/stage-digest";
 import { HiringEventsList } from "../components/hiring-events-list";
 import { PersonaUnlockButton } from "../components/persona-unlock-button";
-import type { CareerTrackStage, StageStatus } from "../types";
+import type { CareerTrackStage, CareerTrackCompany, StageStatus } from "../types";
+
+function CompanyBadge({ company }: { company: CareerTrackCompany }) {
+  return (
+    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      {company.logoUrl ? (
+        <img
+          src={company.logoUrl}
+          alt={company.name}
+          className="h-4 w-4 rounded-sm object-contain"
+        />
+      ) : (
+        <Building2 className="h-3.5 w-3.5" />
+      )}
+      {company.name}
+    </p>
+  );
+}
 
 const STATUS_BADGE_VARIANT: Record<
   StageStatus,
@@ -41,15 +69,23 @@ const STATUS_DOT_CLASS: Record<StageStatus, string> = {
 export function CareerJourneyPage() {
   const { t } = useTranslation("career");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: journey, isLoading: journeyLoading } = useActiveJourney();
   const { data: tracks, isLoading: tracksLoading } = useCareerTracks();
   const startTrack = useStartTrack();
   const advanceJourney = useAdvanceJourney();
   const giveUp = useGiveUp();
+  const createPeerSession = useCreatePeerSession();
 
   const [retryInfo, setRetryInfo] =
     useState<CareerStageRetryNeededPayload | null>(null);
+  // stage kind=PEER_INTERVIEW (P6) — phòng vừa tạo/đã tạo trước đó cho
+  // stage đang ACTIVE. Reset khi đổi sang stage khác (key theo stageId).
+  const [peerSession, setPeerSession] = useState<{
+    stageId: string;
+    session: PeerInterviewSession;
+  } | null>(null);
 
   // Stage đang ACTIVE là stage duy nhất có thể nhận career_stage_retry_needed
   // — chỉ có sessionId khi kind=PROBLEM (P4), useCareerSocket tự no-op nếu
@@ -64,10 +100,53 @@ export function CareerJourneyPage() {
     [],
   );
 
+  // Chấm xong vòng Behavioral -> refetch journey để lấy trạng thái mới nhất
+  // (auto-grade đã chạy ở BE: applyStageOutcome PASSED hoặc attemptCount++).
+  // Đồng thời đánh dấu phòng vừa chấm là COMPLETED trong state cục bộ — nếu
+  // chưa đạt threshold (retry), UI tự chuyển từ "Vào phòng" sang "Tạo phòng
+  // mới" thay vì tiếp tục trỏ vào 1 phòng đã kết thúc. Không tự động gọi lại
+  // createPeerSession ở đây — để user chủ động bấm nút, đúng thiết kế.
+  const handlePeerInterviewGraded = useCallback(
+    (payload: PeerInterviewGradedPayload) => {
+      queryClient.invalidateQueries({ queryKey: ["career-journey-active"] });
+      setPeerSession((prev) =>
+        prev && prev.session.id === payload.peerSessionId
+          ? { ...prev, session: { ...prev.session, status: "COMPLETED" } }
+          : prev,
+      );
+    },
+    [queryClient],
+  );
+
   useCareerSocket({
     sessionId: activeProgress?.sessionId ?? undefined,
+    peerSessionId: activeProgress?.peerInterviewSessionId ?? undefined,
     onStageRetryNeeded: handleStageRetryNeeded,
+    onPeerInterviewGraded: handlePeerInterviewGraded,
   });
+
+  // Đã tạo phòng từ trước (vd reload trang) nhưng state cục bộ chưa có ->
+  // gọi lại createPeerSession (idempotent ở BE, trả về đúng phòng cũ) để
+  // hiện lại invite code/nút vào phòng thay vì bắt tạo lại.
+  useEffect(() => {
+    if (
+      !journey ||
+      activeProgress?.stage.kind !== "PEER_INTERVIEW" ||
+      !activeProgress.peerInterviewSessionId ||
+      peerSession?.stageId === activeProgress.stageId
+    ) {
+      return;
+    }
+
+    createPeerSession.mutate(
+      { journeyId: journey.id, stageId: activeProgress.stageId },
+      {
+        onSuccess: (session) =>
+          setPeerSession({ stageId: activeProgress.stageId, session }),
+      },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProgress?.stageId, activeProgress?.peerInterviewSessionId]);
 
   const handleEnterStage = (stage: CareerTrackStage) => {
     if (stage.kind === "PROBLEM" && stage.problem) {
@@ -75,6 +154,17 @@ export function CareerJourneyPage() {
     } else if (stage.kind === "QUEST") {
       navigate("/quest");
     }
+  };
+
+  const handleCreatePeerSession = (stage: CareerTrackStage) => {
+    if (!journey) return;
+    createPeerSession.mutate(
+      { journeyId: journey.id, stageId: stage.id },
+      {
+        onSuccess: (session) =>
+          setPeerSession({ stageId: stage.id, session }),
+      },
+    );
   };
 
   if (journeyLoading) {
@@ -114,6 +204,7 @@ export function CareerJourneyPage() {
                   <CardTitle className="text-lg">{track.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {track.company && <CompanyBadge company={track.company} />}
                   <p className="text-sm text-muted-foreground">
                     {track.description}
                   </p>
@@ -163,6 +254,11 @@ export function CareerJourneyPage() {
           </Button>
         )}
       </div>
+      {journey.track?.company && (
+        <div className="mb-2">
+          <CompanyBadge company={journey.track.company} />
+        </div>
+      )}
       <p className="text-sm text-muted-foreground mb-8">
         {journey.track?.description}
       </p>
@@ -193,7 +289,9 @@ export function CareerJourneyPage() {
                   <p className="text-xs text-muted-foreground">
                     {stage.kind === "PROBLEM"
                       ? (stage.problem?.title ?? t("stageKind.problem"))
-                      : t("stageKind.quest")}
+                      : stage.kind === "PEER_INTERVIEW"
+                        ? t("stageKind.peerInterview")
+                        : t("stageKind.quest")}
                   </p>
                   {stage.persona && (
                     <p className="text-xs text-muted-foreground">
@@ -207,9 +305,14 @@ export function CareerJourneyPage() {
                   )}
                   {status === "ACTIVE" && (
                     <div className="space-y-2 pt-1">
-                      <Button size="sm" onClick={() => handleEnterStage(stage)}>
-                        {t("enterStage")}
-                      </Button>
+                      {stage.kind !== "PEER_INTERVIEW" && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleEnterStage(stage)}
+                        >
+                          {t("enterStage")}
+                        </Button>
+                      )}
 
                       {retryInfo?.stageId === stage.id && (
                         <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-xs text-amber-600 dark:text-amber-400">
@@ -261,6 +364,61 @@ export function CareerJourneyPage() {
                             {t("manualAdvanceHint")}
                           </p>
                         </>
+                      ) : stage.kind === "PEER_INTERVIEW" ? (
+                        // Behavioral Round dùng Live Co-Interview thật (P6) —
+                        // auto-grade qua candidateScore khi chấm xong, chỉ
+                        // còn lối thoát thủ công là "give up". Phòng cũ đã
+                        // COMPLETED (retry sau khi chưa đạt threshold) không
+                        // còn "usable" -> quay lại nút tạo phòng mới.
+                        <div className="space-y-2">
+                          {peerSession?.stageId === stage.id &&
+                          (peerSession.session.status === "WAITING_FOR_PEER" ||
+                            peerSession.session.status === "ACTIVE") ? (
+                            <>
+                              <div className="rounded-md border border-border p-2 text-xs">
+                                <p className="text-muted-foreground">
+                                  {t("peerInterview.inviteCodeLabel")}
+                                </p>
+                                <p className="font-mono text-sm font-semibold text-foreground">
+                                  {peerSession.session.inviteCode}
+                                </p>
+                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  navigate(
+                                    `/peer-interview/${peerSession.session.id}`,
+                                  )
+                                }
+                              >
+                                <Users className="mr-1.5 h-3.5 w-3.5" />
+                                {t("peerInterview.enterRoom")}
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              size="sm"
+                              disabled={createPeerSession.isPending}
+                              onClick={() => handleCreatePeerSession(stage)}
+                            >
+                              <Users className="mr-1.5 h-3.5 w-3.5" />
+                              {(progress?.attemptCount ?? 0) > 0
+                                ? t("peerInterview.createNewRoom")
+                                : t("peerInterview.createRoom")}
+                            </Button>
+                          )}
+                          {(progress?.attemptCount ?? 0) > 0 && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-destructive hover:text-destructive"
+                              disabled={giveUp.isPending}
+                              onClick={() => giveUp.mutate(journey.id)}
+                            >
+                              {t("giveUp")}
+                            </Button>
+                          )}
+                        </div>
                       ) : (
                         // PROBLEM giờ auto-grade qua kết quả nộp bài (P4) —
                         // chỉ còn lối thoát thủ công là "give up" sau khi đã

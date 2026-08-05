@@ -9,7 +9,8 @@
   "adaptivePick": "Chọn riêng cho bạn vì bạn đang yếu ở {{tag}}",
   "stageKind": {
     "problem": "Bài tập code",
-    "quest": "Mini-game Quest"
+    "quest": "Mini-game Quest",
+    "peerInterview": "Phỏng vấn chéo"
   },
   "status": {
     "PENDING": "Chưa mở khoá",
@@ -42,5 +43,11 @@
   "personaUnlock": {
     "unlock": "Mở khoá {{name}}",
     "unlocked": "Đã mở khoá {{name}}"
+  },
+  "peerInterview": {
+    "createRoom": "Tạo phòng phỏng vấn chéo",
+    "createNewRoom": "Tạo phòng mới",
+    "enterRoom": "Vào phòng",
+    "inviteCodeLabel": "Chia sẻ mã mời này cho 1 người bạn"
   }
 }

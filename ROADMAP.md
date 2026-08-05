@@ -271,9 +271,9 @@ Kết thúc journey, thay vì chỉ có Offer Debrief (nội dung chung của ng
 
 ---
 
-## 🟣 P6 — Track gắn Company thật + Behavioral Round dùng Live Co-Interview thật
+## 🟣 P6 — Track gắn Company thật + Behavioral Round dùng Live Co-Interview thật (Đã hoàn thành 2026-08-06)
 
-- [ ] **DB: `CareerTrack` gắn `Company` có sẵn (không tạo model mới)**
+- [x] **DB: `CareerTrack` gắn `Company` có sẵn (không tạo model mới)**
   📍 `schema.prisma`.
   ```prisma
   model CareerTrack {
@@ -283,8 +283,9 @@ Kết thúc journey, thay vì chỉ có Offer Debrief (nội dung chung của ng
   }
   ```
   Back-relation `Company.careerTracks CareerTrack[]`. `companyId` optional — track "generic" không gắn công ty vẫn hợp lệ (hành vi cũ giữ nguyên cho track không set field này).
+  **Đã làm**: đúng như thiết kế. Migration `20260805223729_add_peer_interview_stage_kind_and_track_company` (gộp chung với item bên dưới — cùng 1 lần schema change). Môi trường chạy lệnh không có TTY nên `prisma migrate dev` (interactive) không dùng được trực tiếp — dùng `prisma migrate diff --from-config-datasource --to-schema` để sinh SQL, tự tạo thư mục migration đúng convention đặt tên, rồi `prisma migrate deploy` (non-interactive) để áp dụng — kết quả cuối giống hệt `migrate dev` sẽ tạo ra, chỉ khác quy trình sinh do giới hạn môi trường.
 
-- [ ] **DB: `StageKind.PEER_INTERVIEW` + liên kết `PeerInterviewSession`**
+- [x] **DB: `StageKind.PEER_INTERVIEW` + liên kết `PeerInterviewSession`**
   📍 `schema.prisma`.
   ```prisma
   enum StageKind {
@@ -300,17 +301,24 @@ Kết thúc journey, thay vì chỉ có Offer Debrief (nội dung chung của ng
   }
   ```
   Back-relation `PeerInterviewSession.journeyProgress JourneyStageProgress?`.
+  **Đã làm**: đúng như thiết kế, cùng migration với item trên.
 
-- [ ] **BE: `ensureStageSession` xử lý nhánh `PEER_INTERVIEW` + auto-grade qua điểm chấm thật**
+- [x] **BE: `ensureStageSession` xử lý nhánh `PEER_INTERVIEW` + auto-grade qua điểm chấm thật**
   📍 `career.service.ts` — khi `stage.kind = PEER_INTERVIEW`: **không** tự tạo `PeerInterviewSession` lúc vào stage (khác `PROBLEM` — cần candidate chủ động tạo phòng lúc sẵn sàng mời bạn, không phải lúc load trang). Trả `JourneyStageProgress` với `peerInterviewSessionId: null`, FE hiện nút "Tạo phòng phỏng vấn chéo" thay vì "Enter Stage".
   Endpoint mới `POST /career/journeys/:journeyId/stages/:stageId/peer-session` — gọi `PeerInterviewService.create()` có sẵn (import `PeerInterviewModule`, export `PeerInterviewService` từ đó giống cách `SessionsModule` đã export cho `career`), gắn ngay `id` kết quả vào `JourneyStageProgress.peerInterviewSessionId`, trả về kèm `inviteCode` để FE hiện cho user share.
   📍 `ai.processor.ts#processGradePeerInterview` — sau khi `upsert` `PeerInterviewEvaluation` xong, emit thêm event `peer-interview.graded` (`{ peerSessionId, candidateScore }`), song song với việc emit `peer_interview_graded` qua socket đã có (P3, không đổi).
   📍 `career.listener.ts` — `@OnEvent('peer-interview.graded')`: tra `JourneyStageProgress` theo `peerInterviewSessionId`; nếu có và `ACTIVE`, gọi `autoGradeStage(progressId, candidateScore)` — dùng lại đúng hàm chung đã có từ P4/P5 (đạt → `applyStageOutcome`; không đạt → tăng `attemptCount`, giữ `ACTIVE`, FE hiện nút "Tạo phòng mới" để thử lại, đúng quyết định retry đã chốt).
+  **Đã làm**: đúng như thiết kế. `ensureStageSession` thực ra **không cần sửa gì** — hàm gốc đã tổng quát hoá theo kiểu "không phải PROBLEM thì trả `{}`" từ P5, nên `PEER_INTERVIEW` tự động rơi vào đúng nhánh đó. `CareerModule` import thêm `PeerInterviewModule` (không tạo cycle — `peer-interview` không import ngược lại `career`).
+  **Bug thật bắt được khi verify tay, không phải chỉ đọc code**: mô tả gốc không nói rõ `createPeerSession` nên xử lý thế nào khi `peerInterviewSessionId` đã tồn tại nhưng phòng đó **đã kết thúc** (COMPLETED, sau 1 lần chấm chưa đạt threshold) — ban đầu làm idempotent đơn giản "đã có id thì trả về đúng phòng cũ", verify tay lần retry thứ 2 phát hiện: candidate không bao giờ tạo được phòng MỚI, luôn nhận lại đúng phòng đã COMPLETED (chết) cũ, chặn đứng khả năng thử lại — vi phạm đúng quyết định retry đã chốt ở P4. Sửa: idempotent **có điều kiện** — chỉ trả về phòng cũ nếu `status` còn `WAITING_FOR_PEER`/`ACTIVE` (còn dùng được); nếu đã `COMPLETED`/`ABANDONED` thì tạo phòng mới thật và ghi đè `peerInterviewSessionId`.
 
-- [ ] **FE**
+- [x] **FE**
   📍 `career-journey-page.tsx` — card track hiện logo/tên `Company` nếu `track.company` có dữ liệu. Stage `kind=PEER_INTERVIEW`: nút "Tạo phòng phỏng vấn chéo" → gọi endpoint mới → hiện `inviteCode` + nút "Vào phòng" (điều hướng `/peer-interview/:id`, tái dùng nguyên `peer-interview-room-page.tsx` đã có ở P3, không viết lại UI phòng chat). Lắng nghe `peer_interview_graded` (event đã có sẵn từ P3) qua `use-career-socket.ts` (đã thêm ở P4) để tự refetch journey sau khi được chấm.
+  **Đã làm**: đúng như thiết kế, cộng thêm phần xử lý retry khớp với bug ở trên — `use-career-socket.ts` nhận thêm `peerSessionId` (join `join_peer_room`, đúng room `peer:<id>` mà P3 đã dựng) + lắng nghe `peer_interview_graded`. Component giữ phòng vừa tạo/khôi phục trong state cục bộ (không ghi vào cache `["career-journey-active"]` vì response là `PeerInterviewSession`, khác shape `CareerJourney`); khi `peer_interview_graded` bắn về, đánh dấu phòng đó `COMPLETED` trong state cục bộ (không tự động tạo phòng mới ngầm) — nút tự chuyển từ "Vào phòng" sang "Tạo phòng mới", đúng ý "user chủ động bấm" thay vì âm thầm tạo phòng hộ. Có thêm 1 effect khôi phục phòng khi `peerInterviewSessionId` đã có sẵn từ BE nhưng state cục bộ trống (vd reload trang) — gọi lại đúng endpoint idempotent ở trên, không cần trang riêng để tra cứu phòng cũ. Type `PeerInterviewSession` tái dùng từ feature `peer-interview` (không định nghĩa lại).
+  `npm run lint` + `npm run build` (client + server) đều pass.
 
-**Verify khi implement**: seed 1 `CareerTrack` gắn `companyId` thật (dữ liệu `companies` có sẵn), 1 stage `PEER_INTERVIEW` cuối track. Dùng 2 tài khoản test tạo phòng + hoàn thành + chấm điểm thật qua Gemini (đúng cách P3 đã verify bằng 2 tab Chrome) → xác nhận stage tự chuyển PASSED/retry theo `candidateScore`, không cần bấm nút thủ công.
+**Verify thật qua Node script (fetch + socket.io-client, 2 tài khoản thật, real Gemini), không mock**: seed 1 `CareerTrack` gắn `companyId` = Meta thật, 1 stage `PEER_INTERVIEW` cuối track (`passThreshold: 50`). Candidate `start` track → tạo phòng qua endpoint mới → nhận `inviteCode` thật. Tài khoản thứ 2 join qua `POST /peer-interviews/join/:inviteCode`. Cả 2 kết nối socket thật, `join_peer_room`, trao đổi 1 đoạn hội thoại kỹ thuật thật (giải thích hash map vs brute-force) qua `send_peer_message`. Candidate gọi `end_peer_interview` → job `grade-peer-interview` chạy qua Gemini thật → `candidateScore: 90` (≥ 50) → `peer_interview_graded` bắn về đúng cả 2 tab → career journey tự đóng `PASSED` (`GET /career/journeys/me/active` trả `null` đúng như kỳ vọng, xác nhận lại qua Prisma trực tiếp: `journey.status: PASSED`, `progress[0].status: PASSED`, `peerInterviewSessionId` đúng gắn với phòng vừa chấm).
+Verify riêng nhánh retry: track thứ 2 với `passThreshold: 99` (gần như chắc chắn không đạt dù hội thoại tốt) — `candidateScore: 95 < 99` → **không** tự `FAILED`: journey vẫn `IN_PROGRESS`, stage vẫn `ACTIVE`, `attemptCount: 1` — **đây là bước bắt được bug ở trên** (gọi lại `createPeerSession` sau retry, xác nhận nhận về `id` khác hẳn phòng cũ đã `COMPLETED`, không phải cùng 1 phòng chết). Gọi `POST /career/journeys/:id/give-up` → xác nhận journey/stage chuyển đúng `FAILED`.
+Đã xoá sạch track/journey/session/peer-interview-session/user test sau khi verify — không phải seed thật. `npm run build` + `npm run lint` (server + client, sau fix) đều pass.
 
 ---
 

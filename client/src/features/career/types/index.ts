@@ -1,4 +1,4 @@
-export type StageKind = "PROBLEM" | "QUEST";
+export type StageKind = "PROBLEM" | "QUEST" | "PEER_INTERVIEW";
 
 export type JourneyStatus = "IN_PROGRESS" | "PASSED" | "FAILED" | "ABANDONED";
 
@@ -39,12 +39,21 @@ export interface CareerTrackStage {
   problem?: CareerTrackStageProblem | null;
 }
 
+export interface CareerTrackCompany {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+}
+
 export interface CareerTrack {
   id: string;
   key: string;
   name: string;
   description: string;
   isActive: boolean;
+  // Track mô phỏng pipeline 1 công ty thật (P6) — null với track "generic".
+  company: CareerTrackCompany | null;
   stages: CareerTrackStage[];
 }
 
@@ -63,6 +72,9 @@ export interface JourneyStageProgress {
   // (P5) — null nếu stage không adaptive hoặc chọn cold-start (chưa đủ dữ
   // liệu weak tag).
   pickedReasonTag: string | null;
+  // set khi stage.kind = PEER_INTERVIEW, sau khi candidate chủ động tạo
+  // phòng qua POST .../peer-session (P6) — null nếu chưa tạo.
+  peerInterviewSessionId: string | null;
   stage: CareerTrackStage;
 }
 

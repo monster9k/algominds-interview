@@ -9,7 +9,8 @@
   "adaptivePick": "{{tag}}が苦手なため、あなたのために選ばれました",
   "stageKind": {
     "problem": "コーディング問題",
-    "quest": "クエストミニゲーム"
+    "quest": "クエストミニゲーム",
+    "peerInterview": "ピアインタビュー"
   },
   "status": {
     "PENDING": "未解放",
@@ -42,5 +43,11 @@
   "personaUnlock": {
     "unlock": "{{name}}を解放",
     "unlocked": "{{name}}を解放済み"
+  },
+  "peerInterview": {
+    "createRoom": "ピアインタビュールームを作成",
+    "createNewRoom": "新しいルームを作成",
+    "enterRoom": "ルームに入る",
+    "inviteCodeLabel": "この招待コードを友達と共有してください"
   }
 }

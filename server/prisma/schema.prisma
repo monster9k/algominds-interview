@@ -194,7 +194,8 @@ model Company {
   createdAt DateTime @default(now())
 
   // Relations
-  problems ProblemCompany[]
+  problems     ProblemCompany[]
+  careerTracks CareerTrack[]
 
   @@map("companies")
 }
@@ -319,8 +320,12 @@ model CareerTrack {
   name        String
   description String
   isActive    Boolean  @default(true)
+  // Track mô phỏng pipeline của 1 công ty thật (P6) — optional, track
+  // "generic" không gắn công ty nào vẫn hợp lệ, hành vi cũ giữ nguyên.
+  companyId   String?
   createdAt   DateTime @default(now())
 
+  company      Company?           @relation(fields: [companyId], references: [id])
   stages       CareerTrackStage[]
   journeys     CareerJourney[]
   hiringEvents HiringEvent[]
@@ -347,6 +352,7 @@ model HiringEvent {
 enum StageKind {
   PROBLEM // vòng dùng luồng sessions hiện có (Phase1 → Phase2)
   QUEST // vòng dùng mini-game Quest hiện có
+  PEER_INTERVIEW // vòng Behavioral dùng Live Co-Interview thật (P6, xem PeerInterviewSession)
 }
 
 model CareerTrackStage {
@@ -441,26 +447,30 @@ model CareerJourney {
 }
 
 model JourneyStageProgress {
-  id              String      @id @default(uuid())
-  journeyId       String
-  stageId         String
-  sessionId       String?     @unique // set khi stage.kind = PROBLEM
-  questAttemptId  String?     @unique // set khi stage.kind = QUEST
-  status          StageStatus @default(PENDING)
-  completedAt     DateTime?
+  id                     String      @id @default(uuid())
+  journeyId              String
+  stageId                String
+  sessionId              String?     @unique // set khi stage.kind = PROBLEM
+  questAttemptId         String?     @unique // set khi stage.kind = QUEST
+  status                 StageStatus @default(PENDING)
+  completedAt            DateTime?
   // Tăng mỗi lần auto-grade (P4) đánh giá mà CHƯA đạt passThreshold — stage
   // không tự FAILED khi chưa đạt (quyết định sản phẩm: cho retry tới khi đạt),
   // chỉ dùng để FE hiện nút "Give up" sau lần thử đầu tiên.
-  attemptCount    Int         @default(0)
+  attemptCount           Int         @default(0)
   // Tên tag yếu nhất đã dẫn tới việc chọn problem này cho stage adaptive
   // (P5) — snapshot tại thời điểm tạo, null nếu stage không adaptive hoặc
   // chọn ngẫu nhiên do chưa đủ dữ liệu (cold start).
-  pickedReasonTag String?
+  pickedReasonTag        String?
+  // set khi stage.kind = PEER_INTERVIEW, sau khi candidate chủ động tạo
+  // phòng (không tự tạo lúc vào stage) — P6.
+  peerInterviewSessionId String?     @unique
 
-  journey      CareerJourney    @relation(fields: [journeyId], references: [id], onDelete: Cascade)
-  stage        CareerTrackStage @relation(fields: [stageId], references: [id])
-  session      Session?         @relation(fields: [sessionId], references: [id])
-  questAttempt QuestAttempt?    @relation(fields: [questAttemptId], references: [id])
+  journey              CareerJourney         @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  stage                CareerTrackStage      @relation(fields: [stageId], references: [id])
+  session              Session?              @relation(fields: [sessionId], references: [id])
+  questAttempt         QuestAttempt?         @relation(fields: [questAttemptId], references: [id])
+  peerInterviewSession PeerInterviewSession? @relation(fields: [peerInterviewSessionId], references: [id])
 
   @@unique([journeyId, stageId])
   @@map("journey_stage_progress")
@@ -612,6 +622,7 @@ model PeerInterviewSession {
   problem         Problem                  @relation(fields: [problemId], references: [id])
   messages        PeerInterviewMessage[]
   evaluation      PeerInterviewEvaluation?
+  journeyProgress JourneyStageProgress?
 
   @@index([candidateId])
   @@index([peerInterviewerId])

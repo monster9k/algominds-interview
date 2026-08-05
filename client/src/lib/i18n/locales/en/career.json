@@ -10,7 +10,8 @@
   "adaptivePick": "Picked for you because you're weak at {{tag}}",
   "stageKind": {
     "problem": "Coding problem",
-    "quest": "Quest mini-game"
+    "quest": "Quest mini-game",
+    "peerInterview": "Peer interview"
   },
   "status": {
     "PENDING": "Locked",
@@ -44,5 +45,11 @@
   "personaUnlock": {
     "unlock": "Unlock {{name}}",
     "unlocked": "{{name}} unlocked"
+  },
+  "peerInterview": {
+    "createRoom": "Create cross-interview room",
+    "createNewRoom": "Create a new room",
+    "enterRoom": "Enter room",
+    "inviteCodeLabel": "Share this invite code with a friend"
   }
 }

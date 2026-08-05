@@ -1,4 +1,5 @@
 import api from "@/lib/axios";
+import type { PeerInterviewSession } from "@/features/peer-interview/types";
 import {
   CareerJourney,
   CareerTrack,
@@ -70,6 +71,18 @@ export const careerApi = {
 
   unlockPersona: async (personaId: string): Promise<UserPersonaUnlock> => {
     const response = await api.post(`/career/personas/${personaId}/unlock`);
+    return response.data;
+  },
+
+  // P6 — idempotent: đã tạo phòng trước đó (reload trang, bấm lại nút) thì
+  // trả về đúng phòng cũ, không tạo mới.
+  createPeerSession: async (
+    journeyId: string,
+    stageId: string,
+  ): Promise<PeerInterviewSession> => {
+    const response = await api.post(
+      `/career/journeys/${journeyId}/stages/${stageId}/peer-session`,
+    );
     return response.data;
   },
 };

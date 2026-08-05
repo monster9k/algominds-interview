@@ -7,14 +7,18 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SessionsService } from '../sessions/sessions.service';
 import { ChatGateway } from '../chat/chat/chat.gateway';
+import { PeerInterviewService } from '../peer-interview/peer-interview.service';
 import {
   JourneyStatus,
+  PeerSessionStatus,
   StageKind,
   StageStatus,
   SubmissionStatus,
 } from '@prisma/client';
 
 const TRACK_WITH_STAGES_INCLUDE = {
+  // Track mô phỏng pipeline 1 công ty thật (P6) — null với track "generic".
+  company: true,
   stages: {
     orderBy: { order: 'asc' as const },
     include: {
@@ -51,6 +55,7 @@ export class CareerService {
     private sessionsService: SessionsService,
     private eventEmitter: EventEmitter2,
     private chatGateway: ChatGateway,
+    private peerInterviewService: PeerInterviewService,
   ) {}
 
   async getActiveTracks() {
@@ -275,9 +280,12 @@ export class CareerService {
       );
     }
 
-    if (activeProgress.stage.kind === StageKind.PROBLEM) {
+    if (
+      activeProgress.stage.kind === StageKind.PROBLEM ||
+      activeProgress.stage.kind === StageKind.PEER_INTERVIEW
+    ) {
       throw new BadRequestException(
-        'Stage này tự động chấm điểm qua kết quả nộp bài — dùng "Give up" nếu muốn dừng track, không tự đánh dấu passed/failed thủ công.',
+        'Stage này tự động chấm điểm qua kết quả thật — dùng "Give up" nếu muốn dừng track, không tự đánh dấu passed/failed thủ công.',
       );
     }
 
@@ -314,6 +322,68 @@ export class CareerService {
     return this.applyStageOutcome(journey, activeProgress, 'FAILED');
   }
 
+  // P6 — stage kind=PEER_INTERVIEW KHÔNG tự tạo PeerInterviewSession lúc vào
+  // stage (khác PROBLEM) — candidate chủ động tạo phòng lúc sẵn sàng mời bạn.
+  // Idempotent CÓ ĐIỀU KIỆN: đã có phòng còn dùng được (WAITING_FOR_PEER/ACTIVE
+  // — reload trang, bấm lại nút) thì trả về đúng phòng cũ, không tạo mới đè.
+  // Phòng cũ đã COMPLETED/ABANDONED (candidateScore chưa đạt threshold, retry
+  // — bug thật bắt được khi verify tay: nếu cứ trả về phòng cũ, candidate
+  // không bao giờ tạo được phòng MỚI để thử lại) thì tạo phòng mới, ghi đè FK.
+  async createPeerSession(userId: string, journeyId: string, stageId: string) {
+    const journey = await this.prisma.careerJourney.findUnique({
+      where: { id: journeyId },
+      include: JOURNEY_FULL_INCLUDE,
+    });
+
+    if (!journey) throw new NotFoundException('Career journey không tồn tại');
+    if (journey.userId !== userId) {
+      throw new NotFoundException('Bạn không có quyền truy cập journey này');
+    }
+    if (journey.status !== JourneyStatus.IN_PROGRESS) {
+      throw new BadRequestException('Journey này đã kết thúc');
+    }
+
+    const progress = journey.progress.find((p) => p.stageId === stageId);
+    if (!progress) {
+      throw new NotFoundException('Không tìm thấy stage này trong journey');
+    }
+    if (progress.status !== StageStatus.ACTIVE) {
+      throw new BadRequestException('Stage này hiện không active');
+    }
+    if (progress.stage.kind !== StageKind.PEER_INTERVIEW) {
+      throw new BadRequestException('Stage này không phải loại PEER_INTERVIEW');
+    }
+
+    if (progress.peerInterviewSessionId) {
+      const existing = await this.peerInterviewService.findById(
+        userId,
+        progress.peerInterviewSessionId,
+      );
+      const stillUsable =
+        existing.status === PeerSessionStatus.WAITING_FOR_PEER ||
+        existing.status === PeerSessionStatus.ACTIVE;
+      if (stillUsable) return existing;
+    }
+
+    if (!progress.stage.problemId) {
+      throw new BadRequestException(
+        `Stage "${progress.stage.label}" là kind PEER_INTERVIEW nhưng thiếu problemId`,
+      );
+    }
+
+    const peerSession = await this.peerInterviewService.create(
+      userId,
+      progress.stage.problemId,
+    );
+
+    await this.prisma.journeyStageProgress.update({
+      where: { id: progress.id },
+      data: { peerInterviewSessionId: peerSession.id },
+    });
+
+    return peerSession;
+  }
+
   // Gọi từ career.listener.ts khi ai.processor.ts emit `evaluation.completed`
   // (P4) — sessionId không thuộc career journey nào thì bỏ qua, không phá
   // hành vi Phase 2 thường của sessions/chat.
@@ -342,6 +412,24 @@ export class CareerService {
       4;
 
     await this.autoGradeStage(progress.id, avgScore);
+  }
+
+  // Gọi từ career.listener.ts khi ai.processor.ts#processGradePeerInterview
+  // emit `peer-interview.graded` (P6) — peerSessionId không gắn với stage
+  // PEER_INTERVIEW đang ACTIVE nào (vd peer interview tự do, không qua
+  // career journey) thì bỏ qua, không phá hành vi P3 hiện có.
+  async handlePeerInterviewGraded(
+    peerSessionId: string,
+    candidateScore: number,
+  ) {
+    const progress = await this.prisma.journeyStageProgress.findUnique({
+      where: { peerInterviewSessionId: peerSessionId },
+      select: { id: true, status: true },
+    });
+
+    if (!progress || progress.status !== StageStatus.ACTIVE) return;
+
+    await this.autoGradeStage(progress.id, candidateScore);
   }
 
   // Dùng chung cho mọi nhánh auto-grade (PROBLEM ở P4; QUEST/PEER_INTERVIEW

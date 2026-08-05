@@ -71,4 +71,17 @@ export class CareerController {
   giveUp(@CurrentUser() user: RequestUser, @Param('id') id: string) {
     return this.careerService.giveUp(user.userId, id);
   }
+
+  @Post('journeys/:journeyId/stages/:stageId/peer-session')
+  createPeerSession(
+    @CurrentUser() user: RequestUser,
+    @Param('journeyId') journeyId: string,
+    @Param('stageId') stageId: string,
+  ) {
+    return this.careerService.createPeerSession(
+      user.userId,
+      journeyId,
+      stageId,
+    );
+  }
 }

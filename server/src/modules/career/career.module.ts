@@ -4,6 +4,7 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { SessionsModule } from '../sessions/sessions.module';
 import { AiModule } from '../ai/ai.module';
 import { ChatModule } from '../chat/chat.module';
+import { PeerInterviewModule } from '../peer-interview/peer-interview.module';
 import { CareerController } from './career.controller';
 import { CareerService } from './career.service';
 import { CareerProcessor } from './career.processor';
@@ -18,6 +19,10 @@ import { CareerListener } from './career.listener';
     // để emit career_stage_retry_needed (P4). Không tạo cycle: ChatModule
     // không import ngược lại career.
     ChatModule,
+    // PeerInterviewModule.exports PeerInterviewService — career.service.ts
+    // dùng để tạo PeerInterviewSession khi candidate vào stage PEER_INTERVIEW
+    // (P6). Không tạo cycle: PeerInterviewModule không import ngược lại career.
+    PeerInterviewModule,
     BullModule.registerQueue({
       name: 'debrief-queue',
     }),

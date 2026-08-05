@@ -72,11 +72,12 @@ model User {
   deletedAt DateTime? // Soft delete
 
   // Relations
-  stats         UserStats?
-  sessions      Session[]
-  refreshTokens RefreshToken[]
-  questAttempts QuestAttempt[]
-  userBadges    UserBadge[]
+  stats          UserStats?
+  sessions       Session[]
+  refreshTokens  RefreshToken[]
+  questAttempts  QuestAttempt[]
+  userBadges     UserBadge[]
+  careerJourneys CareerJourney[]
 
   // Indexes
   @@index([provider, providerId])
@@ -229,7 +230,8 @@ model QuestAttempt {
   durationMs   Int
   createdAt    DateTime   @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  journeyProgress JourneyStageProgress?
 
   @@index([userId, createdAt])
   @@map("quest_attempts")
@@ -296,7 +298,8 @@ model CareerTrack {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
 
-  stages CareerTrackStage[]
+  stages   CareerTrackStage[]
+  journeys CareerJourney[]
 
   @@map("career_tracks")
 }
@@ -316,12 +319,61 @@ model CareerTrackStage {
   personaId String
   createdAt DateTime  @default(now())
 
-  track   CareerTrack        @relation(fields: [trackId], references: [id], onDelete: Cascade)
-  problem Problem?           @relation(fields: [problemId], references: [id])
-  persona InterviewerPersona @relation(fields: [personaId], references: [id])
+  track    CareerTrack            @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  problem  Problem?               @relation(fields: [problemId], references: [id])
+  persona  InterviewerPersona     @relation(fields: [personaId], references: [id])
+  progress JourneyStageProgress[]
 
   @@unique([trackId, order])
   @@map("career_track_stages")
+}
+
+enum JourneyStatus {
+  IN_PROGRESS
+  PASSED
+  FAILED
+  ABANDONED
+}
+
+enum StageStatus {
+  PENDING
+  ACTIVE
+  PASSED
+  FAILED
+}
+
+model CareerJourney {
+  id         String        @id @default(uuid())
+  userId     String
+  trackId    String
+  status     JourneyStatus @default(IN_PROGRESS)
+  startedAt  DateTime      @default(now())
+  finishedAt DateTime?
+
+  user     User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track    CareerTrack            @relation(fields: [trackId], references: [id])
+  progress JourneyStageProgress[]
+
+  @@index([userId, status])
+  @@map("career_journeys")
+}
+
+model JourneyStageProgress {
+  id             String      @id @default(uuid())
+  journeyId      String
+  stageId        String
+  sessionId      String?     @unique // set khi stage.kind = PROBLEM
+  questAttemptId String?     @unique // set khi stage.kind = QUEST
+  status         StageStatus @default(PENDING)
+  completedAt    DateTime?
+
+  journey      CareerJourney    @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  stage        CareerTrackStage @relation(fields: [stageId], references: [id])
+  session      Session?         @relation(fields: [sessionId], references: [id])
+  questAttempt QuestAttempt?    @relation(fields: [questAttemptId], references: [id])
+
+  @@unique([journeyId, stageId])
+  @@map("journey_stage_progress")
 }
 
 model Session {
@@ -345,12 +397,13 @@ model Session {
   finishedAt DateTime?
 
   // Relations
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  problem     Problem        @relation(fields: [problemId], references: [id])
-  messages    Message[]
-  submissions Submission[]
-  events      SessionEvent[]
-  evaluation  Evaluation?
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem         Problem               @relation(fields: [problemId], references: [id])
+  messages        Message[]
+  submissions     Submission[]
+  events          SessionEvent[]
+  evaluation      Evaluation?
+  journeyProgress JourneyStageProgress?
 
   @@index([userId, status])
   @@index([problemId])

@@ -102,7 +102,7 @@ Sau (roadmap này):                Problems | Quest | Career Journey
   Track/stage là nội dung do đội ngũ định nghĩa trước (giống `Problem` — quản trị qua seed/admin API, không cần trang admin UI riêng ở giai đoạn này, đúng scope hiện tại của `problems`).
   **Đã làm**: thêm đúng `StageKind` enum + 2 model như trên, cộng 2 back-relation bắt buộc để Prisma validate quan hệ 2 chiều: `Problem.careerTrackStages CareerTrackStage[]` và `InterviewerPersona.stages CareerTrackStage[]` (chưa có ở item trước vì lúc đó `CareerTrackStage` chưa tồn tại). Chạy `npx prisma format` + `npx prisma validate` trước khi migrate để bắt lỗi quan hệ sớm. Migration `20260805021735_add_career_track_and_stage` áp trực tiếp vào DB dev qua docker-compose. `npx prisma generate` + `npm run build` pass (gặp 1 lần `ENOTEMPTY: directory not empty, rmdir dist` do file handle Windows còn giữ — build lại lần 2 qua ngay, không phải lỗi code).
 
-- [ ] **DB: model `CareerJourney` + `JourneyStageProgress` — tiến trình của 1 user trong 1 track**
+- [x] **DB: model `CareerJourney` + `JourneyStageProgress` — tiến trình của 1 user trong 1 track**
   📍 `server/prisma/schema.prisma`. Đây là bảng điều phối mỏng nối vào `Session`/`QuestAttempt` đã có sẵn, KHÔNG thay đổi 2 bảng đó.
   ```prisma
   enum JourneyStatus {
@@ -154,6 +154,7 @@ Sau (roadmap này):                Problems | Quest | Career Journey
   }
   ```
   `SessionEvent` (audit trail append-only) không đổi — 1 session tạo ra trong ngữ cảnh Career Journey vẫn ghi event bình thường, `JourneyStageProgress` chỉ trỏ tới `sessionId` đã tồn tại.
+  **Đã làm**: thêm đúng 2 enum + 2 model như trên, cộng các back-relation Prisma yêu cầu: `User.careerJourneys`, `CareerTrack.journeys`, `CareerTrackStage.progress`, và quan hệ 1-1 optional `Session.journeyProgress` / `QuestAttempt.journeyProgress` (không sửa field nào có sẵn trên 2 model đó, chỉ thêm field quan hệ mới). Migration `20260805021855_add_career_journey_and_stage_progress`. `npx prisma format` + `validate` trước khi migrate, `npx prisma generate` + `npm run build` pass. Tới đây toàn bộ data model P0 đã đủ để module `career` (item tiếp theo) implement business logic mà không cần đổi schema thêm.
 
 - [ ] **BE: module `career` mới**
   📍 `server/src/modules/career/` theo pattern NestJS chuẩn (dùng skill `add-nestjs-module`): `career.module.ts`, `career.controller.ts`, `career.service.ts`, `dto/`.

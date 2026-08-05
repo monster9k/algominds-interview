@@ -18,8 +18,8 @@
 4. `SessionEvent` là audit trail append-only — mọi transition quan trọng nên ghi lại 1 event, không sửa/xoá event cũ.
 
 ## Testing
-- **Repo hiện chưa có `.spec.ts` nào** (ngoài stub e2e mặc định của NestJS) → không có regression safety net.
-- Khi sửa `judge.service.ts` hoặc `auth.service.ts`, cẩn thận gấp đôi bình thường: đọc kỹ luồng hiện tại trước khi đổi, cân nhắc viết test mới nếu thay đổi logic nhạy cảm (chấm điểm, xác thực).
+- Coverage vẫn còn rất mỏng: chỉ có `auth/auth.service.spec.ts` và `judge/judge.service.spec.ts` (ngoài stub e2e mặc định của NestJS) — bám theo style 2 file này khi viết test mới cho module khác.
+- Mọi module khác (`sessions`, `chat`, `ai`, `quest`...) vẫn chưa có regression safety net. Khi sửa `judge.service.ts` hoặc `auth.service.ts`, cẩn thận gấp đôi bình thường: đọc kỹ luồng hiện tại trước khi đổi, chạy `.spec.ts` tương ứng và cân nhắc bổ sung test nếu thay đổi logic nhạy cảm (chấm điểm, xác thực).
 - Chạy `npm run lint` (client & server) trước khi coi 1 thay đổi là "xong".
 
 ## forwardRef() — không tự ý "fix"

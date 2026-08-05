@@ -1,197 +1,237 @@
-# 🗺️ AlgoMinds — Roadmap: Quest "Bug Whacker"
+# 🗺️ AlgoMinds — Roadmap: Career Journey & AI-Native Features
 
-> Bản roadmap trước (audit 2026-08-01, luồng judge + profile dropdown) đã hoàn thành 100% — xem lịch sử git nếu cần tham chiếu lại nội dung cũ.
-> Bản này thay thế nó, lên kế hoạch triển khai **Quest — Bug Whacker**: mini-game "tìm dòng code có bug trong thời gian giới hạn", gắn vào mục "Quest" đã có sẵn (nhưng chưa nối route) trên sidebar.
+> Bản roadmap trước (Quest "Bug Whacker") đã hoàn thành 100% (2026-08-03) — xem lịch sử git nếu cần tham chiếu lại nội dung cũ.
+> Bản này thay thế nó. Xuất phát từ 1 phiên brainstorm sản phẩm (2026-08-05): AlgoMinds không muốn clone các tab kiểu LeetCode (Contest/Discuss/Explore/Study Plan/Store) — 5 tab đó vốn tách rời vì LeetCode không có gì kết nối chúng lại. AlgoMinds thì có: lớp AI evaluation (Gemini chấm chiến lược + code) chạy xuyên suốt `sessions`/`ai`/`chat`. Roadmap này gộp cả 5 tab đó thành **1 hệ thống duy nhất — "Career Journey"** — và bổ sung 3 tính năng hoàn toàn mới không tồn tại ở LeetCode.
+
+## Triết lý điều hướng
+
+```
+Trước (dự định, LeetCode-style): Problems | Quest | Contest | Discuss | Explore | Study Plan | Store
+Sau (roadmap này):                Problems | Quest | Career Journey
+```
+
+`Career Journey` là 1 pipeline mô phỏng quy trình xin việc thật (chọn mục tiêu → Phone Screen → Technical Rounds → Onsite Loop → Offer), mỗi vòng do 1 **AI persona** khác nhau đảm nhiệm. 5 tab cũ không biến mất — chức năng của chúng được hấp thụ vào đúng ngữ cảnh trong pipeline này thay vì làm tab rời:
+
+| Tab cũ | Hấp thụ vào |
+|---|---|
+| Explore / Study Plan | "Vòng tiếp theo" — do AI Radar chọn từ lịch sử `Evaluation` thật, không phải danh sách/roadmap tĩnh để duyệt. |
+| Contest | **Hiring Event** — khung giờ giới hạn, 1 track "mở tuyển", xếp hạng theo hiệu suất Phase 1 (không chỉ tốc độ code). |
+| Discuss | **Offer Debrief** — AI tổng hợp cách người khác vượt qua đúng persona/stage đó, chỉ hiện sau khi user hoàn thành stage. |
+| Store | **Career Resources** — persona mở khoá qua tiến trình (hoặc credits), không phải shop liệt kê sẵn. |
 
 ## Cách đọc file này
-- `🔴 P0` — Lõi bắt buộc: không có thì game không chơi được (DB + API tối thiểu + FE chơi được 1 ván end-to-end).
-- `🟡 P1` — Trải nghiệm & tích hợp: làm game "đàng hoàng", khớp UI/UX chuẩn của app, chống gian lận điểm cơ bản.
-- `🟢 P2` — Mở rộng: gamification sâu (badge thật, leaderboard), mở rộng nội dung.
-- Mỗi task ghi **vị trí code** liên quan để bắt tay vào làm ngay, và **vì sao** thứ tự này (phụ thuộc lẫn nhau ra sao).
+- `🔴 P0` — Nền tảng bắt buộc: data model + BE tối thiểu + FE thay được sidebar item hiện tại (`Explore`/`Study Plan` đang trỏ `href: "#"` — xem `client/src/components/layout/dashboard-sidebar.tsx`).
+- `🟡 P1` — Persona thật + 3 cơ chế thay thế Contest/Discuss/Store.
+- `🟢 P2` — Tính năng net-new (đã chốt ý tưởng ở phiên brainstorm, giữ nguyên tinh thần, không rút gọn).
+- `🔵 P3` — Tính năng net-new phức tạp nhất, cần buổi thiết kế kỹ riêng trước khi code (2 user thật + AI quan sát viên trong cùng room).
+- Mỗi task ghi **vị trí code** liên quan, và các chỗ đánh dấu **"cần quyết định sản phẩm"** — không tự ý giả định, hỏi lại user trước khi code (giống cách Quest P2 từng hỏi về việc có đụng `credits`/`streakDays` không).
 
 ---
 
-## 🔴 P0 — Lõi (chơi được 1 ván end-to-end)
+## 🔴 P0 — Nền tảng Career Journey (data model + BE tối thiểu + thay sidebar)
 
-- [x] **DB: model `BugSnippet` — ngân hàng câu hỏi**
-  Bảng chứa các đoạn code mẫu, mỗi bản ghi có đúng 1 dòng chứa bug.
-  📍 `server/prisma/schema.prisma` (thêm cạnh các model hiện có, không đụng `Session`/`SessionEvent`).
-  Repo đã có sẵn `enum Difficulty { EASY MEDIUM HARD }` dùng cho `Problem.difficulty` — tái dùng lại thay vì tạo thêm `QuestDifficulty` trùng giá trị (tránh 2 enum cùng ý nghĩa).
+- [ ] **DB: model `InterviewerPersona` — cấu hình "tính cách" AI interviewer**
+  📍 `server/prisma/schema.prisma`. Đây là nền cho toàn bộ Persona Marketplace lẫn Onsite Loop nhiều vòng khác persona.
   ```prisma
-  model BugSnippet {
-    id          String     @id @default(uuid())
-    language    String     // "javascript" | "python" | "java" — khớp PistonService.getLanguageConfig()
-    difficulty  Difficulty
-    code        String     // toàn bộ đoạn code (nhiều dòng)
-    buggyLine   Int        // index dòng chứa bug, 0-based, tách theo "\n"
-    explanation String?    // hiện sau khi trả lời, giải thích bug là gì
-    isActive    Boolean    @default(true) // để tắt câu hỏi lỗi mà không xoá (giữ lịch sử QuestAttempt tham chiếu được)
-    createdAt   DateTime   @default(now())
+  enum PersonaTone {
+    STRICT
+    FRIENDLY
+    SKEPTICAL
+    LENIENT
+  }
 
-    @@index([language, difficulty, isActive])
-    @@map("bug_snippets")
+  model InterviewerPersona {
+    id                String      @id @default(uuid())
+    key               String      @unique // "google_strict", "startup_friendly" — đối chiếu code, không đổi khi dịch tên hiển thị
+    name              String
+    description       String
+    tone              PersonaTone
+    systemPromptExtra String      // đoạn chỉ dẫn NỐI VÀO systemInstruction gốc của AiService, không thay thế toàn bộ — giữ nguyên format JSON output bắt buộc
+    unlockCost        Int         @default(0) // 0 = mặc định miễn phí (persona "Default" hiện tại)
+    isActive          Boolean     @default(true)
+    createdAt         DateTime    @default(now())
+
+    @@map("interviewer_personas")
   }
   ```
-  Dùng skill `add-prisma-model` để chạy migration đúng quy trình repo (không tự tay viết SQL migration).
+  Dùng skill `add-prisma-model`. Seed tối thiểu 1 persona `key: "default"` map đúng nội dung `systemInstruction` hiện có trong `ai.service.ts` để không phá luồng Phase 1 hiện tại.
 
-- [x] **DB: model `QuestAttempt` — kết quả mỗi ván chơi**
+- [ ] **BE: tham số hoá `AiService` theo persona — KHÔNG viết lại luồng đánh giá**
+  📍 `server/src/modules/ai/ai.service.ts` (dòng 31-65, `this.model` với `systemInstruction` hardcode). Đổi thành: giữ nguyên khối JSON contract + quy tắc đánh giá cốt lõi (không đổi), chỉ nối thêm `persona.systemPromptExtra` vào cuối system instruction khi build request — vd persona "Google Strict" thêm đoạn "khắt khe hơn với độ phức tạp thời gian, không chấp nhận giải pháp brute-force dù đúng". Method nhận thêm `personaId?: string` (mặc định = persona "default" nếu không truyền — không đổi hành vi Phase 1 hiện tại của `sessions`/`chat` khi chưa tích hợp Career Journey).
+
+- [ ] **DB: model `CareerTrack` + `CareerTrackStage` — định nghĩa 1 "mục tiêu nghề nghiệp"**
   📍 `server/prisma/schema.prisma`.
   ```prisma
-  model QuestAttempt {
-    id           String     @id @default(uuid())
-    userId       String
-    difficulty   Difficulty
-    score        Int
-    correctCount Int
-    wrongCount   Int
-    bestCombo    Int
-    durationMs   Int
-    createdAt    DateTime   @default(now())
-
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@index([userId, createdAt])
-    @@map("quest_attempts")
-  }
-  ```
-  Cần thêm quan hệ ngược `questAttempts QuestAttempt[]` vào `model User`.
-
-- [x] **DB: seed dữ liệu mẫu**
-  📍 File mới `server/seed-quest.ts` (theo pattern `server/sync-problems.ts` đã có — script riêng, không nhét vào `prisma/seed.ts` để tránh chạy lại làm trùng dữ liệu mỗi lần `db seed`).
-  Tối thiểu 5 snippet/độ khó × 3 độ khó × 3 ngôn ngữ ưu tiên (`javascript`, `python`, `java` — 3 ngôn ngữ đơn giản, dễ đọc nhanh trong game timed, đã được `PistonService` hỗ trợ sẵn nên không lệch với phần judge chính) = tối thiểu ~45 câu để không lặp quá nhanh.
-
-- [x] **BE: module `quest` mới**
-  📍 `server/src/modules/quest/` theo đúng pattern NestJS trong repo (dùng skill `add-nestjs-module`): `quest.module.ts`, `quest.controller.ts`, `quest.service.ts`, `dto/`.
-  - `GET /quest/snippets?difficulty=&language=&count=` — trả về N snippet ngẫu nhiên (ẩn field `buggyLine`/`explanation` khỏi response, chỉ trả về sau khi FE submit đáp án của từng câu — tránh xem trước DevTools Network tab).
-  - `POST /quest/snippets/:id/answer` — body `{ selectedLine: number }`, trả về `{ correct: boolean, buggyLine: number, explanation?: string }`. Endpoint riêng biệt (không gộp vào GET) chính là chỗ chặn gian lận score ở P1.
-  - `POST /quest/attempts` — lưu kết quả tổng kết 1 ván, gắn `JwtAuthGuard` + `@CurrentUser()` (không tự parse JWT thủ công, theo `tech-defaults.md`).
-  - `GET /quest/attempts/me?limit=` — lịch sử chơi của user hiện tại (dùng cho FE hiển thị "lần chơi gần nhất" trên Quest Hub).
-
-- [x] **FE: scaffold feature folder `quest`**
-  📍 `client/src/features/quest/` — dùng skill `add-frontend-feature` để đúng convention `api/hooks/components/pages/types/utils` như `design.md` mô tả.
-  - `types/index.ts` — `QuestDifficulty`, `BugSnippetPublic` (không có `buggyLine`), `QuestAttemptResult`.
-  - `api/quest-api.ts` — `getSnippets()`, `submitAnswer(id, selectedLine)`, `submitAttempt(payload)`, `getMyAttempts()`.
-  - `hooks/use-quest-snippets.ts`, `use-submit-quest-attempt.ts` — bọc TanStack Query quanh `api/`.
-
-- [x] **FE: Zustand store cho phiên chơi (client/UI state, không phải server state)**
-  📍 `client/src/features/quest/stores/use-quest-session-store.ts` (hoặc `client/src/stores/` nếu muốn dùng chung — nhưng vì dữ liệu chỉ thuộc feature `quest`, nên đặt trong feature theo đúng tinh thần `design.md`: "không tự ý tạo store Zustand mới cho dữ liệu server-driven" — đây là state cục bộ của ván chơi, không phải dữ liệu server nên hợp lệ).
-  Quản lý: `currentSnippetIndex`, `score`, `combo`, `lives`, `timeLeftMs`, `status: 'idle' | 'playing' | 'finished'`.
-
-- [x] **FE: component chơi chính — "Line Sweeper"**
-  📍 `client/src/features/quest/components/bug-whacker-board.tsx`.
-  Hiển thị đoạn code (tái dùng cách render của `client/src/features/interview/components/problem-panel/code-block.tsx`: `<pre><code>` + `font-mono`, KHÔNG thêm lib syntax-highlight mới — repo hiện chưa có shiki/prism, giữ tối giản) + lưới ô tương ứng số dòng, click ô = chọn dòng đó là bug.
-
-- [x] **FE: màn chọn độ khó + route `/quest`**
-  📍 `client/src/features/quest/pages/quest-hub-page.tsx` + router (tìm nơi khai báo route chính, theo pattern `interview-room.tsx`).
-  Đổi `client/src/components/layout/dashboard-sidebar.tsx` dòng `{ icon: Swords, labelKey: "sidebar.quest", href: "#" }` → `href: "/quest"` (mục sidebar đã có sẵn, chỉ cần nối route — không cần thêm UI nav mới).
-
----
-
-## 🟡 P1 — Trải nghiệm & tích hợp chuẩn app
-
-- [x] **FE: `QuestResultDialog` — tổng kết ván chơi**
-  📍 `client/src/features/quest/components/quest-result-dialog.tsx`. Không có sẵn dialog kết quả nào trong repo để tái dùng — kết quả submission hiện hiển thị inline (`client/src/features/interview/components/console-panel/result-accepted.tsx` + `result-stats-cards.tsx`, không phải modal). Tái dùng token/pattern trình bày số liệu (`bg-card border border-border rounded-lg p-4`, `text-2xl font-semibold`) của `result-stats-cards.tsx` cho phần thẻ điểm số, dựng trong shadcn `Dialog` có sẵn (`client/src/components/ui/dialog.tsx`). Hiện điểm, đúng/sai, best combo, nút "Chơi lại" / "Về Quest Hub".
-
-- [x] **FE: hiệu ứng feedback tức thời**
-  📍 trong `bug-whacker-board.tsx`. Ô đúng flash `bg-emerald-500/20`, ô sai flash `bg-destructive/20` (dùng token màu Tailwind/shadcn có sẵn, không hardcode hex mới — theo `design.md`). Thanh thời gian dạng progress bar đổi `bg-primary` → `bg-destructive` khi còn < 20%, giống pattern cảnh báo đã dùng ở `console-panel`.
-
-- [x] **BE: chặn gian lận điểm ở tầng validate**
-  📍 `server/src/modules/quest/dto/create-attempt.dto.ts` + `quest.service.ts`. `class-validator` giới hạn: `score` không vượt quá `correctCount × điểm-tối-đa-mỗi-câu-theo-difficulty`, `durationMs` tối thiểu hợp lý theo `correctCount + wrongCount` (không thể trả lời nhanh hơn X ms/câu). Đây là lý do endpoint `POST /quest/snippets/:id/answer` phải tách riêng ở P0 thay vì để FE tự tính điểm và chỉ gửi tổng kết — server phải là nguồn xác nhận "đúng/sai" cho từng câu.
-
-- [x] **i18n: `quest.json` cho 3 ngôn ngữ**
-  📍 `client/src/lib/i18n/locales/{en,vi,ja}/quest.json`, theo đúng pattern file hiện có (`interview.json`, `users.json`). Namespace `t("quest.xxx")` dùng `useTranslation("quest")` giống các feature khác.
-
-- [x] **FE: responsive mobile cho lưới**
-  📍 `bug-whacker-board.tsx` — `grid-cols-1` mobile, layout dòng-code dọc thay vì lưới vuông (vì mỗi ô tương ứng 1 dòng code dài, không phải ô vuông Minesweeper thật).
-
-- [x] **BE+FE: hiển thị lịch sử Quest trên profile**
-  📍 `server/src/modules/quest/quest.controller.ts` (`GET /quest/attempts/me` đã có ở P0) → nối vào `client/src/features/users/pages/profile-page.tsx`, thêm card mới cạnh `recent-submissions-card.tsx` (không sửa card đó — Quest là data riêng, không phải judge submission).
-
----
-
-## 🟢 P2 — Mở rộng gamification
-
-- [x] **DB+BE: model `Badge` thật — thay `MOCK_BADGE`**
-  📍 `client/src/features/users/components/badges-card.tsx` hiện có comment `// TODO: Requires backend schema — no Badge model exists yet, stays mocked.` và dùng `MOCK_BADGE` từ `client/src/features/users/utils/mock-data.ts`. Đây là cơ hội tự nhiên để làm nó thật, gắn rule "đạt X điểm/combo trong Quest → mở khoá badge".
-  ```prisma
-  model Badge {
+  model CareerTrack {
     id          String   @id @default(uuid())
+    key         String   @unique // "senior_backend_startup", "newgrad_bigtech"
     name        String
     description String
-    iconKey     String   // map sang lucide-react icon ở FE, không lưu SVG blob
+    isActive    Boolean  @default(true)
     createdAt   DateTime @default(now())
+
+    stages CareerTrackStage[]
+
+    @@map("career_tracks")
   }
 
-  model UserBadge {
-    id       String   @id @default(uuid())
-    userId   String
-    badgeId  String
-    earnedAt DateTime @default(now())
+  enum StageKind {
+    PROBLEM // vòng dùng luồng sessions hiện có (Phase1 → Phase2)
+    QUEST   // vòng dùng mini-game Quest hiện có
+  }
 
-    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-    badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  model CareerTrackStage {
+    id        String    @id @default(uuid())
+    trackId   String
+    order     Int       // thứ tự vòng trong track, 0-based
+    label     String    // "Phone Screen", "Onsite - Round 1"...
+    kind      StageKind
+    problemId String?   // bắt buộc khi kind = PROBLEM
+    personaId String
+    createdAt DateTime  @default(now())
 
-    @@unique([userId, badgeId])
-    @@map("user_badges")
+    track   CareerTrack         @relation(fields: [trackId], references: [id], onDelete: Cascade)
+    problem Problem?            @relation(fields: [problemId], references: [id])
+    persona InterviewerPersona  @relation(fields: [personaId], references: [id])
+
+    @@unique([trackId, order])
+    @@map("career_track_stages")
   }
   ```
-  Earning-rule logic đặt trong `quest.service.ts` khi lưu `QuestAttempt` (check ngưỡng score/combo → tạo `UserBadge` nếu chưa có).
+  Track/stage là nội dung do đội ngũ định nghĩa trước (giống `Problem` — quản trị qua seed/admin API, không cần trang admin UI riêng ở giai đoạn này, đúng scope hiện tại của `problems`).
 
-  Đã triển khai với 1 điều chỉnh so với schema gợi ý: thêm field `Badge.key` (unique, machine-stable) — cần 1 định danh ổn định để `BADGE_RULES` trong `quest.service.ts` và `server/seed-badges.ts` đối chiếu, tách khỏi `name` (text hiển thị, có thể đổi/dịch). 5 badge khởi tạo: `first_attempt`, `combo_5`, `perfect_run`, `hard_master`, `speed_runner`. Endpoint mới `GET /quest/badges/me` cấp dữ liệu cho `badges-card.tsx` (đã bỏ `MOCK_BADGE`). Verify bằng flow HTTP thật (register → login → POST /quest/attempts → GET /quest/badges/me) qua user throwaway, xác nhận đúng 4/5 badge ăn ở ván EASY hoàn hảo, thêm `hard_master` ở ván HARD hoàn hảo, không trùng lặp UserBadge ở lần gọi lại — sau đó xoá user test.
+- [ ] **DB: model `CareerJourney` + `JourneyStageProgress` — tiến trình của 1 user trong 1 track**
+  📍 `server/prisma/schema.prisma`. Đây là bảng điều phối mỏng nối vào `Session`/`QuestAttempt` đã có sẵn, KHÔNG thay đổi 2 bảng đó.
+  ```prisma
+  enum JourneyStatus {
+    IN_PROGRESS
+    PASSED
+    FAILED
+    ABANDONED
+  }
 
-- [x] **BE: `GET /quest/leaderboard?difficulty=`**
-  📍 `quest.service.ts` — top N `QuestAttempt.score` theo difficulty, join `User` lấy tên hiển thị.
+  enum StageStatus {
+    PENDING
+    ACTIVE
+    PASSED
+    FAILED
+  }
 
-  Dedupe theo user (lấy điểm cao nhất mỗi user, không phải top N attempt) để 1 người chơi nhiều ván không chiếm hết bảng — dùng `groupBy` lấy `_max.score` mỗi `userId`, sau đó join `QuestAttempt` + `User` để lấy `bestCombo`/`achievedAt`/tên hiển thị đúng của lượt đạt điểm đó. Verify qua HTTP thật với 2 user throwaway: user chơi 2 ván (40 rồi 90 điểm) chỉ xuất hiện 1 dòng với điểm 90, sắp xếp đúng thứ tự giảm dần.
+  model CareerJourney {
+    id         String        @id @default(uuid())
+    userId     String
+    trackId    String
+    status     JourneyStatus @default(IN_PROGRESS)
+    startedAt  DateTime      @default(now())
+    finishedAt DateTime?
 
-- [x] **FE: leaderboard UI trong Quest Hub**
-  📍 `quest-hub-page.tsx`, tab hoặc card riêng cạnh nút "Bắt đầu chơi".
+    user     User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    track    CareerTrack            @relation(fields: [trackId], references: [id])
+    progress JourneyStageProgress[]
 
-  `quest-leaderboard-card.tsx` — card riêng dưới lưới độ khó, dùng shadcn `Tabs` để chuyển độ khó (mặc định EASY), `Avatar` cho từng người chơi. Verify bằng claude-in-chrome thật trên `/quest`: chuyển tab Dễ/Trung bình/Khó cập nhật đúng dữ liệu, tab chưa có điểm nào hiện đúng empty state.
+    @@index([userId, status])
+    @@map("career_journeys")
+  }
 
-- [x] **Content: mở rộng ngân hàng câu hỏi + script quản lý**
-  📍 mở rộng `server/seed-quest.ts` theo pattern `server/sync-problems.ts` (script sync riêng, chạy thủ công khi cần thêm nội dung — không cần trang admin UI riêng ở giai đoạn này, giữ đơn giản đúng scope hiện tại của `problems` module vốn cũng quản trị qua seed/admin API, không phải qua UI).
+  model JourneyStageProgress {
+    id             String      @id @default(uuid())
+    journeyId      String
+    stageId        String
+    sessionId      String?     @unique // set khi stage.kind = PROBLEM
+    questAttemptId String?     @unique // set khi stage.kind = QUEST
+    status         StageStatus @default(PENDING)
+    completedAt    DateTime?
 
-  "Script quản lý" chính là `seed-quest.ts` hiện có (idempotent, upsert-by-code) — không cần script/trang riêng. Thêm 5 concept bug mới mỗi độ khó (× 3 ngôn ngữ = 45 snippet mới), gấp đôi ngân hàng từ 45 → 90 (30/độ khó, 30/ngôn ngữ). Verify: chạy seed thật vào dev DB (45 created, 45 already present — không trùng lặp), kiểm tra phân bố qua Prisma, và chơi thử 1 snippet mới (`contains_duplicate`, Python) qua claude-in-chrome — chọn đúng dòng bug hiện đúng feedback/explanation.
+    journey      CareerJourney    @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+    stage        CareerTrackStage @relation(fields: [stageId], references: [id])
+    session      Session?         @relation(fields: [sessionId], references: [id])
+    questAttempt QuestAttempt?    @relation(fields: [questAttemptId], references: [id])
 
-- [x] **BE+FE: (tuỳ chọn, cần quyết định sản phẩm) tích hợp `UserStats.credits`/`streakDays`**
-  📍 `server/src/modules/users/*`. Quyết định: chơi Quest có trừ `credits` không, thắng ván tốt có cộng `streakDays` không. Để P2 vì đây là quyết định sản phẩm, không phải kỹ thuật — làm sau khi core game đã chơi ổn.
+    @@unique([journeyId, stageId])
+    @@map("journey_stage_progress")
+  }
+  ```
+  `SessionEvent` (audit trail append-only) không đổi — 1 session tạo ra trong ngữ cảnh Career Journey vẫn ghi event bình thường, `JourneyStageProgress` chỉ trỏ tới `sessionId` đã tồn tại.
 
-  **Quyết định (2026-08-03, hỏi trực tiếp user): không tích hợp.** Quest giữ nguyên là mini-game miễn phí, tách biệt hoàn toàn khỏi `credits`/`streakDays` của luồng phỏng vấn chính — không có thay đổi code nào cho mục này.
+- [ ] **BE: module `career` mới**
+  📍 `server/src/modules/career/` theo pattern NestJS chuẩn (dùng skill `add-nestjs-module`): `career.module.ts`, `career.controller.ts`, `career.service.ts`, `dto/`.
+  - `GET /career/tracks` — danh sách track đang active.
+  - `POST /career/tracks/:id/start` — tạo `CareerJourney` mới (hoặc resume nếu đã có `IN_PROGRESS`), tạo `JourneyStageProgress` cho stage đầu tiên (`status: ACTIVE`). Khi stage đầu là `PROBLEM`, gọi lại logic tạo `Session` hiện có trong `sessions.service.ts` (không viết lại — Career Journey chỉ điều phối, `sessions` vẫn là nguồn sự thật cho Phase 1/2) kèm `personaId` của stage.
+  - `GET /career/journeys/me/active` — journey đang chạy + stage hiện tại, dùng cho FE hiển thị "vòng tiếp theo".
+  - `POST /career/journeys/:id/advance` — gọi khi stage hiện tại `PASSED`/`FAILED` (`sessions` service emit event này khi session `COMPLETED`, xem `check-phase-flow.md` để tra cứu nhanh trạng thái session khi debug), tạo `JourneyStageProgress` cho stage kế tiếp hoặc đóng journey nếu hết stage.
+
+- [ ] **FE: thay sidebar item `Explore`/`Study Plan` bằng `Career Journey`**
+  📍 `client/src/components/layout/dashboard-sidebar.tsx` — 2 item hiện có `{ icon: Compass, labelKey: "sidebar.explore", href: "#" }` và `{ icon: GraduationCap, labelKey: "sidebar.studyPlan", href: "#" }` (chưa nối route, y hệt tình trạng `Quest` trước khi làm roadmap trước) → gộp thành 1 item `{ icon: Compass, labelKey: "sidebar.career", href: "/career" }`.
+
+- [ ] **FE: scaffold feature folder `career`**
+  📍 `client/src/features/career/` (dùng skill `add-frontend-feature`, convention `api/hooks/components/pages/types`).
+  - `types/index.ts` — `CareerTrack`, `CareerJourney`, `JourneyStageProgress`, `StageKind`.
+  - `api/career-api.ts` — `getTracks()`, `startTrack(trackId)`, `getActiveJourney()`, `advanceJourney(journeyId)`.
+  - `hooks/use-career-tracks.ts`, `use-active-journey.ts` — bọc TanStack Query.
+
+- [ ] **FE: trang pipeline chính**
+  📍 `client/src/features/career/pages/career-journey-page.tsx`, route `/career`. UI dạng timeline dọc (không phải grid duyệt bài như `problems-page.tsx`) — mỗi node là 1 stage với trạng thái `PENDING`/`ACTIVE`/`PASSED`/`FAILED`, node `ACTIVE` có nút vào làm (route tới `interview-room` hiện có nếu `kind = PROBLEM`, tới `/quest` nếu `kind = QUEST`).
 
 ---
 
-## 🔵 P3 — Chọn ngôn ngữ + UI "game menu" + gameplay juice
+## 🟡 P1 — 3 cơ chế thay thế Contest / Discuss / Store
 
-> Bổ sung sau khi chơi thử P0-P2 thật: (1) không chọn được ngôn ngữ dù backend đã hỗ trợ sẵn qua `?language=`, (2) màn chọn độ khó chưa có cảm giác "menu game" (bấm là chơi luôn, không có bước "chọn rồi bấm Play"), (3) gameplay còn phẳng — feedback chỉ đổi màu, không có escalation/celebration. Quyết định phạm vi (hỏi trực tiếp user trước khi lên kế hoạch): có tuỳ chọn "Ngẫu nhiên" trong bộ chọn ngôn ngữ; thêm `canvas-confetti` (~5kb) cho hiệu ứng ăn mừng; **không** làm âm thanh ở P3 (cần asset ngoài, để sau); hiển thị "mở khoá badge mới" ngay trong màn kết quả.
+- [ ] **DB+BE: `HiringEvent` — thay thế Contest**
+  📍 `server/prisma/schema.prisma` model mới:
+  ```prisma
+  model HiringEvent {
+    id        String   @id @default(uuid())
+    trackId   String
+    opensAt   DateTime
+    closesAt  DateTime
+    createdAt DateTime @default(now())
 
-- [x] **FE: bộ chọn ngôn ngữ nối end-to-end**
-  📍 `client/src/features/quest/types/index.ts` (thêm `QuestLanguage`), `stores/use-quest-session-store.ts` (`startGame` nhận thêm `language: QuestLanguage | null`, `null` = Ngẫu nhiên), `pages/quest-hub-page.tsx` (truyền `language` vào `useQuestSnippets`). Backend đã sẵn sàng (`quest.service.ts#getRandomSnippets` đã filter theo `language` query param từ P0) — không cần đổi gì ở server.
+    track    CareerTrack @relation(fields: [trackId], references: [id])
+    entries  CareerJourney[] // journey nào gắn eventId thì tính là "đã nộp đơn" event này
 
-  Chỉ phần "plumbing" (types/store/hook) — chưa có UI để chọn ngôn ngữ (`handleStart` nhận `chosenLanguage` optional, mặc định `null`/Ngẫu nhiên, các nút hiện tại chưa truyền giá trị khác). UI chọn thật ở mục "game menu" ngay dưới đây — verify E2E bằng browser sẽ làm ở đó vì cần UI mới tồn tại trước.
+    @@map("hiring_events")
+  }
+  ```
+  `CareerJourney` thêm field optional `eventId String?`. Xếp hạng (`GET /career/events/:id/leaderboard`) tính theo: số stage `PASSED`, tổng số lượt chat Phase 1 tới lúc `APPROVED` (đếm `Message` theo `sessionId` — càng ít lượt càng cao điểm, đúng tinh thần "thuyết phục interviewer nhanh hơn" đã brainstorm), tổng thời gian hoàn thành journey.
 
-- [x] **FE: dựng lại màn setup thành "game menu" thật (chọn → bấm Play)**
-  📍 `client/src/features/quest/components/quest-setup-panel.tsx` (component mới) — 2 hàng `Tabs` (độ khó + ngôn ngữ, tái dùng pattern từ `quest-leaderboard-card.tsx`), bấm tab chỉ để *chọn* (không tự chơi), 1 nút "▶ Chơi" lớn ở giữa mới thực sự gọi `startGame`. `quest-hub-page.tsx` thay khối 3 card hiện tại bằng component này.
+- [ ] **BE: job nền "Offer Debrief" — thay thế Discuss**
+  📍 module mới `server/src/modules/career/` thêm `career.processor.ts` (theo đúng pattern `ai.processor.ts` — BullMQ worker, queue riêng `debrief-queue` khai báo qua `QueueModule`). Trigger khi `JourneyStageProgress.status` chuyển `PASSED`/`FAILED` cho stage `kind = PROBLEM`: gom các `Session.strategyAnswer` đã `APPROVED` khác của cùng `problemId`, gọi Gemini tổng hợp "N hướng tiếp cận khác nhau + trade-off" — **không** phải job chạy mỗi lần user xem, mà cache kết quả (model mới `StageDigest { stageId, content, generatedAt }`, tái tạo định kỳ khi đủ dữ liệu mới, không phải theo request).
+  FE: hiện digest ngay trên màn "hoàn thành stage" (`career-journey-page.tsx` hoặc dialog kết quả), không phải 1 trang forum riêng để duyệt.
 
-  Verify bằng claude-in-chrome thật với user throwaway: chọn Python + Dễ, bấm Play, xác nhận 3 câu liên tiếp đều là Python (trước đó pool ngẫu nhiên trộn cả 3 ngôn ngữ) — hoàn thành luôn phần verify còn thiếu của mục ngôn ngữ ở trên vì cần UI này mới test được thật.
+- [ ] **DB+BE: mở khoá persona — thay thế Store**
+  📍 model mới `UserPersonaUnlock { userId, personaId, unlockedAt }` (`@@unique([userId, personaId])`). `POST /career/personas/:id/unlock`.
+  **Cần quyết định sản phẩm trước khi code** (giống cách Quest P2 từng hỏi về `credits`/`streakDays` rồi quyết định không đụng): Career Journey có nên là nơi `UserStats.credits` chính thức có tác dụng không? 2 hướng:
+  1. Mở khoá persona hoàn toàn qua tiến trình (vượt qua 1 track có persona X → tự động unlock, dùng lại ở track khác) — không đụng `credits`.
+  2. Mở khoá bằng cách trừ `credits` trực tiếp (`server/src/modules/users/`) — biến `credits` từ số lượt free thành đơn vị kinh tế thật trong app.
+  Không tự ý chọn — hỏi lại user khi bắt đầu implement mục này.
 
-- [x] **FE: gameplay juice — micro-interaction, không thêm dependency**
-  📍 `client/src/app/index.css` (thêm `@keyframes shake`, `@keyframes pop-in` — file hiện chưa có custom keyframes nào), áp dụng vào `bug-whacker-board.tsx` (dòng sai rung, dòng đúng pop-in), `quest-hub-page.tsx` (combo ≥ 5 đổi icon `Flame` màu cam, số điểm "+N" nổi lên khi trả lời đúng, thanh thời gian thêm `animate-pulse` khi dưới 20%, toast mừng mốc combo qua `sonner` — hiện chỉ dùng `toast.error` trong quest, chưa có `toast.success`).
+---
 
-  Thêm 1 keyframe nữa ngoài dự kiến: `float-up-fade` cho số điểm "+N" nổi lên rồi mờ dần (dùng `onAnimationEnd` để tự dọn state, không cần `setTimeout`). Verify bằng claude-in-chrome thật: chơi liên tiếp 5 câu đúng, xác nhận combo chuyển màu cam + icon `Flame` đúng lúc combo=5, toast "🔥 5 in a row!" hiện đúng lúc, thanh thời gian chuyển đỏ + nhấp nháy khi còn dưới 20% thời gian, và bắt được đúng khung hình số "+10" nổi lên cạnh điểm.
+## 🟢 P2 — Tính năng net-new (không có ở LeetCode)
 
-- [x] **BE+FE: hiển thị "mở khoá badge mới" trong màn kết quả**
-  📍 `quest.service.ts#awardBadges` trả về danh sách badge mới thật sự vừa mở khoá (thay vì fire-and-forget `createMany`), `createAttempt` gắn vào response thành `newBadges`. FE: `QuestAttemptResult` thêm field `newBadges: EarnedBadge[]`, `quest-hub-page.tsx` đọc từ `onSuccess` của `submitAttempt`, `quest-result-dialog.tsx` hiện banner "🎉 Mở khoá huy hiệu mới" khi có.
+- [ ] **BE: `GET /sessions/:id/replay` — Interview Replay & Weakness Reel**
+  📍 `server/src/modules/sessions/`. Compose lại theo thời gian: `SessionEvent` (transition) + `Message` (nội dung chat Phase 1) + `Evaluation` (điểm/feedback) thành 1 timeline duy nhất, đánh dấu rõ đoạn nào AI phát hiện lỗ hổng chiến lược. Không cần Gemini call mới — thuần đọc dữ liệu đã có sẵn 3 bảng này.
+  FE: `client/src/features/interview/` (hoặc `career`) thêm trang replay, tái dùng cách render message hiện có trong `interview-room.tsx` (đọc component chat panel hiện tại trước khi viết mới — không tạo renderer riêng).
 
-  `awardBadges` giờ query trước những badge user đã có (thay vì chỉ dựa vào `skipDuplicates` của `createMany`, vốn không cho biết bản ghi nào bị bỏ qua) để biết chính xác cái nào mới. Kiểu FE tách riêng `UnlockedBadge` (không có `earnedAt`) khỏi `EarnedBadge` (có `earnedAt`, dùng cho `GET /quest/badges/me`) vì 2 nguồn dữ liệu khác nhau. Verify bằng claude-in-chrome thật: user throwaway đã có sẵn 4 badge từ trước (qua curl), chơi 1 ván HARD hoàn hảo (5 đúng/0 sai) để mở khoá `hard_master` — dialog kết quả hiện đúng banner "New badge unlocked! Bậc thầy Hard" với tên/mô tả chính xác; verify qua curl thêm: gọi `POST /quest/attempts` 2 lần cùng dữ liệu, lần 2 `newBadges: []` (không trao lại badge đã có).
+- [ ] **DB+BE: Confidence Calibration Score**
+  📍 `server/src/modules/ai/ai.service.ts` — mở rộng JSON contract của Model 1 (Phase 1 Strategy Evaluation, dòng 41-45 hiện tại `{ "status", "message" }`) thêm field `"confidenceSignal": "hedging" | "neutral" | "assertive"` (Gemini tự đánh giá dựa trên cách ứng viên diễn đạt — không đổi 2 field `status`/`message` hiện có để không phá contract cũ).
+  `Session` thêm field `confidenceSignal String?` để lưu lại. Aggregate xu hướng theo thời gian: so sánh `confidenceSignal` các session với `SubmissionStatus`/`Evaluation.scores` tương ứng — dùng để phát hiện lệch pha "tự tin thái quá nhưng sai" hay "đúng nhưng thiếu tự tin". Hiển thị ở `client/src/features/users/pages/profile-page.tsx`, card mới cạnh `badges-card.tsx`.
 
-- [x] **FE: confetti ăn mừng khi kết thúc ván tốt**
-  📍 thêm `canvas-confetti` vào `client/package.json`, bắn confetti trong `quest-result-dialog.tsx` khi ván hoàn hảo (`wrongCount === 0`) hoặc có `newBadges` mới (phụ thuộc mục badge ở trên).
+---
 
-  **Phát hiện quan trọng khi verify**: trong lúc kiểm tra confetti qua claude-in-chrome, console log lộ ra lỗi `Maximum update depth exceeded` xảy ra liên tục trong suốt lúc chơi (không phải do confetti — đã cô lập bằng cách tạm bỏ effect confetti và vẫn tái hiện lỗi y hệt). Root cause: commit badge-unlock trước đó (`setNewBadges([])` bên trong effect "lưu kết quả ván chơi" ở `quest-hub-page.tsx`, chạy mỗi khi `status === "playing"`) tạo state mới liên tục vì `submitAttempt` (object từ `useSubmitQuestAttempt()`) nằm trong dependency array và không ổn định tham chiếu qua mỗi lần render — kết hợp lại thành vòng lặp cập nhật vô hạn trong suốt lúc chơi. Sửa bằng cách dời `setNewBadges([])` ra khỏi effect đó, vào thẳng `handleStart` (cùng chỗ reset `selectedLine`/`feedback`/`scorePopup` mỗi khi bắt đầu ván mới) — effect "lưu kết quả" giờ không còn gọi setState ở nhánh `"playing"` nữa. Verify lại: chơi 1 ván đầy đủ (idle → playing → finished, dialog + confetti), theo dõi console liên tục suốt ván — không còn lỗi nào.
+## 🔵 P3 — Live Co-Interview Mode
+
+> Phức tạp và rủi ro nhất trong roadmap này — đụng trực tiếp `chat.gateway.ts` (đã có `forwardRef()` cycle với `AiModule`, xem `.claude/rules/workflow.md` mục "forwardRef() — không tự ý fix") và hiện **chưa có `.spec.ts` nào che phủ** module `chat`. Cần 1 buổi thiết kế kỹ riêng (role model, quyền truy cập room, cách AI "quan sát" mà không chặn luồng `send_message` hiện có) trước khi code, không nhảy thẳng vào implement từ mục này.
+
+- [ ] **Thiết kế (chưa code): role thứ 2 trong 1 session room**
+  📍 `server/src/modules/chat/chat/chat.gateway.ts` — hiện `join_room` (dòng 108) chỉ cho phép đúng `session.userId` join. Cần mở rộng: 1 session có thể có `role: "CANDIDATE" | "PEER_INTERVIEWER"`, AI chuyển từ vai "giám khảo duyệt/từ chối chiến lược" sang "quan sát viên" — không chặn Phase 1 → Phase 2 nữa mà để `PEER_INTERVIEWER` (người thật) quyết định, AI chỉ chấm ngầm sau khi xong.
+  **Cần quyết định sản phẩm**: session kiểu này có tính là `Session` bình thường (đi qua state machine `PHASE_1_STRATEGY` → `PHASE_2_IMPLEMENT` hiện có) hay cần 1 loại session riêng? Ảnh hưởng trực tiếp tới `sessions.service.ts` — đọc kỹ `.claude/rules/workflow.md` mục "Luồng phiên phỏng vấn" trước khi quyết.
+
+- [ ] **BE: chấm điểm 2 chiều sau buổi peer interview**
+  📍 `server/src/modules/ai/` — thêm 1 evaluation model thứ 3 (giống cách `evaluationModel` tách riêng khỏi `model` ở P1 Strategy hiện tại), input là toàn bộ `Message[]` của session, output chấm cả `candidate` (giải thích rõ không) và `peerInterviewer` (hỏi follow-up có chất lượng không).
 
 ---
 
 ## Ghi chú thứ tự ưu tiên
 
-DB đi trước BE, BE đi trước FE trong từng nhóm P vì FE cần contract API thật để gọi (tránh mock rồi phải sửa lại). Trong P0, tách endpoint `answer` riêng khỏi `attempts` ngay từ đầu — nếu để P1 mới tách sẽ phải đổi lại toàn bộ luồng chấm điểm ở FE đã build từ P0, tốn công hơn làm đúng từ đầu.
+DB → BE → FE trong từng nhóm P, giữ đúng lý do đã áp dụng ở roadmap Quest: FE cần contract API thật để gọi, tránh mock rồi sửa lại. `Career Journey` (P0-P1) đi trước 2 tính năng net-new đơn giản hơn (P2) vì P2 phụ thuộc dữ liệu `Session`/`Evaluation` đã tồn tại sẵn — không phụ thuộc P0, có thể làm song song nếu cần, nhưng đặt sau P0-P1 vì P0-P1 là thay đổi cấu trúc điều hướng lớn hơn, nên ưu tiên chốt trước khi tinh chỉnh thêm. P3 luôn đứng cuối vì đụng vào phần hạ tầng rủi ro nhất (`chat.gateway.ts` + `forwardRef()` cycle + chưa có test coverage).

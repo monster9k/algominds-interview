@@ -1,0 +1,19 @@
+{
+  "title": "キャリアジャーニー",
+  "subtitle": "キャリアトラックを選び、電話面接・技術面接・オンサイトループを進みましょう。各ステージは異なるAI面接官が担当します。",
+  "stageCount": "{{count}} ステージ",
+  "startTrack": "トラックを開始",
+  "noTracks": "利用可能なキャリアトラックはまだありません。",
+  "enterStage": "ステージへ進む",
+  "interviewer": "面接官: {{name}}",
+  "stageKind": {
+    "problem": "コーディング問題",
+    "quest": "クエストミニゲーム"
+  },
+  "status": {
+    "PENDING": "未解放",
+    "ACTIVE": "進行中",
+    "PASSED": "合格",
+    "FAILED": "不合格"
+  }
+}

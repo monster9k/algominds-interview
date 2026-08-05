@@ -28,6 +28,15 @@ const JOURNEY_WITH_PROGRESS_INCLUDE = {
   progress: { include: { stage: true } },
 };
 
+// Dùng cho MỌI response trả `CareerJourney` ra ngoài — kể cả startTrack/advanceJourney,
+// không chỉ getActiveJourney. FE cache 3 hook (start/advance/getActive) chung 1 query key
+// ["career-journey-active"] và giả định cùng 1 shape (có journey.track.stages), thiếu
+// `track` ở bất kỳ response nào cũng khiến trang pipeline render trắng cho tới lần refetch kế tiếp.
+const JOURNEY_FULL_INCLUDE = {
+  track: { include: TRACK_WITH_STAGES_INCLUDE },
+  ...JOURNEY_WITH_PROGRESS_INCLUDE,
+};
+
 @Injectable()
 export class CareerService {
   constructor(
@@ -59,7 +68,7 @@ export class CareerService {
     // Resume nếu user đã có journey IN_PROGRESS cho đúng track này.
     const existing = await this.prisma.careerJourney.findFirst({
       where: { userId, trackId, status: JourneyStatus.IN_PROGRESS },
-      include: JOURNEY_WITH_PROGRESS_INCLUDE,
+      include: JOURNEY_FULL_INCLUDE,
     });
     if (existing) return existing;
 
@@ -82,7 +91,7 @@ export class CareerService {
 
     return this.prisma.careerJourney.findUniqueOrThrow({
       where: { id: journey.id },
-      include: JOURNEY_WITH_PROGRESS_INCLUDE,
+      include: JOURNEY_FULL_INCLUDE,
     });
   }
 
@@ -90,10 +99,7 @@ export class CareerService {
     return this.prisma.careerJourney.findFirst({
       where: { userId, status: JourneyStatus.IN_PROGRESS },
       orderBy: { startedAt: 'desc' },
-      include: {
-        track: { include: TRACK_WITH_STAGES_INCLUDE },
-        ...JOURNEY_WITH_PROGRESS_INCLUDE,
-      },
+      include: JOURNEY_FULL_INCLUDE,
     });
   }
 
@@ -104,10 +110,7 @@ export class CareerService {
   ) {
     const journey = await this.prisma.careerJourney.findUnique({
       where: { id: journeyId },
-      include: {
-        track: { include: TRACK_WITH_STAGES_INCLUDE },
-        progress: true,
-      },
+      include: JOURNEY_FULL_INCLUDE,
     });
 
     if (!journey) throw new NotFoundException('Career journey không tồn tại');
@@ -139,6 +142,7 @@ export class CareerService {
       return this.prisma.careerJourney.update({
         where: { id: journeyId },
         data: { status: JourneyStatus.FAILED, finishedAt: new Date() },
+        include: JOURNEY_FULL_INCLUDE,
       });
     }
 
@@ -154,6 +158,7 @@ export class CareerService {
       return this.prisma.careerJourney.update({
         where: { id: journeyId },
         data: { status: JourneyStatus.PASSED, finishedAt: new Date() },
+        include: JOURNEY_FULL_INCLUDE,
       });
     }
 
@@ -170,7 +175,7 @@ export class CareerService {
 
     return this.prisma.careerJourney.findUniqueOrThrow({
       where: { id: journeyId },
-      include: JOURNEY_WITH_PROGRESS_INCLUDE,
+      include: JOURNEY_FULL_INCLUDE,
     });
   }
 

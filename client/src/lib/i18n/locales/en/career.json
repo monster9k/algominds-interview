@@ -1,0 +1,20 @@
+{
+  "title": "Career Journey",
+  "subtitle": "Pick a career track and go through Phone Screen, Technical Rounds, and the Onsite Loop with a different AI interviewer persona at each stage.",
+  "stageCount": "{{count}} stage",
+  "stageCount_other": "{{count}} stages",
+  "startTrack": "Start track",
+  "noTracks": "No career tracks available yet.",
+  "enterStage": "Enter stage",
+  "interviewer": "Interviewer: {{name}}",
+  "stageKind": {
+    "problem": "Coding problem",
+    "quest": "Quest mini-game"
+  },
+  "status": {
+    "PENDING": "Locked",
+    "ACTIVE": "In progress",
+    "PASSED": "Passed",
+    "FAILED": "Failed"
+  }
+}

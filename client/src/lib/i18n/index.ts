@@ -8,6 +8,7 @@ import enInterview from "./locales/en/interview.json";
 import enUsers from "./locales/en/users.json";
 import enSettings from "./locales/en/settings.json";
 import enQuest from "./locales/en/quest.json";
+import enCareer from "./locales/en/career.json";
 
 import viCommon from "./locales/vi/common.json";
 import viAuth from "./locales/vi/auth.json";
@@ -16,6 +17,7 @@ import viInterview from "./locales/vi/interview.json";
 import viUsers from "./locales/vi/users.json";
 import viSettings from "./locales/vi/settings.json";
 import viQuest from "./locales/vi/quest.json";
+import viCareer from "./locales/vi/career.json";
 
 import jaCommon from "./locales/ja/common.json";
 import jaAuth from "./locales/ja/auth.json";
@@ -24,6 +26,7 @@ import jaInterview from "./locales/ja/interview.json";
 import jaUsers from "./locales/ja/users.json";
 import jaSettings from "./locales/ja/settings.json";
 import jaQuest from "./locales/ja/quest.json";
+import jaCareer from "./locales/ja/career.json";
 
 const STORAGE_KEY = "language-storage";
 
@@ -50,6 +53,7 @@ i18n.use(initReactI18next).init({
       users: enUsers,
       settings: enSettings,
       quest: enQuest,
+      career: enCareer,
     },
     vi: {
       common: viCommon,
@@ -59,6 +63,7 @@ i18n.use(initReactI18next).init({
       users: viUsers,
       settings: viSettings,
       quest: viQuest,
+      career: viCareer,
     },
     ja: {
       common: jaCommon,
@@ -68,11 +73,21 @@ i18n.use(initReactI18next).init({
       users: jaUsers,
       settings: jaSettings,
       quest: jaQuest,
+      career: jaCareer,
     },
   },
   lng: getStoredLanguage(),
   fallbackLng: "en",
-  ns: ["common", "auth", "problems", "interview", "users", "settings", "quest"],
+  ns: [
+    "common",
+    "auth",
+    "problems",
+    "interview",
+    "users",
+    "settings",
+    "quest",
+    "career",
+  ],
   defaultNS: "common",
   interpolation: { escapeValue: false },
 });

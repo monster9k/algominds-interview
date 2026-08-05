@@ -9,6 +9,7 @@ import enUsers from "./locales/en/users.json";
 import enSettings from "./locales/en/settings.json";
 import enQuest from "./locales/en/quest.json";
 import enCareer from "./locales/en/career.json";
+import enPeerInterview from "./locales/en/peer-interview.json";
 
 import viCommon from "./locales/vi/common.json";
 import viAuth from "./locales/vi/auth.json";
@@ -18,6 +19,7 @@ import viUsers from "./locales/vi/users.json";
 import viSettings from "./locales/vi/settings.json";
 import viQuest from "./locales/vi/quest.json";
 import viCareer from "./locales/vi/career.json";
+import viPeerInterview from "./locales/vi/peer-interview.json";
 
 import jaCommon from "./locales/ja/common.json";
 import jaAuth from "./locales/ja/auth.json";
@@ -27,6 +29,7 @@ import jaUsers from "./locales/ja/users.json";
 import jaSettings from "./locales/ja/settings.json";
 import jaQuest from "./locales/ja/quest.json";
 import jaCareer from "./locales/ja/career.json";
+import jaPeerInterview from "./locales/ja/peer-interview.json";
 
 const STORAGE_KEY = "language-storage";
 
@@ -54,6 +57,7 @@ i18n.use(initReactI18next).init({
       settings: enSettings,
       quest: enQuest,
       career: enCareer,
+      peerInterview: enPeerInterview,
     },
     vi: {
       common: viCommon,
@@ -64,6 +68,7 @@ i18n.use(initReactI18next).init({
       settings: viSettings,
       quest: viQuest,
       career: viCareer,
+      peerInterview: viPeerInterview,
     },
     ja: {
       common: jaCommon,
@@ -74,6 +79,7 @@ i18n.use(initReactI18next).init({
       settings: jaSettings,
       quest: jaQuest,
       career: jaCareer,
+      peerInterview: jaPeerInterview,
     },
   },
   lng: getStoredLanguage(),
@@ -87,6 +93,7 @@ i18n.use(initReactI18next).init({
     "settings",
     "quest",
     "career",
+    "peerInterview",
   ],
   defaultNS: "common",
   interpolation: { escapeValue: false },

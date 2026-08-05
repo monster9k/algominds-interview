@@ -20,7 +20,11 @@ interface EvaluateCodeJobData {
   language: string;
 }
 
-type AiJobData = ChatJobData | EvaluateCodeJobData;
+interface GradePeerInterviewJobData {
+  peerSessionId: string;
+}
+
+type AiJobData = ChatJobData | EvaluateCodeJobData | GradePeerInterviewJobData;
 
 @Processor('ai-queue')
 export class AiProcessor extends WorkerHost {
@@ -39,12 +43,15 @@ export class AiProcessor extends WorkerHost {
     const jobName = job.name;
     const data = job.data;
 
-    this.logger.log(`Processing ${jobName} for session: ${data.sessionId}`);
+    const logId = 'sessionId' in data ? data.sessionId : data.peerSessionId;
+    this.logger.log(`Processing ${jobName} for session: ${logId}`);
 
     if (jobName === 'chat-job') {
       return this.processChat(data as ChatJobData);
     } else if (jobName === 'evaluate-code') {
       return this.processEvaluateCode(data as EvaluateCodeJobData);
+    } else if (jobName === 'grade-peer-interview') {
+      return this.processGradePeerInterview(data as GradePeerInterviewJobData);
     } else {
       this.logger.warn(`Unknown job type: ${jobName}`);
     }
@@ -245,6 +252,83 @@ Test Cases: ${JSON.stringify([
     } catch (error) {
       this.logger.error(
         `[Phase 3] Error evaluating code for session ${sessionId}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error; // Let BullMQ retry
+    }
+  }
+
+  /**
+   * P3: Chấm điểm 2 chiều 1 LẦN duy nhất sau khi buổi peer interview kết
+   * thúc (enqueue từ ChatGateway#handleEndPeerInterview). Tái dùng đúng
+   * AiProcessor/chatGateway đã có — không tạo processor/forwardRef mới.
+   */
+  private async processGradePeerInterview(data: GradePeerInterviewJobData) {
+    const { peerSessionId } = data;
+
+    try {
+      const session = await this.prisma.peerInterviewSession.findUnique({
+        where: { id: peerSessionId },
+        include: {
+          problem: true,
+          messages: { orderBy: { createdAt: 'asc' } },
+        },
+      });
+
+      if (!session || !session.problem) {
+        this.logger.error(
+          `Peer interview session ${peerSessionId} or problem not found`,
+        );
+        return;
+      }
+
+      const problem = session.problem;
+      const problemContext = `
+Problem Title: ${problem.title}
+Difficulty: ${problem.difficulty}
+
+Description:
+${problem.content}
+      `;
+
+      this.logger.log(`[P3] Grading peer interview: ${peerSessionId}`);
+      const grading = await this.aiService.gradePeerInterview(
+        session.messages.map((m) => ({ role: m.role, content: m.content })),
+        problemContext,
+      );
+
+      const savedEvaluation = await this.prisma.peerInterviewEvaluation.upsert({
+        where: { sessionId: peerSessionId },
+        update: {
+          candidateScore: grading.candidateScore,
+          candidateFeedback: grading.candidateFeedback,
+          peerInterviewerScore: grading.peerInterviewerScore,
+          peerInterviewerFeedback: grading.peerInterviewerFeedback,
+        },
+        create: {
+          sessionId: peerSessionId,
+          candidateScore: grading.candidateScore,
+          candidateFeedback: grading.candidateFeedback,
+          peerInterviewerScore: grading.peerInterviewerScore,
+          peerInterviewerFeedback: grading.peerInterviewerFeedback,
+        },
+      });
+
+      this.logger.log(
+        `[P3] Evaluation saved for peer session: ${peerSessionId}`,
+      );
+
+      this.chatGateway.server
+        .to(`peer:${peerSessionId}`)
+        .emit('peer_interview_graded', {
+          peerSessionId,
+          evaluation: savedEvaluation,
+        });
+
+      return savedEvaluation;
+    } catch (error) {
+      this.logger.error(
+        `[P3] Error grading peer interview ${peerSessionId}:`,
         error instanceof Error ? error.message : String(error),
       );
       throw error; // Let BullMQ retry

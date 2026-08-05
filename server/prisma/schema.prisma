@@ -80,6 +80,9 @@ model User {
   careerJourneys CareerJourney[]
   personaUnlocks UserPersonaUnlock[]
 
+  candidateInPeerSessions       PeerInterviewSession[] @relation("PeerInterviewCandidate")
+  peerInterviewerInPeerSessions PeerInterviewSession[] @relation("PeerInterviewInterviewer")
+
   // Indexes
   @@index([provider, providerId])
   @@map("users") // Đổi tên bảng trong DB thành số nhiều (optional, chuẩn REST)
@@ -154,6 +157,7 @@ model Problem {
   sessions          Session[]
   companies         ProblemCompany[]
   careerTrackStages CareerTrackStage[]
+  peerInterviewSessions PeerInterviewSession[]
 
   @@map("problems")
 }
@@ -541,4 +545,72 @@ model Evaluation {
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@map("evaluations")
+}
+
+// --- P3: LIVE CO-INTERVIEW MODE (PEER INTERVIEW) ---
+// Model hoàn toàn RIÊNG, không đụng Session/state machine PHASE_1/PHASE_2 —
+// quyết định sản phẩm đã chốt ở ROADMAP.md mục P3 (Session.userId là FK duy
+// nhất, không có chỗ cho người thứ 2 mà không sửa bảng trung tâm nhất hệ
+// thống). AI không tham gia real-time trong lúc phòng hoạt động, chỉ chấm
+// điểm 1 lần lúc kết thúc (job grade-peer-interview trên ai-queue có sẵn).
+
+enum PeerSessionStatus {
+  WAITING_FOR_PEER // vừa tạo, đợi người thứ 2 join bằng inviteCode
+  ACTIVE
+  COMPLETED
+  ABANDONED
+}
+
+enum PeerRole {
+  CANDIDATE
+  PEER_INTERVIEWER
+}
+
+model PeerInterviewSession {
+  id                String            @id @default(uuid())
+  candidateId       String
+  peerInterviewerId String? // null cho tới khi có người join
+  problemId         String
+  status            PeerSessionStatus @default(WAITING_FOR_PEER)
+  inviteCode        String            @unique // share cho người thứ 2 join qua POST /peer-interviews/join/:inviteCode
+  startedAt         DateTime          @default(now())
+  endedAt           DateTime?
+
+  candidate       User    @relation("PeerInterviewCandidate", fields: [candidateId], references: [id], onDelete: Cascade)
+  peerInterviewer User?   @relation("PeerInterviewInterviewer", fields: [peerInterviewerId], references: [id])
+  problem         Problem @relation(fields: [problemId], references: [id])
+  messages        PeerInterviewMessage[]
+  evaluation      PeerInterviewEvaluation?
+
+  @@index([candidateId])
+  @@index([peerInterviewerId])
+  @@map("peer_interview_sessions")
+}
+
+model PeerInterviewMessage {
+  id        String   @id @default(uuid())
+  sessionId String
+  role      PeerRole // CANDIDATE hay PEER_INTERVIEWER gửi — không tái dùng MessageSender (enum đó gắn với Session/AI)
+  senderId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  session PeerInterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("peer_interview_messages")
+}
+
+model PeerInterviewEvaluation {
+  id                      String   @id @default(uuid())
+  sessionId               String   @unique
+  candidateScore          Int
+  candidateFeedback       String
+  peerInterviewerScore    Int
+  peerInterviewerFeedback String
+  createdAt               DateTime @default(now())
+
+  session PeerInterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("peer_interview_evaluations")
 }

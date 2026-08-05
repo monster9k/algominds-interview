@@ -1,0 +1,41 @@
+{
+  "title": "Peer Interview",
+  "subtitle": "Practice with a real person: 1 candidate, 1 peer interviewer, pure conversation (no code editor) — graded 2-way by AI right after the session ends.",
+  "create": {
+    "title": "Start a new session",
+    "description": "Pick a problem and get an invite code to share with your peer interviewer.",
+    "problemPlaceholder": "Select a problem",
+    "submit": "Create session"
+  },
+  "join": {
+    "title": "Join a session",
+    "description": "Got an invite code from someone? Join as their peer interviewer.",
+    "inviteCodeLabel": "Invite code",
+    "inviteCodePlaceholder": "e.g. A1B2C3D4",
+    "submit": "Join"
+  },
+  "room": {
+    "loading": "Loading session...",
+    "loadFailed": "Could not load this session.",
+    "waitingTitle": "Waiting for your peer interviewer",
+    "waitingDescription": "Share this invite code — the session starts as soon as they join.",
+    "copyInviteCode": "Copy",
+    "copied": "Invite code copied",
+    "polling": "Checking for a new participant...",
+    "roleLabel": "You: {{role}}",
+    "role": {
+      "CANDIDATE": "Candidate",
+      "PEER_INTERVIEWER": "Peer Interviewer"
+    },
+    "statusActive": "In progress",
+    "statusEnded": "Ended",
+    "endInterview": "End interview",
+    "endedNotice": "The other participant ended the interview.",
+    "emptyChat": "No messages yet — say hello!",
+    "inputPlaceholder": "Type a message...",
+    "grading": "AI is grading this session...",
+    "evaluationTitle": "AI Grading",
+    "candidateScore": "Candidate",
+    "peerInterviewerScore": "Peer Interviewer"
+  }
+}

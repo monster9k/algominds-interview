@@ -1,0 +1,41 @@
+{
+  "title": "ピア面接",
+  "subtitle": "実際の相手と練習：candidate 1人、peer interviewer 1人、純粋な会話のみ（コードエディタなし）— セッション終了直後にAIが双方向で採点します。",
+  "create": {
+    "title": "新しいセッションを作成",
+    "description": "問題を選び、招待コードを発行してpeer interviewerに共有しましょう。",
+    "problemPlaceholder": "問題を選択",
+    "submit": "セッションを作成"
+  },
+  "join": {
+    "title": "セッションに参加",
+    "description": "招待コードを受け取りましたか？peer interviewerとして参加しましょう。",
+    "inviteCodeLabel": "招待コード",
+    "inviteCodePlaceholder": "例: A1B2C3D4",
+    "submit": "参加する"
+  },
+  "room": {
+    "loading": "セッションを読み込み中...",
+    "loadFailed": "このセッションを読み込めませんでした。",
+    "waitingTitle": "peer interviewerを待っています",
+    "waitingDescription": "この招待コードを共有してください — 相手が参加するとすぐにセッションが始まります。",
+    "copyInviteCode": "コピー",
+    "copied": "招待コードをコピーしました",
+    "polling": "新しい参加者を確認しています...",
+    "roleLabel": "あなた: {{role}}",
+    "role": {
+      "CANDIDATE": "Candidate",
+      "PEER_INTERVIEWER": "Peer Interviewer"
+    },
+    "statusActive": "進行中",
+    "statusEnded": "終了",
+    "endInterview": "面接を終了",
+    "endedNotice": "相手が面接を終了しました。",
+    "emptyChat": "まだメッセージがありません — 挨拶してみましょう！",
+    "inputPlaceholder": "メッセージを入力...",
+    "grading": "AIがこのセッションを採点しています...",
+    "evaluationTitle": "AI採点結果",
+    "candidateScore": "Candidate",
+    "peerInterviewerScore": "Peer Interviewer"
+  }
+}

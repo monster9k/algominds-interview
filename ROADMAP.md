@@ -267,7 +267,7 @@ Sau (roadmap này):                Problems | Quest | Career Journey
 
 ---
 
-## 🔵 P3 — Live Co-Interview Mode
+## 🔵 P3 — Live Co-Interview Mode (Đã hoàn thành 2026-08-05)
 
 > Phức tạp và rủi ro nhất trong roadmap này — đụng trực tiếp `chat.gateway.ts` (đã có `forwardRef()` cycle với `AiModule`, xem `.claude/rules/workflow.md` mục "forwardRef() — không tự ý fix") và hiện **chưa có `.spec.ts` nào che phủ** module `chat`. Cần 1 buổi thiết kế kỹ riêng (role model, quyền truy cập room, cách AI "quan sát" mà không chặn luồng `send_message` hiện có) trước khi code, không nhảy thẳng vào implement từ mục này.
 
@@ -367,11 +367,30 @@ Sau (roadmap này):                Problems | Quest | Career Journey
   - KHÔNG tích hợp code editor/Judge/Piston — peer-interview thuần hội thoại (đúng như mô tả chấm điểm gốc chỉ dựa trên `Message[]`, không nhắc submission).
   - KHÔNG đụng `Session`, `sessions.service.ts`, `ai.processor.ts#processChat`, hay 2 handler `join_room`/`send_message` đang có — hoàn toàn cộng thêm (additive), không sửa.
   - KHÔNG trừ `UserStats.credits` mỗi tin nhắn như luồng 1:1 hiện tại — vì AI không phản hồi real-time, chỉ chạy đúng 1 lần lúc kết thúc.
-  Đây vẫn chỉ là bản thiết kế — **chưa migrate schema, chưa viết code** cho mục này, cần user xác nhận trước khi bắt đầu implement do vẫn là phần rủi ro nhất trong toàn bộ roadmap.
+  **User xác nhận implement (2026-08-05)**: yêu cầu "lên lại kế hoạch rõ ràng cho P3 vào roadmap và thực hiện nó" — coi như xác nhận bắt đầu code toàn bộ P3 theo đúng thiết kế đã chốt ở trên, không đổi phạm vi.
 
-- [ ] **BE: chấm điểm 2 chiều sau buổi peer interview**
-  📍 `server/src/modules/ai/` — thêm 1 evaluation model thứ 3 (giống cách `evaluationModel` tách riêng khỏi `model` ở P1 Strategy hiện tại), input là toàn bộ `Message[]` của session, output chấm cả `candidate` (giải thích rõ không) và `peerInterviewer` (hỏi follow-up có chất lượng không).
-  📌 Thiết kế cụ thể đã chốt ở mục trên (Model 4 `ai.service.ts` + job `grade-peer-interview` trong `AiProcessor` có sẵn). Chưa implement — chờ xác nhận trước khi code toàn bộ P3.
+- [x] **BE: schema migration**
+  📍 `server/prisma/schema.prisma` — thêm đúng 2 enum (`PeerSessionStatus`, `PeerRole`) + 3 model (`PeerInterviewSession`, `PeerInterviewMessage`, `PeerInterviewEvaluation`) như sketch, cộng back-relation `User.candidateInPeerSessions`/`peerInterviewerInPeerSessions` và `Problem.peerInterviewSessions`. Migration `20260805045159_add_peer_interview_models`, không đụng model nào khác.
+
+- [x] **BE: module `peer-interview` (REST)**
+  📍 `server/src/modules/peer-interview/` — module mới độc lập (`peer-interview.module.ts`/`.controller.ts`/`.service.ts`/`dto/create-peer-interview.dto.ts`), đúng 3 endpoint đã thiết kế: `POST /peer-interviews` (sinh `inviteCode` 8 hex chars qua `crypto.randomBytes`, retry khi trùng `@unique`), `POST /peer-interviews/join/:inviteCode` (chặn tự join phiên của chính mình, chặn join phiên đã có đủ 2 người/đã kết thúc), `GET /peer-interviews/:id` (chỉ candidate hoặc peerInterviewer truy cập được). Đăng ký vào `app.module.ts`.
+
+- [x] **BE: `chat.gateway.ts` — handler mới, additive**
+  📍 Thêm đúng 3 handler như thiết kế: `join_peer_room` (room riêng `peer:<id>`, không đụng room của `join_room`), `send_peer_message` (lưu `PeerInterviewMessage`, broadcast `receive_peer_message`, KHÔNG gọi `aiQueue`), `end_peer_interview` (chỉ candidate/peerInterviewer gọi được, set `COMPLETED`, broadcast `peer_interview_ended`, enqueue job `grade-peer-interview` vào đúng `ai-queue` có sẵn). Không sửa 1 dòng nào của `handleJoinRoom`/`handleMessage` hiện có.
+
+- [x] **BE: AI Model 4 + job `grade-peer-interview`**
+  📍 `ai.service.ts` — thêm `peerInterviewModel` (Model 4, JSON contract `{candidate:{score,feedback}, peerInterviewer:{score,feedback}}`) + `gradePeerInterview()`. `ai.processor.ts` — thêm nhánh job `grade-peer-interview` trong `AiProcessor` có sẵn (không tạo processor/forwardRef mới), `processGradePeerInterview()` load `PeerInterviewMessage[]` + `Problem`, gọi Gemini, upsert `PeerInterviewEvaluation`, emit `peer_interview_graded` qua `chatGateway` đã inject sẵn.
+
+- [x] **FE: feature `peer-interview`**
+  📍 `client/src/features/peer-interview/` — đúng cấu trúc feature-folder chuẩn (`types/api/hooks/pages`), 2 trang: lobby (`peer-interview-lobby-page.tsx` — tạo phiên chọn bài qua `useProblems()`, hoặc join bằng invite code) và room (`peer-interview-room-page.tsx` — chờ đối phương join với poll nhẹ `refetchInterval` khi còn `WAITING_FOR_PEER`, chat 2 chiều qua `use-peer-interview-socket.ts`, nút "End interview", card kết quả chấm điểm AI). Route `/peer-interview` (trong `DashboardLayout`) và `/peer-interview/:id` (trong `ProtectedRoute`, full-screen giống `/interview/:slug`) ở `router-instance.tsx`, thêm mục sidebar. i18n namespace mới `peerInterview` (3 locale, đăng ký trong `i18n/index.ts`) — không gộp vào `interview.json` vì đây là feature riêng.
+
+  **Bug thật phát hiện khi verify (không liên quan P3, đã sửa)**: `client/src/features/auth/types/index.ts` khai báo `User.id`, nhưng backend (`auth.service.ts#generateToken`) luôn trả `user: { userId, email, role }` — không có field `id`. Bug này nằm im từ trước vì chưa có chỗ nào trong code thật sự đọc `user.id`; peer-interview-room-page.tsx (cần so `currentUserId` để canh trái/phải tin nhắn và xác định vai trò) là chỗ ĐẦU TIÊN dùng tới field này nên lộ ra ngay khi test. Sửa: đổi `User.id` → `User.userId` (khớp runtime), `name`/`avatarUrl` chuyển thành optional (chỉ có ở `GET /users/me`, không có ở payload login/register/refresh).
+
+  **Verify thật trong Chrome bằng 2 tab/2 tài khoản test** (không mock, real Gemini): tạo 2 account test qua `/auth/register`, tab 1 (candidate) tạo phiên với bài Two Sum → nhận invite code → tab 2 (peer interviewer) join bằng code → cả 2 chiều `send_peer_message`/`receive_peer_message` hiển thị đúng vai trò, đúng canh trái/phải, real-time không cần refresh. Candidate bấm "End interview" → cả 2 tab nhận `peer_interview_ended` → "AI is grading this session..." → vài giây sau cả 2 tab nhận `peer_interview_graded` cùng lúc với kết quả **giống hệt nhau**: Candidate 70/100, Peer Interviewer 60/100, kèm feedback text hợp lý bám sát đúng nội dung hội thoại đã gửi (không phải placeholder). Không console error ở cả 2 tab. Đã xoá sạch 2 user test (cascade xoá luôn `PeerInterviewSession`/`Message`/`Evaluation` liên quan) sau khi verify.
+  Lưu ý riêng cho việc test đa-tài khoản: reload trang (`navigate` full page) trong lúc 1 tab khác vừa đăng nhập sẽ khiến `AuthHydrator` gọi `/auth/refresh` bằng cookie `refreshToken` **dùng chung theo browser profile**, có thể "giật" nhầm danh tính tab đang test (không phải bug sản phẩm — user thật mỗi người 1 trình duyệt/cookie jar riêng) — tránh reload sau khi cả 2 bên đã đăng nhập, chỉ điều hướng trong-app (client-side routing).
+  `npm run lint` + `npm run build` (client + server) đều pass.
+
+**P3 hoàn thành** — Live Co-Interview Mode có đủ BE (schema, REST, gateway, AI Model 4) + FE thật, verify bằng 2 tài khoản thật qua Chrome với Gemini thật, không phải chỉ scaffold. Toàn bộ roadmap (P0 → P3) coi như hoàn thành.
 
 ---
 

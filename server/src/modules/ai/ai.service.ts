@@ -79,12 +79,41 @@ const OFFER_DEBRIEF_SYSTEM_INSTRUCTION = `
            không bullet "-"/"*") — FE hiện thị nguyên văn, không render markdown.
       `;
 
+// Model 4 (P3 Live Co-Interview) — chấm điểm 2 chiều 1 LẦN duy nhất sau khi
+// buổi peer interview kết thúc, input là toàn bộ PeerInterviewMessage[] +
+// problemContext. Không liên quan gì tới STRATEGY_SYSTEM_INSTRUCTION (session
+// Phase 1/2 bình thường) — đây là model độc lập cho luồng peer-to-peer.
+const PEER_INTERVIEW_SYSTEM_INSTRUCTION = `
+        Bạn là 1 senior engineering manager, chấm điểm lại 1 buổi phỏng vấn
+        peer-to-peer (2 người thật đóng vai candidate và interviewer, không có
+        AI tham gia trong lúc phỏng vấn diễn ra).
+
+        INPUT: Toàn bộ đoạn hội thoại (mỗi tin nhắn gắn role CANDIDATE hoặc
+        PEER_INTERVIEWER) và ngữ cảnh bài toán được phỏng vấn.
+        OUTPUT: Bắt buộc trả về JSON theo đúng định dạng sau:
+        {
+          "candidate": { "score": 0-100, "feedback": "string" },
+          "peerInterviewer": { "score": 0-100, "feedback": "string" }
+        }
+
+        TIÊU CHÍ CHẤM:
+        1. candidate.score: giải thích ý tưởng có rõ ràng, đúng hướng, xử lý
+           được câu hỏi/phản biện của peer interviewer không.
+        2. peerInterviewer.score: câu hỏi follow-up có chất lượng, có đào sâu
+           đúng chỗ, có dẫn dắt hợp lý không (không chấm điểm dựa trên việc
+           candidate đúng hay sai).
+        3. Nếu hội thoại quá ngắn để đánh giá đầy đủ 1 trong 2 phía, vẫn phải
+           chấm nhưng ghi rõ trong "feedback" rằng dữ liệu còn hạn chế.
+        4. Không bịa thêm nội dung không có trong hội thoại.
+      `;
+
 @Injectable()
 export class AiService {
   private genAI: GoogleGenerativeAI;
   private model: GenerativeModel; // Phase 1 Strategy evaluation, persona "default" (systemPromptExtra rỗng)
   private evaluationModel: GenerativeModel; // For Phase 3 Code evaluation
   private debriefModel: GenerativeModel; // For Offer Debrief digest generation
+  private peerInterviewModel: GenerativeModel; // For P3 peer interview 2-way grading
 
   // Cache model đã build theo personaId — tránh gọi lại Gemini SDK + Prisma
   // mỗi tin nhắn cho cùng 1 persona.
@@ -149,6 +178,15 @@ export class AiService {
     this.debriefModel = this.genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-lite',
       systemInstruction: OFFER_DEBRIEF_SYSTEM_INSTRUCTION,
+    });
+
+    // Model 4: P3 Peer Interview 2-way grading
+    this.peerInterviewModel = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      generationConfig: {
+        responseMimeType: 'application/json',
+      },
+      systemInstruction: PEER_INTERVIEW_SYSTEM_INSTRUCTION,
     });
   }
 
@@ -317,5 +355,56 @@ ${strategyAnswers.map((answer, i) => `${i + 1}. ${answer}`).join('\n')}
     const chat = this.debriefModel.startChat({ history: [] });
     const result = await chat.sendMessage(prompt);
     return result.response.text();
+  }
+
+  async gradePeerInterview(
+    messages: { role: 'CANDIDATE' | 'PEER_INTERVIEWER'; content: string }[],
+    problemContext: string,
+  ): Promise<{
+    candidateScore: number;
+    candidateFeedback: string;
+    peerInterviewerScore: number;
+    peerInterviewerFeedback: string;
+  }> {
+    const transcript = messages
+      .map((m) => `[${m.role}] ${m.content}`)
+      .join('\n');
+
+    const prompt = `
+Bài toán:
+${problemContext}
+
+Đoạn hội thoại (theo thứ tự thời gian):
+${transcript}
+    `;
+
+    const chat = this.peerInterviewModel.startChat({ history: [] });
+    const result = await chat.sendMessage(prompt);
+    const rawResponse = result.response.text();
+
+    const parsed = JSON.parse(rawResponse) as {
+      candidate?: { score?: unknown; feedback?: unknown };
+      peerInterviewer?: { score?: unknown; feedback?: unknown };
+    };
+
+    if (
+      typeof parsed.candidate?.score !== 'number' ||
+      typeof parsed.peerInterviewer?.score !== 'number'
+    ) {
+      throw new Error('Invalid peer interview grading structure from AI');
+    }
+
+    return {
+      candidateScore: parsed.candidate.score,
+      candidateFeedback:
+        typeof parsed.candidate.feedback === 'string'
+          ? parsed.candidate.feedback
+          : '',
+      peerInterviewerScore: parsed.peerInterviewer.score,
+      peerInterviewerFeedback:
+        typeof parsed.peerInterviewer.feedback === 'string'
+          ? parsed.peerInterviewer.feedback
+          : '',
+    };
   }
 }

@@ -220,13 +220,15 @@ Kết thúc journey, thay vì chỉ có Offer Debrief (nội dung chung của ng
 
 ---
 
-## 🟡 P5 — Quest liên kết thật + Adaptive next-stage theo điểm yếu
+## 🟡 P5 — Quest liên kết thật + Adaptive next-stage theo điểm yếu (Đã hoàn thành 2026-08-06)
 
-- [ ] **BE: nối `QuestAttempt` vào `JourneyStageProgress` thật + auto-grade nhánh QUEST**
+- [x] **BE: nối `QuestAttempt` vào `JourneyStageProgress` thật + auto-grade nhánh QUEST**
   📍 `server/src/modules/quest/quest.service.ts#createAttempt` — sau khi `prisma.questAttempt.create(...)`, tìm `JourneyStageProgress` đang `ACTIVE`, `questAttemptId: null`, `stage.kind: QUEST`, `journey.userId: userId` (`findFirst`). Nếu có: `update` gắn `questAttemptId`, tính tỉ lệ đúng `(correctCount/(correctCount+wrongCount))*100`, gọi lại đúng `CareerService.autoGradeProblemStage`-style logic (đổi tên chung thành `autoGradeStage(progressId, score)` để dùng cho cả PROBLEM/QUEST/PEER_INTERVIEW sau này ở P6). Không đạt threshold: theo đúng quyết định retry ở P4 — **không** tạo `JourneyStageProgress` mới, giữ `ACTIVE`, chỉ cập nhật `questAttemptId` thành attempt mới nhất mỗi lần user chơi lại 1 ván Quest mới, tăng `attemptCount`.
   Import `CareerModule`/`CareerService` vào `QuestModule` (hoặc export `CareerService` từ `CareerModule` giống cách `SessionsModule` đã `export: [SessionsService]` cho career dùng) — kiểm tra chiều phụ thuộc lúc code: `career` đã import `SessionsModule`, nếu `quest` giờ cũng cần gọi ngược vào `career`, xác nhận không tạo cycle (khác tình huống `AiModule`↔`ChatModule` — chiều phụ thuộc ở đây 1 chiều: `quest` → `career`, không ngược lại).
+  **Đã làm**: hàm `autoGradeStage` đã có tên đó sẵn từ P4 (không cần rename). `CareerModule` thêm `exports: [CareerService]`, `QuestModule` import `CareerModule` — build xác nhận không tạo cycle (`career` không import ngược lại `quest`).
+  **Bug thật bắt được khi verify tay, không phải chỉ đọc code**: mô tả gốc ghi lọc `questAttemptId: null` khi tìm `JourneyStageProgress` — làm đúng y hệt vậy lúc đầu, nhưng test tay phát hiện: sau ván ĐẦU TIÊN (dù pass hay fail), `questAttemptId` đã bị set (trỏ vào attempt đó), nên ván THỨ HAI trở đi không còn khớp điều kiện `questAttemptId: null` nữa — quest tự động hoá chỉ hoạt động đúng 1 lần duy nhất, mọi lần chơi lại sau đó bị bỏ qua hoàn toàn (rơi vào no-op), stage kẹt mãi ở retry cũ. Sửa: bỏ điều kiện `questAttemptId: null` khỏi query, chỉ cần `status: ACTIVE` + `stage.kind: QUEST` + `journey.userId` là đủ (đúng 1 progress ACTIVE/journey, questAttemptId bị ghi đè mỗi lần chơi trong lúc còn ACTIVE — đúng tinh thần "attempt mới nhất" mô tả gốc đã nêu nhưng chưa lường hết điều kiện lọc).
 
-- [ ] **DB: pool bài theo tag cho stage "adaptive"**
+- [x] **DB: pool bài theo tag cho stage "adaptive"**
   📍 `schema.prisma`.
   ```prisma
   model CareerTrackStage {
@@ -247,18 +249,25 @@ Kết thúc journey, thay vì chỉ có Offer Debrief (nội dung chung của ng
   }
   ```
   Stage không `adaptive`: hành vi cũ giữ nguyên 100% (`problemId` tĩnh, không đọc pool).
+  **Đã làm**: thêm đúng field/model như trên, cộng field `JourneyStageProgress.pickedReasonTag String?` (snapshot lý do chọn tại thời điểm tạo, không tính lại về sau) và back-relation `Problem.careerTrackStagePools`. Migration `20260805222125_add_adaptive_stage_problem_pool`. `npx prisma format` + `validate` trước migrate.
 
-- [ ] **BE: tính "tag yếu nhất" từ dữ liệu thật, chọn bài trong pool**
+- [x] **BE: tính "tag yếu nhất" từ dữ liệu thật, chọn bài trong pool**
   📍 `career.service.ts` — method dùng chung mới `computeWeakTags(userId: string)`:
   1. `Submission` của user có `status != ACCEPTED`, trong ~90 ngày gần nhất, join `session.problem.tags` (qua `ProblemTag`), group theo `tagId`, đếm số lần.
   2. Cộng trọng số thêm cho tag nào có `Session.confidenceSignal = 'assertive'` mà vẫn sai (dữ liệu Confidence Calibration đã có sẵn từ P2 — tín hiệu "tưởng chắc mà sai" ưu tiên luyện hơn tag chỉ đơn thuần sai).
   3. Trả về danh sách tag sắp theo độ yếu giảm dần.
   `ensureStageSession` (hàm hiện có) sửa: nếu `stage.adaptive`, gọi `pickAdaptiveProblem(userId, stage)` — lấy `problemPool`, join `Tag`, chọn problem thuộc tag yếu nhất trong `computeWeakTags` mà cũng nằm trong pool VÀ user chưa từng có `Session` nào cho problem đó (tránh lặp bài đã làm); nếu user chưa đủ dữ liệu (cold start) → chọn ngẫu nhiên trong pool theo `difficulty` tăng dần. Trả kèm `pickedReasonTag` (tên tag) để FE hiển thị lý do.
+  **Đã làm**: đúng như thiết kế. `ensureStageSession` đổi return type từ `string | undefined` (chỉ `sessionId`) sang `{ sessionId?: string; pickedReasonTag?: string }` — cả 2 điểm gọi (`createJourneyForTrack`, `applyStageOutcome`) cập nhật theo, lưu `pickedReasonTag` vào `JourneyStageProgress` lúc tạo. Weight tag "assertive mà vẫn sai" nhân đôi (weight 2 thay vì 1) thay vì cộng riêng — đơn giản hơn mô tả gốc ("cộng trọng số thêm") nhưng cùng hiệu ứng: tag có tín hiệu overconfident nổi lên trên tag chỉ sai thường. "Chọn ngẫu nhiên theo difficulty" cụ thể hoá thành: sort tăng dần EASY→MEDIUM→HARD, lấy phần tử đầu (deterministic, không random thật — dễ test/verify hơn, vẫn đúng tinh thần "ưu tiên bài dễ khi chưa biết user yếu gì").
 
-- [ ] **FE: hiện lý do chọn bài**
+- [x] **FE: hiện lý do chọn bài**
   📍 `career-journey-page.tsx` — card stage `adaptive` hiện dòng nhỏ: "Chọn riêng cho bạn vì bạn đang yếu ở {pickedReasonTag}".
+  **Đã làm**: thêm `pickedReasonTag` vào type `JourneyStageProgress`, hiện dòng `t("adaptivePick", { tag })` ngay dưới dòng persona khi `progress.pickedReasonTag` có giá trị (mọi status, không chỉ ACTIVE — user vẫn nên thấy lý do khi xem lại stage đã PASSED/FAILED). Thêm key i18n `adaptivePick` ở cả 3 locale.
+  `npm run lint` + `npm run build` (client) pass.
 
-**Verify khi implement**: seed 1 stage `adaptive` với pool 3 bài thuộc 2 tag khác nhau; tạo vài `Submission` sai thuộc đúng 1 tag cho user test qua `/judge/submit` thật; start track → xác nhận stage `adaptive` chọn đúng bài thuộc tag yếu đó, không phải ngẫu nhiên. Chơi Quest thật qua `/quest` khi có stage `QUEST` đang `ACTIVE` → xác nhận `questAttemptId` tự gắn, stage tự chuyển theo kết quả, không cần bấm "Mark as Passed".
+**Verify thật qua Node script (fetch + Prisma trực tiếp cho phần seed dữ liệu lịch sử), không mock**:
+- *Adaptive pick*: seed 1 stage `adaptive` với pool 3 bài thật (`climbing-stairs` EASY, `house-robber` MEDIUM — cả 2 tag `Dynamic Programming`; `container-with-most-water` MEDIUM — tag `Two Pointers`, không liên quan). User A: seed 2 `Submission` sai (qua Prisma trực tiếp, không qua Piston vì chỉ test tầng chọn bài) cho 2 bài NGOÀI pool nhưng cùng tag `Dynamic Programming` (`coin-change`, `counting-bits` — cố tình dùng 2 bài để tag DP có weight=2, thắng rõ các tag phụ trùng lặp như "Array"/"Math" chỉ weight=1, tránh nhiễu tie-break) → `start` track qua API thật → xác nhận chọn đúng `house-robber`/`climbing-stairs` (tag DP), `pickedReasonTag = "Dynamic Programming"`. User B (tài khoản mới, không seed gì): `start` track → cold start, chọn đúng `climbing-stairs` (EASY, thấp nhất trong pool), `pickedReasonTag = null`.
+- *Quest liên kết*: seed 1 track 1 stage `kind: QUEST`, `passThreshold: 50`. `start` track qua API → `sessionId: null`, `questAttemptId: null` đúng như kỳ vọng. Gọi `POST /quest/attempts` thật (ván "kém", 2/10 đúng = 20% < 50%) → `questAttemptId` tự gắn, `attemptCount: 1`, journey vẫn `IN_PROGRESS`/stage vẫn `ACTIVE` (không tự FAILED — **đây là bước bắt được bug ở trên**, phải sửa xong mới verify tiếp được). Gọi lại `POST /quest/attempts` (ván "tốt", 8/10 đúng = 80% ≥ 50%) → `questAttemptId` ghi đè sang attempt mới, stage tự `PASSED`, hết stage duy nhất nên journey tự đóng `PASSED` — `GET /career/journeys/me/active` trả `null` đúng như kỳ vọng.
+Đã xoá sạch track/persona/journey/session/submission/user test sau khi verify — không phải seed thật. `npm run build` + `npm run lint` (server + client, sau fix) đều pass.
 
 ---
 

@@ -59,6 +59,10 @@ export interface JourneyStageProgress {
   // Số lần auto-grade (P4) đánh giá mà chưa đạt passThreshold — >0 nghĩa là
   // đã thử ít nhất 1 lần, dùng để hiện nút "Give up".
   attemptCount: number;
+  // Tên tag yếu nhất đã dẫn tới việc chọn problem này cho stage adaptive
+  // (P5) — null nếu stage không adaptive hoặc chọn cold-start (chưa đủ dữ
+  // liệu weak tag).
+  pickedReasonTag: string | null;
   stage: CareerTrackStage;
 }
 

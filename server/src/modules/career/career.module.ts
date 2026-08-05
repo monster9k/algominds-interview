@@ -24,5 +24,7 @@ import { CareerListener } from './career.listener';
   ],
   controllers: [CareerController],
   providers: [CareerService, CareerProcessor, CareerListener],
+  // QuestModule cần CareerService để auto-grade stage QUEST (P5).
+  exports: [CareerService],
 })
 export class CareerModule {}

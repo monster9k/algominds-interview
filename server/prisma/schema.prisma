@@ -148,7 +148,7 @@ model Problem {
   deletedAt DateTime?
 
   // NÂNG CẤP: Metadata cho việc chấm bài
-  functionName          String                 @default("solution") // Tên hàm: "twoSum", "isValid"
+  functionName          String                        @default("solution") // Tên hàm: "twoSum", "isValid"
   // (Optional) Input Type Signature để parse cho chuẩn C++ 
   // VD: ["number[]", "number"] -> Giúp convert JSON sang C++ Vector
   inputSignature        Json?
@@ -157,6 +157,7 @@ model Problem {
   sessions              Session[]
   companies             ProblemCompany[]
   careerTrackStages     CareerTrackStage[]
+  careerTrackStagePools CareerTrackStageProblemPool[]
   peerInterviewSessions PeerInterviewSession[]
 
   @@map("problems")
@@ -360,16 +361,34 @@ model CareerTrackStage {
   // so với điểm trung bình 4 field Evaluation.scores. QUEST: so với tỉ lệ
   // đúng (correctCount/(correctCount+wrongCount))*100 — tự động hoá ở P5.
   passThreshold Int       @default(70)
+  // true: bỏ qua problemId tĩnh, chọn bài động trong problemPool theo tag
+  // yếu nhất của user (P5, xem career.service.ts#pickAdaptiveProblem).
+  adaptive      Boolean   @default(false)
   createdAt     DateTime  @default(now())
 
-  track    CareerTrack            @relation(fields: [trackId], references: [id], onDelete: Cascade)
-  problem  Problem?               @relation(fields: [problemId], references: [id])
-  persona  InterviewerPersona     @relation(fields: [personaId], references: [id])
-  progress JourneyStageProgress[]
-  digest   StageDigest?
+  track       CareerTrack                   @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  problem     Problem?                      @relation(fields: [problemId], references: [id])
+  persona     InterviewerPersona            @relation(fields: [personaId], references: [id])
+  progress    JourneyStageProgress[]
+  digest      StageDigest?
+  problemPool CareerTrackStageProblemPool[]
 
   @@unique([trackId, order])
   @@map("career_track_stages")
+}
+
+// Pool bài ứng viên cho 1 stage adaptive (P5) — chỉ có ý nghĩa khi
+// CareerTrackStage.adaptive = true. Problem thực sự được chọn cho từng user
+// tính động lúc ensureStageSession() chạy, không cố định trước.
+model CareerTrackStageProblemPool {
+  stageId   String
+  problemId String
+
+  stage   CareerTrackStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  problem Problem          @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@id([stageId, problemId])
+  @@map("career_track_stage_problem_pool")
 }
 
 // Discuss thay thế: tổng hợp các strategyAnswer đã APPROVED khác nhau của
@@ -422,17 +441,21 @@ model CareerJourney {
 }
 
 model JourneyStageProgress {
-  id             String      @id @default(uuid())
-  journeyId      String
-  stageId        String
-  sessionId      String?     @unique // set khi stage.kind = PROBLEM
-  questAttemptId String?     @unique // set khi stage.kind = QUEST
-  status         StageStatus @default(PENDING)
-  completedAt    DateTime?
+  id              String      @id @default(uuid())
+  journeyId       String
+  stageId         String
+  sessionId       String?     @unique // set khi stage.kind = PROBLEM
+  questAttemptId  String?     @unique // set khi stage.kind = QUEST
+  status          StageStatus @default(PENDING)
+  completedAt     DateTime?
   // Tăng mỗi lần auto-grade (P4) đánh giá mà CHƯA đạt passThreshold — stage
   // không tự FAILED khi chưa đạt (quyết định sản phẩm: cho retry tới khi đạt),
   // chỉ dùng để FE hiện nút "Give up" sau lần thử đầu tiên.
-  attemptCount   Int         @default(0)
+  attemptCount    Int         @default(0)
+  // Tên tag yếu nhất đã dẫn tới việc chọn problem này cho stage adaptive
+  // (P5) — snapshot tại thời điểm tạo, null nếu stage không adaptive hoặc
+  // chọn ngẫu nhiên do chưa đủ dữ liệu (cold start).
+  pickedReasonTag String?
 
   journey      CareerJourney    @relation(fields: [journeyId], references: [id], onDelete: Cascade)
   stage        CareerTrackStage @relation(fields: [stageId], references: [id])

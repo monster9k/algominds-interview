@@ -6,6 +6,7 @@
   "noTracks": "利用可能なキャリアトラックはまだありません。",
   "enterStage": "ステージへ進む",
   "interviewer": "面接官: {{name}}",
+  "adaptivePick": "{{tag}}が苦手なため、あなたのために選ばれました",
   "stageKind": {
     "problem": "コーディング問題",
     "quest": "クエストミニゲーム"

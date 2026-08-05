@@ -7,6 +7,7 @@
   "noTracks": "No career tracks available yet.",
   "enterStage": "Enter stage",
   "interviewer": "Interviewer: {{name}}",
+  "adaptivePick": "Picked for you because you're weak at {{tag}}",
   "stageKind": {
     "problem": "Coding problem",
     "quest": "Quest mini-game"

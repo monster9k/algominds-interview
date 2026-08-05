@@ -200,6 +200,11 @@ export function CareerJourneyPage() {
                       {t("interviewer", { name: stage.persona.name })}
                     </p>
                   )}
+                  {progress?.pickedReasonTag && (
+                    <p className="text-xs text-primary">
+                      {t("adaptivePick", { tag: progress.pickedReasonTag })}
+                    </p>
+                  )}
                   {status === "ACTIVE" && (
                     <div className="space-y-2 pt-1">
                       <Button size="sm" onClick={() => handleEnterStage(stage)}>

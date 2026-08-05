@@ -6,6 +6,7 @@
   "noTracks": "Chưa có career track nào.",
   "enterStage": "Vào làm",
   "interviewer": "Interviewer: {{name}}",
+  "adaptivePick": "Chọn riêng cho bạn vì bạn đang yếu ở {{tag}}",
   "stageKind": {
     "problem": "Bài tập code",
     "quest": "Mini-game Quest"

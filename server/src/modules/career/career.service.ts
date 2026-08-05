@@ -7,7 +7,12 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SessionsService } from '../sessions/sessions.service';
 import { ChatGateway } from '../chat/chat/chat.gateway';
-import { JourneyStatus, StageKind, StageStatus } from '@prisma/client';
+import {
+  JourneyStatus,
+  StageKind,
+  StageStatus,
+  SubmissionStatus,
+} from '@prisma/client';
 
 const TRACK_WITH_STAGES_INCLUDE = {
   stages: {
@@ -183,6 +188,7 @@ export class CareerService {
         problemId: string | null;
         label: string;
         order: number;
+        adaptive: boolean;
       }[];
     },
     eventId?: string,
@@ -209,7 +215,10 @@ export class CareerService {
       },
     });
 
-    const sessionId = await this.ensureStageSession(userId, firstStage);
+    const { sessionId, pickedReasonTag } = await this.ensureStageSession(
+      userId,
+      firstStage,
+    );
 
     await this.prisma.journeyStageProgress.create({
       data: {
@@ -217,6 +226,7 @@ export class CareerService {
         stageId: firstStage.id,
         status: StageStatus.ACTIVE,
         sessionId,
+        pickedReasonTag,
       },
     });
 
@@ -394,6 +404,7 @@ export class CareerService {
           kind: StageKind;
           problemId: string | null;
           label: string;
+          adaptive: boolean;
         }[];
       };
     },
@@ -441,7 +452,10 @@ export class CareerService {
       });
     }
 
-    const sessionId = await this.ensureStageSession(journey.userId, nextStage);
+    const { sessionId, pickedReasonTag } = await this.ensureStageSession(
+      journey.userId,
+      nextStage,
+    );
 
     await this.prisma.journeyStageProgress.create({
       data: {
@@ -449,6 +463,7 @@ export class CareerService {
         stageId: nextStage.id,
         status: StageStatus.ACTIVE,
         sessionId,
+        pickedReasonTag,
       },
     });
 
@@ -507,22 +522,41 @@ export class CareerService {
 
   // Stage kind=PROBLEM cần 1 Session để user vào làm — tái dùng
   // SessionsService.findOrCreateBySlug (không viết lại luồng Phase 1/2).
-  // Stage kind=QUEST không cần tạo gì trước — user tự chơi Quest, gắn
-  // questAttemptId vào JourneyStageProgress là việc của bước tích hợp sau.
+  // Stage adaptive (P5): problemId tĩnh KHÔNG dùng, chọn động qua
+  // pickAdaptiveProblem() theo tag yếu nhất của user — pickedReasonTag trả
+  // về để caller lưu snapshot lý do chọn vào JourneyStageProgress.
+  // Stage kind=QUEST không cần tạo gì trước — user tự chơi Quest,
+  // questAttemptId được quest.service.ts#createAttempt tự gắn khi có 1 ván
+  // hoàn thành trong lúc stage này đang ACTIVE (P5).
   private async ensureStageSession(
     userId: string,
-    stage: { kind: StageKind; problemId: string | null; label: string },
-  ): Promise<string | undefined> {
-    if (stage.kind !== StageKind.PROBLEM) return undefined;
+    stage: {
+      id: string;
+      kind: StageKind;
+      problemId: string | null;
+      label: string;
+      adaptive: boolean;
+    },
+  ): Promise<{ sessionId?: string; pickedReasonTag?: string }> {
+    if (stage.kind !== StageKind.PROBLEM) return {};
 
-    if (!stage.problemId) {
+    let problemId = stage.problemId;
+    let pickedReasonTag: string | undefined;
+
+    if (stage.adaptive) {
+      const picked = await this.pickAdaptiveProblem(userId, stage.id);
+      problemId = picked.problemId;
+      pickedReasonTag = picked.reasonTag;
+    }
+
+    if (!problemId) {
       throw new BadRequestException(
         `Stage "${stage.label}" là kind PROBLEM nhưng thiếu problemId`,
       );
     }
 
     const problem = await this.prisma.problem.findUnique({
-      where: { id: stage.problemId },
+      where: { id: problemId },
     });
     if (!problem) {
       throw new NotFoundException(
@@ -534,6 +568,125 @@ export class CareerService {
       userId,
       problem.slug,
     );
-    return session.id;
+    return { sessionId: session.id, pickedReasonTag };
+  }
+
+  // P5 — Chọn problem cho 1 stage adaptive: ưu tiên bài trong pool khớp tag
+  // yếu nhất của user (computeWeakTags) mà user chưa từng làm (tránh lặp).
+  // Cold start (chưa đủ dữ liệu weak tag, hoặc pool không khớp tag yếu nào)
+  // -> chọn theo difficulty tăng dần trong các bài chưa làm.
+  private async pickAdaptiveProblem(
+    userId: string,
+    stageId: string,
+  ): Promise<{ problemId: string; reasonTag?: string }> {
+    const pool = await this.prisma.careerTrackStageProblemPool.findMany({
+      where: { stageId },
+      include: {
+        problem: {
+          select: {
+            id: true,
+            difficulty: true,
+            tags: { select: { tag: { select: { id: true, name: true } } } },
+          },
+        },
+      },
+    });
+
+    if (pool.length === 0) {
+      throw new BadRequestException(
+        `Stage adaptive nhưng chưa có problem pool (stageId=${stageId})`,
+      );
+    }
+
+    const poolProblemIds = pool.map((p) => p.problemId);
+    const attemptedProblemIds = new Set(
+      (
+        await this.prisma.session.findMany({
+          where: { userId, problemId: { in: poolProblemIds } },
+          select: { problemId: true },
+        })
+      ).map((s) => s.problemId),
+    );
+
+    // Ưu tiên bài chưa từng làm — nếu user đã làm hết cả pool (hiếm, pool
+    // nhỏ), cho phép lặp lại thay vì chặn cứng.
+    const unattempted = pool.filter(
+      (p) => !attemptedProblemIds.has(p.problemId),
+    );
+    const candidates = unattempted.length > 0 ? unattempted : pool;
+
+    const weakTags = await this.computeWeakTags(userId);
+    for (const weakTag of weakTags) {
+      const match = candidates.find((c) =>
+        c.problem.tags.some((pt) => pt.tag.id === weakTag.tagId),
+      );
+      if (match) {
+        return { problemId: match.problemId, reasonTag: weakTag.tagName };
+      }
+    }
+
+    const DIFFICULTY_ORDER: Record<string, number> = {
+      EASY: 0,
+      MEDIUM: 1,
+      HARD: 2,
+    };
+    const sorted = [...candidates].sort(
+      (a, b) =>
+        DIFFICULTY_ORDER[a.problem.difficulty] -
+        DIFFICULTY_ORDER[b.problem.difficulty],
+    );
+    return { problemId: sorted[0].problemId };
+  }
+
+  // Tag "yếu" nhất của user, suy ra từ dữ liệu thật đã có (không thêm bảng
+  // mới): Submission KHÔNG ACCEPTED trong ~90 ngày gần nhất, join ngược lên
+  // tag của problem tương ứng. Cộng trọng số gấp đôi cho submission thuộc
+  // session có confidenceSignal="assertive" (Confidence Calibration, P2) —
+  // "tưởng chắc mà vẫn sai" đáng ưu tiên luyện hơn 1 lần sai thường.
+  private async computeWeakTags(
+    userId: string,
+  ): Promise<{ tagId: string; tagName: string; weight: number }[]> {
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+
+    const submissions = await this.prisma.submission.findMany({
+      where: {
+        status: { not: SubmissionStatus.ACCEPTED },
+        createdAt: { gte: ninetyDaysAgo },
+        session: { userId },
+      },
+      select: {
+        session: {
+          select: {
+            confidenceSignal: true,
+            problem: {
+              select: {
+                tags: { select: { tag: { select: { id: true, name: true } } } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const weightByTagId = new Map<
+      string,
+      { tagName: string; weight: number }
+    >();
+
+    for (const submission of submissions) {
+      const weight =
+        submission.session.confidenceSignal === 'assertive' ? 2 : 1;
+      for (const { tag } of submission.session.problem.tags) {
+        const existing = weightByTagId.get(tag.id);
+        weightByTagId.set(tag.id, {
+          tagName: tag.name,
+          weight: (existing?.weight ?? 0) + weight,
+        });
+      }
+    }
+
+    return Array.from(weightByTagId.entries())
+      .map(([tagId, v]) => ({ tagId, tagName: v.tagName, weight: v.weight }))
+      .sort((a, b) => b.weight - a.weight);
   }
 }

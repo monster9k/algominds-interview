@@ -178,9 +178,9 @@ Kết thúc journey, thay vì chỉ có Offer Debrief (nội dung chung của ng
 
 ---
 
-## 🔴 P4 — Auto-grading thật + Persona ảnh hưởng AI thật
+## 🔴 P4 — Auto-grading thật + Persona ảnh hưởng AI thật (Đã hoàn thành 2026-08-06)
 
-- [ ] **DB: `CareerTrackStage.passThreshold` + `JourneyStageProgress.attemptCount`**
+- [x] **DB: `CareerTrackStage.passThreshold` + `JourneyStageProgress.attemptCount`**
   📍 `server/prisma/schema.prisma`.
   ```prisma
   model CareerTrackStage {
@@ -194,23 +194,29 @@ Kết thúc journey, thay vì chỉ có Offer Debrief (nội dung chung của ng
   }
   ```
   `passThreshold` áp dụng cho cả 2 kind hiện có: `PROBLEM` so với điểm trung bình 4 field `Evaluation.scores`; `QUEST` so với tỉ lệ đúng — nhánh QUEST tự động hoá thật ở P5 (P4 chỉ tự động hoá PROBLEM trước, giữ phạm vi migration nhỏ).
+  **Đã làm**: thêm đúng 2 field như trên, migration `20260805215836_add_stage_pass_threshold_and_attempt_count`. `npx prisma format` + `validate` trước migrate, `npx prisma generate` sau đó.
 
-- [ ] **BE: auto-grade nhánh PROBLEM qua event, bỏ auto-FAIL — cho retry**
+- [x] **BE: auto-grade nhánh PROBLEM qua event, bỏ auto-FAIL — cho retry**
   📍 `server/src/modules/ai/ai.processor.ts#processEvaluateCode` — sau khi `evaluation.upsert` thành công, emit event `evaluation.completed` (`EventEmitter2`, cần inject vào `AiProcessor`) với payload `{ sessionId, scores: evaluation.scores }`. Không đổi gì khác trong hàm này.
   📍 `server/src/modules/career/career.listener.ts` — thêm `@OnEvent('evaluation.completed')`: tra `Session.journeyProgress` (relation 1-1 có sẵn) qua `sessionId`; nếu null (session không thuộc career journey) → bỏ qua, không phá hành vi Phase 2 thường của `sessions`/`chat`. Nếu có và `status === ACTIVE`, tính điểm trung bình 4 field `scores`, gọi `CareerService.autoGradeProblemStage(journeyProgressId, avgScore)`.
   📍 `career.service.ts` — thêm `autoGradeProblemStage(progressId, avgScore)`: so `avgScore` với `stage.passThreshold`.
     - Đạt: gọi lại logic đóng-stage-mở-stage-kế hiện có trong `advanceJourney` — tách phần thân sau khi đã biết `status: 'PASSED'` thành `private applyStageOutcome(journey, activeProgress, status)` dùng chung cho cả `advanceJourney` (đường thủ công còn lại: "give up") và `autoGradeProblemStage`.
     - Không đạt (**quyết định đã chốt: cho retry, không tự FAILED**): **không** đổi `JourneyStageProgress.status`, chỉ `update` tăng `attemptCount`, emit socket `career_stage_retry_needed` (`{ journeyId, stageId, avgScore, passThreshold }`) qua `chatGateway`/1 gateway riêng của career (kiểm tra lúc code: tái dùng `ChatGateway.server` sẵn có, room theo `sessionId`, giống cách `ai.processor.ts` đang emit `session_status_update`, không tạo gateway mới).
   Endpoint mới `POST /career/journeys/:id/give-up`: set `JourneyStageProgress` hiện `ACTIVE` → `FAILED`, đóng `CareerJourney` → `FAILED`, `finishedAt`. Đây là nhánh **duy nhất** còn set `FAILED` thủ công. `advanceJourney` cũ (`POST /career/journeys/:id/advance`) giữ lại nhưng chỉ dùng cho stage `QUEST` tới khi P5 tự động hoá nốt — bỏ khả năng nhận `status: 'PASSED'` thủ công cho stage `PROBLEM` (validate ở DTO: nếu `activeProgress.stage.kind === PROBLEM`, từ chối request thủ công, trả lỗi rõ "stage này auto-grade, không tự đánh dấu passed").
+  **Đã làm**: đúng như thiết kế trên. Tên method thật là `autoGradeStage` (không phải `autoGradeProblemStage`) — đặt tên chung ngay từ đầu vì P5/P6 sẽ gọi lại y hệt hàm này cho `QUEST`/`PEER_INTERVIEW`, tránh phải rename sau. `applyStageOutcome` nhận `journey`/`activeProgress` dạng object literal type (không tạo `Prisma.CareerJourneyGetPayload<...>` riêng) — khớp style hiện có của `ensureStageSession` trong cùng file. `CareerModule` thêm import `ChatModule` (đã export sẵn `ChatGateway`) — không tạo `forwardRef()` mới vì chiều phụ thuộc chỉ 1 chiều (`career` → `chat`, `chat` không import ngược lại). `advanceJourney` chặn **cả 2** giá trị `status` (không chỉ `PASSED`) cho stage `PROBLEM` — nhất quán hơn để lại đúng 1 cửa thủ công duy nhất (`give-up`) thay vì cho phép `advance` với `FAILED` chạy song song với `give-up`.
+  `npm run build` + `npm run lint` (server) pass.
 
-- [ ] **BE: persona ảnh hưởng AI thật**
+- [x] **BE: persona ảnh hưởng AI thật**
   📍 `ai.processor.ts#processChat` — sửa query `prisma.session.findUnique` đầu hàm, thêm include `journeyProgress: { include: { stage: true } }`. Trước khi gọi `this.aiService.generateResponse(...)`, lấy `const personaId = session.journeyProgress?.stage?.personaId`, truyền vào làm tham số thứ 4 — tham số này **đã tồn tại sẵn** trong `AiService.generateResponse`/`resolveStrategyModel` (`ai.service.ts` dòng 226-268, 196-224), chỉ chưa từng được truyền từ đây. Session ngoài career journey: `personaId` là `undefined` → hành vi giữ nguyên y hệt hiện tại (dùng `this.model` mặc định, không tốn thêm Prisma round-trip).
+  **Đã làm**: đúng như thiết kế trên, không đổi gì khác trong `processChat`.
 
-- [ ] **FE: bỏ nút bấm tay cho stage PROBLEM, thêm banner retry**
+- [x] **FE: bỏ nút bấm tay cho stage PROBLEM, thêm banner retry**
   📍 `client/src/features/career/pages/career-journey-page.tsx` — bỏ nút "Mark as Passed" khỏi stage `kind=PROBLEM` (giữ cho `QUEST` tới P5). Đổi nút "Mark as Failed" thành "Give up on this track" (gọi endpoint `give-up` mới), chỉ hiện khi `attemptCount > 0`.
   Hook mới `use-career-socket.ts` (pattern giống `use-interview-socket.ts` trong feature `interview`) lắng nghe `career_stage_retry_needed`, hiện banner ngay trên stage `ACTIVE`: "Chưa đạt {avgScore}/100, cần tối thiểu {passThreshold} — sửa code và nộp lại."
+  **Đã làm**: thêm `use-give-up.ts` (mutation, pattern giống `use-advance-journey.ts`) + `use-career-socket.ts` (join `sessionId` của stage đang `ACTIVE`, đúng room mà `chat.gateway.ts#join_room` đã dùng — cần join lại từ trang Career Journey vì user có thể xem trang này mà không mở `/interview/:slug`). Thêm 2 field `passThreshold`/`attemptCount` vào type `CareerTrackStage`/`JourneyStageProgress` (`types/index.ts`) khớp response thật. Thêm key i18n `retryBanner`/`giveUp` ở cả 3 locale. Stage `QUEST` giữ nguyên 2 nút bấm tay cũ (chưa tự động hoá, để P5).
+  `npm run lint` + `npm run build` (client) pass.
 
-**Verify khi implement**: track/stage `passThreshold` cao, cố ý nộp code kém qua `/interview/:slug` → xác nhận stage KHÔNG tự FAILED, banner retry hiện đúng số điểm; sửa code tốt hơn nộp lại → tự chuyển PASSED, stage kế tiếp tự `ACTIVE`, không cần bấm gì. Đổi 1 stage sang persona `STRICT` (seed sẵn hoặc tạo tạm) → so sánh phản hồi Gemini với cùng câu trả lời ở persona `default`, xác nhận văn phong/độ khắt khe khác nhau rõ rệt.
+**Verify thật qua Node script (socket.io-client + fetch), gồm cả real Gemini + real Piston, không mock**: tạo tạm 1 `CareerTrack`/`CareerTrackStage` (`passThreshold: 95`, problem `two-sum`, persona `default`) qua script Prisma trực tiếp. Đăng ký user test, `start` track qua API thật → nhận `sessionId`. Kết nối socket thật, `join_room`, gửi chiến lược đúng (hash map O(n)) qua `send_message` → AI approve thật, session sang `PHASE_2_IMPLEMENT`. Nộp code Python **đúng nhưng cố tình xấu** (`O(n²)`, tên biến `a,b,x,y`) qua `POST /judge/submit` (Piston thật — container dev chỉ có runtime `python`/`java`/`c++`, không có `node`, nên test dùng `python`) → nhận đúng socket `career_stage_retry_needed` với `avgScore: 45, passThreshold: 95, attemptCount: 1`; `GET /career/journeys/me/active` xác nhận journey vẫn `IN_PROGRESS`, stage vẫn `ACTIVE` — **không** tự `FAILED`, đúng quyết định retry đã chốt. Nộp lại code Python sạch/hiệu quả (hash map, docstring, đặt tên rõ) → `evaluate-code` chấm điểm cao hơn threshold, `autoGradeStage` tự `applyStageOutcome('PASSED')` — hết stage duy nhất trong track nên journey tự đóng `PASSED`, `finishedAt` được set, `attemptCount` giữ nguyên `1` (đúng lịch sử số lần thử). Riêng persona: seed 1 persona tạm với `systemPromptExtra` yêu cầu Gemini luôn bắt đầu `message` bằng chuỗi đánh dấu cố định, gắn vào 1 stage khác, gửi 1 chiến lược qua chat thật — phản hồi AI thật trả về đúng bắt đầu bằng chuỗi đánh dấu đó, xác nhận `personaId` từ `JourneyStageProgress.stage` đã thay đổi thật system instruction Gemini đang dùng (không còn cosmetic). Đã xoá sạch track/persona/journey/session/user test sau khi verify — không phải seed thật.
 
 ---
 

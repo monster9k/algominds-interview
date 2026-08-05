@@ -1,5 +1,6 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { forwardRef, Inject, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Job } from 'bullmq';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from './ai.service';
@@ -35,6 +36,7 @@ export class AiProcessor extends WorkerHost {
     private prisma: PrismaService,
     @Inject(forwardRef(() => ChatGateway))
     private chatGateway: ChatGateway,
+    private eventEmitter: EventEmitter2,
   ) {
     super();
   }
@@ -71,6 +73,9 @@ export class AiProcessor extends WorkerHost {
           orderBy: { createdAt: 'asc' },
           take: 20,
         },
+        // Chỉ dùng để lấy stage.personaId nếu session này thuộc 1 career
+        // journey (P4) — không ảnh hưởng session ngoài career journey.
+        journeyProgress: { include: { stage: true } },
       },
     });
 
@@ -98,11 +103,16 @@ export class AiProcessor extends WorkerHost {
         parts: [{ text: msg.content }],
       })) as { role: 'user' | 'model'; parts: { text: string }[] }[];
 
+    // personaId: chỉ có khi session thuộc 1 career journey (P4) — tham số
+    // này AiService đã hỗ trợ sẵn từ trước, chỉ chưa từng được truyền ở đây.
+    const personaId = session.journeyProgress?.stage?.personaId;
+
     // Gọi AI Service
     const rawAiResponse = await this.aiService.generateResponse(
       history,
       content,
       problemContext,
+      personaId,
     );
 
     // PARSE JSON & XỬ LÝ LOGIC
@@ -246,6 +256,13 @@ Test Cases: ${JSON.stringify([
         sessionId,
         submissionId,
         evaluation: savedEvaluation,
+      });
+
+      // 6. Auto-grade career journey (P4) — career.listener.ts tự bỏ qua nếu
+      // session này không thuộc stage PROBLEM đang ACTIVE của journey nào.
+      this.eventEmitter.emit('evaluation.completed', {
+        sessionId,
+        scores: evaluation.scores,
       });
 
       return savedEvaluation;

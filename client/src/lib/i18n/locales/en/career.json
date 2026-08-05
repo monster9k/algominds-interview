@@ -23,6 +23,8 @@
   "markPassed": "Mark as Passed",
   "markFailed": "Mark as Failed",
   "manualAdvanceHint": "Manual for now — there's no automatic detection of when a stage is actually done yet.",
+  "retryBanner": "Not quite — {{score}}/100, you need at least {{threshold}}. Fix your code and resubmit.",
+  "giveUp": "Give up on this track",
   "events": {
     "title": "Hiring Events",
     "closesInDays": "Closes in {{count}} day",

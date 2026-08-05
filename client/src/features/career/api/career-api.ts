@@ -39,6 +39,13 @@ export const careerApi = {
     return response.data;
   },
 
+  // P4 — nhánh manual FAILED duy nhất còn lại cho stage kind=PROBLEM (đã
+  // auto-grade), dùng khi user muốn dừng track sau khi thử chưa đạt.
+  giveUp: async (journeyId: string): Promise<CareerJourney> => {
+    const response = await api.post(`/career/journeys/${journeyId}/give-up`);
+    return response.data;
+  },
+
   getOpenEvents: async (): Promise<HiringEvent[]> => {
     const response = await api.get("/career/events");
     return response.data;

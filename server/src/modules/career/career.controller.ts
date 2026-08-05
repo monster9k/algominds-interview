@@ -66,4 +66,9 @@ export class CareerController {
   ) {
     return this.careerService.advanceJourney(user.userId, id, dto.status);
   }
+
+  @Post('journeys/:id/give-up')
+  giveUp(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.careerService.giveUp(user.userId, id);
+  }
 }

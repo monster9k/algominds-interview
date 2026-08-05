@@ -22,6 +22,8 @@
   "markPassed": "合格にする",
   "markFailed": "不合格にする",
   "manualAdvanceHint": "現在は手動です — ステージが実際に完了したかを自動検出する仕組みはまだありません。",
+  "retryBanner": "まだ基準に届いていません — {{score}}/100、必要な最低点は{{threshold}}です。コードを直して再提出してください。",
+  "giveUp": "このトラックをあきらめる",
   "events": {
     "title": "採用イベント",
     "closesInDays": "あと{{count}}日で終了",

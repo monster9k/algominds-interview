@@ -6,6 +6,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SessionsService } from '../sessions/sessions.service';
+import { ChatGateway } from '../chat/chat/chat.gateway';
 import { JourneyStatus, StageKind, StageStatus } from '@prisma/client';
 
 const TRACK_WITH_STAGES_INCLUDE = {
@@ -44,6 +45,7 @@ export class CareerService {
     private prisma: PrismaService,
     private sessionsService: SessionsService,
     private eventEmitter: EventEmitter2,
+    private chatGateway: ChatGateway,
   ) {}
 
   async getActiveTracks() {
@@ -232,6 +234,10 @@ export class CareerService {
     });
   }
 
+  // Vẫn dùng cho stage kind=QUEST (tự động hoá thật ở P5) và làm nền chung
+  // cho give-up. Stage kind=PROBLEM giờ auto-grade qua handleEvaluationCompleted
+  // (P4) — không nhận PASSED/FAILED thủ công nữa (dùng POST .../give-up nếu
+  // muốn dừng track giữa chừng).
   async advanceJourney(
     userId: string,
     journeyId: string,
@@ -259,6 +265,141 @@ export class CareerService {
       );
     }
 
+    if (activeProgress.stage.kind === StageKind.PROBLEM) {
+      throw new BadRequestException(
+        'Stage này tự động chấm điểm qua kết quả nộp bài — dùng "Give up" nếu muốn dừng track, không tự đánh dấu passed/failed thủ công.',
+      );
+    }
+
+    return this.applyStageOutcome(journey, activeProgress, status);
+  }
+
+  // Nhánh manual FAILED duy nhất còn lại — user chủ động bỏ track giữa
+  // chừng (sau ít nhất 1 lần auto-grade chưa đạt, xem attemptCount). Dùng
+  // chung applyStageOutcome nên hành vi đóng journey/emit debrief giống hệt
+  // đường auto-grade.
+  async giveUp(userId: string, journeyId: string) {
+    const journey = await this.prisma.careerJourney.findUnique({
+      where: { id: journeyId },
+      include: JOURNEY_FULL_INCLUDE,
+    });
+
+    if (!journey) throw new NotFoundException('Career journey không tồn tại');
+    if (journey.userId !== userId) {
+      throw new NotFoundException('Bạn không có quyền truy cập journey này');
+    }
+    if (journey.status !== JourneyStatus.IN_PROGRESS) {
+      throw new BadRequestException('Journey này đã kết thúc');
+    }
+
+    const activeProgress = journey.progress.find(
+      (p) => p.status === StageStatus.ACTIVE,
+    );
+    if (!activeProgress) {
+      throw new BadRequestException(
+        'Không tìm thấy stage đang active trong journey này',
+      );
+    }
+
+    return this.applyStageOutcome(journey, activeProgress, 'FAILED');
+  }
+
+  // Gọi từ career.listener.ts khi ai.processor.ts emit `evaluation.completed`
+  // (P4) — sessionId không thuộc career journey nào thì bỏ qua, không phá
+  // hành vi Phase 2 thường của sessions/chat.
+  async handleEvaluationCompleted(
+    sessionId: string,
+    scores: {
+      logic: number;
+      cleanCode: number;
+      performance: number;
+      bestPractices: number;
+    },
+  ) {
+    const session = await this.prisma.session.findUnique({
+      where: { id: sessionId },
+      select: { journeyProgress: { select: { id: true, status: true } } },
+    });
+
+    const progress = session?.journeyProgress;
+    if (!progress || progress.status !== StageStatus.ACTIVE) return;
+
+    const avgScore =
+      (scores.logic +
+        scores.cleanCode +
+        scores.performance +
+        scores.bestPractices) /
+      4;
+
+    await this.autoGradeStage(progress.id, avgScore);
+  }
+
+  // Dùng chung cho mọi nhánh auto-grade (PROBLEM ở P4; QUEST/PEER_INTERVIEW
+  // sẽ gọi lại đúng hàm này ở P5/P6). Đạt threshold -> applyStageOutcome
+  // PASSED. Không đạt -> KHÔNG tự FAILED (quyết định sản phẩm: cho retry tới
+  // khi đạt), chỉ tăng attemptCount + báo FE qua socket để hiện banner.
+  async autoGradeStage(progressId: string, score: number) {
+    const progress = await this.prisma.journeyStageProgress.findUnique({
+      where: { id: progressId },
+      include: { stage: true },
+    });
+
+    // Đã bị xử lý bởi lần evaluate khác hoặc không còn active — bỏ qua,
+    // tránh double-advance nếu 2 job evaluate chạy gần nhau.
+    if (!progress || progress.status !== StageStatus.ACTIVE) return;
+
+    if (score >= progress.stage.passThreshold) {
+      const journey = await this.prisma.careerJourney.findUniqueOrThrow({
+        where: { id: progress.journeyId },
+        include: JOURNEY_FULL_INCLUDE,
+      });
+      const activeProgress = journey.progress.find((p) => p.id === progressId);
+      if (!activeProgress) return;
+
+      await this.applyStageOutcome(journey, activeProgress, 'PASSED');
+      return;
+    }
+
+    const updated = await this.prisma.journeyStageProgress.update({
+      where: { id: progressId },
+      data: { attemptCount: { increment: 1 } },
+    });
+
+    // Chỉ có sessionId khi stage.kind=PROBLEM (P4) — QUEST/PEER_INTERVIEW
+    // (P5/P6) chưa có room tương ứng, để lại cho đúng phase đó xử lý.
+    if (progress.sessionId) {
+      this.chatGateway.server
+        .to(progress.sessionId)
+        .emit('career_stage_retry_needed', {
+          journeyId: progress.journeyId,
+          stageId: progress.stageId,
+          avgScore: score,
+          passThreshold: progress.stage.passThreshold,
+          attemptCount: updated.attemptCount,
+        });
+    }
+  }
+
+  // Thân dùng chung cho advanceJourney (QUEST thủ công + give-up) và
+  // autoGradeStage (PROBLEM tự động, P4) — tách từ advanceJourney gốc, hành
+  // vi đóng-stage-mở-stage-kế/đóng-journey giữ nguyên y hệt trước khi tách.
+  private async applyStageOutcome(
+    journey: {
+      id: string;
+      userId: string;
+      track: {
+        stages: {
+          id: string;
+          order: number;
+          kind: StageKind;
+          problemId: string | null;
+          label: string;
+        }[];
+      };
+    },
+    activeProgress: { id: string; stageId: string; stage: { kind: StageKind } },
+    status: 'PASSED' | 'FAILED',
+  ) {
     await this.prisma.journeyStageProgress.update({
       where: { id: activeProgress.id },
       data: {
@@ -278,7 +419,7 @@ export class CareerService {
 
     if (status === 'FAILED') {
       return this.prisma.careerJourney.update({
-        where: { id: journeyId },
+        where: { id: journey.id },
         data: { status: JourneyStatus.FAILED, finishedAt: new Date() },
         include: JOURNEY_FULL_INCLUDE,
       });
@@ -294,17 +435,17 @@ export class CareerService {
     // Hết stage -> journey PASSED (hoàn thành cả track).
     if (!nextStage) {
       return this.prisma.careerJourney.update({
-        where: { id: journeyId },
+        where: { id: journey.id },
         data: { status: JourneyStatus.PASSED, finishedAt: new Date() },
         include: JOURNEY_FULL_INCLUDE,
       });
     }
 
-    const sessionId = await this.ensureStageSession(userId, nextStage);
+    const sessionId = await this.ensureStageSession(journey.userId, nextStage);
 
     await this.prisma.journeyStageProgress.create({
       data: {
-        journeyId,
+        journeyId: journey.id,
         stageId: nextStage.id,
         status: StageStatus.ACTIVE,
         sessionId,
@@ -312,7 +453,7 @@ export class CareerService {
     });
 
     return this.prisma.careerJourney.findUniqueOrThrow({
-      where: { id: journeyId },
+      where: { id: journey.id },
       include: JOURNEY_FULL_INCLUDE,
     });
   }

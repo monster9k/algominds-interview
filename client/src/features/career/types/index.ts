@@ -33,6 +33,8 @@ export interface CareerTrackStage {
   kind: StageKind;
   problemId: string | null;
   personaId: string;
+  // Ngưỡng điểm auto-grade (P4) — PROBLEM: điểm trung bình Evaluation.scores.
+  passThreshold: number;
   persona?: InterviewerPersona;
   problem?: CareerTrackStageProblem | null;
 }
@@ -54,6 +56,9 @@ export interface JourneyStageProgress {
   questAttemptId: string | null;
   status: StageStatus;
   completedAt: string | null;
+  // Số lần auto-grade (P4) đánh giá mà chưa đạt passThreshold — >0 nghĩa là
+  // đã thử ít nhất 1 lần, dùng để hiện nút "Give up".
+  attemptCount: number;
   stage: CareerTrackStage;
 }
 

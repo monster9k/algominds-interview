@@ -1,6 +1,7 @@
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Compass, ListChecks, Trophy } from "lucide-react";
+import { AlertTriangle, Compass, ListChecks, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,11 @@ import { useCareerTracks } from "../hooks/use-career-tracks";
 import { useActiveJourney } from "../hooks/use-active-journey";
 import { useStartTrack } from "../hooks/use-start-track";
 import { useAdvanceJourney } from "../hooks/use-advance-journey";
+import { useGiveUp } from "../hooks/use-give-up";
+import {
+  useCareerSocket,
+  type CareerStageRetryNeededPayload,
+} from "../hooks/use-career-socket";
 import { StageDigest } from "../components/stage-digest";
 import { HiringEventsList } from "../components/hiring-events-list";
 import { PersonaUnlockButton } from "../components/persona-unlock-button";
@@ -40,6 +46,28 @@ export function CareerJourneyPage() {
   const { data: tracks, isLoading: tracksLoading } = useCareerTracks();
   const startTrack = useStartTrack();
   const advanceJourney = useAdvanceJourney();
+  const giveUp = useGiveUp();
+
+  const [retryInfo, setRetryInfo] =
+    useState<CareerStageRetryNeededPayload | null>(null);
+
+  // Stage đang ACTIVE là stage duy nhất có thể nhận career_stage_retry_needed
+  // — chỉ có sessionId khi kind=PROBLEM (P4), useCareerSocket tự no-op nếu
+  // undefined (QUEST chưa auto-grade, để P5).
+  const activeProgress = useMemo(
+    () => journey?.progress.find((p) => p.status === "ACTIVE"),
+    [journey],
+  );
+
+  const handleStageRetryNeeded = useCallback(
+    (payload: CareerStageRetryNeededPayload) => setRetryInfo(payload),
+    [],
+  );
+
+  useCareerSocket({
+    sessionId: activeProgress?.sessionId ?? undefined,
+    onStageRetryNeeded: handleStageRetryNeeded,
+  });
 
   const handleEnterStage = (stage: CareerTrackStage) => {
     if (stage.kind === "PROBLEM" && stage.problem) {
@@ -177,39 +205,73 @@ export function CareerJourneyPage() {
                       <Button size="sm" onClick={() => handleEnterStage(stage)}>
                         {t("enterStage")}
                       </Button>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-emerald-500 hover:text-emerald-500"
-                          disabled={advanceJourney.isPending}
-                          onClick={() =>
-                            advanceJourney.mutate({
-                              journeyId: journey.id,
-                              status: "PASSED",
-                            })
-                          }
-                        >
-                          {t("markPassed")}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-destructive hover:text-destructive"
-                          disabled={advanceJourney.isPending}
-                          onClick={() =>
-                            advanceJourney.mutate({
-                              journeyId: journey.id,
-                              status: "FAILED",
-                            })
-                          }
-                        >
-                          {t("markFailed")}
-                        </Button>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground/70">
-                        {t("manualAdvanceHint")}
-                      </p>
+
+                      {retryInfo?.stageId === stage.id && (
+                        <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-xs text-amber-600 dark:text-amber-400">
+                          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                          <span>
+                            {t("retryBanner", {
+                              score: Math.round(retryInfo.avgScore),
+                              threshold: retryInfo.passThreshold,
+                            })}
+                          </span>
+                        </div>
+                      )}
+
+                      {stage.kind === "QUEST" ? (
+                        // QUEST chưa auto-grade thật (để P5) — vẫn dùng nút
+                        // bấm tay như trước.
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-emerald-500 hover:text-emerald-500"
+                              disabled={advanceJourney.isPending}
+                              onClick={() =>
+                                advanceJourney.mutate({
+                                  journeyId: journey.id,
+                                  status: "PASSED",
+                                })
+                              }
+                            >
+                              {t("markPassed")}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-destructive hover:text-destructive"
+                              disabled={advanceJourney.isPending}
+                              onClick={() =>
+                                advanceJourney.mutate({
+                                  journeyId: journey.id,
+                                  status: "FAILED",
+                                })
+                              }
+                            >
+                              {t("markFailed")}
+                            </Button>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground/70">
+                            {t("manualAdvanceHint")}
+                          </p>
+                        </>
+                      ) : (
+                        // PROBLEM giờ auto-grade qua kết quả nộp bài (P4) —
+                        // chỉ còn lối thoát thủ công là "give up" sau khi đã
+                        // thử ít nhất 1 lần chưa đạt.
+                        (progress?.attemptCount ?? 0) > 0 && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-destructive hover:text-destructive"
+                            disabled={giveUp.isPending}
+                            onClick={() => giveUp.mutate(journey.id)}
+                          >
+                            {t("giveUp")}
+                          </Button>
+                        )
+                      )}
                     </div>
                   )}
                   {stage.kind === "PROBLEM" &&

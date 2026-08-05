@@ -22,6 +22,8 @@
   "markPassed": "Đánh dấu Đã qua",
   "markFailed": "Đánh dấu Chưa đạt",
   "manualAdvanceHint": "Hiện phải tự đánh dấu — chưa có cơ chế tự động phát hiện khi nào 1 vòng thực sự xong.",
+  "retryBanner": "Chưa đạt — {{score}}/100, cần tối thiểu {{threshold}}. Sửa code và nộp lại nhé.",
+  "giveUp": "Dừng track này",
   "events": {
     "title": "Hiring Event",
     "closesInDays": "Đóng trong {{count}} ngày",

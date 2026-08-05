@@ -65,9 +65,131 @@ export class CareerService {
       throw new BadRequestException('Track chưa được cấu hình stage nào');
     }
 
-    // Resume nếu user đã có journey IN_PROGRESS cho đúng track này.
+    return this.createJourneyForTrack(userId, track);
+  }
+
+  async getOpenEvents() {
+    const now = new Date();
+    return this.prisma.hiringEvent.findMany({
+      where: { opensAt: { lte: now }, closesAt: { gte: now } },
+      orderBy: { closesAt: 'asc' },
+      include: {
+        track: {
+          select: { id: true, key: true, name: true, description: true },
+        },
+      },
+    });
+  }
+
+  async enterEvent(userId: string, eventId: string) {
+    const event = await this.prisma.hiringEvent.findUnique({
+      where: { id: eventId },
+      include: { track: { include: TRACK_WITH_STAGES_INCLUDE } },
+    });
+    if (!event) throw new NotFoundException('Hiring event không tồn tại');
+
+    const now = new Date();
+    if (now < event.opensAt || now > event.closesAt) {
+      throw new BadRequestException(
+        'Hiring event hiện không mở — chỉ tham gia được trong khung thời gian đã định',
+      );
+    }
+    if (!event.track.isActive) {
+      throw new NotFoundException('Track của event này không còn active');
+    }
+    if (event.track.stages.length === 0) {
+      throw new BadRequestException(
+        'Track của event chưa được cấu hình stage nào',
+      );
+    }
+
+    return this.createJourneyForTrack(userId, event.track, event.id);
+  }
+
+  // Tổng hợp mỗi journey gắn eventId thành 1 dòng xếp hạng theo đúng thứ tự
+  // tiêu chí đã chốt: số stage PASSED trước, rồi số lượt chat Phase 1 (càng ít
+  // càng tốt — đếm Message theo sessionId của các stage PROBLEM trong journey),
+  // rồi tổng thời gian (journey chưa xong tính tới thời điểm hiện tại, để
+  // leaderboard cập nhật sống trong lúc event đang mở).
+  async getEventLeaderboard(eventId: string) {
+    const event = await this.prisma.hiringEvent.findUnique({
+      where: { id: eventId },
+    });
+    if (!event) throw new NotFoundException('Hiring event không tồn tại');
+
+    const entries = await this.prisma.careerJourney.findMany({
+      where: { eventId },
+      include: {
+        user: { select: { id: true, name: true, avatarUrl: true } },
+        progress: true,
+      },
+    });
+
+    const rows = await Promise.all(
+      entries.map(async (journey) => {
+        const stagesPassed = journey.progress.filter(
+          (p) => p.status === StageStatus.PASSED,
+        ).length;
+
+        const sessionIds = journey.progress
+          .map((p) => p.sessionId)
+          .filter((id): id is string => !!id);
+        const messageCount = sessionIds.length
+          ? await this.prisma.message.count({
+              where: { sessionId: { in: sessionIds } },
+            })
+          : 0;
+
+        const endTime = journey.finishedAt ?? new Date();
+        const durationMs = endTime.getTime() - journey.startedAt.getTime();
+
+        return {
+          userId: journey.userId,
+          userName: journey.user.name,
+          avatarUrl: journey.user.avatarUrl,
+          journeyStatus: journey.status,
+          stagesPassed,
+          messageCount,
+          durationMs,
+        };
+      }),
+    );
+
+    rows.sort((a, b) => {
+      if (b.stagesPassed !== a.stagesPassed)
+        return b.stagesPassed - a.stagesPassed;
+      if (a.messageCount !== b.messageCount)
+        return a.messageCount - b.messageCount;
+      return a.durationMs - b.durationMs;
+    });
+
+    return rows;
+  }
+
+  // Dùng chung bởi startTrack (không event) và enterEvent (có event) — resume
+  // đúng journey IN_PROGRESS theo cặp (track, event) thay vì gộp chung, vì 1
+  // user có thể vừa làm track tự do vừa tham gia hiring event của track đó.
+  private async createJourneyForTrack(
+    userId: string,
+    track: {
+      id: string;
+      stages: {
+        id: string;
+        kind: StageKind;
+        problemId: string | null;
+        label: string;
+        order: number;
+      }[];
+    },
+    eventId?: string,
+  ) {
     const existing = await this.prisma.careerJourney.findFirst({
-      where: { userId, trackId, status: JourneyStatus.IN_PROGRESS },
+      where: {
+        userId,
+        trackId: track.id,
+        eventId: eventId ?? null,
+        status: JourneyStatus.IN_PROGRESS,
+      },
       include: JOURNEY_FULL_INCLUDE,
     });
     if (existing) return existing;
@@ -75,7 +197,12 @@ export class CareerService {
     const firstStage = track.stages[0];
 
     const journey = await this.prisma.careerJourney.create({
-      data: { userId, trackId, status: JourneyStatus.IN_PROGRESS },
+      data: {
+        userId,
+        trackId: track.id,
+        eventId,
+        status: JourneyStatus.IN_PROGRESS,
+      },
     });
 
     const sessionId = await this.ensureStageSession(userId, firstStage);

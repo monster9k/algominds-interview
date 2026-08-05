@@ -190,7 +190,7 @@ Sau (roadmap này):                Problems | Quest | Career Journey
 
 ## 🟡 P1 — 3 cơ chế thay thế Contest / Discuss / Store
 
-- [ ] **DB+BE: `HiringEvent` — thay thế Contest**
+- [x] **DB+BE: `HiringEvent` — thay thế Contest**
   📍 `server/prisma/schema.prisma` model mới:
   ```prisma
   model HiringEvent {
@@ -207,6 +207,11 @@ Sau (roadmap này):                Problems | Quest | Career Journey
   }
   ```
   `CareerJourney` thêm field optional `eventId String?`. Xếp hạng (`GET /career/events/:id/leaderboard`) tính theo: số stage `PASSED`, tổng số lượt chat Phase 1 tới lúc `APPROVED` (đếm `Message` theo `sessionId` — càng ít lượt càng cao điểm, đúng tinh thần "thuyết phục interviewer nhanh hơn" đã brainstorm), tổng thời gian hoàn thành journey.
+  **Đã làm**: thêm đúng model `HiringEvent` như trên + `CareerJourney.eventId String?` (optional, quan hệ tới `HiringEvent`), cộng back-relation `CareerTrack.hiringEvents`. Migration `20260805025027_add_hiring_event`.
+  Phát hiện khi implement: mô tả gốc chỉ định nghĩa data model + leaderboard, nhưng **không có endpoint nào để 1 journey thực sự gắn được `eventId`** — nếu chỉ làm đúng như mô tả, leaderboard sẽ luôn rỗng vì không ai tạo được entry. Vì vậy bổ sung 2 endpoint tối thiểu để tính năng thực sự chạy được, không chỉ là data model chết: `GET /career/events` (liệt kê event đang mở, `opensAt <= now <= closesAt`) và `POST /career/events/:id/enter` (validate event đang mở + track còn active + có stage, sau đó tạo/resume `CareerJourney` với `eventId` gắn sẵn).
+  Để tránh trùng logic tạo journey giữa `startTrack` (không event) và `enterEvent` (có event), refactor phần thân dùng chung thành `private createJourneyForTrack(userId, track, eventId?)` — đây là refactor nội bộ trong chính `career.service.ts` (module tự viết ở P0), không phải "viết lại" `sessions.service.ts` nên không vi phạm nguyên tắc thận trọng đã áp dụng cho module đó. Điều kiện resume journey đang dở giờ khớp theo cặp `(trackId, eventId)` thay vì chỉ `trackId` — để 1 user có thể vừa làm track tự do vừa tham gia hiring event riêng của cùng track đó mà không bị đè lẫn nhau.
+  `GET /career/events/:id/leaderboard`: với mỗi journey gắn `eventId`, tính `stagesPassed` (đếm `JourneyStageProgress.status = PASSED`), `messageCount` (đếm `Message` theo toàn bộ `sessionId` các stage trong journey — xấp xỉ hợp lý cho "số lượt chat Phase 1", không tách riêng được lượt trước/sau `APPROVED` vì `Message` không đánh dấu mốc đó), `durationMs` (tính tới `finishedAt` nếu đã xong, tới thời điểm hiện tại nếu chưa — leaderboard cập nhật sống trong lúc event còn mở). Sort đúng thứ tự ưu tiên đã mô tả: `stagesPassed` giảm dần → `messageCount` tăng dần → `durationMs` tăng dần.
+  Verify: `npx prisma format` + `validate` trước migrate, `npm run build` + `npm run lint` (server) pass, boot thử `node dist/src/main.js` — 3 route `/career/events*` map đúng, DI sạch, lỗi duy nhất vẫn là `EADDRINUSE` do dev server khác đang chạy song song.
 
 - [ ] **BE: job nền "Offer Debrief" — thay thế Discuss**
   📍 module mới `server/src/modules/career/` thêm `career.processor.ts` (theo đúng pattern `ai.processor.ts` — BullMQ worker, queue riêng `debrief-queue` khai báo qua `QueueModule`). Trigger khi `JourneyStageProgress.status` chuyển `PASSED`/`FAILED` cho stage `kind = PROBLEM`: gom các `Session.strategyAnswer` đã `APPROVED` khác của cùng `problemId`, gọi Gemini tổng hợp "N hướng tiếp cận khác nhau + trade-off" — **không** phải job chạy mỗi lần user xem, mà cache kết quả (model mới `StageDigest { stageId, content, generatedAt }`, tái tạo định kỳ khi đủ dữ liệu mới, không phải theo request).

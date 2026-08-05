@@ -23,6 +23,21 @@ export class CareerController {
     return this.careerService.startTrack(user.userId, id);
   }
 
+  @Get('events')
+  getOpenEvents() {
+    return this.careerService.getOpenEvents();
+  }
+
+  @Post('events/:id/enter')
+  enterEvent(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.careerService.enterEvent(user.userId, id);
+  }
+
+  @Get('events/:id/leaderboard')
+  getEventLeaderboard(@Param('id') id: string) {
+    return this.careerService.getEventLeaderboard(id);
+  }
+
   @Get('journeys/me/active')
   getActiveJourney(@CurrentUser() user: RequestUser) {
     return this.careerService.getActiveJourney(user.userId);

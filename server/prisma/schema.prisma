@@ -298,10 +298,27 @@ model CareerTrack {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
 
-  stages   CareerTrackStage[]
-  journeys CareerJourney[]
+  stages       CareerTrackStage[]
+  journeys     CareerJourney[]
+  hiringEvents HiringEvent[]
 
   @@map("career_tracks")
+}
+
+// Contest thay thế: cửa sổ thời gian giới hạn, 1 track "mở tuyển" — journey
+// nào start track qua sự kiện này (`POST /career/events/:id/enter`) thì gắn
+// eventId, tính vào bảng xếp hạng của sự kiện đó.
+model HiringEvent {
+  id        String   @id @default(uuid())
+  trackId   String
+  opensAt   DateTime
+  closesAt  DateTime
+  createdAt DateTime @default(now())
+
+  track   CareerTrack     @relation(fields: [trackId], references: [id])
+  entries CareerJourney[]
+
+  @@map("hiring_events")
 }
 
 enum StageKind {
@@ -346,15 +363,18 @@ model CareerJourney {
   id         String        @id @default(uuid())
   userId     String
   trackId    String
+  eventId    String? // set khi journey được tạo qua POST /career/events/:id/enter — dùng để tính leaderboard sự kiện
   status     JourneyStatus @default(IN_PROGRESS)
   startedAt  DateTime      @default(now())
   finishedAt DateTime?
 
   user     User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   track    CareerTrack            @relation(fields: [trackId], references: [id])
+  event    HiringEvent?           @relation(fields: [eventId], references: [id])
   progress JourneyStageProgress[]
 
   @@index([userId, status])
+  @@index([eventId])
   @@map("career_journeys")
 }
 

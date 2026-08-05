@@ -263,12 +263,107 @@ Sau (roadmap này):                Problems | Quest | Career Journey
 
 > Phức tạp và rủi ro nhất trong roadmap này — đụng trực tiếp `chat.gateway.ts` (đã có `forwardRef()` cycle với `AiModule`, xem `.claude/rules/workflow.md` mục "forwardRef() — không tự ý fix") và hiện **chưa có `.spec.ts` nào che phủ** module `chat`. Cần 1 buổi thiết kế kỹ riêng (role model, quyền truy cập room, cách AI "quan sát" mà không chặn luồng `send_message` hiện có) trước khi code, không nhảy thẳng vào implement từ mục này.
 
-- [ ] **Thiết kế (chưa code): role thứ 2 trong 1 session room**
+- [x] **Thiết kế (chưa code): role thứ 2 trong 1 session room**
   📍 `server/src/modules/chat/chat/chat.gateway.ts` — hiện `join_room` (dòng 108) chỉ cho phép đúng `session.userId` join. Cần mở rộng: 1 session có thể có `role: "CANDIDATE" | "PEER_INTERVIEWER"`, AI chuyển từ vai "giám khảo duyệt/từ chối chiến lược" sang "quan sát viên" — không chặn Phase 1 → Phase 2 nữa mà để `PEER_INTERVIEWER` (người thật) quyết định, AI chỉ chấm ngầm sau khi xong.
   **Cần quyết định sản phẩm**: session kiểu này có tính là `Session` bình thường (đi qua state machine `PHASE_1_STRATEGY` → `PHASE_2_IMPLEMENT` hiện có) hay cần 1 loại session riêng? Ảnh hưởng trực tiếp tới `sessions.service.ts` — đọc kỹ `.claude/rules/workflow.md` mục "Luồng phiên phỏng vấn" trước khi quyết.
 
+  **Quyết định (hỏi lại user qua `AskUserQuestion` trước khi thiết kế chi tiết)**: model **riêng** — `PeerInterviewSession`, không đụng `Session`/`sessions.service.ts`/state machine `PHASE_1_STRATEGY`↔`PHASE_2_IMPLEMENT` hiện có. Lý do: `Session.userId` là 1 FK duy nhất, không có chỗ cho người thứ 2 mà không sửa bảng trung tâm nhất hệ thống (Career Journey, Judge, Replay, Confidence Calibration đều phụ thuộc `Session`) — trong khi module `chat` hiện chưa có `.spec.ts` nào, rủi ro càng cao nếu đụng chung state machine.
+
+  **Đọc lại code thật trước khi thiết kế** (không đoán): `chat.gateway.ts#handleJoinRoom`/`handleMessage` hiện chỉ có 1 nhánh kiểm tra `session.userId === socketUser.userId`; `handleMessage` LUÔN LUÔN gọi `aiQueue.add('chat-job', ...)` sau mỗi tin nhắn — đây chính là hành vi "AI gatekeeper" cần tắt hẳn cho peer-interview. Roadmap gốc ghi "AI chỉ chấm ngầm SAU KHI XONG" — nghĩa là AI không cần quan sát real-time trong lúc chat, chỉ chạy 1 lần ở cuối. Điều này đơn giản hoá thiết kế đáng kể: **không cần AI tham gia gì trong lúc phòng đang hoạt động**, event `send_peer_message` không gọi `ai-queue` — chỉ lưu + broadcast. `AiProcessor` (`ai.processor.ts`) đã sẵn `@Inject(forwardRef(() => ChatGateway))` để emit socket event sau khi xử lý job — tái dùng đúng class này cho job chấm điểm cuối buổi thay vì tạo thêm 1 forwardRef cycle mới.
+
+  **Data model (sketch, chưa migrate)**:
+  ```prisma
+  enum PeerSessionStatus {
+    WAITING_FOR_PEER // vừa tạo, đợi người thứ 2 join bằng inviteCode
+    ACTIVE
+    COMPLETED
+    ABANDONED
+  }
+
+  enum PeerRole {
+    CANDIDATE
+    PEER_INTERVIEWER
+  }
+
+  model PeerInterviewSession {
+    id                String            @id @default(uuid())
+    candidateId       String
+    peerInterviewerId String?           // null cho tới khi có người join
+    problemId         String
+    status            PeerSessionStatus @default(WAITING_FOR_PEER)
+    inviteCode        String            @unique // share cho người thứ 2 join qua POST /peer-interviews/join/:inviteCode
+    startedAt         DateTime          @default(now())
+    endedAt           DateTime?
+
+    candidate       User    @relation("PeerInterviewCandidate", fields: [candidateId], references: [id], onDelete: Cascade)
+    peerInterviewer User?   @relation("PeerInterviewInterviewer", fields: [peerInterviewerId], references: [id])
+    problem         Problem @relation(fields: [problemId], references: [id])
+    messages        PeerInterviewMessage[]
+    evaluation      PeerInterviewEvaluation?
+
+    @@map("peer_interview_sessions")
+  }
+
+  model PeerInterviewMessage {
+    id        String   @id @default(uuid())
+    sessionId String
+    role      PeerRole // CANDIDATE hay PEER_INTERVIEWER gửi — không tái dùng MessageSender (enum đó gắn với Session/AI)
+    senderId  String
+    content   String
+    createdAt DateTime @default(now())
+
+    session PeerInterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+    @@index([sessionId, createdAt])
+    @@map("peer_interview_messages")
+  }
+
+  model PeerInterviewEvaluation {
+    id                       String   @id @default(uuid())
+    sessionId                String   @unique
+    candidateScore           Int
+    candidateFeedback        String
+    peerInterviewerScore     Int
+    peerInterviewerFeedback  String
+    createdAt                DateTime @default(now())
+
+    session PeerInterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+    @@map("peer_interview_evaluations")
+  }
+  ```
+  Cần thêm back-relation `User.candidateInPeerSessions`/`User.peerInterviewerInPeerSessions` và `Problem.peerInterviewSessions` khi thực sự migrate.
+
+  **Gateway — chỉ thêm handler mới, KHÔNG sửa `join_room`/`send_message` đang có**:
+  - `join_peer_room` — auth: `socketUser.userId === candidateId || socketUser.userId === peerInterviewerId`.
+  - `send_peer_message` — lưu `PeerInterviewMessage`, broadcast `receive_peer_message`. Không gọi `ai-queue`.
+  - `end_peer_interview` — chỉ candidate hoặc peer interviewer gọi được; set `status = COMPLETED`, `endedAt`, enqueue job `grade-peer-interview` vào **`ai-queue` đã có sẵn** (không tạo queue mới).
+
+  **REST (module mới `peer-interview`, không đụng `sessions`/`chat` module hiện có)**:
+  - `POST /peer-interviews` — candidate tạo, body `{ problemId }`, sinh `inviteCode`.
+  - `POST /peer-interviews/join/:inviteCode` — người thứ 2 join (guard: không cho tự join session của chính mình).
+  - `GET /peer-interviews/:id` — auth: phải là candidate hoặc peerInterviewer.
+
+  **AI — Model 4 trong `ai.service.ts`, theo đúng pattern Model 3 (Offer Debrief) vừa làm ở P1**:
+  ```
+  Input: toàn bộ PeerInterviewMessage[] (role + content) + problemContext.
+  Output JSON:
+  {
+    "candidate": { "score": 0-100, "feedback": "string" },
+    "peerInterviewer": { "score": 0-100, "feedback": "string" }
+  }
+  ```
+  Xử lý trong CHÍNH `AiProcessor` hiện có (thêm job type `grade-peer-interview` bên cạnh `chat-job`/`evaluate-code`) — không tạo processor/forwardRef mới, dùng lại `chatGateway` đã inject sẵn để emit `peer_interview_graded`.
+
+  **Phạm vi cố tình giới hạn** (để giữ rủi ro thấp nhất có thể cho tính năng chạm vào module chưa có test):
+  - KHÔNG tích hợp code editor/Judge/Piston — peer-interview thuần hội thoại (đúng như mô tả chấm điểm gốc chỉ dựa trên `Message[]`, không nhắc submission).
+  - KHÔNG đụng `Session`, `sessions.service.ts`, `ai.processor.ts#processChat`, hay 2 handler `join_room`/`send_message` đang có — hoàn toàn cộng thêm (additive), không sửa.
+  - KHÔNG trừ `UserStats.credits` mỗi tin nhắn như luồng 1:1 hiện tại — vì AI không phản hồi real-time, chỉ chạy đúng 1 lần lúc kết thúc.
+  Đây vẫn chỉ là bản thiết kế — **chưa migrate schema, chưa viết code** cho mục này, cần user xác nhận trước khi bắt đầu implement do vẫn là phần rủi ro nhất trong toàn bộ roadmap.
+
 - [ ] **BE: chấm điểm 2 chiều sau buổi peer interview**
   📍 `server/src/modules/ai/` — thêm 1 evaluation model thứ 3 (giống cách `evaluationModel` tách riêng khỏi `model` ở P1 Strategy hiện tại), input là toàn bộ `Message[]` của session, output chấm cả `candidate` (giải thích rõ không) và `peerInterviewer` (hỏi follow-up có chất lượng không).
+  📌 Thiết kế cụ thể đã chốt ở mục trên (Model 4 `ai.service.ts` + job `grade-peer-interview` trong `AiProcessor` có sẵn). Chưa implement — chờ xác nhận trước khi code toàn bộ P3.
 
 ---
 

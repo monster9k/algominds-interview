@@ -1,7 +1,8 @@
 {
   "badges": {
     "title": "バッジ",
-    "mostRecentBadge": "最新のバッジ"
+    "mostRecentBadge": "最新のバッジ",
+    "none": "バッジはまだありません"
   },
   "stats": {
     "solvedProblems": "解決した問題",
@@ -37,6 +38,14 @@
       "runtimeError": "実行時エラー",
       "tle": "時間切れ"
     }
+  },
+  "questHistory": {
+    "title": "クエスト履歴",
+    "playQuest": "クエストをプレイ",
+    "empty": "まだクエストをプレイしていません。",
+    "scoreLabel": "点",
+    "correctOfWrong": "正解 {{correct}} / 不正解 {{wrong}}",
+    "bestCombo": "最高コンボ {{combo}}"
   },
   "heatmap": {
     "title": "過去1年間の提出数: {{count}}件",

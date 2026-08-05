@@ -19,6 +19,8 @@ Mỗi module trong `server/src/modules/<ten-module>/` theo pattern NestJS chuẩ
 
 Module có xử lý job nền (vd `ai`) có thêm `*.processor.ts` (BullMQ worker) và `*.listener.ts` (lắng nghe queue event để emit qua gateway).
 
+`quest` (mini-game "Bug Whacker", `server/src/modules/quest/`) là module độc lập, không đụng state machine `sessions` — dùng làm ví dụ tham chiếu khi cần scaffold module mới có `dto/` nhưng không có job nền.
+
 ## Guards & decorators (`common/guards`, `common/decorators`)
 - `JwtAuthGuard` — bắt buộc đăng nhập. `OptionalJwtAuthGuard` — cho phép cả request không kèm token (vd `GET /problems` để enrich status nếu có user).
 - `RolesGuard` + `@Roles('ADMIN')` — gate theo role, dùng kèm `JwtAuthGuard` (vd `POST /problems`).
@@ -33,5 +35,5 @@ Module có xử lý job nền (vd `ai`) có thêm `*.processor.ts` (BullMQ worke
 ## Piston (code execution)
 `server/src/modules/judge/services/piston.service.ts` đọc `PISTON_API_URL` qua `ConfigService.getOrThrow` (không hardcode URL). Submission Java cần `main: 'Main'` tường minh trong payload vì Piston mặc định chạy class public đầu tiên tìm thấy.
 
-## Không có test suite
-Chưa có `.spec.ts` nào ngoài stub mặc định — khi sửa logic nhạy cảm (chấm điểm ở `judge.service.ts`, xác thực ở `auth.service.ts`), đọc kỹ code hiện tại trước, cân nhắc thêm test khi thay đổi lớn.
+## Test suite
+Coverage còn mỏng — chỉ `auth/auth.service.spec.ts` và `judge/judge.service.spec.ts` tồn tại (ngoài stub mặc định). Các module khác chưa có test: khi sửa logic nhạy cảm (chấm điểm ở `judge.service.ts`, xác thực ở `auth.service.ts`), đọc kỹ code hiện tại trước, chạy spec sẵn có, và cân nhắc thêm test khi thay đổi lớn ở module chưa có coverage.

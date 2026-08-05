@@ -1,11 +1,17 @@
 import { ArrowRight, Award } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
-import { MOCK_BADGE } from "../utils/mock-data";
+import { useMyBadges } from "@/features/quest/hooks/use-my-badges";
 
-// TODO: Requires backend schema — no Badge model exists yet, stays mocked.
+// Badge thật, mở khoá qua earning-rule trong quest.service.ts khi kết thúc 1
+// ván Quest (xem BADGE_RULES) — badges-card.tsx chỉ hiển thị tổng số + badge
+// mới nhất, danh sách chi tiết chưa có trang riêng nên chưa cần map iconKey.
 export function BadgesCard() {
   const { t } = useTranslation("users");
+  const { data: badges } = useMyBadges();
+
+  const totalCount = badges?.length ?? 0;
+  const mostRecentName = badges?.[0]?.name ?? t("badges.none");
 
   return (
     <Card className="h-full">
@@ -16,7 +22,7 @@ export function BadgesCard() {
         </div>
 
         <span className="text-2xl font-bold text-foreground mt-1">
-          {MOCK_BADGE.totalCount}
+          {totalCount}
         </span>
 
         <div className="mt-auto pt-3 flex items-center gap-2.5">
@@ -26,7 +32,7 @@ export function BadgesCard() {
           <div className="min-w-0">
             <p className="text-[10px] text-muted-foreground">{t("badges.mostRecentBadge")}</p>
             <p className="text-xs font-medium text-foreground truncate">
-              {MOCK_BADGE.mostRecentName}
+              {mostRecentName}
             </p>
           </div>
         </div>

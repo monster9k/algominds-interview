@@ -1,0 +1,42 @@
+{
+  "title": "Quest: Bug Whacker",
+  "subtitle": "Tìm dòng code chứa bug trước khi hết thời gian hoặc hết mạng. Chọn độ khó và ngôn ngữ rồi bấm Chơi.",
+  "difficulty": {
+    "easy": "Dễ",
+    "medium": "Trung bình",
+    "hard": "Khó"
+  },
+  "setup": {
+    "chooseDifficulty": "Độ khó",
+    "chooseLanguage": "Ngôn ngữ",
+    "play": "Chơi"
+  },
+  "language": {
+    "random": "Ngẫu nhiên",
+    "javascript": "JavaScript",
+    "python": "Python",
+    "java": "Java"
+  },
+  "loadingQuestion": "Đang tải câu hỏi...",
+  "combo": "Combo x{{count}}",
+  "comboMilestone": "🔥 {{count}} câu liên tiếp!",
+  "next": "Tiếp theo",
+  "feedback": {
+    "correct": "Chính xác!",
+    "wrongLine": "Sai rồi — bug nằm ở dòng {{line}}"
+  },
+  "result": {
+    "title": "Kết thúc ván chơi",
+    "score": "Điểm",
+    "correctOfWrong": "Đúng {{correct}} / Sai {{wrong}}",
+    "bestCombo": "Combo cao nhất",
+    "playAgain": "Chơi lại",
+    "backToHub": "Về Quest Hub",
+    "newBadgesTitle": "🎉 Mở khoá huy hiệu mới!"
+  },
+  "leaderboard": {
+    "title": "Bảng xếp hạng",
+    "empty": "Chưa có điểm nào ở độ khó này.",
+    "scorePoints": "{{score}} điểm"
+  }
+}

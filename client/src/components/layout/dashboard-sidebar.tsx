@@ -14,7 +14,7 @@ import { Logo } from "@/components/ui/logo";
 
 const sidebarItems = [
   { icon: Library, labelKey: "sidebar.library", href: "/problems" },
-  { icon: Swords, labelKey: "sidebar.quest", href: "#" },
+  { icon: Swords, labelKey: "sidebar.quest", href: "/quest" },
   { icon: Compass, labelKey: "sidebar.explore", href: "#" },
   { icon: GraduationCap, labelKey: "sidebar.studyPlan", href: "#" },
 ];

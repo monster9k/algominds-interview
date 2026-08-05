@@ -76,6 +76,8 @@ model User {
   stats    UserStats?
   sessions Session[]
   refreshTokens RefreshToken[]
+  questAttempts QuestAttempt[]
+  userBadges    UserBadge[]
 
   // Indexes
   @@index([provider, providerId])
@@ -200,6 +202,65 @@ model ProblemCompany {
 
   @@id([problemId, companyId])
   @@map("problem_companies")
+}
+
+model BugSnippet {
+  id          String     @id @default(uuid())
+  language    String // "javascript" | "python" | "java" — khớp PistonService.getLanguageConfig()
+  difficulty  Difficulty
+  code        String // toàn bộ đoạn code (nhiều dòng)
+  buggyLine   Int // index dòng chứa bug, 0-based, tách theo "\n"
+  explanation String? // hiện sau khi trả lời, giải thích bug là gì
+  isActive    Boolean    @default(true) // để tắt câu hỏi lỗi mà không xoá (giữ lịch sử QuestAttempt tham chiếu được)
+  createdAt   DateTime   @default(now())
+
+  @@index([language, difficulty, isActive])
+  @@map("bug_snippets")
+}
+
+model QuestAttempt {
+  id           String     @id @default(uuid())
+  userId       String
+  difficulty   Difficulty
+  score        Int
+  correctCount Int
+  wrongCount   Int
+  bestCombo    Int
+  durationMs   Int
+  createdAt    DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("quest_attempts")
+}
+
+model Badge {
+  id          String   @id @default(uuid())
+  // Định danh ổn định dùng để đối chiếu earning-rule trong quest.service.ts —
+  // tách khỏi `name` vì name là text hiển thị, có thể đổi/dịch sau này.
+  key         String   @unique
+  name        String
+  description String
+  iconKey     String // map sang lucide-react icon ở FE, không lưu SVG blob
+  createdAt   DateTime @default(now())
+
+  users UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id       String   @id @default(uuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
 }
 
 model Session {

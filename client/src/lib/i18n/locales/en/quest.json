@@ -1,0 +1,42 @@
+{
+  "title": "Quest: Bug Whacker",
+  "subtitle": "Find the buggy line before time or lives run out. Choose your difficulty and language, then press Play.",
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "setup": {
+    "chooseDifficulty": "Difficulty",
+    "chooseLanguage": "Language",
+    "play": "Play"
+  },
+  "language": {
+    "random": "Random",
+    "javascript": "JavaScript",
+    "python": "Python",
+    "java": "Java"
+  },
+  "loadingQuestion": "Loading question...",
+  "combo": "Combo x{{count}}",
+  "comboMilestone": "🔥 {{count}} in a row!",
+  "next": "Next",
+  "feedback": {
+    "correct": "Correct!",
+    "wrongLine": "Wrong — the bug is on line {{line}}"
+  },
+  "result": {
+    "title": "Game over",
+    "score": "Score",
+    "correctOfWrong": "{{correct}} Correct / {{wrong}} Wrong",
+    "bestCombo": "Best combo",
+    "playAgain": "Play again",
+    "backToHub": "Back to Quest Hub",
+    "newBadgesTitle": "🎉 New badge unlocked!"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "empty": "No scores yet for this difficulty.",
+    "scorePoints": "{{score}} pts"
+  }
+}

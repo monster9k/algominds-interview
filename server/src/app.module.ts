@@ -9,6 +9,7 @@ import { SessionsModule } from './modules/sessions/sessions.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AiModule } from './modules/ai/ai.module';
 import { JudgeModule } from './modules/judge/judge.module';
+import { QuestModule } from './modules/quest/quest.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
@@ -36,6 +37,7 @@ import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
     ChatModule,
     AiModule,
     JudgeModule,
+    QuestModule,
     EventEmitterModule.forRoot(),
     // Default áp cho MỌI route chưa tự override bằng @Throttle() — nới từ
     // 10/60s lên 60/60s vì 1 lần load trang (problems list + profile +

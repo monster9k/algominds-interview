@@ -1,0 +1,42 @@
+{
+  "title": "クエスト: バグハンター",
+  "subtitle": "時間切れ、またはライフがなくなる前にバグのある行を見つけよう。難易度と言語を選んでPlayを押そう。",
+  "difficulty": {
+    "easy": "簡単",
+    "medium": "普通",
+    "hard": "難しい"
+  },
+  "setup": {
+    "chooseDifficulty": "難易度",
+    "chooseLanguage": "言語",
+    "play": "プレイ"
+  },
+  "language": {
+    "random": "ランダム",
+    "javascript": "JavaScript",
+    "python": "Python",
+    "java": "Java"
+  },
+  "loadingQuestion": "問題を読み込み中...",
+  "combo": "コンボ x{{count}}",
+  "comboMilestone": "🔥 {{count}}連続正解!",
+  "next": "次へ",
+  "feedback": {
+    "correct": "正解!",
+    "wrongLine": "不正解 — バグは{{line}}行目にあります"
+  },
+  "result": {
+    "title": "ゲーム終了",
+    "score": "スコア",
+    "correctOfWrong": "正解 {{correct}} / 不正解 {{wrong}}",
+    "bestCombo": "最高コンボ",
+    "playAgain": "もう一度プレイ",
+    "backToHub": "クエストハブに戻る",
+    "newBadgesTitle": "🎉 新しいバッジを獲得しました！"
+  },
+  "leaderboard": {
+    "title": "ランキング",
+    "empty": "この難易度のスコアはまだありません。",
+    "scorePoints": "{{score}} 点"
+  }
+}

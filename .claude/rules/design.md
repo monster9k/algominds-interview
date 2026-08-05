@@ -32,3 +32,8 @@ Ví dụ tham chiếu: `client/src/features/users/` (đủ `api/hooks/components
 - Server state (dữ liệu từ backend) → TanStack Query, không lưu vào Zustand.
 - Client/UI state (theme, modal open, form draft) → Zustand store trong `stores/`.
 - Socket events → hook riêng lắng nghe (pattern: `use-interview-socket.ts`), cập nhật cache TanStack Query hoặc state cục bộ, không tự ý tạo store Zustand mới cho dữ liệu server-driven.
+- Ví dụ store hợp lệ trong feature: `quest/stores/use-quest-session-store.ts` — quản lý state ván chơi đang chạy (score, combo, lives, time left), đây là state cục bộ thật sự chứ không phải cache dữ liệu server nên không vi phạm quy tắc trên.
+
+## i18n
+- `client/src/lib/i18n` dùng `react-i18next`. File dịch tách theo feature: `locales/<en|vi|ja>/<feature>.json` (`common`, `auth`, `interview`, `problems`, `quest`, `settings`, `users`).
+- Thêm UI text mới → thêm key vào đúng file feature ở **cả 3 locale**, không gộp vào 1 catalog chung.

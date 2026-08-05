@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SessionsService } from '../sessions/sessions.service';
 import { JourneyStatus, StageKind, StageStatus } from '@prisma/client';
@@ -42,6 +43,7 @@ export class CareerService {
   constructor(
     private prisma: PrismaService,
     private sessionsService: SessionsService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async getActiveTracks() {
@@ -265,6 +267,15 @@ export class CareerService {
       },
     });
 
+    // Offer Debrief chỉ áp dụng cho stage kind=PROBLEM (digest tổng hợp
+    // strategyAnswer) — trigger cả khi PASSED lẫn FAILED, vì digest tổng hợp
+    // dữ liệu chung của cả bài toán, không riêng kết quả của journey này.
+    if (activeProgress.stage.kind === StageKind.PROBLEM) {
+      this.eventEmitter.emit('career.stage.completed', {
+        stageId: activeProgress.stageId,
+      });
+    }
+
     if (status === 'FAILED') {
       return this.prisma.careerJourney.update({
         where: { id: journeyId },
@@ -304,6 +315,13 @@ export class CareerService {
       where: { id: journeyId },
       include: JOURNEY_FULL_INCLUDE,
     });
+  }
+
+  // Digest được cache sẵn qua career.processor.ts — endpoint này chỉ đọc,
+  // KHÔNG tự trigger generate (đúng tinh thần "không phải job chạy mỗi lần
+  // user xem"). null nếu chưa đủ dữ liệu để tổng hợp lần nào.
+  async getStageDigest(stageId: string) {
+    return this.prisma.stageDigest.findUnique({ where: { stageId } });
   }
 
   // Stage kind=PROBLEM cần 1 Session để user vào làm — tái dùng

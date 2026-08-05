@@ -61,9 +61,18 @@ export interface CareerJourney {
   id: string;
   userId: string;
   trackId: string;
+  eventId: string | null;
   status: JourneyStatus;
   startedAt: string;
   finishedAt: string | null;
   track?: CareerTrack;
   progress: JourneyStageProgress[];
+}
+
+export interface StageDigest {
+  id: string;
+  stageId: string;
+  content: string;
+  sourceCount: number;
+  generatedAt: string;
 }

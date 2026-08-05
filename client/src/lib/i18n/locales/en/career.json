@@ -16,5 +16,8 @@
     "ACTIVE": "In progress",
     "PASSED": "Passed",
     "FAILED": "Failed"
+  },
+  "debrief": {
+    "title": "Offer Debrief"
   }
 }

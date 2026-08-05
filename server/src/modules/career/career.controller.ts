@@ -38,6 +38,11 @@ export class CareerController {
     return this.careerService.getEventLeaderboard(id);
   }
 
+  @Get('stages/:id/digest')
+  getStageDigest(@Param('id') id: string) {
+    return this.careerService.getStageDigest(id);
+  }
+
   @Get('journeys/me/active')
   getActiveJourney(@CurrentUser() user: RequestUser) {
     return this.careerService.getActiveJourney(user.userId);

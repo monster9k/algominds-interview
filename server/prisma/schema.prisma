@@ -340,9 +340,26 @@ model CareerTrackStage {
   problem  Problem?               @relation(fields: [problemId], references: [id])
   persona  InterviewerPersona     @relation(fields: [personaId], references: [id])
   progress JourneyStageProgress[]
+  digest   StageDigest?
 
   @@unique([trackId, order])
   @@map("career_track_stages")
+}
+
+// Discuss thay thế: tổng hợp các strategyAnswer đã APPROVED khác nhau của
+// cùng problemId (qua job nền `debrief-queue`, xem career.processor.ts) —
+// cache lại, KHÔNG generate mỗi lần user xem. 1 digest / stage vì mỗi stage
+// map cứng 1 problemId (qua CareerTrackStage.problemId).
+model StageDigest {
+  id          String   @id @default(uuid())
+  stageId     String   @unique
+  content     String
+  sourceCount Int // số strategyAnswer distinct đã dùng để tạo digest này — dùng để quyết định có cần tái tạo khi có thêm answer mới không
+  generatedAt DateTime @default(now())
+
+  stage CareerTrackStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@map("stage_digests")
 }
 
 enum JourneyStatus {

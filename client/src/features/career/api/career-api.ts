@@ -1,9 +1,14 @@
 import api from "@/lib/axios";
-import { CareerJourney, CareerTrack } from "../types";
+import { CareerJourney, CareerTrack, StageDigest } from "../types";
 
 export const careerApi = {
   getTracks: async (): Promise<CareerTrack[]> => {
     const response = await api.get("/career/tracks");
+    return response.data;
+  },
+
+  getStageDigest: async (stageId: string): Promise<StageDigest | null> => {
+    const response = await api.get(`/career/stages/${stageId}/digest`);
     return response.data;
   },
 

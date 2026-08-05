@@ -124,6 +124,11 @@ export class AiProcessor extends WorkerHost {
         data: {
           status: SessionStatus.PHASE_2_IMPLEMENT,
           version: { increment: 1 },
+          // Chốt lại đúng câu trả lời/feedback tại thời điểm được duyệt — đây
+          // là nguồn dữ liệu duy nhất cho Offer Debrief (career.processor.ts),
+          // trước đây 2 field này tồn tại trong schema nhưng chưa từng được ghi.
+          strategyAnswer: content,
+          strategyFeedback: aiMessageContent,
         },
       });
 

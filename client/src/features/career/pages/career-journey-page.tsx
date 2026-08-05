@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useCareerTracks } from "../hooks/use-career-tracks";
 import { useActiveJourney } from "../hooks/use-active-journey";
 import { useStartTrack } from "../hooks/use-start-track";
+import { StageDigest } from "../components/stage-digest";
 import type { CareerTrackStage, StageStatus } from "../types";
 
 const STATUS_BADGE_VARIANT: Record<
@@ -158,6 +159,10 @@ export function CareerJourneyPage() {
                       {t("enterStage")}
                     </Button>
                   )}
+                  {stage.kind === "PROBLEM" &&
+                    (status === "PASSED" || status === "FAILED") && (
+                      <StageDigest stageId={stage.id} />
+                    )}
                 </CardContent>
               </Card>
             </div>

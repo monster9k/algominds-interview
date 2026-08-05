@@ -15,5 +15,8 @@
     "ACTIVE": "進行中",
     "PASSED": "合格",
     "FAILED": "不合格"
+  },
+  "debrief": {
+    "title": "Offer Debrief"
   }
 }

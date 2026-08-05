@@ -49,11 +49,36 @@ const STRATEGY_SYSTEM_INSTRUCTION = `
           - "message": Nhắc nhở tập trung vào giải pháp cho bài toán.
       `;
 
+// Offer Debrief (career.processor.ts) — tổng hợp nhiều strategyAnswer đã
+// APPROVED của cùng 1 bài toán thành 1 đoạn digest. Output là text tự do
+// (không cần JSON contract) nên không set responseMimeType như 2 model kia.
+const OFFER_DEBRIEF_SYSTEM_INSTRUCTION = `
+        Bạn là 1 senior interviewer tổng hợp lại các chiến lược (strategy) mà
+        nhiều ứng viên KHÁC NHAU đã đưa ra và được duyệt (APPROVED) cho CÙNG 1
+        bài toán phỏng vấn.
+
+        INPUT: 1 danh sách các strategy answer, mỗi mục là của 1 ứng viên khác nhau.
+        OUTPUT: 1 đoạn tổng hợp bằng tiếng Việt, gộp các hướng tiếp cận giống
+        nhau lại thành từng nhóm, mỗi nhóm nêu rõ: ý tưởng cốt lõi, độ phức tạp
+        thời gian/không gian (nếu người viết có đề cập hoặc suy ra được), và
+        trade-off so với các hướng khác.
+
+        QUY TẮC:
+        1. Không bịa thêm hướng tiếp cận không xuất hiện trong input.
+        2. Không trích dẫn nguyên văn câu chữ của ứng viên nào, không nhắc tới
+           danh tính — luôn diễn giải lại bằng lời của bạn.
+        3. Nếu tất cả input đều cùng 1 hướng tiếp cận, chỉ cần nêu hướng đó,
+           không cần bịa thêm hướng khác cho có vẻ đa dạng.
+        4. Trả về TEXT THUẦN, không dùng markdown (không "**", không "#",
+           không bullet "-"/"*") — FE hiện thị nguyên văn, không render markdown.
+      `;
+
 @Injectable()
 export class AiService {
   private genAI: GoogleGenerativeAI;
   private model: GenerativeModel; // Phase 1 Strategy evaluation, persona "default" (systemPromptExtra rỗng)
   private evaluationModel: GenerativeModel; // For Phase 3 Code evaluation
+  private debriefModel: GenerativeModel; // For Offer Debrief digest generation
 
   // Cache model đã build theo personaId — tránh gọi lại Gemini SDK + Prisma
   // mỗi tin nhắn cho cùng 1 persona.
@@ -112,6 +137,12 @@ export class AiService {
 
         Hãy chi tiết, xây dựng nhưng cũng chỉ ra cơ hội cải thiện.
       `,
+    });
+
+    // Model 3: Offer Debrief digest — text tự do, không set responseMimeType
+    this.debriefModel = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      systemInstruction: OFFER_DEBRIEF_SYSTEM_INSTRUCTION,
     });
   }
 
@@ -263,5 +294,22 @@ Hãy đánh giá code này theo 4 tiêu chí: logic, cleanCode, performance, bes
         `Failed to evaluate code: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
+  }
+
+  async generateOfferDebrief(
+    strategyAnswers: string[],
+    problemContext: string,
+  ): Promise<string> {
+    const prompt = `
+Bài toán:
+${problemContext}
+
+Các chiến lược đã được duyệt (mỗi mục là của 1 ứng viên khác nhau):
+${strategyAnswers.map((answer, i) => `${i + 1}. ${answer}`).join('\n')}
+    `;
+
+    const chat = this.debriefModel.startChat({ history: [] });
+    const result = await chat.sendMessage(prompt);
+    return result.response.text();
   }
 }

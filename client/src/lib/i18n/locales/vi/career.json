@@ -15,5 +15,8 @@
     "ACTIVE": "Đang làm",
     "PASSED": "Đã qua",
     "FAILED": "Chưa đạt"
+  },
+  "debrief": {
+    "title": "Offer Debrief"
   }
 }

@@ -39,6 +39,18 @@
       "tle": "Quá thời gian"
     }
   },
+  "confidence": {
+    "title": "Hiệu chỉnh sự tự tin",
+    "empty": "Chưa đủ dữ liệu — sẽ có sau khi bạn được duyệt vài chiến lược.",
+    "signal": {
+      "hedging": "Dè dặt",
+      "neutral": "Trung lập",
+      "assertive": "Tự tin"
+    },
+    "correctOf": "{{correct}}/{{total}} giải đúng",
+    "overconfident": "{{count}} lần bạn tỏ ra tự tin nhưng không giải được",
+    "underconfident": "{{count}} lần bạn dè dặt nhưng thực ra giải đúng"
+  },
   "questHistory": {
     "title": "Lịch sử Quest",
     "playQuest": "Chơi Quest",

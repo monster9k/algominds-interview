@@ -443,6 +443,11 @@ model Session {
   // Phase 1 Data
   strategyAnswer   String?
   strategyFeedback String? // AI Review
+  // "hedging" | "neutral" | "assertive" — Gemini tự đánh giá dựa trên cách
+  // ứng viên diễn đạt câu trả lời được approve (Confidence Calibration Score).
+  // String tự do (không phải Prisma enum) vì đây là output AI, validate ở
+  // ai.processor.ts trước khi ghi, không validate ở tầng DB.
+  confidenceSignal String?
 
   // Phase 2 Data
   currentCode     String?

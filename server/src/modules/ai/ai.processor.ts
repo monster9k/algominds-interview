@@ -101,17 +101,30 @@ export class AiProcessor extends WorkerHost {
     // PARSE JSON & XỬ LÝ LOGIC
     let aiMessageContent = '';
     let isApproved = false;
+    // "hedging" | "neutral" | "assertive" — chỉ nhận đúng 3 giá trị đã định
+    // nghĩa trong systemInstruction, giá trị lạ/thiếu -> null thay vì lưu rác
+    // (Confidence Calibration Score — xem ai.service.ts).
+    let confidenceSignal: string | null = null;
+    const VALID_CONFIDENCE_SIGNALS = ['hedging', 'neutral', 'assertive'];
 
     try {
       const parsedResponse = JSON.parse(rawAiResponse) as {
         message?: string;
         status?: string;
+        confidenceSignal?: string;
       };
       aiMessageContent = parsedResponse.message ?? '';
       const normalizedStatus = String(
         parsedResponse.status || '',
       ).toUpperCase();
       isApproved = normalizedStatus === 'APPROVED';
+
+      const normalizedSignal = String(
+        parsedResponse.confidenceSignal || '',
+      ).toLowerCase();
+      confidenceSignal = VALID_CONFIDENCE_SIGNALS.includes(normalizedSignal)
+        ? normalizedSignal
+        : null;
     } catch (e) {
       this.logger.error('Failed to parse AI JSON response', e);
       aiMessageContent = rawAiResponse;
@@ -129,6 +142,7 @@ export class AiProcessor extends WorkerHost {
           // trước đây 2 field này tồn tại trong schema nhưng chưa từng được ghi.
           strategyAnswer: content,
           strategyFeedback: aiMessageContent,
+          confidenceSignal,
         },
       });
 

@@ -22,6 +22,13 @@ export class UsersController {
     return this.usersService.findOne(user.userId);
   }
 
+  // API: Confidence Calibration Score — xem chi tiết ở users.service.ts
+  // GET http://localhost:3000/users/me/confidence-calibration
+  @Get('me/confidence-calibration')
+  getConfidenceCalibration(@CurrentUser() user: RequestUser) {
+    return this.usersService.getConfidenceCalibration(user.userId);
+  }
+
   // 2. API: Cập nhật thông tin bản thân
   // PATCH http://localhost:3000/users/me
   @Patch('me')

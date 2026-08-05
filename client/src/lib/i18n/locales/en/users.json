@@ -39,6 +39,18 @@
       "tle": "Time Limit Exceeded"
     }
   },
+  "confidence": {
+    "title": "Confidence Calibration",
+    "empty": "Not enough data yet — this fills in as you get strategies approved.",
+    "signal": {
+      "hedging": "Hedging",
+      "neutral": "Neutral",
+      "assertive": "Assertive"
+    },
+    "correctOf": "{{correct}}/{{total}} solved",
+    "overconfident": "{{count}} time(s) you sounded assertive but didn't solve it",
+    "underconfident": "{{count}} time(s) you hedged but actually solved it"
+  },
   "questHistory": {
     "title": "Quest History",
     "playQuest": "Play Quest",

@@ -27,7 +27,8 @@ const STRATEGY_SYSTEM_INSTRUCTION = `
         OUTPUT: Bắt buộc trả về JSON theo đúng định dạng sau:
         {
          "status": "Approved" | "Rejected",
-         "message": "string"
+         "message": "string",
+         "confidenceSignal": "hedging" | "neutral" | "assertive"
         }
 
         QUY TẮC ĐÁNH GIÁ:
@@ -47,6 +48,11 @@ const STRATEGY_SYSTEM_INSTRUCTION = `
         5. Nếu ứng viên chat linh tinh không liên quan:
           - Gán "status": "Rejected".
           - "message": Nhắc nhở tập trung vào giải pháp cho bài toán.
+        6. "confidenceSignal" đánh giá RIÊNG cách ứng viên DIỄN ĐẠT câu trả lời
+           (không liên quan tới "status" đúng/sai):
+          - "hedging": dùng nhiều từ ngờ vực như "có thể", "em nghĩ là", "không chắc lắm", "hình như".
+          - "assertive": khẳng định chắc chắn, dứt khoát, không rào đón.
+          - "neutral": không rõ nghiêng về hướng nào, hoặc câu trả lời quá ngắn để đánh giá giọng điệu.
       `;
 
 // Offer Debrief (career.processor.ts) — tổng hợp nhiều strategyAnswer đã

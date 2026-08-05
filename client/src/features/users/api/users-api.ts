@@ -1,9 +1,19 @@
 import api from "@/lib/axios";
-import { HeatmapDay, RecentSubmission, UserProfileResponse } from "../types";
+import {
+  ConfidenceCalibration,
+  HeatmapDay,
+  RecentSubmission,
+  UserProfileResponse,
+} from "../types";
 
 export const usersApi = {
   getMe: async (): Promise<UserProfileResponse> => {
     const response = await api.get("/users/me");
+    return response.data;
+  },
+
+  getConfidenceCalibration: async (): Promise<ConfidenceCalibration> => {
+    const response = await api.get("/users/me/confidence-calibration");
     return response.data;
   },
 

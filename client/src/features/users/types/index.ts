@@ -50,3 +50,18 @@ export interface RecentSubmission {
   status: SubmissionStatus;
   createdAt: string;
 }
+
+export type ConfidenceSignal = "hedging" | "neutral" | "assertive";
+
+export interface ConfidenceSignalBucket {
+  signal: ConfidenceSignal;
+  total: number;
+  correct: number;
+}
+
+export interface ConfidenceCalibration {
+  totalRated: number;
+  bySignal: ConfidenceSignalBucket[];
+  overconfidentCount: number;
+  underconfidentCount: number;
+}

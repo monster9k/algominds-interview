@@ -322,9 +322,9 @@ Verify riêng nhánh retry: track thứ 2 với `passThreshold: 99` (gần như 
 
 ---
 
-## 🟤 P7 — Readiness Report cuối journey (Gemini tổng hợp)
+## 🟤 P7 — Readiness Report cuối journey (Gemini tổng hợp) (Đã hoàn thành 2026-08-06)
 
-- [ ] **DB: model mới**
+- [x] **DB: model mới**
   📍 `schema.prisma`.
   ```prisma
   model JourneyReadinessReport {
@@ -339,26 +339,37 @@ Verify riêng nhánh retry: track thứ 2 với `passThreshold: 99` (gần như 
   }
   ```
   Back-relation `CareerJourney.readinessReport JourneyReadinessReport?`.
+  **Đã làm**: đúng như thiết kế. Migration `20260805230541_add_journey_readiness_report` — cùng vấn đề môi trường không có TTY như P6 (`prisma migrate diff --from-config-datasource --to-schema` sinh SQL, tự tạo thư mục migration, `prisma migrate deploy` áp dụng). Lần này còn dính thêm 1 sự cố: output của `migrate diff` bị lẫn 1 dòng log dotenvx ở đầu file `migration.sql` (do lệnh in tip ra stdout thay vì stderr), khiến `migrate deploy` fail giữa chừng với lỗi SQL syntax. Xác nhận bảng thật sự CHƯA được tạo (`to_regclass()` trả `null`) trước khi `prisma migrate resolve --rolled-back` rồi xoá dòng log lẫn, deploy lại — an toàn vì statement lỗi là statement ĐẦU TIÊN nên không có gì đã chạy thành công trước đó.
 
-- [ ] **BE: Model 5 trong `AiService`**
+- [x] **BE: Model 5 trong `AiService`**
   📍 `ai.service.ts` — thêm `readinessReportModel` (text tự do, không set `responseMimeType`, cùng pattern `debriefModel`) + `generateReadinessReport(input)`. Input tổng hợp từ dữ liệu đã có sẵn sau P4-P6, không cần bảng mới nào khác:
   - Danh sách stage: label, PASSED/FAILED, điểm đạt (`avgScore`/`candidateScore`), `attemptCount` (bao nhiêu lần thử mới qua — tín hiệu độ khó thật với người này).
   - Tổng hợp `confidenceSignal` các session trong journey — tái dùng logic đã có ở `UsersService#getConfidenceCalibration` (P2), không viết lại.
   - `computeWeakTags(userId)` (đã có từ P5) — danh sách tag yếu nhất.
   Output: đoạn văn đánh giá mức độ sẵn sàng tổng thể + 2-3 điểm cụ thể cần cải thiện trước khi phỏng vấn thật, tiếng Việt, không markdown (đúng quy tắc `OFFER_DEBRIEF_SYSTEM_INSTRUCTION` đã áp dụng).
+  **Đã làm**: đúng như thiết kế — `getConfidenceCalibration` gọi trực tiếp qua `UsersService` inject vào `CareerProcessor` (không viết lại logic, đúng nghĩa đen "tái dùng"), scope global theo `userId` (không giới hạn riêng session trong journey này) vì đó chính xác là hành vi hàm gốc đã có. `computeWeakTags` đổi từ `private` sang public ở `CareerService` để `CareerProcessor` gọi lại được.
 
-- [ ] **BE: job nền, trigger khi journey đóng thật (không trigger khi mới retry)**
+- [x] **BE: job nền, trigger khi journey đóng thật (không trigger khi mới retry)**
   📍 `career.service.ts` — `applyStageOutcome` (khi hết stage → journey `PASSED`) và endpoint `give-up` (→ `FAILED`) emit thêm `career.journey.finished` `{ journeyId }`.
   📍 `career.listener.ts` — handler mới enqueue job `generate-readiness-report` vào **`debrief-queue` đã có sẵn** (không tạo queue mới).
   📍 `career.processor.ts` — thêm nhánh xử lý job `generate-readiness-report` (cạnh nhánh `generate-offer-debrief` hiện có, cùng 1 processor), gom dữ liệu như trên, gọi Gemini, `upsert` `JourneyReadinessReport`.
   Endpoint mới `GET /career/journeys/:id/readiness-report` — đọc thuần, không tự trigger generate (đúng pattern `getStageDigest`).
+  **Đã làm**: đúng như thiết kế. Cả 2 điểm emit (`applyStageOutcome` nhánh FAILED và nhánh "hết stage → PASSED") đều nằm trong CHÍNH `applyStageOutcome` — `autoGradeStage` không bao giờ gọi `applyStageOutcome` khi chưa đạt threshold (chỉ tăng `attemptCount` rồi return), nên tự động thoả đúng yêu cầu "không trigger khi mới retry" mà không cần thêm điều kiện lọc nào. `career.processor.ts` viết lại từ đầu (không chỉ thêm nhánh) để gom cả `usersService`/`careerService`/`chatGateway` mới cần — `CareerModule` import thêm `UsersModule` (export sẵn `UsersService`, không tạo cycle).
 
-- [ ] **FE**
+- [x] **FE**
   📍 `career-journey-page.tsx` — khi journey vừa đóng (PASSED/FAILED), trước khi quay về màn chọn track, hiện section/dialog mới `readiness-report-card.tsx` — poll nhẹ hoặc lắng nghe socket `career_readiness_report_ready` (thêm vào `use-career-socket.ts`) hiện nội dung report ngay khi có.
+  **Gap phát hiện khi thiết kế — không có trong mô tả gốc**: `getActiveJourney()` chỉ trả journey `IN_PROGRESS` — ngay khi journey đóng, `journey` biến mất khỏi state, kéo theo mất luôn `journeyId` cần để gọi `GET readiness-report`/join room socket. Sửa bằng 1 state cục bộ `lastJourneyId` (cập nhật mỗi khi có `journey.id`, giữ nguyên khi `journey` về `null`) — màn chọn track giờ hiện thêm `<ReadinessReportCard journeyId={lastJourneyId}>` khi có giá trị này.
+  **Gap thứ 2**: room socket hiện có (`join_room` theo `sessionId`, `join_peer_room` theo `peerSessionId`) đều gắn với 1 stage cụ thể — lúc `career_readiness_report_ready` bắn ra thì journey ĐÃ đóng, không còn stage nào `ACTIVE` để có `sessionId`/`peerSessionId` mà join. Thêm handler mới hoàn toàn additive `join_career_journey_room` vào `chat.gateway.ts` (room riêng `career-journey:<journeyId>`, không sửa 2 handler cũ), `useCareerSocket` nhận thêm `journeyId` — join ngay từ lúc journey CÒN active (không đợi tới lúc đóng) để chắc chắn đã ở trong room trước khi job chạy xong.
+  `useReadinessReport` poll nhẹ 4s/lần khi chưa có report (dự phòng cho trường hợp lỡ socket event), dừng poll ngay khi có — cùng pattern `usePeerInterview` (P3) đã dùng cho `WAITING_FOR_PEER`. Socket event ghi thẳng vào cache `["career-readiness-report", journeyId]` qua `queryClient.setQueryData` — có nội dung ngay, không cần đợi vòng poll kế tiếp.
+  **Hạn chế đã biết, chấp nhận trong phạm vi P7**: `lastJourneyId` là state cục bộ trong component — reload trang ngay sau khi journey vừa đóng (trước khi kịp xem report) sẽ mất, không có trang "lịch sử report" riêng để tra lại. Ngoài phạm vi "hiện report ngay khi có" mà P7 yêu cầu.
+  `npm run lint` + `npm run build` (client + server) đều pass.
 
-**Verify khi implement**: hoàn thành trọn 1 track (PASSED tất cả stage qua auto-grade thật P4-P6, cố ý tạo vài lần retry + vài `Submission` sai thuộc 1 tag cụ thể trước đó) → xác nhận job chạy, report sinh ra phản ánh đúng dữ liệu thật: đúng tag yếu đã cố tình tạo, đúng số lần retry, đúng xu hướng confidence.
+**Verify thật qua Node script (fetch + socket.io-client, real Gemini), không mock**: seed 1 track 2 stage (`Phone Screen` PROBLEM `passThreshold: 95`, `Quest Round` QUEST `passThreshold: 1`). Seed trước 2 `Submission` sai thuộc tag `Dynamic Programming` (giống cách P5 đã verify) để có weak tag rõ ràng. User gửi chiến lược **rất quả quyết** ("chắc chắn 100%") cho Phone Screen → approve thật; nộp code xấu (`O(n²)`) → auto-grade retry đúng (`attemptCount: 1`, không tự FAILED); nộp code sạch (hash map) → auto PASS thật (điểm trung bình 97.5 ≥ 95), tự chuyển sang stage Quest. Chơi Quest thật qua `/quest/attempts` → auto PASS, journey tự đóng `PASSED` (xác nhận qua Prisma trực tiếp: `status: PASSED`, cả 2 stage `PASSED`). Nhận đúng `career_readiness_report_ready` qua socket (đã `join_career_journey_room` từ lúc journey còn active) với nội dung **thật do Gemini viết**, nhắc đúng "Dynamic Programming" (weak tag đã cố tình tạo), đúng "một vòng cần thử lại" (khớp `attemptCount: 1`), đúng xu hướng tự tin (assertive). `GET /career/journeys/:id/readiness-report` trả về đúng y hệt nội dung đã nhận qua socket. Verify riêng nhánh give-up: journey mới, `give-up` ngay lập tức (0 stage hoàn thành) → vẫn nhận được report qua socket, nội dung tự nói rõ "dữ liệu còn hạn chế" đúng quy tắc đã đặt cho AI khi thiếu data — xác nhận cả 2 nhánh đóng journey (PASSED lẫn FAILED) đều trigger job đúng thiết kế.
+Đã xoá sạch track/journey/report/session/user test sau khi verify — không phải seed thật. `npm run build` + `npm run lint` (server + client) đều pass.
 
 **P4-P7 hoàn thành khi**: cả 4 phase có BE+FE thật, verify bằng dữ liệu/tài khoản thật qua Chrome (không chỉ code review) — đúng chuẩn đã áp dụng cho toàn bộ P0-P3 trước đó.
+
+**P4-P7 hoàn thành (2026-08-06)** — cả 4 phase (Auto-grading, Adaptive Selection, Company/Peer-Interview Stage, Readiness Report) đã có BE+FE thật, mỗi phase đều verify bằng dữ liệu/tài khoản thật qua Node script (fetch + socket.io-client + Prisma trực tiếp) với Gemini/Piston thật — không phải mock. Mỗi phase đều bắt được ít nhất 1 bug thật lúc verify tay (không chỉ code review): P5 (Quest retry bị khoá do lọc `questAttemptId: null` quá chặt), P6 (`createPeerSession` idempotent trả về đúng phòng đã COMPLETED, chặn retry), P7 (dotenv log lẫn vào migration SQL). Toàn bộ roadmap "Adaptive Readiness Engine" (P4-P7) coi như hoàn thành.
 
 ---
 

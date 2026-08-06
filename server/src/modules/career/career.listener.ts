@@ -23,6 +23,10 @@ interface PeerInterviewGradedPayload {
   candidateScore: number;
 }
 
+interface JourneyFinishedPayload {
+  journeyId: string;
+}
+
 @Injectable()
 export class CareerListener {
   private readonly logger = new Logger(CareerListener.name);
@@ -90,6 +94,34 @@ export class CareerListener {
     } catch (error) {
       this.logger.error(
         `[peer-interview.graded] Error auto-grading career stage for peer session ${payload.peerSessionId}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  // P7 — emit từ career.service.ts#applyStageOutcome khi journey đóng THẬT
+  // (hết stage -> PASSED, hoặc FAILED qua give-up/advance thủ công) — không
+  // bao giờ emit khi mới retry (autoGradeStage retry không gọi applyStageOutcome).
+  @OnEvent('career.journey.finished')
+  async handleJourneyFinished(payload: JourneyFinishedPayload) {
+    try {
+      const job = await this.debriefQueue.add(
+        'generate-readiness-report',
+        { journeyId: payload.journeyId },
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 2000 },
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      );
+
+      this.logger.log(
+        `[career.journey.finished] Added generate-readiness-report job: ${job.id} for journey: ${payload.journeyId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `[career.journey.finished] Error adding job to queue:`,
         error instanceof Error ? error.message : String(error),
       );
     }

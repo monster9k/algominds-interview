@@ -26,10 +26,12 @@ import {
   useCareerSocket,
   type CareerStageRetryNeededPayload,
   type PeerInterviewGradedPayload,
+  type ReadinessReportReadyPayload,
 } from "../hooks/use-career-socket";
 import { StageDigest } from "../components/stage-digest";
 import { HiringEventsList } from "../components/hiring-events-list";
 import { PersonaUnlockButton } from "../components/persona-unlock-button";
+import { ReadinessReportCard } from "../components/readiness-report-card";
 import type { CareerTrackStage, CareerTrackCompany, StageStatus } from "../types";
 
 function CompanyBadge({ company }: { company: CareerTrackCompany }) {
@@ -86,6 +88,16 @@ export function CareerJourneyPage() {
     stageId: string;
     session: PeerInterviewSession;
   } | null>(null);
+  // P7 — id journey gần nhất user từng có, giữ lại sau khi journey đóng
+  // (getActiveJourney() chỉ trả journey IN_PROGRESS, đóng xong là mất luôn
+  // journey.id khỏi state) để còn chỗ hiện Readiness Report trên màn chọn
+  // track. Reset về null khi user start track mới (không còn "gần nhất" nữa
+  // theo nghĩa "vừa đóng").
+  const [lastJourneyId, setLastJourneyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (journey?.id) setLastJourneyId(journey.id);
+  }, [journey?.id]);
 
   // Stage đang ACTIVE là stage duy nhất có thể nhận career_stage_retry_needed
   // — chỉ có sessionId khi kind=PROBLEM (P4), useCareerSocket tự no-op nếu
@@ -118,11 +130,27 @@ export function CareerJourneyPage() {
     [queryClient],
   );
 
+  // Ghi thẳng vào cache useReadinessReport thay vì chỉ invalidate — có ngay
+  // nội dung report mà không cần đợi round-trip refetch kế tiếp.
+  const handleReadinessReportReady = useCallback(
+    (payload: ReadinessReportReadyPayload) => {
+      queryClient.setQueryData(
+        ["career-readiness-report", payload.journeyId],
+        payload.report,
+      );
+    },
+    [queryClient],
+  );
+
   useCareerSocket({
     sessionId: activeProgress?.sessionId ?? undefined,
     peerSessionId: activeProgress?.peerInterviewSessionId ?? undefined,
+    // Join sớm từ lúc journey còn active (không đợi tới lúc đóng) để chắc
+    // chắn đã trong room trước khi job Readiness Report chạy xong.
+    journeyId: journey?.id ?? lastJourneyId ?? undefined,
     onStageRetryNeeded: handleStageRetryNeeded,
     onPeerInterviewGraded: handlePeerInterviewGraded,
+    onReadinessReportReady: handleReadinessReportReady,
   });
 
   // Đã tạo phòng từ trước (vd reload trang) nhưng state cục bộ chưa có ->
@@ -188,6 +216,8 @@ export function CareerJourneyPage() {
           </h1>
         </div>
         <p className="text-sm text-muted-foreground mb-6">{t("subtitle")}</p>
+
+        {lastJourneyId && <ReadinessReportCard journeyId={lastJourneyId} />}
 
         <HiringEventsList />
 

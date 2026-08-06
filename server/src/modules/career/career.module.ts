@@ -5,6 +5,7 @@ import { SessionsModule } from '../sessions/sessions.module';
 import { AiModule } from '../ai/ai.module';
 import { ChatModule } from '../chat/chat.module';
 import { PeerInterviewModule } from '../peer-interview/peer-interview.module';
+import { UsersModule } from '../users/users.module';
 import { CareerController } from './career.controller';
 import { CareerService } from './career.service';
 import { CareerProcessor } from './career.processor';
@@ -23,6 +24,9 @@ import { CareerListener } from './career.listener';
     // dùng để tạo PeerInterviewSession khi candidate vào stage PEER_INTERVIEW
     // (P6). Không tạo cycle: PeerInterviewModule không import ngược lại career.
     PeerInterviewModule,
+    // UsersModule.exports UsersService — career.processor.ts#generateReadinessReport
+    // (P7) tái dùng UsersService.getConfidenceCalibration thay vì viết lại.
+    UsersModule,
     BullModule.registerQueue({
       name: 'debrief-queue',
     }),

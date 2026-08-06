@@ -107,6 +107,34 @@ const PEER_INTERVIEW_SYSTEM_INSTRUCTION = `
         4. Không bịa thêm nội dung không có trong hội thoại.
       `;
 
+// Model 5 (P7 Readiness Report) — tổng hợp 1 báo cáo "mức độ sẵn sàng"
+// cuối journey, text tự do (không cần JSON contract), cùng pattern
+// OFFER_DEBRIEF_SYSTEM_INSTRUCTION.
+const READINESS_REPORT_SYSTEM_INSTRUCTION = `
+        Bạn là 1 career coach tổng hợp báo cáo "mức độ sẵn sàng phỏng vấn"
+        cho 1 ứng viên vừa hoàn thành (hoặc chủ động dừng) 1 track luyện tập
+        nhiều vòng (Phone Screen, Technical Round, Behavioral...).
+
+        INPUT: kết quả từng vòng (đạt/không đạt, điểm, số lần phải thử lại),
+        xu hướng tự tin khi trả lời chiến lược (assertive/hedging/neutral so
+        với việc giải đúng/sai thực tế), và các chủ đề (tag) ứng viên còn yếu.
+
+        OUTPUT: 1 đoạn văn tiếng Việt, gồm:
+        1. Đánh giá tổng thể mức độ sẵn sàng — dựa trên tỉ lệ vòng đạt VÀ số
+           lần phải thử lại (thử lại nhiều lần dù cuối cùng đạt vẫn là tín
+           hiệu cần luyện thêm, không chỉ nhìn kết quả cuối cùng).
+        2. 2-3 điểm cụ thể cần cải thiện trước khi phỏng vấn thật — ưu tiên
+           nhắc đúng tên chủ đề/tag còn yếu, và xu hướng tự tin lệch pha nếu
+           có (tự tin thái quá nhưng sai, hoặc đúng mà thiếu tự tin).
+
+        QUY TẮC:
+        1. Không bịa thêm dữ liệu không có trong input.
+        2. Trả về TEXT THUẦN, không dùng markdown (không "**", không "#",
+           không bullet "-"/"*") — FE hiện thị nguyên văn, không render markdown.
+        3. Nếu dữ liệu quá ít (vd chỉ 1 vòng, không có tín hiệu confidence hay
+           tag yếu), vẫn viết được nhưng nói rõ đánh giá còn giới hạn.
+      `;
+
 @Injectable()
 export class AiService {
   private genAI: GoogleGenerativeAI;
@@ -114,6 +142,7 @@ export class AiService {
   private evaluationModel: GenerativeModel; // For Phase 3 Code evaluation
   private debriefModel: GenerativeModel; // For Offer Debrief digest generation
   private peerInterviewModel: GenerativeModel; // For P3 peer interview 2-way grading
+  private readinessReportModel: GenerativeModel; // For P7 Readiness Report generation
 
   // Cache model đã build theo personaId — tránh gọi lại Gemini SDK + Prisma
   // mỗi tin nhắn cho cùng 1 persona.
@@ -187,6 +216,12 @@ export class AiService {
         responseMimeType: 'application/json',
       },
       systemInstruction: PEER_INTERVIEW_SYSTEM_INSTRUCTION,
+    });
+
+    // Model 5: P7 Readiness Report — text tự do, không set responseMimeType
+    this.readinessReportModel = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      systemInstruction: READINESS_REPORT_SYSTEM_INSTRUCTION,
     });
   }
 
@@ -406,5 +441,54 @@ ${transcript}
           ? parsed.peerInterviewer.feedback
           : '',
     };
+  }
+
+  async generateReadinessReport(input: {
+    trackName: string;
+    stages: {
+      label: string;
+      status: 'PASSED' | 'FAILED';
+      score: number | null;
+      attemptCount: number;
+    }[];
+    confidenceCalibration: {
+      totalRated: number;
+      bySignal: { signal: string; total: number; correct: number }[];
+      overconfidentCount: number;
+      underconfidentCount: number;
+    };
+    weakTags: { tagName: string; weight: number }[];
+  }): Promise<string> {
+    const stagesSummary = input.stages
+      .map(
+        (s) =>
+          `- ${s.label}: ${s.status}, điểm ${s.score ?? 'N/A'}, số lần thử ${s.attemptCount + 1}`,
+      )
+      .join('\n');
+
+    const confidenceSummary = input.confidenceCalibration.bySignal
+      .map((b) => `${b.signal}: ${b.correct}/${b.total} lần trả lời đúng bài`)
+      .join(', ');
+
+    const weakTagsSummary = input.weakTags.length
+      ? input.weakTags.map((t) => t.tagName).join(', ')
+      : 'không có dữ liệu rõ ràng';
+
+    const prompt = `
+Track: ${input.trackName}
+
+Kết quả từng vòng:
+${stagesSummary}
+
+Xu hướng tự tin khi trả lời chiến lược: ${confidenceSummary || 'không có dữ liệu'}
+Số lần "tự tin thái quá nhưng sai": ${input.confidenceCalibration.overconfidentCount}
+Số lần "đúng nhưng thiếu tự tin": ${input.confidenceCalibration.underconfidentCount}
+
+Chủ đề (tag) còn yếu nhất: ${weakTagsSummary}
+    `;
+
+    const chat = this.readinessReportModel.startChat({ history: [] });
+    const result = await chat.sendMessage(prompt);
+    return result.response.text();
   }
 }

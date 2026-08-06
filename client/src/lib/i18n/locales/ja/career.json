@@ -49,5 +49,9 @@
     "createNewRoom": "新しいルームを作成",
     "enterRoom": "ルームに入る",
     "inviteCodeLabel": "この招待コードを友達と共有してください"
+  },
+  "readinessReport": {
+    "title": "準備状況レポート",
+    "generating": "準備状況レポートを作成中..."
   }
 }

@@ -49,5 +49,9 @@
     "createNewRoom": "Tạo phòng mới",
     "enterRoom": "Vào phòng",
     "inviteCodeLabel": "Chia sẻ mã mời này cho 1 người bạn"
+  },
+  "readinessReport": {
+    "title": "Báo cáo mức độ sẵn sàng",
+    "generating": "Đang tổng hợp báo cáo sẵn sàng của bạn..."
   }
 }

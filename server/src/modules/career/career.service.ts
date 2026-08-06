@@ -517,11 +517,19 @@ export class CareerService {
     }
 
     if (status === 'FAILED') {
-      return this.prisma.careerJourney.update({
+      const failedJourney = await this.prisma.careerJourney.update({
         where: { id: journey.id },
         data: { status: JourneyStatus.FAILED, finishedAt: new Date() },
         include: JOURNEY_FULL_INCLUDE,
       });
+      // P7 — journey đóng THẬT (give-up, hoặc FAILED thủ công cho QUEST) —
+      // KHÔNG bao giờ tới đây từ autoGradeStage retry (nhánh đó không gọi
+      // applyStageOutcome khi chưa đạt threshold), nên đúng tinh thần "không
+      // trigger khi mới retry" mà không cần thêm điều kiện gì.
+      this.eventEmitter.emit('career.journey.finished', {
+        journeyId: journey.id,
+      });
+      return failedJourney;
     }
 
     const currentStage = journey.track.stages.find(
@@ -533,11 +541,15 @@ export class CareerService {
 
     // Hết stage -> journey PASSED (hoàn thành cả track).
     if (!nextStage) {
-      return this.prisma.careerJourney.update({
+      const passedJourney = await this.prisma.careerJourney.update({
         where: { id: journey.id },
         data: { status: JourneyStatus.PASSED, finishedAt: new Date() },
         include: JOURNEY_FULL_INCLUDE,
       });
+      this.eventEmitter.emit('career.journey.finished', {
+        journeyId: journey.id,
+      });
+      return passedJourney;
     }
 
     const { sessionId, pickedReasonTag } = await this.ensureStageSession(
@@ -566,6 +578,24 @@ export class CareerService {
   // user xem"). null nếu chưa đủ dữ liệu để tổng hợp lần nào.
   async getStageDigest(stageId: string) {
     return this.prisma.stageDigest.findUnique({ where: { stageId } });
+  }
+
+  // Readiness Report được cache sẵn qua career.processor.ts (P7) — endpoint
+  // này chỉ đọc, KHÔNG tự trigger generate, đúng pattern getStageDigest ở
+  // trên. null nếu journey chưa đóng hoặc job chưa chạy xong.
+  async getReadinessReport(userId: string, journeyId: string) {
+    const journey = await this.prisma.careerJourney.findUnique({
+      where: { id: journeyId },
+      select: { userId: true },
+    });
+    if (!journey) throw new NotFoundException('Career journey không tồn tại');
+    if (journey.userId !== userId) {
+      throw new NotFoundException('Bạn không có quyền truy cập journey này');
+    }
+
+    return this.prisma.journeyReadinessReport.findUnique({
+      where: { journeyId },
+    });
   }
 
   // Mở khoá thuần qua tiến trình — KHÔNG đụng UserStats.credits (quyết định
@@ -731,7 +761,9 @@ export class CareerService {
   // tag của problem tương ứng. Cộng trọng số gấp đôi cho submission thuộc
   // session có confidenceSignal="assertive" (Confidence Calibration, P2) —
   // "tưởng chắc mà vẫn sai" đáng ưu tiên luyện hơn 1 lần sai thường.
-  private async computeWeakTags(
+  // Public (không còn private) từ P7 — career.processor.ts gọi lại đúng hàm
+  // này khi tổng hợp Readiness Report, tránh viết lại logic.
+  async computeWeakTags(
     userId: string,
   ): Promise<{ tagId: string; tagName: string; weight: number }[]> {
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);

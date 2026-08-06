@@ -144,6 +144,46 @@ export class ChatGateway
     // client.to(data.sessionId).emit('user_joined', `User ${client.id} joined`);
   }
 
+  // P7 — room riêng theo journeyId (không phải sessionId), vì Readiness
+  // Report được emit SAU KHI journey đã đóng — lúc đó không còn stage nào
+  // ACTIVE để có sessionId/peerSessionId mà join qua join_room/join_peer_room.
+  @SubscribeMessage('join_career_journey_room')
+  async handleJoinCareerJourneyRoom(
+    @MessageBody() data: { journeyId: string },
+    @ConnectedSocket() client: AppSocket,
+  ) {
+    const socketUser = client.data.user;
+
+    if (!socketUser?.userId) {
+      client.emit('error', { message: 'Unauthorized socket connection' });
+      client.disconnect(true);
+      return;
+    }
+
+    if (!data.journeyId) {
+      this.logger.error('journeyId is undefined');
+      return;
+    }
+
+    const journey = await this.prisma.careerJourney.findUnique({
+      where: { id: data.journeyId },
+      select: { userId: true },
+    });
+
+    if (!journey || journey.userId !== socketUser.userId) {
+      this.logger.warn(
+        `Unauthorized career journey room join attempt. socket=${client.id}, journey=${data.journeyId}`,
+      );
+      client.emit('error', { message: 'Forbidden career journey access' });
+      return;
+    }
+
+    await client.join(`career-journey:${data.journeyId}`);
+    this.logger.log(
+      `Client ${client.id} joined career journey room ${data.journeyId}`,
+    );
+  }
+
   @SubscribeMessage('send_message')
   async handleMessage(
     @ConnectedSocket() client: AppSocket,

@@ -5,6 +5,7 @@ import {
   CareerTrack,
   HiringEvent,
   HiringEventLeaderboardEntry,
+  JourneyReadinessReport,
   StageDigest,
   UserPersonaUnlock,
 } from "../types";
@@ -82,6 +83,17 @@ export const careerApi = {
   ): Promise<PeerInterviewSession> => {
     const response = await api.post(
       `/career/journeys/${journeyId}/stages/${stageId}/peer-session`,
+    );
+    return response.data;
+  },
+
+  // P7 — đọc thuần, không tự trigger generate (đúng pattern getStageDigest).
+  // null nếu job nền chưa chạy xong (hoặc journey chưa từng đóng thật).
+  getReadinessReport: async (
+    journeyId: string,
+  ): Promise<JourneyReadinessReport | null> => {
+    const response = await api.get(
+      `/career/journeys/${journeyId}/readiness-report`,
     );
     return response.data;
   },

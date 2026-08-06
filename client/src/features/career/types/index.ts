@@ -128,3 +128,10 @@ export interface UserPersonaUnlock {
   unlockedAt: string;
   persona: InterviewerPersona;
 }
+
+export interface JourneyReadinessReport {
+  id: string;
+  journeyId: string;
+  content: string;
+  generatedAt: string;
+}

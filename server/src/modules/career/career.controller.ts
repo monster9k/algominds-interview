@@ -84,4 +84,12 @@ export class CareerController {
       stageId,
     );
   }
+
+  @Get('journeys/:id/readiness-report')
+  getReadinessReport(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+  ) {
+    return this.careerService.getReadinessReport(user.userId, id);
+  }
 }

@@ -3,11 +3,20 @@ import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
-import { SessionStatus, StageKind } from '@prisma/client';
+import { UsersService } from '../users/users.service';
+import { ChatGateway } from '../chat/chat/chat.gateway';
+import { CareerService } from './career.service';
+import { SessionStatus, StageKind, StageStatus } from '@prisma/client';
 
 interface DebriefJobData {
   stageId: string;
 }
+
+interface ReadinessReportJobData {
+  journeyId: string;
+}
+
+type CareerJobData = DebriefJobData | ReadinessReportJobData;
 
 // Chưa đủ answer thì bỏ qua lần trigger này — không tạo digest chỉ từ 1
 // người (không phải "tổng hợp nhiều hướng tiếp cận").
@@ -27,16 +36,23 @@ export class CareerProcessor extends WorkerHost {
   constructor(
     private prisma: PrismaService,
     private aiService: AiService,
+    private usersService: UsersService,
+    private careerService: CareerService,
+    private chatGateway: ChatGateway,
   ) {
     super();
   }
 
-  async process(job: Job<DebriefJobData>): Promise<unknown> {
-    if (job.name !== 'generate-offer-debrief') {
-      this.logger.warn(`Unknown job type: ${job.name}`);
-      return;
+  async process(job: Job<CareerJobData>): Promise<unknown> {
+    if (job.name === 'generate-offer-debrief') {
+      return this.generateDebrief((job.data as DebriefJobData).stageId);
     }
-    return this.generateDebrief(job.data.stageId);
+    if (job.name === 'generate-readiness-report') {
+      return this.generateReadinessReport(
+        (job.data as ReadinessReportJobData).journeyId,
+      );
+    }
+    this.logger.warn(`Unknown job type: ${job.name}`);
   }
 
   private async generateDebrief(stageId: string) {
@@ -110,5 +126,98 @@ ${problem.content}
     this.logger.log(
       `[debrief] Stage ${stageId}: đã tạo/cập nhật digest từ ${answers.length} answer.`,
     );
+  }
+
+  // P7 — chạy khi career.service.ts#applyStageOutcome emit
+  // `career.journey.finished` (journey vừa đóng THẬT, không phải retry).
+  // Gom dữ liệu hoàn toàn từ các bảng đã có sẵn sau P4-P6 — không thêm bảng
+  // nào khác ngoài JourneyReadinessReport.
+  private async generateReadinessReport(journeyId: string) {
+    const journey = await this.prisma.careerJourney.findUnique({
+      where: { id: journeyId },
+      include: {
+        track: { select: { name: true } },
+        progress: {
+          include: {
+            stage: { select: { label: true, kind: true } },
+            session: { include: { evaluation: true } },
+            questAttempt: true,
+            peerInterviewSession: { include: { evaluation: true } },
+          },
+        },
+      },
+    });
+
+    if (!journey) {
+      this.logger.warn(`[readiness-report] Journey ${journeyId} không tồn tại`);
+      return;
+    }
+
+    const finishedStages = journey.progress.filter(
+      (p) => p.status === StageStatus.PASSED || p.status === StageStatus.FAILED,
+    );
+
+    const stages = finishedStages.map((p) => {
+      let score: number | null = null;
+
+      if (p.stage.kind === StageKind.PROBLEM && p.session?.evaluation) {
+        const scores = p.session.evaluation.scores as {
+          logic?: number;
+          cleanCode?: number;
+          performance?: number;
+          bestPractices?: number;
+        };
+        const values = [
+          scores.logic,
+          scores.cleanCode,
+          scores.performance,
+          scores.bestPractices,
+        ].filter((v): v is number => typeof v === 'number');
+        if (values.length > 0) {
+          score = values.reduce((a, b) => a + b, 0) / values.length;
+        }
+      } else if (p.stage.kind === StageKind.QUEST && p.questAttempt) {
+        const total = p.questAttempt.correctCount + p.questAttempt.wrongCount;
+        score = total > 0 ? (p.questAttempt.correctCount / total) * 100 : null;
+      } else if (
+        p.stage.kind === StageKind.PEER_INTERVIEW &&
+        p.peerInterviewSession?.evaluation
+      ) {
+        score = p.peerInterviewSession.evaluation.candidateScore;
+      }
+
+      return {
+        label: p.stage.label,
+        status: p.status as 'PASSED' | 'FAILED',
+        score,
+        attemptCount: p.attemptCount,
+      };
+    });
+
+    const [confidenceCalibration, weakTags] = await Promise.all([
+      this.usersService.getConfidenceCalibration(journey.userId),
+      this.careerService.computeWeakTags(journey.userId),
+    ]);
+
+    const content = await this.aiService.generateReadinessReport({
+      trackName: journey.track.name,
+      stages,
+      confidenceCalibration,
+      weakTags,
+    });
+
+    const report = await this.prisma.journeyReadinessReport.upsert({
+      where: { journeyId },
+      update: { content, generatedAt: new Date() },
+      create: { journeyId, content },
+    });
+
+    this.logger.log(
+      `[readiness-report] Journey ${journeyId}: đã tạo/cập nhật report từ ${stages.length} stage.`,
+    );
+
+    this.chatGateway.server
+      .to(`career-journey:${journeyId}`)
+      .emit('career_readiness_report_ready', { journeyId, report });
   }
 }

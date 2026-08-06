@@ -436,14 +436,29 @@ model CareerJourney {
   startedAt  DateTime      @default(now())
   finishedAt DateTime?
 
-  user     User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  track    CareerTrack            @relation(fields: [trackId], references: [id])
-  event    HiringEvent?           @relation(fields: [eventId], references: [id])
-  progress JourneyStageProgress[]
+  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track           CareerTrack             @relation(fields: [trackId], references: [id])
+  event           HiringEvent?            @relation(fields: [eventId], references: [id])
+  progress        JourneyStageProgress[]
+  readinessReport JourneyReadinessReport?
 
   @@index([userId, status])
   @@index([eventId])
   @@map("career_journeys")
+}
+
+// Readiness Report (P7) — báo cáo AI tổng hợp cuối journey, sinh qua job nền
+// khi journey đóng THẬT (PASSED hoặc give-up FAILED, không sinh khi mới
+// retry) — xem career.listener.ts#handleJourneyFinished, career.processor.ts.
+model JourneyReadinessReport {
+  id          String   @id @default(uuid())
+  journeyId   String   @unique
+  content     String // text Gemini tổng hợp, KHÔNG markdown (đúng convention Offer Debrief — FE hiện text thuần)
+  generatedAt DateTime @default(now())
+
+  journey CareerJourney @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+
+  @@map("journey_readiness_reports")
 }
 
 model JourneyStageProgress {

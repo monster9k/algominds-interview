@@ -51,5 +51,9 @@
     "createNewRoom": "Create a new room",
     "enterRoom": "Enter room",
     "inviteCodeLabel": "Share this invite code with a friend"
+  },
+  "readinessReport": {
+    "title": "Readiness Report",
+    "generating": "Generating your readiness report..."
   }
 }

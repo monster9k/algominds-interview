@@ -48,6 +48,12 @@ enum MessageType {
   FEEDBACK
 }
 
+enum ContestStatus {
+  UPCOMING
+  ONGOING
+  FINISHED
+}
+
 // --- MODELS ---
 
 model User {
@@ -72,13 +78,14 @@ model User {
   deletedAt DateTime? // Soft delete
 
   // Relations
-  stats          UserStats?
-  sessions       Session[]
-  refreshTokens  RefreshToken[]
-  questAttempts  QuestAttempt[]
-  userBadges     UserBadge[]
-  careerJourneys CareerJourney[]
-  personaUnlocks UserPersonaUnlock[]
+  stats              UserStats?
+  sessions           Session[]
+  refreshTokens      RefreshToken[]
+  questAttempts      QuestAttempt[]
+  userBadges         UserBadge[]
+  careerJourneys     CareerJourney[]
+  personaUnlocks     UserPersonaUnlock[]
+  contestSubmissions ContestSubmission[]
 
   candidateInPeerSessions       PeerInterviewSession[] @relation("PeerInterviewCandidate")
   peerInterviewerInPeerSessions PeerInterviewSession[] @relation("PeerInterviewInterviewer")
@@ -149,7 +156,7 @@ model Problem {
 
   // NÂNG CẤP: Metadata cho việc chấm bài
   functionName          String                        @default("solution") // Tên hàm: "twoSum", "isValid"
-  // (Optional) Input Type Signature để parse cho chuẩn C++ 
+  // (Optional) Input Type Signature để parse cho chuẩn C++
   // VD: ["number[]", "number"] -> Giúp convert JSON sang C++ Vector
   inputSignature        Json?
   // Relations
@@ -159,6 +166,8 @@ model Problem {
   careerTrackStages     CareerTrackStage[]
   careerTrackStagePools CareerTrackStageProblemPool[]
   peerInterviewSessions PeerInterviewSession[]
+  contestProblems       ContestProblem[]
+  contestSubmissions    ContestSubmission[]
 
   @@map("problems")
 }
@@ -670,4 +679,61 @@ model PeerInterviewEvaluation {
   session PeerInterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@map("peer_interview_evaluations")
+}
+
+// --- CONTEST MODULE ---
+
+model Contest {
+  id          String        @id @default(uuid())
+  slug        String        @unique
+  title       String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+  status      ContestStatus @default(UPCOMING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  problems    ContestProblem[]
+  submissions ContestSubmission[]
+
+  @@map("contests")
+}
+
+// Bài tập gắn vào 1 contest kèm điểm số riêng cho contest đó (không suy ra từ
+// Problem.difficulty mỗi lần — 1 bài có thể mang điểm khác nhau ở mỗi contest).
+model ContestProblem {
+  id        String @id @default(uuid())
+  contestId String
+  problemId String
+  points    Int // Easy 100đ / Medium 300đ / Hard 500đ khi seed
+  order     Int    @default(0) // thứ tự hiển thị A, B, C...
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id])
+
+  @@unique([contestId, problemId])
+  @@map("contest_problems")
+}
+
+// 1 dòng = 1 lần nộp bài trong 1 contest, dùng để dựng bảng xếp hạng.
+// Tái dùng SubmissionStatus đã có thay vì tạo enum pass/fail riêng.
+model ContestSubmission {
+  id             String           @id @default(uuid())
+  contestId      String
+  userId         String
+  problemId      String
+  status         SubmissionStatus
+  submittedAt    DateTime         @default(now())
+  penaltyMinutes Int              @default(0) // phút phạt của riêng lần nộp này (0 nếu ACCEPTED)
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id])
+
+  @@index([contestId, userId])
+  @@index([contestId, problemId])
+  @@map("contest_submissions")
 }

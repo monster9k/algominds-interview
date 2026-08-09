@@ -1,0 +1,29 @@
+{
+  "title": "Contests",
+  "subtitle": "Compete on timed problem sets and climb a transparent, ICPC-style leaderboard.",
+  "empty": "No contests yet.",
+  "loadError": "Could not load contest data.",
+  "problemCount": "{{count}} problems",
+  "backToList": "Back to contests",
+  "status": {
+    "upcoming": "Upcoming",
+    "ongoing": "Ongoing",
+    "finished": "Finished"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "problems": {
+    "title": "Problems"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "rank": "Rank",
+    "player": "Player",
+    "score": "Score",
+    "penalty": "Penalty (min)",
+    "empty": "No submissions yet."
+  }
+}

@@ -86,7 +86,7 @@
   📍 `server/src/modules/contest/dto/run-contest-problem.dto.ts`, `dto/submit-contest-problem.dto.ts`.
   Chỉ `{ language, code }` trong body — `contestId`/`problemSlug` lấy từ route param, không trust client gửi kèm trong body (khác `/judge/submit` vốn flat theo `sessionId`).
 
-- [ ] **BE: route mới trong `contest.controller.ts`**
+- [x] **BE: route mới trong `contest.controller.ts`**
   📍 `server/src/modules/contest/contest.controller.ts`. Copy đúng pattern guard/decorator của `problems.controller.ts:24-29`.
   ```
   GET  /contests/:contestId/problems/:problemSlug        OptionalJwtAuthGuard

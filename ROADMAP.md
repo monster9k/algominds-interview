@@ -58,7 +58,7 @@
   ```
   Đưa lên bằng `npx prisma db push` (đúng convention prototype đã dùng khi tạo model này lần đầu, không tạo migration file).
 
-- [ ] **BE: fix bug tiềm ẩn — `Contest.status` không bao giờ tự chuyển trạng thái**
+- [x] **BE: fix bug tiềm ẩn — `Contest.status` không bao giờ tự chuyển trạng thái**
   📍 `server/src/modules/contest/contest.service.ts`.
   Hiện tại `Contest.status` là cột DB tĩnh, không có cron/scheduler nào chuyển `UPCOMING→ONGOING→FINISHED` theo thời gian thực — chỉ được set 1 lần lúc seed. Một khi có luồng nộp bài thật, guard theo cột này sẽ khiến contest tạo với `startTime` trong tương lai **không bao giờ nộp bài được** khi tới giờ, trừ khi sửa tay DB. Fix: thêm helper thuần
   ```ts

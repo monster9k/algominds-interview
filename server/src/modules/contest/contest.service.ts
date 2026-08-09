@@ -1,6 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { SubmissionStatus } from '@prisma/client';
+import { ContestStatus, SubmissionStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+
+// Contest.status trong DB không bao giờ tự chuyển UPCOMING→ONGOING→FINISHED
+// theo thời gian thực (chỉ set 1 lần lúc tạo) — không có cron/scheduler nào
+// cập nhật nó. Mọi chỗ đọc/guard theo trạng thái PHẢI dùng hàm này thay vì
+// tin cột DB, nếu không 1 contest tạo với startTime tương lai sẽ không bao
+// giờ "mở" được để nộp bài khi tới giờ. Cột DB vẫn giữ lại làm fallback
+// hiển thị, không dùng cho logic gating.
+export function deriveContestStatus(
+  startTime: Date,
+  endTime: Date,
+  now: Date = new Date(),
+): ContestStatus {
+  if (now < startTime) return ContestStatus.UPCOMING;
+  if (now > endTime) return ContestStatus.FINISHED;
+  return ContestStatus.ONGOING;
+}
 
 export interface LeaderboardProblemCell {
   problemId: string;
@@ -35,7 +51,7 @@ export class ContestService {
       description: c.description,
       startTime: c.startTime,
       endTime: c.endTime,
-      status: c.status,
+      status: deriveContestStatus(c.startTime, c.endTime),
       problemCount: c._count.problems,
     }));
   }
@@ -60,7 +76,7 @@ export class ContestService {
       description: contest.description,
       startTime: contest.startTime,
       endTime: contest.endTime,
-      status: contest.status,
+      status: deriveContestStatus(contest.startTime, contest.endTime),
       problems: contestProblems.map((cp) => ({
         problemId: cp.problem.id,
         slug: cp.problem.slug,

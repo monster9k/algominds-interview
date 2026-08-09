@@ -95,7 +95,7 @@
   ```
   Kiểm tra `contest.module.ts` có import `PrismaModule` tường minh chưa (hiện chưa có — chỉ chạy được nếu `PrismaModule` global, cần thêm nếu không).
 
-- [ ] **BE: test `contest.service.spec.ts` (module hiện chưa có test nào)**
+- [x] **BE: test `contest.service.spec.ts` (module hiện chưa có test nào)**
   📍 `server/src/modules/contest/contest.service.spec.ts`, bám style mock của `judge.service.spec.ts` (mock `PrismaService`/`TestExecutionService` bằng `jest.fn()`, không đụng DB/Piston thật).
   - `deriveContestStatus`: test biên (trước start / trong khoảng / sau end).
   - `runContestProblem`/`submitContestProblem`: not-found, guard not-ONGOING (2 chiều, message khác nhau), ACCEPTED→penalty 0, không ACCEPTED→penalty 20, đúng payload `contestSubmission.create`, không emit event, `runContestProblem` không bao giờ ghi DB.

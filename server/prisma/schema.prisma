@@ -729,6 +729,17 @@ model ContestSubmission {
   submittedAt    DateTime         @default(now())
   penaltyMinutes Int              @default(0) // phút phạt của riêng lần nộp này (0 nếu ACCEPTED)
 
+  // Audit trail đầy đủ — ngang hàng với model Submission — để có lịch sử nộp
+  // bài thật (xem lại code đã nộp, breakdown từng testcase) thay vì chỉ có
+  // đủ dữ liệu tính leaderboard.
+  code            String  @default("")
+  language        String  @default("javascript")
+  passedTests     Int     @default(0)
+  totalTests      Int     @default(0)
+  executionTime   Int? // ms
+  memoryUsage     Int? // kb
+  testCaseResults Json?
+
   contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   problem Problem @relation(fields: [problemId], references: [id])

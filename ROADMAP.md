@@ -27,7 +27,7 @@
   - `judge.service.spec.ts`: sửa **cơ học** — trong `beforeEach`, dựng 1 `TestExecutionService` thật, wire với đúng mock `codeGenerator`/`pistonService` hiện có, rồi đưa vào `JudgeService`. Vì code move nguyên vẹn nên assertion hiện có (phân loại TLE/MLE/COMPILE_ERROR, shape transaction, emit event) không cần đổi logic — chỉ đổi phần wiring. Chạy lại toàn bộ spec `judge` trước khi làm bất kỳ task nào khác, đúng nguyên tắc "cẩn thận gấp đôi" của `workflow.md` với file này.
   - `contest.module.ts` import `CodeExecutionModule`, inject `TestExecutionService` vào `ContestService`.
 
-- [ ] **DB: mở rộng `ContestSubmission` để có audit trail đầy đủ**
+- [x] **DB: mở rộng `ContestSubmission` để có audit trail đầy đủ**
   📍 `server/prisma/schema.prisma`.
   ```prisma
   model ContestSubmission {

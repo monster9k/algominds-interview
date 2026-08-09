@@ -8,6 +8,7 @@ import enInterview from "./locales/en/interview.json";
 import enUsers from "./locales/en/users.json";
 import enSettings from "./locales/en/settings.json";
 import enQuest from "./locales/en/quest.json";
+import enContests from "./locales/en/contests.json";
 import enCareer from "./locales/en/career.json";
 import enPeerInterview from "./locales/en/peer-interview.json";
 
@@ -18,6 +19,7 @@ import viInterview from "./locales/vi/interview.json";
 import viUsers from "./locales/vi/users.json";
 import viSettings from "./locales/vi/settings.json";
 import viQuest from "./locales/vi/quest.json";
+import viContests from "./locales/vi/contests.json";
 import viCareer from "./locales/vi/career.json";
 import viPeerInterview from "./locales/vi/peer-interview.json";
 
@@ -28,6 +30,7 @@ import jaInterview from "./locales/ja/interview.json";
 import jaUsers from "./locales/ja/users.json";
 import jaSettings from "./locales/ja/settings.json";
 import jaQuest from "./locales/ja/quest.json";
+import jaContests from "./locales/ja/contests.json";
 import jaCareer from "./locales/ja/career.json";
 import jaPeerInterview from "./locales/ja/peer-interview.json";
 
@@ -56,6 +59,7 @@ i18n.use(initReactI18next).init({
       users: enUsers,
       settings: enSettings,
       quest: enQuest,
+      contests: enContests,
       career: enCareer,
       peerInterview: enPeerInterview,
     },
@@ -67,6 +71,7 @@ i18n.use(initReactI18next).init({
       users: viUsers,
       settings: viSettings,
       quest: viQuest,
+      contests: viContests,
       career: viCareer,
       peerInterview: viPeerInterview,
     },
@@ -78,6 +83,7 @@ i18n.use(initReactI18next).init({
       users: jaUsers,
       settings: jaSettings,
       quest: jaQuest,
+      contests: jaContests,
       career: jaCareer,
       peerInterview: jaPeerInterview,
     },
@@ -92,6 +98,7 @@ i18n.use(initReactI18next).init({
     "users",
     "settings",
     "quest",
+    "contests",
     "career",
     "peerInterview",
   ],

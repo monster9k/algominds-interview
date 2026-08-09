@@ -1,0 +1,29 @@
+{
+  "title": "コンテスト",
+  "subtitle": "時間制限付きの問題セットで競い合い、透明なICPC形式のリーダーボードで順位を上げよう。",
+  "empty": "コンテストはまだありません。",
+  "loadError": "コンテストデータを読み込めませんでした。",
+  "problemCount": "{{count}}問",
+  "backToList": "コンテスト一覧に戻る",
+  "status": {
+    "upcoming": "開催予定",
+    "ongoing": "開催中",
+    "finished": "終了"
+  },
+  "difficulty": {
+    "easy": "簡単",
+    "medium": "普通",
+    "hard": "難しい"
+  },
+  "problems": {
+    "title": "問題一覧"
+  },
+  "leaderboard": {
+    "title": "リーダーボード",
+    "rank": "順位",
+    "player": "プレイヤー",
+    "score": "スコア",
+    "penalty": "ペナルティ(分)",
+    "empty": "まだ提出がありません。"
+  }
+}

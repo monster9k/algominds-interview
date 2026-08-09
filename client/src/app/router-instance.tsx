@@ -16,6 +16,8 @@ import { SettingsPage } from "@/features/settings/pages/settings-page";
 import { InterviewRoom } from "@/features/interview/pages/interview-room";
 import { SessionReplayPage } from "@/features/interview/pages/session-replay-page";
 import { QuestHubPage } from "@/features/quest/pages/quest-hub-page";
+import { ContestListPage } from "@/features/contest/pages/contest-list-page";
+import { ContestDetailPage } from "@/features/contest/pages/contest-detail-page";
 import { CareerJourneyPage } from "@/features/career/pages/career-journey-page";
 import { EventLeaderboardPage } from "@/features/career/pages/event-leaderboard-page";
 import { PeerInterviewLobbyPage } from "@/features/peer-interview/pages/peer-interview-lobby-page";
@@ -47,6 +49,8 @@ export const router = createBrowserRouter([
     children: [
       { path: "problems", element: <ProblemsPage /> },
       { path: "quest", element: <QuestHubPage /> },
+      { path: "contests", element: <ContestListPage /> },
+      { path: "contests/:id", element: <ContestDetailPage /> },
       { path: "career", element: <CareerJourneyPage /> },
       { path: "career/events/:eventId/leaderboard", element: <EventLeaderboardPage /> },
       { path: "peer-interview", element: <PeerInterviewLobbyPage /> },

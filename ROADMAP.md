@@ -101,7 +101,7 @@
   - `runContestProblem`/`submitContestProblem`: not-found, guard not-ONGOING (2 chiều, message khác nhau), ACCEPTED→penalty 0, không ACCEPTED→penalty 20, đúng payload `contestSubmission.create`, không emit event, `runContestProblem` không bao giờ ghi DB.
   - 1-2 test khoá lại hành vi hiện tại của `getLeaderboard` (module đang 0% coverage) trước khi các thay đổi xung quanh nó đụng vào.
 
-- [ ] **BE: dọn `seed-contests.ts` — xoá sạch data giả**
+- [x] **BE: dọn `seed-contests.ts` — xoá sạch data giả**
   📍 `server/prisma/seed-contests.ts`.
   - Xoá `upsertMockUsers()`, `MOCK_USERS`, `MOCK_PASSWORD`, toàn bộ logic fabricate `ContestSubmission` theo kịch bản — leaderboard bắt đầu **trống**, chỉ có data khi user thật nộp bài.
   - Thay logic chọn bài cố định bằng util `pickRandomProblemsByDifficulty` (xem task P1 bên dưới) — chỉ seed **1 contest mẫu** (không phải 2 như trước, vì không còn kịch bản leaderboard để "diễn"), `startTime` vài phút trước / `endTime` vài giờ sau để `deriveContestStatus()` đọc ra `ONGOING` ngay sau khi seed — dev mới clone repo chạy được full luồng list→detail→giải bài→nộp→leaderboard mà không cần setup tay.

@@ -14,7 +14,7 @@
 
 ## 🔴 P0 — Nộp bài thật, xoá dữ liệu giả
 
-- [ ] **BE: tách logic chạy test case ra module `code-execution` dùng chung**
+- [x] **BE: tách logic chạy test case ra module `code-execution` dùng chung**
   📍 Module mới `server/src/modules/code-execution/`, di dời từ `server/src/modules/judge/services/`.
   - `services/piston.service.ts`, `services/code-generator.service.ts` — move nguyên vẹn.
   - `services/test-execution.service.ts` — **mới**, chứa logic `runTestCases`/`runSingleTestCase`/`outputsMatch`/`stripWhitespace`/`normalizeOutput` hiện đang private trong `judge.service.ts:356-515`, expose 1 method public:

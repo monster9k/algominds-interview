@@ -1,18 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIn, IsNotEmpty, IsString, IsUUID, MaxLength } from 'class-validator';
+import { SUPPORTED_LANGUAGES } from '../../code-execution/language.constants';
 
-// Phải khớp với các key trong PistonService.getLanguageConfig() — ngôn ngữ lạ
-// sẽ bị chặn ở đây thay vì fallback âm thầm về "node".
-export const SUPPORTED_LANGUAGES = [
-  'typescript',
-  'javascript',
-  'node',
-  'python',
-  'cpp',
-  'c++',
-  'c',
-  'java',
-] as const;
+export { SUPPORTED_LANGUAGES };
 
 export class SubmitCodeDto {
   @ApiProperty({ description: 'ID của session đang làm bài' })

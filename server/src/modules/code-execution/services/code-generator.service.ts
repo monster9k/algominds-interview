@@ -96,7 +96,7 @@ try:
     else:
         # Fallback nếu user viết hàm lẻ
         result = ${functionName}(${argString})
-    
+
     print(json.dumps(result))
 except Exception as e:
     print(str(e))

@@ -117,7 +117,7 @@
   - **Tái dùng** `CodeEditorPanel` từ `@/features/interview/components/code-editor-panel.tsx` nguyên trạng — component này vốn đã generic (`code`/`language`/`isLocked`, không phụ thuộc session) nên đây là trường hợp hợp lệ duy nhất để tái dùng chéo feature.
   - `isLocked = true` khi status derived khác `ONGOING`; contest FINISHED vẫn mở được trang (đọc đề lại được) nhưng hiện banner "đã kết thúc" + khoá Run/Submit — không chặn hẳn route.
 
-- [ ] **FE: types/api/hooks cho luồng giải bài**
+- [x] **FE: types/api/hooks cho luồng giải bài**
   📍 `client/src/features/contest/types/index.ts`, `api/contest-api.ts`, `hooks/use-contest-problem.ts`, `hooks/use-contest-judge.ts` (mirror `use-judge.ts` — mutation + toast).
   Thêm `getContestProblem`, `runContestCode`, `submitContestCode` vào `contest-api.ts`; types `ContestProblemDetail`, `ContestRunResult`, `ContestSubmissionResult`.
 

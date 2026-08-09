@@ -82,7 +82,7 @@
     Khớp với logic đọc leaderboard hiện có (`contest.service.ts:141`, không đổi) vốn đã giả định `penaltyMinutes` được ghi sẵn theo từng dòng lúc submit. **Không emit event AI code-evaluation** — contest là luồng thi tốc độ độc lập, không nối vào listener `submission.accepted`.
   - Chuyển 2 hằng số `WRONG_PENALTY_MINUTES = 20` và `POINTS_BY_DIFFICULTY` (Easy 100/Medium 300/Hard 500) từ `seed-contests.ts` vào file này.
 
-- [ ] **BE: DTO cho Run/Submit contest**
+- [x] **BE: DTO cho Run/Submit contest**
   📍 `server/src/modules/contest/dto/run-contest-problem.dto.ts`, `dto/submit-contest-problem.dto.ts`.
   Chỉ `{ language, code }` trong body — `contestId`/`problemSlug` lấy từ route param, không trust client gửi kèm trong body (khác `/judge/submit` vốn flat theo `sessionId`).
 

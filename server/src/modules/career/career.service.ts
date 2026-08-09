@@ -508,17 +508,10 @@ export class CareerService {
     activeProgress: { id: string; stageId: string; stage: { kind: StageKind } },
     status: 'PASSED' | 'FAILED',
   ) {
-    await this.prisma.journeyStageProgress.update({
-      where: { id: activeProgress.id },
-      data: {
-        status: status === 'PASSED' ? StageStatus.PASSED : StageStatus.FAILED,
-        completedAt: new Date(),
-      },
-    });
-
     // Offer Debrief chỉ áp dụng cho stage kind=PROBLEM (digest tổng hợp
     // strategyAnswer) — trigger cả khi PASSED lẫn FAILED, vì digest tổng hợp
     // dữ liệu chung của cả bài toán, không riêng kết quả của journey này.
+    // Emit trước mọi write — chỉ đẩy event lên bus, không phụ thuộc thứ tự ghi DB.
     if (activeProgress.stage.kind === StageKind.PROBLEM) {
       this.eventEmitter.emit('career.stage.completed', {
         stageId: activeProgress.stageId,
@@ -526,6 +519,10 @@ export class CareerService {
     }
 
     if (status === 'FAILED') {
+      await this.prisma.journeyStageProgress.update({
+        where: { id: activeProgress.id },
+        data: { status: StageStatus.FAILED, completedAt: new Date() },
+      });
       const failedJourney = await this.prisma.careerJourney.update({
         where: { id: journey.id },
         data: { status: JourneyStatus.FAILED, finishedAt: new Date() },
@@ -550,6 +547,10 @@ export class CareerService {
 
     // Hết stage -> journey PASSED (hoàn thành cả track).
     if (!nextStage) {
+      await this.prisma.journeyStageProgress.update({
+        where: { id: activeProgress.id },
+        data: { status: StageStatus.PASSED, completedAt: new Date() },
+      });
       const passedJourney = await this.prisma.careerJourney.update({
         where: { id: journey.id },
         data: { status: JourneyStatus.PASSED, finishedAt: new Date() },
@@ -561,20 +562,31 @@ export class CareerService {
       return passedJourney;
     }
 
+    // Còn stage kế — ensureStageSession() (có thể throw) chạy TRƯỚC mọi
+    // write, rồi gộp "đóng stage hiện tại" + "mở stage kế" vào 1
+    // transaction, để không bao giờ để lại stage hiện tại đã PASSED mà
+    // không có stage nào ACTIVE nếu ensureStageSession throw giữa chừng
+    // (cùng lớp bug đã fix ở createJourneyForTrack).
     const { sessionId, pickedReasonTag } = await this.ensureStageSession(
       journey.userId,
       nextStage,
     );
 
-    await this.prisma.journeyStageProgress.create({
-      data: {
-        journeyId: journey.id,
-        stageId: nextStage.id,
-        status: StageStatus.ACTIVE,
-        sessionId,
-        pickedReasonTag,
-      },
-    });
+    await this.prisma.$transaction([
+      this.prisma.journeyStageProgress.update({
+        where: { id: activeProgress.id },
+        data: { status: StageStatus.PASSED, completedAt: new Date() },
+      }),
+      this.prisma.journeyStageProgress.create({
+        data: {
+          journeyId: journey.id,
+          stageId: nextStage.id,
+          status: StageStatus.ACTIVE,
+          sessionId,
+          pickedReasonTag,
+        },
+      }),
+    ]);
 
     return this.prisma.careerJourney.findUniqueOrThrow({
       where: { id: journey.id },

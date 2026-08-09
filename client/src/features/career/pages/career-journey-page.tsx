@@ -103,7 +103,7 @@ export function CareerJourneyPage() {
   // — chỉ có sessionId khi kind=PROBLEM (P4), useCareerSocket tự no-op nếu
   // undefined (QUEST chưa auto-grade, để P5).
   const activeProgress = useMemo(
-    () => journey?.progress.find((p) => p.status === "ACTIVE"),
+    () => journey?.progress?.find((p) => p.status === "ACTIVE"),
     [journey],
   );
 
@@ -261,7 +261,7 @@ export function CareerJourneyPage() {
 
   const stages = journey.track?.stages ?? [];
   const progressByStageId = new Map(
-    journey.progress.map((p) => [p.stageId, p]),
+    (journey.progress ?? []).map((p) => [p.stageId, p]),
   );
 
   return (

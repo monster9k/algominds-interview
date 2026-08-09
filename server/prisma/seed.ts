@@ -1,4 +1,4 @@
-import { PrismaClient, Difficulty } from '@prisma/client';
+import { PrismaClient, Difficulty, PersonaTone } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
@@ -185,6 +185,27 @@ public:
       });
     }
   }
+
+  // ===============================
+  // CAREER JOURNEY: DEFAULT PERSONA
+  // ===============================
+  console.log('🎭 Seeding default interviewer persona...');
+
+  // systemPromptExtra rỗng — persona "default" giữ nguyên hành vi hiện tại của
+  // AiService, không nối thêm chỉ dẫn nào vào systemInstruction gốc.
+  await prisma.interviewerPersona.upsert({
+    where: { key: 'default' },
+    update: {},
+    create: {
+      key: 'default',
+      name: 'Default Interviewer',
+      description:
+        'AI interviewer mặc định, đúng hành vi hiện có của luồng Phase 1/Phase 2.',
+      tone: PersonaTone.FRIENDLY,
+      systemPromptExtra: '',
+      unlockCost: 0,
+    },
+  });
 
   console.log('✅ Seeding finished.');
 }

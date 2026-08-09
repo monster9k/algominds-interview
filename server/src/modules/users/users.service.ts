@@ -90,6 +90,53 @@ export class UsersService {
     return { ...result, rank };
   }
 
+  // Confidence Calibration Score — so sánh confidenceSignal (giọng điệu lúc
+  // được approve) với việc session đó có submission ACCEPTED hay không, để
+  // phát hiện lệch pha "tự tin thái quá nhưng sai" / "đúng nhưng thiếu tự tin".
+  // Chỉ tính session đã có confidenceSignal (được ghi từ ai.processor.ts khi
+  // approve — session cũ trước bản cập nhật này sẽ có giá trị null, bị loại
+  // khỏi thống kê thay vì tính sai).
+  async getConfidenceCalibration(userId: string) {
+    const CONFIDENCE_SIGNALS = ['hedging', 'neutral', 'assertive'] as const;
+
+    const sessions = await this.prisma.session.findMany({
+      where: { userId, confidenceSignal: { not: null } },
+      select: {
+        confidenceSignal: true,
+        submissions: {
+          where: { status: 'ACCEPTED' },
+          select: { id: true },
+          take: 1,
+        },
+      },
+    });
+
+    const isCorrect = (s: (typeof sessions)[number]) =>
+      s.submissions.length > 0;
+
+    const bySignal = CONFIDENCE_SIGNALS.map((signal) => {
+      const matching = sessions.filter((s) => s.confidenceSignal === signal);
+      return {
+        signal,
+        total: matching.length,
+        correct: matching.filter(isCorrect).length,
+      };
+    });
+
+    return {
+      totalRated: sessions.length,
+      bySignal,
+      // "assertive" nhưng cuối cùng không có submission ACCEPTED nào.
+      overconfidentCount: sessions.filter(
+        (s) => s.confidenceSignal === 'assertive' && !isCorrect(s),
+      ).length,
+      // "hedging" nhưng thực ra vẫn giải đúng.
+      underconfidentCount: sessions.filter(
+        (s) => s.confidenceSignal === 'hedging' && isCorrect(s),
+      ).length,
+    };
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto) {
     const updatedUser = await this.prisma.user.update({
       where: { id },

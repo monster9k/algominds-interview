@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { AIChatTabProps } from "./types";
 import { STYLES } from "./constants";
 import { cn } from "@/lib/utils";
+import { MessageBubble } from "./message-bubble";
 
 /**
  * AIChatTab - Displays AI chat messages and input form
@@ -49,23 +50,11 @@ export function AIChatTab({
           {messages.length > 0 && (
             <div className="space-y-4">
               {messages.map((msg) => (
-                <div
+                <MessageBubble
                   key={msg.id}
-                  className={`flex ${
-                    msg.sender === "USER" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={cn(
-                      "max-w-[85%] p-3 rounded-lg text-sm",
-                      msg.sender === "USER"
-                        ? `${STYLES.CHAT_MESSAGE_USER} rounded-br-none`
-                        : `${STYLES.CHAT_MESSAGE_AI} rounded-bl-none`,
-                    )}
-                  >
-                    {msg.content}
-                  </div>
-                </div>
+                  sender={msg.sender}
+                  content={msg.content}
+                />
               ))}
               {isAiThinking && (
                 <div className="flex justify-start">

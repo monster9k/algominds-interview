@@ -1,0 +1,57 @@
+{
+  "title": "Hành trình sự nghiệp",
+  "subtitle": "Chọn 1 track sự nghiệp và trải qua Phone Screen, Technical Rounds, Onsite Loop — mỗi vòng do 1 AI interviewer với tính cách khác nhau đảm nhiệm.",
+  "stageCount": "{{count}} vòng",
+  "startTrack": "Bắt đầu track",
+  "noTracks": "Chưa có career track nào.",
+  "enterStage": "Vào làm",
+  "interviewer": "Interviewer: {{name}}",
+  "adaptivePick": "Chọn riêng cho bạn vì bạn đang yếu ở {{tag}}",
+  "stageKind": {
+    "problem": "Bài tập code",
+    "quest": "Mini-game Quest",
+    "peerInterview": "Phỏng vấn chéo"
+  },
+  "status": {
+    "PENDING": "Chưa mở khoá",
+    "ACTIVE": "Đang làm",
+    "PASSED": "Đã qua",
+    "FAILED": "Chưa đạt"
+  },
+  "debrief": {
+    "title": "Offer Debrief"
+  },
+  "markPassed": "Đánh dấu Đã qua",
+  "markFailed": "Đánh dấu Chưa đạt",
+  "manualAdvanceHint": "Hiện phải tự đánh dấu — chưa có cơ chế tự động phát hiện khi nào 1 vòng thực sự xong.",
+  "retryBanner": "Chưa đạt — {{score}}/100, cần tối thiểu {{threshold}}. Sửa code và nộp lại nhé.",
+  "giveUp": "Dừng track này",
+  "events": {
+    "title": "Hiring Event",
+    "closesInDays": "Đóng trong {{count}} ngày",
+    "enter": "Tham gia",
+    "viewLeaderboard": "Xem bảng xếp hạng",
+    "leaderboardTitle": "Bảng xếp hạng",
+    "leaderboardEmpty": "Chưa có ai tham gia sự kiện này.",
+    "columns": {
+      "user": "Người dùng",
+      "stagesPassed": "Vòng đã qua",
+      "messageCount": "Số tin nhắn",
+      "duration": "Thời gian"
+    }
+  },
+  "personaUnlock": {
+    "unlock": "Mở khoá {{name}}",
+    "unlocked": "Đã mở khoá {{name}}"
+  },
+  "peerInterview": {
+    "createRoom": "Tạo phòng phỏng vấn chéo",
+    "createNewRoom": "Tạo phòng mới",
+    "enterRoom": "Vào phòng",
+    "inviteCodeLabel": "Chia sẻ mã mời này cho 1 người bạn"
+  },
+  "readinessReport": {
+    "title": "Báo cáo mức độ sẵn sàng",
+    "generating": "Đang tổng hợp báo cáo sẵn sàng của bạn..."
+  }
+}

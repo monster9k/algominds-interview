@@ -10,6 +10,7 @@ import {
   SlidersHorizontal,
   Check,
   ChevronRight,
+  History,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ interface InterviewHeaderProps {
   currentProblemSlug?: string;
   currentProblemTitle?: string;
   currentProblemDisplayId?: number;
+  sessionId?: string;
 }
 
 export function InterviewHeader({
@@ -58,6 +60,7 @@ export function InterviewHeader({
   currentProblemSlug,
   currentProblemTitle,
   currentProblemDisplayId,
+  sessionId,
 }: InterviewHeaderProps) {
   const { t } = useTranslation("interview");
   const navigate = useNavigate();
@@ -412,6 +415,18 @@ export function InterviewHeader({
 
       {/* Right: Tools */}
       <div className="flex items-center gap-2">
+        {sessionId && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            title={t("header.replay")}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            onClick={() => navigate(`/interview/replay/${sessionId}`)}
+          >
+            <History className="h-4 w-4" />
+          </Button>
+        )}
         <UserNavMenu />
       </div>
     </header>

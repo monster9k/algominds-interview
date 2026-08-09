@@ -1,5 +1,6 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { forwardRef, Inject, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Job } from 'bullmq';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from './ai.service';
@@ -20,7 +21,11 @@ interface EvaluateCodeJobData {
   language: string;
 }
 
-type AiJobData = ChatJobData | EvaluateCodeJobData;
+interface GradePeerInterviewJobData {
+  peerSessionId: string;
+}
+
+type AiJobData = ChatJobData | EvaluateCodeJobData | GradePeerInterviewJobData;
 
 @Processor('ai-queue')
 export class AiProcessor extends WorkerHost {
@@ -31,6 +36,7 @@ export class AiProcessor extends WorkerHost {
     private prisma: PrismaService,
     @Inject(forwardRef(() => ChatGateway))
     private chatGateway: ChatGateway,
+    private eventEmitter: EventEmitter2,
   ) {
     super();
   }
@@ -39,12 +45,15 @@ export class AiProcessor extends WorkerHost {
     const jobName = job.name;
     const data = job.data;
 
-    this.logger.log(`Processing ${jobName} for session: ${data.sessionId}`);
+    const logId = 'sessionId' in data ? data.sessionId : data.peerSessionId;
+    this.logger.log(`Processing ${jobName} for session: ${logId}`);
 
     if (jobName === 'chat-job') {
       return this.processChat(data as ChatJobData);
     } else if (jobName === 'evaluate-code') {
       return this.processEvaluateCode(data as EvaluateCodeJobData);
+    } else if (jobName === 'grade-peer-interview') {
+      return this.processGradePeerInterview(data as GradePeerInterviewJobData);
     } else {
       this.logger.warn(`Unknown job type: ${jobName}`);
     }
@@ -64,6 +73,9 @@ export class AiProcessor extends WorkerHost {
           orderBy: { createdAt: 'asc' },
           take: 20,
         },
+        // Chỉ dùng để lấy stage.personaId nếu session này thuộc 1 career
+        // journey (P4) — không ảnh hưởng session ngoài career journey.
+        journeyProgress: { include: { stage: true } },
       },
     });
 
@@ -91,27 +103,45 @@ export class AiProcessor extends WorkerHost {
         parts: [{ text: msg.content }],
       })) as { role: 'user' | 'model'; parts: { text: string }[] }[];
 
+    // personaId: chỉ có khi session thuộc 1 career journey (P4) — tham số
+    // này AiService đã hỗ trợ sẵn từ trước, chỉ chưa từng được truyền ở đây.
+    const personaId = session.journeyProgress?.stage?.personaId;
+
     // Gọi AI Service
     const rawAiResponse = await this.aiService.generateResponse(
       history,
       content,
       problemContext,
+      personaId,
     );
 
     // PARSE JSON & XỬ LÝ LOGIC
     let aiMessageContent = '';
     let isApproved = false;
+    // "hedging" | "neutral" | "assertive" — chỉ nhận đúng 3 giá trị đã định
+    // nghĩa trong systemInstruction, giá trị lạ/thiếu -> null thay vì lưu rác
+    // (Confidence Calibration Score — xem ai.service.ts).
+    let confidenceSignal: string | null = null;
+    const VALID_CONFIDENCE_SIGNALS = ['hedging', 'neutral', 'assertive'];
 
     try {
       const parsedResponse = JSON.parse(rawAiResponse) as {
         message?: string;
         status?: string;
+        confidenceSignal?: string;
       };
       aiMessageContent = parsedResponse.message ?? '';
       const normalizedStatus = String(
         parsedResponse.status || '',
       ).toUpperCase();
       isApproved = normalizedStatus === 'APPROVED';
+
+      const normalizedSignal = String(
+        parsedResponse.confidenceSignal || '',
+      ).toLowerCase();
+      confidenceSignal = VALID_CONFIDENCE_SIGNALS.includes(normalizedSignal)
+        ? normalizedSignal
+        : null;
     } catch (e) {
       this.logger.error('Failed to parse AI JSON response', e);
       aiMessageContent = rawAiResponse;
@@ -124,6 +154,12 @@ export class AiProcessor extends WorkerHost {
         data: {
           status: SessionStatus.PHASE_2_IMPLEMENT,
           version: { increment: 1 },
+          // Chốt lại đúng câu trả lời/feedback tại thời điểm được duyệt — đây
+          // là nguồn dữ liệu duy nhất cho Offer Debrief (career.processor.ts),
+          // trước đây 2 field này tồn tại trong schema nhưng chưa từng được ghi.
+          strategyAnswer: content,
+          strategyFeedback: aiMessageContent,
+          confidenceSignal,
         },
       });
 
@@ -222,10 +258,101 @@ Test Cases: ${JSON.stringify([
         evaluation: savedEvaluation,
       });
 
+      // 6. Auto-grade career journey (P4) — career.listener.ts tự bỏ qua nếu
+      // session này không thuộc stage PROBLEM đang ACTIVE của journey nào.
+      this.eventEmitter.emit('evaluation.completed', {
+        sessionId,
+        scores: evaluation.scores,
+      });
+
       return savedEvaluation;
     } catch (error) {
       this.logger.error(
         `[Phase 3] Error evaluating code for session ${sessionId}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error; // Let BullMQ retry
+    }
+  }
+
+  /**
+   * P3: Chấm điểm 2 chiều 1 LẦN duy nhất sau khi buổi peer interview kết
+   * thúc (enqueue từ ChatGateway#handleEndPeerInterview). Tái dùng đúng
+   * AiProcessor/chatGateway đã có — không tạo processor/forwardRef mới.
+   */
+  private async processGradePeerInterview(data: GradePeerInterviewJobData) {
+    const { peerSessionId } = data;
+
+    try {
+      const session = await this.prisma.peerInterviewSession.findUnique({
+        where: { id: peerSessionId },
+        include: {
+          problem: true,
+          messages: { orderBy: { createdAt: 'asc' } },
+        },
+      });
+
+      if (!session || !session.problem) {
+        this.logger.error(
+          `Peer interview session ${peerSessionId} or problem not found`,
+        );
+        return;
+      }
+
+      const problem = session.problem;
+      const problemContext = `
+Problem Title: ${problem.title}
+Difficulty: ${problem.difficulty}
+
+Description:
+${problem.content}
+      `;
+
+      this.logger.log(`[P3] Grading peer interview: ${peerSessionId}`);
+      const grading = await this.aiService.gradePeerInterview(
+        session.messages.map((m) => ({ role: m.role, content: m.content })),
+        problemContext,
+      );
+
+      const savedEvaluation = await this.prisma.peerInterviewEvaluation.upsert({
+        where: { sessionId: peerSessionId },
+        update: {
+          candidateScore: grading.candidateScore,
+          candidateFeedback: grading.candidateFeedback,
+          peerInterviewerScore: grading.peerInterviewerScore,
+          peerInterviewerFeedback: grading.peerInterviewerFeedback,
+        },
+        create: {
+          sessionId: peerSessionId,
+          candidateScore: grading.candidateScore,
+          candidateFeedback: grading.candidateFeedback,
+          peerInterviewerScore: grading.peerInterviewerScore,
+          peerInterviewerFeedback: grading.peerInterviewerFeedback,
+        },
+      });
+
+      this.logger.log(
+        `[P3] Evaluation saved for peer session: ${peerSessionId}`,
+      );
+
+      this.chatGateway.server
+        .to(`peer:${peerSessionId}`)
+        .emit('peer_interview_graded', {
+          peerSessionId,
+          evaluation: savedEvaluation,
+        });
+
+      // P6 — auto-grade career journey nếu peer session này gắn với 1 stage
+      // PEER_INTERVIEW đang ACTIVE (career.listener.ts tự bỏ qua nếu không).
+      this.eventEmitter.emit('peer-interview.graded', {
+        peerSessionId,
+        candidateScore: grading.candidateScore,
+      });
+
+      return savedEvaluation;
+    } catch (error) {
+      this.logger.error(
+        `[P3] Error grading peer interview ${peerSessionId}:`,
         error instanceof Error ? error.message : String(error),
       );
       throw error; // Let BullMQ retry

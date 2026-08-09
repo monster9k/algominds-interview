@@ -27,6 +27,7 @@
     "running": "Running...",
     "submit": "Submit",
     "submitting": "Submitting...",
+    "replay": "View replay",
     "sortAscending": "Sort ascending",
     "sortDescending": "Sort descending",
     "filterByDifficulty": "Difficulty",
@@ -142,5 +143,11 @@
   "submissionsList": {
     "status": "Status",
     "language": "Language"
+  },
+  "replay": {
+    "title": "Interview Replay",
+    "loadFailed": "Failed to load this interview's history.",
+    "empty": "No history yet for this session.",
+    "flagged": "AI found an issue with the strategy here"
   }
 }

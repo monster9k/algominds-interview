@@ -11,7 +11,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { MessageSender } from '@prisma/client';
+import { MessageSender, PeerRole, PeerSessionStatus } from '@prisma/client';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
@@ -144,6 +144,46 @@ export class ChatGateway
     // client.to(data.sessionId).emit('user_joined', `User ${client.id} joined`);
   }
 
+  // P7 — room riêng theo journeyId (không phải sessionId), vì Readiness
+  // Report được emit SAU KHI journey đã đóng — lúc đó không còn stage nào
+  // ACTIVE để có sessionId/peerSessionId mà join qua join_room/join_peer_room.
+  @SubscribeMessage('join_career_journey_room')
+  async handleJoinCareerJourneyRoom(
+    @MessageBody() data: { journeyId: string },
+    @ConnectedSocket() client: AppSocket,
+  ) {
+    const socketUser = client.data.user;
+
+    if (!socketUser?.userId) {
+      client.emit('error', { message: 'Unauthorized socket connection' });
+      client.disconnect(true);
+      return;
+    }
+
+    if (!data.journeyId) {
+      this.logger.error('journeyId is undefined');
+      return;
+    }
+
+    const journey = await this.prisma.careerJourney.findUnique({
+      where: { id: data.journeyId },
+      select: { userId: true },
+    });
+
+    if (!journey || journey.userId !== socketUser.userId) {
+      this.logger.warn(
+        `Unauthorized career journey room join attempt. socket=${client.id}, journey=${data.journeyId}`,
+      );
+      client.emit('error', { message: 'Forbidden career journey access' });
+      return;
+    }
+
+    await client.join(`career-journey:${data.journeyId}`);
+    this.logger.log(
+      `Client ${client.id} joined career journey room ${data.journeyId}`,
+    );
+  }
+
   @SubscribeMessage('send_message')
   async handleMessage(
     @ConnectedSocket() client: AppSocket,
@@ -250,5 +290,171 @@ export class ChatGateway
     console.log('Added job to AI Queue');
 
     return newMessage;
+  }
+
+  // --- P3: Live Co-Interview Mode (Peer Interview) ---
+  // Handler MỚI, hoàn toàn additive — không sửa join_room/send_message ở
+  // trên. AI không tham gia real-time ở đây (không gọi aiQueue trong lúc
+  // phòng đang hoạt động), chỉ chấm 1 lần lúc end_peer_interview. Xem
+  // ROADMAP.md mục P3 cho quyết định thiết kế đầy đủ.
+
+  private resolvePeerRole(
+    session: { candidateId: string; peerInterviewerId: string | null },
+    userId: string,
+  ): PeerRole | null {
+    if (session.candidateId === userId) return PeerRole.CANDIDATE;
+    if (session.peerInterviewerId === userId) return PeerRole.PEER_INTERVIEWER;
+    return null;
+  }
+
+  @SubscribeMessage('join_peer_room')
+  async handleJoinPeerRoom(
+    @MessageBody() data: { peerSessionId: string },
+    @ConnectedSocket() client: AppSocket,
+  ) {
+    const socketUser = client.data.user;
+    if (!socketUser?.userId) {
+      client.emit('error', { message: 'Unauthorized socket connection' });
+      client.disconnect(true);
+      return;
+    }
+
+    if (!data.peerSessionId) {
+      this.logger.error('peerSessionId is undefined');
+      return;
+    }
+
+    const session = await this.prisma.peerInterviewSession.findUnique({
+      where: { id: data.peerSessionId },
+      select: { candidateId: true, peerInterviewerId: true },
+    });
+
+    if (!session || !this.resolvePeerRole(session, socketUser.userId)) {
+      this.logger.warn(
+        `Unauthorized peer room join attempt. socket=${client.id}, session=${data.peerSessionId}`,
+      );
+      client.emit('error', { message: 'Forbidden peer session access' });
+      return;
+    }
+
+    await client.join(`peer:${data.peerSessionId}`);
+    this.logger.log(
+      `Client ${client.id} joined peer room ${data.peerSessionId}`,
+    );
+  }
+
+  @SubscribeMessage('send_peer_message')
+  async handleSendPeerMessage(
+    @ConnectedSocket() client: AppSocket,
+    @MessageBody() data: { peerSessionId: string; content: string },
+  ) {
+    const socketUser = client.data.user;
+    if (!socketUser?.userId) {
+      client.emit('error', { message: 'Unauthorized socket connection' });
+      client.disconnect(true);
+      return;
+    }
+
+    if (
+      typeof data.content !== 'string' ||
+      !data.content.trim() ||
+      data.content.length > ChatGateway.MAX_MESSAGE_LENGTH
+    ) {
+      client.emit('error', {
+        message: `Nội dung tin nhắn không hợp lệ (tối đa ${ChatGateway.MAX_MESSAGE_LENGTH} ký tự).`,
+      });
+      return;
+    }
+
+    const session = await this.prisma.peerInterviewSession.findUnique({
+      where: { id: data.peerSessionId },
+      select: {
+        candidateId: true,
+        peerInterviewerId: true,
+        status: true,
+      },
+    });
+
+    const role = session
+      ? this.resolvePeerRole(session, socketUser.userId)
+      : null;
+    if (!session || !role) {
+      client.emit('error', { message: 'Forbidden peer session access' });
+      return;
+    }
+    if (session.status !== PeerSessionStatus.ACTIVE) {
+      client.emit('error', {
+        message: 'Phiên peer interview chưa bắt đầu hoặc đã kết thúc',
+      });
+      return;
+    }
+
+    const newMessage = await this.prisma.peerInterviewMessage.create({
+      data: {
+        sessionId: data.peerSessionId,
+        role,
+        senderId: socketUser.userId,
+        content: data.content,
+      },
+    });
+
+    this.server
+      .to(`peer:${data.peerSessionId}`)
+      .emit('receive_peer_message', newMessage);
+
+    return newMessage;
+  }
+
+  @SubscribeMessage('end_peer_interview')
+  async handleEndPeerInterview(
+    @ConnectedSocket() client: AppSocket,
+    @MessageBody() data: { peerSessionId: string },
+  ) {
+    const socketUser = client.data.user;
+    if (!socketUser?.userId) {
+      client.emit('error', { message: 'Unauthorized socket connection' });
+      client.disconnect(true);
+      return;
+    }
+
+    const session = await this.prisma.peerInterviewSession.findUnique({
+      where: { id: data.peerSessionId },
+      select: { candidateId: true, peerInterviewerId: true, status: true },
+    });
+
+    const role = session
+      ? this.resolvePeerRole(session, socketUser.userId)
+      : null;
+    if (!session || !role) {
+      client.emit('error', { message: 'Forbidden peer session access' });
+      return;
+    }
+    if (session.status !== PeerSessionStatus.ACTIVE) {
+      client.emit('error', { message: 'Phiên này đã kết thúc' });
+      return;
+    }
+
+    await this.prisma.peerInterviewSession.update({
+      where: { id: data.peerSessionId },
+      data: { status: PeerSessionStatus.COMPLETED, endedAt: new Date() },
+    });
+
+    this.server.to(`peer:${data.peerSessionId}`).emit('peer_interview_ended', {
+      peerSessionId: data.peerSessionId,
+    });
+
+    // Chấm điểm 1 LẦN duy nhất lúc kết thúc — tái dùng đúng 'ai-queue' đã có,
+    // không tạo queue mới. AiProcessor xử lý job này và emit
+    // 'peer_interview_graded' khi xong (xem ai.processor.ts).
+    await this.aiQueue.add(
+      'grade-peer-interview',
+      { peerSessionId: data.peerSessionId },
+      {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 2000 },
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    );
   }
 }

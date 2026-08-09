@@ -126,3 +126,41 @@ export interface SessionEvaluationResponse {
   status: EvaluationStatus;
   evaluation: Evaluation | null;
 }
+
+export interface ReplayMessageEntry {
+  type: "MESSAGE";
+  createdAt: string;
+  sender: "USER" | "AI" | "SYSTEM";
+  messageType: "TEXT" | "CODE" | "HINT" | "FEEDBACK";
+  content: string;
+  // true = đây là chỗ AI chưa approve chiến lược trong Phase 1 — chỗ AI
+  // phát hiện lỗ hổng chiến lược (xem sessions.service.ts#getReplay).
+  flagged: boolean;
+}
+
+export interface ReplayEvaluationEntry {
+  type: "EVALUATION";
+  createdAt: string;
+  scores: EvaluationScores;
+  feedback: string | null;
+  pros: string[];
+  cons: string[];
+}
+
+export type ReplayTimelineEntry = ReplayMessageEntry | ReplayEvaluationEntry;
+
+export interface SessionReplay {
+  session: {
+    id: string;
+    status: SessionPhase;
+    startedAt: string;
+    finishedAt: string | null;
+    problem: {
+      displayId: number;
+      title: string;
+      slug: string;
+      difficulty: Difficulty;
+    };
+  };
+  timeline: ReplayTimelineEntry[];
+}

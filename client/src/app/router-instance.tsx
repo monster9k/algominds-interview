@@ -14,7 +14,12 @@ import { ProblemsPage } from "@/features/problems/pages/problems-page";
 import { ProfilePage } from "@/features/users/pages/profile-page";
 import { SettingsPage } from "@/features/settings/pages/settings-page";
 import { InterviewRoom } from "@/features/interview/pages/interview-room";
+import { SessionReplayPage } from "@/features/interview/pages/session-replay-page";
 import { QuestHubPage } from "@/features/quest/pages/quest-hub-page";
+import { CareerJourneyPage } from "@/features/career/pages/career-journey-page";
+import { EventLeaderboardPage } from "@/features/career/pages/event-leaderboard-page";
+import { PeerInterviewLobbyPage } from "@/features/peer-interview/pages/peer-interview-lobby-page";
+import { PeerInterviewRoomPage } from "@/features/peer-interview/pages/peer-interview-room-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { GoogleCallbackPage } from "@/features/auth/pages/google-callback-page";
 
@@ -42,6 +47,9 @@ export const router = createBrowserRouter([
     children: [
       { path: "problems", element: <ProblemsPage /> },
       { path: "quest", element: <QuestHubPage /> },
+      { path: "career", element: <CareerJourneyPage /> },
+      { path: "career/events/:eventId/leaderboard", element: <EventLeaderboardPage /> },
+      { path: "peer-interview", element: <PeerInterviewLobbyPage /> },
       { path: "profile", element: <ProfilePage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "dashboard", element: <Navigate to="/problems" replace /> },
@@ -55,6 +63,14 @@ export const router = createBrowserRouter([
       {
         path: "/interview/:slug",
         element: <InterviewRoom />,
+      },
+      {
+        path: "/interview/replay/:sessionId",
+        element: <SessionReplayPage />,
+      },
+      {
+        path: "/peer-interview/:id",
+        element: <PeerInterviewRoomPage />,
       },
     ],
   },

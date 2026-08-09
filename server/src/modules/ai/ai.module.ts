@@ -15,5 +15,6 @@ import { AiProcessor } from './ai.processor';
     }),
   ],
   providers: [AiService, AiProcessor, AiListener],
+  exports: [AiService],
 })
 export class AiModule {}

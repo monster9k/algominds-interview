@@ -39,6 +39,18 @@
       "tle": "時間切れ"
     }
   },
+  "confidence": {
+    "title": "自信の較正",
+    "empty": "まだデータが足りません — 戦略が承認されると表示されます。",
+    "signal": {
+      "hedging": "控えめ",
+      "neutral": "中立",
+      "assertive": "自信あり"
+    },
+    "correctOf": "{{correct}}/{{total}} 件解決",
+    "overconfident": "自信ありと見えたのに解けなかった回数: {{count}}",
+    "underconfident": "控えめだったのに実は解けていた回数: {{count}}"
+  },
   "questHistory": {
     "title": "クエスト履歴",
     "playQuest": "クエストをプレイ",

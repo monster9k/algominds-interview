@@ -1,6 +1,7 @@
 import { ProfileInfoCard } from "../components/profile-info-card";
 import { SolvedStatsCard } from "../components/solved-stats-card";
 import { BadgesCard } from "../components/badges-card";
+import { ConfidenceCalibrationCard } from "../components/confidence-calibration-card";
 import { SubmissionHeatmap } from "../components/submission-heatmap";
 import { RecentSubmissionsCard } from "../components/recent-submissions-card";
 import { QuestHistoryCard } from "../components/quest-history-card";
@@ -18,6 +19,7 @@ export function ProfilePage() {
             <SolvedStatsCard />
             <BadgesCard />
           </div>
+          <ConfidenceCalibrationCard />
           <SubmissionHeatmap />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             <RecentSubmissionsCard />

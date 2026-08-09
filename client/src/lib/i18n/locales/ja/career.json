@@ -1,0 +1,57 @@
+{
+  "title": "キャリアジャーニー",
+  "subtitle": "キャリアトラックを選び、電話面接・技術面接・オンサイトループを進みましょう。各ステージは異なるAI面接官が担当します。",
+  "stageCount": "{{count}} ステージ",
+  "startTrack": "トラックを開始",
+  "noTracks": "利用可能なキャリアトラックはまだありません。",
+  "enterStage": "ステージへ進む",
+  "interviewer": "面接官: {{name}}",
+  "adaptivePick": "{{tag}}が苦手なため、あなたのために選ばれました",
+  "stageKind": {
+    "problem": "コーディング問題",
+    "quest": "クエストミニゲーム",
+    "peerInterview": "ピアインタビュー"
+  },
+  "status": {
+    "PENDING": "未解放",
+    "ACTIVE": "進行中",
+    "PASSED": "合格",
+    "FAILED": "不合格"
+  },
+  "debrief": {
+    "title": "Offer Debrief"
+  },
+  "markPassed": "合格にする",
+  "markFailed": "不合格にする",
+  "manualAdvanceHint": "現在は手動です — ステージが実際に完了したかを自動検出する仕組みはまだありません。",
+  "retryBanner": "まだ基準に届いていません — {{score}}/100、必要な最低点は{{threshold}}です。コードを直して再提出してください。",
+  "giveUp": "このトラックをあきらめる",
+  "events": {
+    "title": "採用イベント",
+    "closesInDays": "あと{{count}}日で終了",
+    "enter": "参加する",
+    "viewLeaderboard": "リーダーボードを見る",
+    "leaderboardTitle": "リーダーボード",
+    "leaderboardEmpty": "このイベントにはまだ参加者がいません。",
+    "columns": {
+      "user": "ユーザー",
+      "stagesPassed": "合格ステージ数",
+      "messageCount": "メッセージ数",
+      "duration": "所要時間"
+    }
+  },
+  "personaUnlock": {
+    "unlock": "{{name}}を解放",
+    "unlocked": "{{name}}を解放済み"
+  },
+  "peerInterview": {
+    "createRoom": "ピアインタビュールームを作成",
+    "createNewRoom": "新しいルームを作成",
+    "enterRoom": "ルームに入る",
+    "inviteCodeLabel": "この招待コードを友達と共有してください"
+  },
+  "readinessReport": {
+    "title": "準備状況レポート",
+    "generating": "準備状況レポートを作成中..."
+  }
+}

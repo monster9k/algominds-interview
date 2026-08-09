@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  
 }
 
 // --- ENUMS ---
@@ -52,10 +51,10 @@ enum MessageType {
 // --- MODELS ---
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  role      UserRole @default(USER)
+  id    String   @id @default(uuid())
+  email String   @unique
+  name  String
+  role  UserRole @default(USER)
 
   // Auth Providers
   provider   String  @default("email") // "email", "google", "github"
@@ -73,11 +72,16 @@ model User {
   deletedAt DateTime? // Soft delete
 
   // Relations
-  stats    UserStats?
-  sessions Session[]
-  refreshTokens RefreshToken[]
-  questAttempts QuestAttempt[]
-  userBadges    UserBadge[]
+  stats          UserStats?
+  sessions       Session[]
+  refreshTokens  RefreshToken[]
+  questAttempts  QuestAttempt[]
+  userBadges     UserBadge[]
+  careerJourneys CareerJourney[]
+  personaUnlocks UserPersonaUnlock[]
+
+  candidateInPeerSessions       PeerInterviewSession[] @relation("PeerInterviewCandidate")
+  peerInterviewerInPeerSessions PeerInterviewSession[] @relation("PeerInterviewInterviewer")
 
   // Indexes
   @@index([provider, providerId])
@@ -85,12 +89,12 @@ model User {
 }
 
 model RefreshToken {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
-  jti       String   @unique
+  jti       String    @unique
   tokenHash String
   expiresAt DateTime
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   revokedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -116,42 +120,45 @@ model UserStats {
 }
 
 model Problem {
-  id            String     @id @default(uuid())
-  displayId     Int        @unique @default(autoincrement())
-  slug          String     @unique
-  title         String
-  difficulty    Difficulty
-  content       String // HTML Description
-  
+  id         String     @id @default(uuid())
+  displayId  Int        @unique @default(autoincrement())
+  slug       String     @unique
+  title      String
+  difficulty Difficulty
+  content    String // HTML Description
+
   // JSON Flexibility
-  initialCode   Json // {ts: "...", py: "..."}
-  solution      Json?
+  initialCode     Json // {ts: "...", py: "..."}
+  solution        Json?
   // @deprecated — thay bằng sampleTestCases + hiddenTestCases (giữ tạm để rollback an toàn).
-  testCases     Json?
+  testCases       Json?
   // Public/sample test case — hiển thị trên đề bài + dùng cho "Run". KHÔNG bao giờ chứa hidden case.
   sampleTestCases Json
   // Hidden test case — chỉ dùng nội bộ khi "Submit", KHÔNG được select ra bất kỳ response nào trả về client.
   hiddenTestCases Json?
-  timeLimitMs   Int     @default(1000)
-  memoryLimitMb Int     @default(256)
+  timeLimitMs     Int   @default(1000)
+  memoryLimitMb   Int   @default(256)
 
-  submitCount    Int     @default(0) 
-  passCount      Int     @default(0) 
-  acceptanceRate Float   @default(0)
+  submitCount    Int   @default(0)
+  passCount      Int   @default(0)
+  acceptanceRate Float @default(0)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   // NÂNG CẤP: Metadata cho việc chấm bài
-  functionName  String   @default("solution") // Tên hàm: "twoSum", "isValid"
+  functionName          String                        @default("solution") // Tên hàm: "twoSum", "isValid"
   // (Optional) Input Type Signature để parse cho chuẩn C++ 
   // VD: ["number[]", "number"] -> Giúp convert JSON sang C++ Vector
-  inputSignature Json?
+  inputSignature        Json?
   // Relations
-  tags      ProblemTag[]
-  sessions  Session[]
-  companies ProblemCompany[]
+  tags                  ProblemTag[]
+  sessions              Session[]
+  companies             ProblemCompany[]
+  careerTrackStages     CareerTrackStage[]
+  careerTrackStagePools CareerTrackStageProblemPool[]
+  peerInterviewSessions PeerInterviewSession[]
 
   @@map("problems")
 }
@@ -187,7 +194,8 @@ model Company {
   createdAt DateTime @default(now())
 
   // Relations
-  problems ProblemCompany[]
+  problems     ProblemCompany[]
+  careerTracks CareerTrack[]
 
   @@map("companies")
 }
@@ -229,7 +237,8 @@ model QuestAttempt {
   durationMs   Int
   createdAt    DateTime   @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  journeyProgress JourneyStageProgress?
 
   @@index([userId, createdAt])
   @@map("quest_attempts")
@@ -263,18 +272,242 @@ model UserBadge {
   @@map("user_badges")
 }
 
+// --- CAREER JOURNEY MODELS ---
+
+enum PersonaTone {
+  STRICT
+  FRIENDLY
+  SKEPTICAL
+  LENIENT
+}
+
+model InterviewerPersona {
+  id                String      @id @default(uuid())
+  key               String      @unique // "google_strict", "startup_friendly" — đối chiếu code, không đổi khi dịch tên hiển thị
+  name              String
+  description       String
+  tone              PersonaTone
+  systemPromptExtra String // đoạn chỉ dẫn NỐI VÀO systemInstruction gốc của AiService, không thay thế toàn bộ — giữ nguyên format JSON output bắt buộc
+  unlockCost        Int         @default(0) // 0 = mặc định miễn phí (persona "Default" hiện tại)
+  isActive          Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+
+  stages  CareerTrackStage[]
+  unlocks UserPersonaUnlock[]
+
+  @@map("interviewer_personas")
+}
+
+// Store thay thế — mở khoá thuần qua tiến trình (PASSED ít nhất 1 stage dùng
+// đúng persona này), KHÔNG đụng UserStats.credits — quyết định sản phẩm đã
+// chốt với user khi bắt đầu implement mục này (xem ROADMAP.md mục P1).
+model UserPersonaUnlock {
+  id         String   @id @default(uuid())
+  userId     String
+  personaId  String
+  unlockedAt DateTime @default(now())
+
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  persona InterviewerPersona @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, personaId])
+  @@map("user_persona_unlocks")
+}
+
+model CareerTrack {
+  id          String   @id @default(uuid())
+  key         String   @unique // "senior_backend_startup", "newgrad_bigtech"
+  name        String
+  description String
+  isActive    Boolean  @default(true)
+  // Track mô phỏng pipeline của 1 công ty thật (P6) — optional, track
+  // "generic" không gắn công ty nào vẫn hợp lệ, hành vi cũ giữ nguyên.
+  companyId   String?
+  createdAt   DateTime @default(now())
+
+  company      Company?           @relation(fields: [companyId], references: [id])
+  stages       CareerTrackStage[]
+  journeys     CareerJourney[]
+  hiringEvents HiringEvent[]
+
+  @@map("career_tracks")
+}
+
+// Contest thay thế: cửa sổ thời gian giới hạn, 1 track "mở tuyển" — journey
+// nào start track qua sự kiện này (`POST /career/events/:id/enter`) thì gắn
+// eventId, tính vào bảng xếp hạng của sự kiện đó.
+model HiringEvent {
+  id        String   @id @default(uuid())
+  trackId   String
+  opensAt   DateTime
+  closesAt  DateTime
+  createdAt DateTime @default(now())
+
+  track   CareerTrack     @relation(fields: [trackId], references: [id])
+  entries CareerJourney[]
+
+  @@map("hiring_events")
+}
+
+enum StageKind {
+  PROBLEM // vòng dùng luồng sessions hiện có (Phase1 → Phase2)
+  QUEST // vòng dùng mini-game Quest hiện có
+  PEER_INTERVIEW // vòng Behavioral dùng Live Co-Interview thật (P6, xem PeerInterviewSession)
+}
+
+model CareerTrackStage {
+  id            String    @id @default(uuid())
+  trackId       String
+  order         Int // thứ tự vòng trong track, 0-based
+  label         String // "Phone Screen", "Onsite - Round 1"...
+  kind          StageKind
+  problemId     String? // bắt buộc khi kind = PROBLEM
+  personaId     String
+  // Ngưỡng điểm tối thiểu (0-100) để auto-grade PASS stage này — P4. PROBLEM:
+  // so với điểm trung bình 4 field Evaluation.scores. QUEST: so với tỉ lệ
+  // đúng (correctCount/(correctCount+wrongCount))*100 — tự động hoá ở P5.
+  passThreshold Int       @default(70)
+  // true: bỏ qua problemId tĩnh, chọn bài động trong problemPool theo tag
+  // yếu nhất của user (P5, xem career.service.ts#pickAdaptiveProblem).
+  adaptive      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+
+  track       CareerTrack                   @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  problem     Problem?                      @relation(fields: [problemId], references: [id])
+  persona     InterviewerPersona            @relation(fields: [personaId], references: [id])
+  progress    JourneyStageProgress[]
+  digest      StageDigest?
+  problemPool CareerTrackStageProblemPool[]
+
+  @@unique([trackId, order])
+  @@map("career_track_stages")
+}
+
+// Pool bài ứng viên cho 1 stage adaptive (P5) — chỉ có ý nghĩa khi
+// CareerTrackStage.adaptive = true. Problem thực sự được chọn cho từng user
+// tính động lúc ensureStageSession() chạy, không cố định trước.
+model CareerTrackStageProblemPool {
+  stageId   String
+  problemId String
+
+  stage   CareerTrackStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  problem Problem          @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@id([stageId, problemId])
+  @@map("career_track_stage_problem_pool")
+}
+
+// Discuss thay thế: tổng hợp các strategyAnswer đã APPROVED khác nhau của
+// cùng problemId (qua job nền `debrief-queue`, xem career.processor.ts) —
+// cache lại, KHÔNG generate mỗi lần user xem. 1 digest / stage vì mỗi stage
+// map cứng 1 problemId (qua CareerTrackStage.problemId).
+model StageDigest {
+  id          String   @id @default(uuid())
+  stageId     String   @unique
+  content     String
+  sourceCount Int // số strategyAnswer distinct đã dùng để tạo digest này — dùng để quyết định có cần tái tạo khi có thêm answer mới không
+  generatedAt DateTime @default(now())
+
+  stage CareerTrackStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@map("stage_digests")
+}
+
+enum JourneyStatus {
+  IN_PROGRESS
+  PASSED
+  FAILED
+  ABANDONED
+}
+
+enum StageStatus {
+  PENDING
+  ACTIVE
+  PASSED
+  FAILED
+}
+
+model CareerJourney {
+  id         String        @id @default(uuid())
+  userId     String
+  trackId    String
+  eventId    String? // set khi journey được tạo qua POST /career/events/:id/enter — dùng để tính leaderboard sự kiện
+  status     JourneyStatus @default(IN_PROGRESS)
+  startedAt  DateTime      @default(now())
+  finishedAt DateTime?
+
+  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track           CareerTrack             @relation(fields: [trackId], references: [id])
+  event           HiringEvent?            @relation(fields: [eventId], references: [id])
+  progress        JourneyStageProgress[]
+  readinessReport JourneyReadinessReport?
+
+  @@index([userId, status])
+  @@index([eventId])
+  @@map("career_journeys")
+}
+
+// Readiness Report (P7) — báo cáo AI tổng hợp cuối journey, sinh qua job nền
+// khi journey đóng THẬT (PASSED hoặc give-up FAILED, không sinh khi mới
+// retry) — xem career.listener.ts#handleJourneyFinished, career.processor.ts.
+model JourneyReadinessReport {
+  id          String   @id @default(uuid())
+  journeyId   String   @unique
+  content     String // text Gemini tổng hợp, KHÔNG markdown (đúng convention Offer Debrief — FE hiện text thuần)
+  generatedAt DateTime @default(now())
+
+  journey CareerJourney @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+
+  @@map("journey_readiness_reports")
+}
+
+model JourneyStageProgress {
+  id                     String      @id @default(uuid())
+  journeyId              String
+  stageId                String
+  sessionId              String?     @unique // set khi stage.kind = PROBLEM
+  questAttemptId         String?     @unique // set khi stage.kind = QUEST
+  status                 StageStatus @default(PENDING)
+  completedAt            DateTime?
+  // Tăng mỗi lần auto-grade (P4) đánh giá mà CHƯA đạt passThreshold — stage
+  // không tự FAILED khi chưa đạt (quyết định sản phẩm: cho retry tới khi đạt),
+  // chỉ dùng để FE hiện nút "Give up" sau lần thử đầu tiên.
+  attemptCount           Int         @default(0)
+  // Tên tag yếu nhất đã dẫn tới việc chọn problem này cho stage adaptive
+  // (P5) — snapshot tại thời điểm tạo, null nếu stage không adaptive hoặc
+  // chọn ngẫu nhiên do chưa đủ dữ liệu (cold start).
+  pickedReasonTag        String?
+  // set khi stage.kind = PEER_INTERVIEW, sau khi candidate chủ động tạo
+  // phòng (không tự tạo lúc vào stage) — P6.
+  peerInterviewSessionId String?     @unique
+
+  journey              CareerJourney         @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  stage                CareerTrackStage      @relation(fields: [stageId], references: [id])
+  session              Session?              @relation(fields: [sessionId], references: [id])
+  questAttempt         QuestAttempt?         @relation(fields: [questAttemptId], references: [id])
+  peerInterviewSession PeerInterviewSession? @relation(fields: [peerInterviewSessionId], references: [id])
+
+  @@unique([journeyId, stageId])
+  @@map("journey_stage_progress")
+}
+
 model Session {
   id        String        @id @default(uuid())
   userId    String
   problemId String
   status    SessionStatus @default(PHASE_1_STRATEGY)
-  
+
   // Optimistic Locking
-  version   Int @default(1)
+  version Int @default(1)
 
   // Phase 1 Data
   strategyAnswer   String?
   strategyFeedback String? // AI Review
+  // "hedging" | "neutral" | "assertive" — Gemini tự đánh giá dựa trên cách
+  // ứng viên diễn đạt câu trả lời được approve (Confidence Calibration Score).
+  // String tự do (không phải Prisma enum) vì đây là output AI, validate ở
+  // ai.processor.ts trước khi ghi, không validate ở tầng DB.
+  confidenceSignal String?
 
   // Phase 2 Data
   currentCode     String?
@@ -284,12 +517,13 @@ model Session {
   finishedAt DateTime?
 
   // Relations
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  problem     Problem        @relation(fields: [problemId], references: [id])
-  messages    Message[]
-  submissions Submission[]
-  events      SessionEvent[]
-  evaluation  Evaluation?
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem         Problem               @relation(fields: [problemId], references: [id])
+  messages        Message[]
+  submissions     Submission[]
+  events          SessionEvent[]
+  evaluation      Evaluation?
+  journeyProgress JourneyStageProgress?
 
   @@index([userId, status])
   @@index([problemId])
@@ -311,19 +545,19 @@ model SessionEvent {
 }
 
 model Message {
-  id            String        @id @default(uuid())
-  sessionId     String
-  sender        MessageSender
-  type          MessageType   @default(TEXT)
-  content       String
-  
+  id        String        @id @default(uuid())
+  sessionId String
+  sender    MessageSender
+  type      MessageType   @default(TEXT)
+  content   String
+
   // AI Info
   tokenUsage    Int?
   aiModel       String? // "gpt-4o"
   promptVersion String?
-  
-  phaseContext  SessionStatus?
-  metaData      Json?
+
+  phaseContext SessionStatus?
+  metaData     Json?
 
   createdAt DateTime @default(now())
 
@@ -334,16 +568,16 @@ model Message {
 }
 
 model Submission {
-  id            String           @id @default(uuid())
-  sessionId     String
-  code          String
-  language      String
-  status        SubmissionStatus
-  
-  passedTests   Int     @default(0)
-  totalTests    Int     @default(0)
-  executionTime Int? // ms
-  memoryUsage   Int? // kb
+  id        String           @id @default(uuid())
+  sessionId String
+  code      String
+  language  String
+  status    SubmissionStatus
+
+  passedTests     Int   @default(0)
+  totalTests      Int   @default(0)
+  executionTime   Int? // ms
+  memoryUsage     Int? // kb
   testCaseResults Json? // Chi tiết từng case
 
   createdAt DateTime @default(now())
@@ -354,17 +588,86 @@ model Submission {
 }
 
 model Evaluation {
-  id        String   @id @default(uuid())
-  sessionId String   @unique
-  
-  scores    Json // {logic: 80, cleanCode: 90}
-  feedback  String?
-  pros      Json? // List string
-  cons      Json? // List string
+  id        String @id @default(uuid())
+  sessionId String @unique
+
+  scores   Json // {logic: 80, cleanCode: 90}
+  feedback String?
+  pros     Json? // List string
+  cons     Json? // List string
 
   createdAt DateTime @default(now())
 
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@map("evaluations")
+}
+
+// --- P3: LIVE CO-INTERVIEW MODE (PEER INTERVIEW) ---
+// Model hoàn toàn RIÊNG, không đụng Session/state machine PHASE_1/PHASE_2 —
+// quyết định sản phẩm đã chốt ở ROADMAP.md mục P3 (Session.userId là FK duy
+// nhất, không có chỗ cho người thứ 2 mà không sửa bảng trung tâm nhất hệ
+// thống). AI không tham gia real-time trong lúc phòng hoạt động, chỉ chấm
+// điểm 1 lần lúc kết thúc (job grade-peer-interview trên ai-queue có sẵn).
+
+enum PeerSessionStatus {
+  WAITING_FOR_PEER // vừa tạo, đợi người thứ 2 join bằng inviteCode
+  ACTIVE
+  COMPLETED
+  ABANDONED
+}
+
+enum PeerRole {
+  CANDIDATE
+  PEER_INTERVIEWER
+}
+
+model PeerInterviewSession {
+  id                String            @id @default(uuid())
+  candidateId       String
+  peerInterviewerId String? // null cho tới khi có người join
+  problemId         String
+  status            PeerSessionStatus @default(WAITING_FOR_PEER)
+  inviteCode        String            @unique // share cho người thứ 2 join qua POST /peer-interviews/join/:inviteCode
+  startedAt         DateTime          @default(now())
+  endedAt           DateTime?
+
+  candidate       User                     @relation("PeerInterviewCandidate", fields: [candidateId], references: [id], onDelete: Cascade)
+  peerInterviewer User?                    @relation("PeerInterviewInterviewer", fields: [peerInterviewerId], references: [id])
+  problem         Problem                  @relation(fields: [problemId], references: [id])
+  messages        PeerInterviewMessage[]
+  evaluation      PeerInterviewEvaluation?
+  journeyProgress JourneyStageProgress?
+
+  @@index([candidateId])
+  @@index([peerInterviewerId])
+  @@map("peer_interview_sessions")
+}
+
+model PeerInterviewMessage {
+  id        String   @id @default(uuid())
+  sessionId String
+  role      PeerRole // CANDIDATE hay PEER_INTERVIEWER gửi — không tái dùng MessageSender (enum đó gắn với Session/AI)
+  senderId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  session PeerInterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("peer_interview_messages")
+}
+
+model PeerInterviewEvaluation {
+  id                      String   @id @default(uuid())
+  sessionId               String   @unique
+  candidateScore          Int
+  candidateFeedback       String
+  peerInterviewerScore    Int
+  peerInterviewerFeedback String
+  createdAt               DateTime @default(now())
+
+  session PeerInterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("peer_interview_evaluations")
 }

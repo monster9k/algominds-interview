@@ -27,6 +27,7 @@
     "running": "Đang chạy...",
     "submit": "Nộp bài",
     "submitting": "Đang nộp...",
+    "replay": "Xem lại buổi phỏng vấn",
     "sortAscending": "Sắp xếp tăng dần",
     "sortDescending": "Sắp xếp giảm dần",
     "filterByDifficulty": "Độ khó",
@@ -142,5 +143,11 @@
   "submissionsList": {
     "status": "Trạng thái",
     "language": "Ngôn ngữ"
+  },
+  "replay": {
+    "title": "Xem lại buổi phỏng vấn",
+    "loadFailed": "Không tải được lịch sử buổi phỏng vấn này.",
+    "empty": "Session này chưa có lịch sử.",
+    "flagged": "AI phát hiện vấn đề với chiến lược ở đây"
   }
 }

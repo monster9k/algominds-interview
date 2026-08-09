@@ -9,11 +9,15 @@ export interface LoginCredentials {
   password: string;
 }
 
+// Backend luôn trả { userId, email, role } (xem auth.service.ts#generateToken)
+// — KHÔNG có field "id"/"name"/"avatarUrl" trong response login/register/refresh
+// thực tế, dù trước đây type khai báo "id". "name"/"avatarUrl" chỉ có ở
+// GET /users/me, không có ở payload đăng nhập.
 export interface User {
-  id: string;
+  userId: string;
   email: string;
-  name: string;
   role: string;
+  name?: string;
   avatarUrl?: string;
 }
 

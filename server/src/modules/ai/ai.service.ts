@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GenerativeModel, GoogleGenerativeAI } from '@google/generative-ai';
+import { PrismaService } from '../../prisma/prisma.service';
 
 // Shape Gemini is instructed to return for evaluateCode() — see the
 // evaluationModel's systemInstruction below. Fields stay loosely typed
@@ -17,31 +18,17 @@ interface GeminiEvaluationResponse {
   cons?: unknown;
 }
 
-@Injectable()
-export class AiService {
-  private genAI: GoogleGenerativeAI;
-  private model: GenerativeModel; // For Phase 1 Strategy evaluation
-  private evaluationModel: GenerativeModel; // For Phase 3 Code evaluation
-
-  constructor(private configService: ConfigService) {
-    this.genAI = new GoogleGenerativeAI(
-      this.configService.getOrThrow<string>('GEMINI_API_KEY'),
-    );
-
-    // Model 1: Phase 1 Strategy Evaluation
-    this.model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash-lite',
-      generationConfig: {
-        responseMimeType: 'application/json',
-      },
-      systemInstruction: `
+// Nối vào cuối systemInstruction gốc khi persona có systemPromptExtra —
+// KHÔNG thay đổi khối JSON contract/quy tắc cốt lõi bên trên.
+const STRATEGY_SYSTEM_INSTRUCTION = `
         Bạn là AI interviewer, đánh giá giải pháp (Strategy) của ứng viên cho bài toán.
 
         INPUT: Ngữ cảnh bài toán và câu trả lời của ứng viên.
         OUTPUT: Bắt buộc trả về JSON theo đúng định dạng sau:
         {
          "status": "Approved" | "Rejected",
-         "message": "string"
+         "message": "string",
+         "confidenceSignal": "hedging" | "neutral" | "assertive"
         }
 
         QUY TẮC ĐÁNH GIÁ:
@@ -61,7 +48,121 @@ export class AiService {
         5. Nếu ứng viên chat linh tinh không liên quan:
           - Gán "status": "Rejected".
           - "message": Nhắc nhở tập trung vào giải pháp cho bài toán.
-      `,
+        6. "confidenceSignal" đánh giá RIÊNG cách ứng viên DIỄN ĐẠT câu trả lời
+           (không liên quan tới "status" đúng/sai):
+          - "hedging": dùng nhiều từ ngờ vực như "có thể", "em nghĩ là", "không chắc lắm", "hình như".
+          - "assertive": khẳng định chắc chắn, dứt khoát, không rào đón.
+          - "neutral": không rõ nghiêng về hướng nào, hoặc câu trả lời quá ngắn để đánh giá giọng điệu.
+      `;
+
+// Offer Debrief (career.processor.ts) — tổng hợp nhiều strategyAnswer đã
+// APPROVED của cùng 1 bài toán thành 1 đoạn digest. Output là text tự do
+// (không cần JSON contract) nên không set responseMimeType như 2 model kia.
+const OFFER_DEBRIEF_SYSTEM_INSTRUCTION = `
+        Bạn là 1 senior interviewer tổng hợp lại các chiến lược (strategy) mà
+        nhiều ứng viên KHÁC NHAU đã đưa ra và được duyệt (APPROVED) cho CÙNG 1
+        bài toán phỏng vấn.
+
+        INPUT: 1 danh sách các strategy answer, mỗi mục là của 1 ứng viên khác nhau.
+        OUTPUT: 1 đoạn tổng hợp bằng tiếng Việt, gộp các hướng tiếp cận giống
+        nhau lại thành từng nhóm, mỗi nhóm nêu rõ: ý tưởng cốt lõi, độ phức tạp
+        thời gian/không gian (nếu người viết có đề cập hoặc suy ra được), và
+        trade-off so với các hướng khác.
+
+        QUY TẮC:
+        1. Không bịa thêm hướng tiếp cận không xuất hiện trong input.
+        2. Không trích dẫn nguyên văn câu chữ của ứng viên nào, không nhắc tới
+           danh tính — luôn diễn giải lại bằng lời của bạn.
+        3. Nếu tất cả input đều cùng 1 hướng tiếp cận, chỉ cần nêu hướng đó,
+           không cần bịa thêm hướng khác cho có vẻ đa dạng.
+        4. Trả về TEXT THUẦN, không dùng markdown (không "**", không "#",
+           không bullet "-"/"*") — FE hiện thị nguyên văn, không render markdown.
+      `;
+
+// Model 4 (P3 Live Co-Interview) — chấm điểm 2 chiều 1 LẦN duy nhất sau khi
+// buổi peer interview kết thúc, input là toàn bộ PeerInterviewMessage[] +
+// problemContext. Không liên quan gì tới STRATEGY_SYSTEM_INSTRUCTION (session
+// Phase 1/2 bình thường) — đây là model độc lập cho luồng peer-to-peer.
+const PEER_INTERVIEW_SYSTEM_INSTRUCTION = `
+        Bạn là 1 senior engineering manager, chấm điểm lại 1 buổi phỏng vấn
+        peer-to-peer (2 người thật đóng vai candidate và interviewer, không có
+        AI tham gia trong lúc phỏng vấn diễn ra).
+
+        INPUT: Toàn bộ đoạn hội thoại (mỗi tin nhắn gắn role CANDIDATE hoặc
+        PEER_INTERVIEWER) và ngữ cảnh bài toán được phỏng vấn.
+        OUTPUT: Bắt buộc trả về JSON theo đúng định dạng sau:
+        {
+          "candidate": { "score": 0-100, "feedback": "string" },
+          "peerInterviewer": { "score": 0-100, "feedback": "string" }
+        }
+
+        TIÊU CHÍ CHẤM:
+        1. candidate.score: giải thích ý tưởng có rõ ràng, đúng hướng, xử lý
+           được câu hỏi/phản biện của peer interviewer không.
+        2. peerInterviewer.score: câu hỏi follow-up có chất lượng, có đào sâu
+           đúng chỗ, có dẫn dắt hợp lý không (không chấm điểm dựa trên việc
+           candidate đúng hay sai).
+        3. Nếu hội thoại quá ngắn để đánh giá đầy đủ 1 trong 2 phía, vẫn phải
+           chấm nhưng ghi rõ trong "feedback" rằng dữ liệu còn hạn chế.
+        4. Không bịa thêm nội dung không có trong hội thoại.
+      `;
+
+// Model 5 (P7 Readiness Report) — tổng hợp 1 báo cáo "mức độ sẵn sàng"
+// cuối journey, text tự do (không cần JSON contract), cùng pattern
+// OFFER_DEBRIEF_SYSTEM_INSTRUCTION.
+const READINESS_REPORT_SYSTEM_INSTRUCTION = `
+        Bạn là 1 career coach tổng hợp báo cáo "mức độ sẵn sàng phỏng vấn"
+        cho 1 ứng viên vừa hoàn thành (hoặc chủ động dừng) 1 track luyện tập
+        nhiều vòng (Phone Screen, Technical Round, Behavioral...).
+
+        INPUT: kết quả từng vòng (đạt/không đạt, điểm, số lần phải thử lại),
+        xu hướng tự tin khi trả lời chiến lược (assertive/hedging/neutral so
+        với việc giải đúng/sai thực tế), và các chủ đề (tag) ứng viên còn yếu.
+
+        OUTPUT: 1 đoạn văn tiếng Việt, gồm:
+        1. Đánh giá tổng thể mức độ sẵn sàng — dựa trên tỉ lệ vòng đạt VÀ số
+           lần phải thử lại (thử lại nhiều lần dù cuối cùng đạt vẫn là tín
+           hiệu cần luyện thêm, không chỉ nhìn kết quả cuối cùng).
+        2. 2-3 điểm cụ thể cần cải thiện trước khi phỏng vấn thật — ưu tiên
+           nhắc đúng tên chủ đề/tag còn yếu, và xu hướng tự tin lệch pha nếu
+           có (tự tin thái quá nhưng sai, hoặc đúng mà thiếu tự tin).
+
+        QUY TẮC:
+        1. Không bịa thêm dữ liệu không có trong input.
+        2. Trả về TEXT THUẦN, không dùng markdown (không "**", không "#",
+           không bullet "-"/"*") — FE hiện thị nguyên văn, không render markdown.
+        3. Nếu dữ liệu quá ít (vd chỉ 1 vòng, không có tín hiệu confidence hay
+           tag yếu), vẫn viết được nhưng nói rõ đánh giá còn giới hạn.
+      `;
+
+@Injectable()
+export class AiService {
+  private genAI: GoogleGenerativeAI;
+  private model: GenerativeModel; // Phase 1 Strategy evaluation, persona "default" (systemPromptExtra rỗng)
+  private evaluationModel: GenerativeModel; // For Phase 3 Code evaluation
+  private debriefModel: GenerativeModel; // For Offer Debrief digest generation
+  private peerInterviewModel: GenerativeModel; // For P3 peer interview 2-way grading
+  private readinessReportModel: GenerativeModel; // For P7 Readiness Report generation
+
+  // Cache model đã build theo personaId — tránh gọi lại Gemini SDK + Prisma
+  // mỗi tin nhắn cho cùng 1 persona.
+  private readonly personaModelCache = new Map<string, GenerativeModel>();
+
+  constructor(
+    private configService: ConfigService,
+    private prisma: PrismaService,
+  ) {
+    this.genAI = new GoogleGenerativeAI(
+      this.configService.getOrThrow<string>('GEMINI_API_KEY'),
+    );
+
+    // Model 1: Phase 1 Strategy Evaluation
+    this.model = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      generationConfig: {
+        responseMimeType: 'application/json',
+      },
+      systemInstruction: STRATEGY_SYSTEM_INSTRUCTION,
     });
 
     // Model 2: Phase 3 Code Evaluation (Clean Code + Performance + Best Practices)
@@ -101,12 +202,67 @@ export class AiService {
         Hãy chi tiết, xây dựng nhưng cũng chỉ ra cơ hội cải thiện.
       `,
     });
+
+    // Model 3: Offer Debrief digest — text tự do, không set responseMimeType
+    this.debriefModel = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      systemInstruction: OFFER_DEBRIEF_SYSTEM_INSTRUCTION,
+    });
+
+    // Model 4: P3 Peer Interview 2-way grading
+    this.peerInterviewModel = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      generationConfig: {
+        responseMimeType: 'application/json',
+      },
+      systemInstruction: PEER_INTERVIEW_SYSTEM_INSTRUCTION,
+    });
+
+    // Model 5: P7 Readiness Report — text tự do, không set responseMimeType
+    this.readinessReportModel = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      systemInstruction: READINESS_REPORT_SYSTEM_INSTRUCTION,
+    });
+  }
+
+  // Không truyền personaId -> dùng `this.model` xây sẵn ở constructor (persona
+  // "default"), không tốn thêm round-trip Prisma. Đây là hành vi hiện tại của
+  // sessions/chat trước khi Career Journey tích hợp persona thật.
+  private async resolveStrategyModel(
+    personaId?: string,
+  ): Promise<GenerativeModel> {
+    if (!personaId) return this.model;
+
+    const cached = this.personaModelCache.get(personaId);
+    if (cached) return cached;
+
+    const persona = await this.prisma.interviewerPersona.findUnique({
+      where: { id: personaId },
+    });
+
+    // Persona không tồn tại/không có systemPromptExtra -> fallback model mặc định,
+    // không chặn luồng chat vì lý do dữ liệu persona.
+    if (!persona || !persona.systemPromptExtra) {
+      return this.model;
+    }
+
+    const personaModel = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      generationConfig: {
+        responseMimeType: 'application/json',
+      },
+      systemInstruction: `${STRATEGY_SYSTEM_INSTRUCTION}\n\n${persona.systemPromptExtra}`,
+    });
+
+    this.personaModelCache.set(personaId, personaModel);
+    return personaModel;
   }
 
   async generateResponse(
     history: { role: 'user' | 'model'; parts: { text: string }[] }[],
     newMessage: string,
     problemContext: string,
+    personaId?: string,
   ) {
     try {
       // 1. TẠO NGỮ CẢNH GIẢ (Context Injection)
@@ -132,7 +288,8 @@ export class AiService {
 
       const fullHistory = [...contextHistory, ...history];
       // khởi tạo đoạn chat với lịch sử cũ
-      const chat = this.model.startChat({
+      const model = await this.resolveStrategyModel(personaId);
+      const chat = model.startChat({
         history: fullHistory,
       });
       // gửi tin nhắn mới
@@ -216,5 +373,122 @@ Hãy đánh giá code này theo 4 tiêu chí: logic, cleanCode, performance, bes
         `Failed to evaluate code: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
+  }
+
+  async generateOfferDebrief(
+    strategyAnswers: string[],
+    problemContext: string,
+  ): Promise<string> {
+    const prompt = `
+Bài toán:
+${problemContext}
+
+Các chiến lược đã được duyệt (mỗi mục là của 1 ứng viên khác nhau):
+${strategyAnswers.map((answer, i) => `${i + 1}. ${answer}`).join('\n')}
+    `;
+
+    const chat = this.debriefModel.startChat({ history: [] });
+    const result = await chat.sendMessage(prompt);
+    return result.response.text();
+  }
+
+  async gradePeerInterview(
+    messages: { role: 'CANDIDATE' | 'PEER_INTERVIEWER'; content: string }[],
+    problemContext: string,
+  ): Promise<{
+    candidateScore: number;
+    candidateFeedback: string;
+    peerInterviewerScore: number;
+    peerInterviewerFeedback: string;
+  }> {
+    const transcript = messages
+      .map((m) => `[${m.role}] ${m.content}`)
+      .join('\n');
+
+    const prompt = `
+Bài toán:
+${problemContext}
+
+Đoạn hội thoại (theo thứ tự thời gian):
+${transcript}
+    `;
+
+    const chat = this.peerInterviewModel.startChat({ history: [] });
+    const result = await chat.sendMessage(prompt);
+    const rawResponse = result.response.text();
+
+    const parsed = JSON.parse(rawResponse) as {
+      candidate?: { score?: unknown; feedback?: unknown };
+      peerInterviewer?: { score?: unknown; feedback?: unknown };
+    };
+
+    if (
+      typeof parsed.candidate?.score !== 'number' ||
+      typeof parsed.peerInterviewer?.score !== 'number'
+    ) {
+      throw new Error('Invalid peer interview grading structure from AI');
+    }
+
+    return {
+      candidateScore: parsed.candidate.score,
+      candidateFeedback:
+        typeof parsed.candidate.feedback === 'string'
+          ? parsed.candidate.feedback
+          : '',
+      peerInterviewerScore: parsed.peerInterviewer.score,
+      peerInterviewerFeedback:
+        typeof parsed.peerInterviewer.feedback === 'string'
+          ? parsed.peerInterviewer.feedback
+          : '',
+    };
+  }
+
+  async generateReadinessReport(input: {
+    trackName: string;
+    stages: {
+      label: string;
+      status: 'PASSED' | 'FAILED';
+      score: number | null;
+      attemptCount: number;
+    }[];
+    confidenceCalibration: {
+      totalRated: number;
+      bySignal: { signal: string; total: number; correct: number }[];
+      overconfidentCount: number;
+      underconfidentCount: number;
+    };
+    weakTags: { tagName: string; weight: number }[];
+  }): Promise<string> {
+    const stagesSummary = input.stages
+      .map(
+        (s) =>
+          `- ${s.label}: ${s.status}, điểm ${s.score ?? 'N/A'}, số lần thử ${s.attemptCount + 1}`,
+      )
+      .join('\n');
+
+    const confidenceSummary = input.confidenceCalibration.bySignal
+      .map((b) => `${b.signal}: ${b.correct}/${b.total} lần trả lời đúng bài`)
+      .join(', ');
+
+    const weakTagsSummary = input.weakTags.length
+      ? input.weakTags.map((t) => t.tagName).join(', ')
+      : 'không có dữ liệu rõ ràng';
+
+    const prompt = `
+Track: ${input.trackName}
+
+Kết quả từng vòng:
+${stagesSummary}
+
+Xu hướng tự tin khi trả lời chiến lược: ${confidenceSummary || 'không có dữ liệu'}
+Số lần "tự tin thái quá nhưng sai": ${input.confidenceCalibration.overconfidentCount}
+Số lần "đúng nhưng thiếu tự tin": ${input.confidenceCalibration.underconfidentCount}
+
+Chủ đề (tag) còn yếu nhất: ${weakTagsSummary}
+    `;
+
+    const chat = this.readinessReportModel.startChat({ history: [] });
+    const result = await chat.sendMessage(prompt);
+    return result.response.text();
   }
 }

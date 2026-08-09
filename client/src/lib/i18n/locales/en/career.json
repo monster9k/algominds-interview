@@ -1,0 +1,59 @@
+{
+  "title": "Career Journey",
+  "subtitle": "Pick a career track and go through Phone Screen, Technical Rounds, and the Onsite Loop with a different AI interviewer persona at each stage.",
+  "stageCount": "{{count}} stage",
+  "stageCount_other": "{{count}} stages",
+  "startTrack": "Start track",
+  "noTracks": "No career tracks available yet.",
+  "enterStage": "Enter stage",
+  "interviewer": "Interviewer: {{name}}",
+  "adaptivePick": "Picked for you because you're weak at {{tag}}",
+  "stageKind": {
+    "problem": "Coding problem",
+    "quest": "Quest mini-game",
+    "peerInterview": "Peer interview"
+  },
+  "status": {
+    "PENDING": "Locked",
+    "ACTIVE": "In progress",
+    "PASSED": "Passed",
+    "FAILED": "Failed"
+  },
+  "debrief": {
+    "title": "Offer Debrief"
+  },
+  "markPassed": "Mark as Passed",
+  "markFailed": "Mark as Failed",
+  "manualAdvanceHint": "Manual for now — there's no automatic detection of when a stage is actually done yet.",
+  "retryBanner": "Not quite — {{score}}/100, you need at least {{threshold}}. Fix your code and resubmit.",
+  "giveUp": "Give up on this track",
+  "events": {
+    "title": "Hiring Events",
+    "closesInDays": "Closes in {{count}} day",
+    "closesInDays_other": "Closes in {{count}} days",
+    "enter": "Enter event",
+    "viewLeaderboard": "View leaderboard",
+    "leaderboardTitle": "Leaderboard",
+    "leaderboardEmpty": "No entries yet for this event.",
+    "columns": {
+      "user": "User",
+      "stagesPassed": "Stages passed",
+      "messageCount": "Messages",
+      "duration": "Time"
+    }
+  },
+  "personaUnlock": {
+    "unlock": "Unlock {{name}}",
+    "unlocked": "{{name}} unlocked"
+  },
+  "peerInterview": {
+    "createRoom": "Create cross-interview room",
+    "createNewRoom": "Create a new room",
+    "enterRoom": "Enter room",
+    "inviteCodeLabel": "Share this invite code with a friend"
+  },
+  "readinessReport": {
+    "title": "Readiness Report",
+    "generating": "Generating your readiness report..."
+  }
+}

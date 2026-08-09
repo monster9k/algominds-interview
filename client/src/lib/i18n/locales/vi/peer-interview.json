@@ -1,0 +1,41 @@
+{
+  "title": "Phỏng vấn chéo (Peer Interview)",
+  "subtitle": "Luyện tập với 1 người thật: 1 candidate, 1 peer interviewer, thuần hội thoại (không có code editor) — AI chấm điểm 2 chiều ngay sau khi buổi phỏng vấn kết thúc.",
+  "create": {
+    "title": "Tạo phiên mới",
+    "description": "Chọn 1 bài toán và lấy mã mời để gửi cho peer interviewer.",
+    "problemPlaceholder": "Chọn 1 bài toán",
+    "submit": "Tạo phiên"
+  },
+  "join": {
+    "title": "Join phiên",
+    "description": "Có mã mời từ ai đó? Join làm peer interviewer cho họ.",
+    "inviteCodeLabel": "Mã mời",
+    "inviteCodePlaceholder": "vd: A1B2C3D4",
+    "submit": "Join"
+  },
+  "room": {
+    "loading": "Đang tải phiên...",
+    "loadFailed": "Không tải được phiên này.",
+    "waitingTitle": "Đang đợi peer interviewer",
+    "waitingDescription": "Gửi mã mời này — phiên sẽ bắt đầu ngay khi họ join.",
+    "copyInviteCode": "Sao chép",
+    "copied": "Đã sao chép mã mời",
+    "polling": "Đang kiểm tra người tham gia mới...",
+    "roleLabel": "Bạn: {{role}}",
+    "role": {
+      "CANDIDATE": "Candidate",
+      "PEER_INTERVIEWER": "Peer Interviewer"
+    },
+    "statusActive": "Đang diễn ra",
+    "statusEnded": "Đã kết thúc",
+    "endInterview": "Kết thúc phỏng vấn",
+    "endedNotice": "Người còn lại đã kết thúc buổi phỏng vấn.",
+    "emptyChat": "Chưa có tin nhắn nào — bắt đầu chào hỏi thôi!",
+    "inputPlaceholder": "Nhập tin nhắn...",
+    "grading": "AI đang chấm điểm buổi phỏng vấn này...",
+    "evaluationTitle": "Kết quả chấm điểm AI",
+    "candidateScore": "Candidate",
+    "peerInterviewerScore": "Peer Interviewer"
+  }
+}

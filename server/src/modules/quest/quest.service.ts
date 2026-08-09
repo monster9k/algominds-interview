@@ -3,8 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Difficulty } from '@prisma/client';
+import { Difficulty, StageKind, StageStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CareerService } from '../career/career.service';
 import { CreateAttemptDto } from './dto/create-attempt.dto';
 
 export interface GetSnippetsFilters {
@@ -57,7 +58,10 @@ const BADGE_RULES: Record<string, (ctx: BadgeRuleContext) => boolean> = {
 
 @Injectable()
 export class QuestService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private careerService: CareerService,
+  ) {}
 
   // GET /quest/snippets — trả N snippet ngẫu nhiên, KHÔNG lộ buggyLine/explanation
   // (chỉ trả sau khi FE submit đáp án qua POST snippets/:id/answer).
@@ -134,9 +138,52 @@ export class QuestService {
       },
     });
 
+    await this.autoGradeCareerQuestStage(userId, dto, attempt.id);
+
     const newBadges = await this.awardBadges(userId, dto);
 
     return { ...attempt, newBadges };
+  }
+
+  // P5 — nếu user đang có 1 JourneyStageProgress ACTIVE với stage.kind=QUEST
+  // (career journey), gắn ván vừa chơi vào đó + auto-grade qua đúng cơ chế
+  // chung CareerService.autoGradeStage (P4) theo tỉ lệ đúng — không tạo
+  // progress mới, không tự FAILED nếu chưa đạt. Lọc theo status=ACTIVE là đủ
+  // (không lọc thêm questAttemptId=null): sau lần chơi retry đầu tiên,
+  // questAttemptId đã trỏ vào attempt CŨ trong lúc stage vẫn ACTIVE — nếu
+  // lọc thêm questAttemptId=null thì mọi lần chơi lại sau lần đầu sẽ không
+  // khớp query này nữa (bug thật bắt được khi verify tay), nên mỗi lần chơi
+  // trong lúc stage còn ACTIVE đều phải ghi đè questAttemptId thành attempt
+  // mới nhất. Không có journey nào đang chờ -> no-op, không đổi hành vi
+  // Quest độc lập hiện có.
+  private async autoGradeCareerQuestStage(
+    userId: string,
+    dto: CreateAttemptDto,
+    attemptId: string,
+  ) {
+    const activeQuestProgress =
+      await this.prisma.journeyStageProgress.findFirst({
+        where: {
+          status: StageStatus.ACTIVE,
+          stage: { kind: StageKind.QUEST },
+          journey: { userId },
+        },
+      });
+    if (!activeQuestProgress) return;
+
+    await this.prisma.journeyStageProgress.update({
+      where: { id: activeQuestProgress.id },
+      data: { questAttemptId: attemptId },
+    });
+
+    const totalAnswered = dto.correctCount + dto.wrongCount;
+    const scorePercent =
+      totalAnswered > 0 ? (dto.correctCount / totalAnswered) * 100 : 0;
+
+    await this.careerService.autoGradeStage(
+      activeQuestProgress.id,
+      scorePercent,
+    );
   }
 
   // Kiểm tra rule từng badge trong BADGE_RULES so với ván vừa hoàn thành, tạo

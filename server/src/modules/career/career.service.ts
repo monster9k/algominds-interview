@@ -211,28 +211,37 @@ export class CareerService {
 
     const firstStage = track.stages[0];
 
-    const journey = await this.prisma.careerJourney.create({
-      data: {
-        userId,
-        trackId: track.id,
-        eventId,
-        status: JourneyStatus.IN_PROGRESS,
-      },
-    });
-
+    // ensureStageSession() có thể throw (thiếu problemId, problem pool rỗng...) —
+    // gọi TRƯỚC khi tạo CareerJourney, và gộp 2 write còn lại vào 1 transaction,
+    // để không bao giờ để lại 1 CareerJourney IN_PROGRESS mồ côi (0 progress row)
+    // nếu có lỗi giữa chừng — trạng thái đó khiến user kẹt vĩnh viễn ở màn hình
+    // journey vì không stage nào ACTIVE để advance/give-up.
     const { sessionId, pickedReasonTag } = await this.ensureStageSession(
       userId,
       firstStage,
     );
 
-    await this.prisma.journeyStageProgress.create({
-      data: {
-        journeyId: journey.id,
-        stageId: firstStage.id,
-        status: StageStatus.ACTIVE,
-        sessionId,
-        pickedReasonTag,
-      },
+    const journey = await this.prisma.$transaction(async (tx) => {
+      const journey = await tx.careerJourney.create({
+        data: {
+          userId,
+          trackId: track.id,
+          eventId,
+          status: JourneyStatus.IN_PROGRESS,
+        },
+      });
+
+      await tx.journeyStageProgress.create({
+        data: {
+          journeyId: journey.id,
+          stageId: firstStage.id,
+          status: StageStatus.ACTIVE,
+          sessionId,
+          pickedReasonTag,
+        },
+      });
+
+      return journey;
     });
 
     return this.prisma.careerJourney.findUniqueOrThrow({

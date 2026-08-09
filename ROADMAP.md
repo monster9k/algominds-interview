@@ -70,7 +70,7 @@
   ```
   và dùng nó ở MỌI nơi đọc/guard theo status (`findAll`, `findOne`, `getLeaderboard`, guard Run/Submit) — không bao giờ tin cột DB cho logic gating (vẫn giữ cột DB làm fallback hiển thị).
 
-- [ ] **BE: `ContestService` — API giải bài thật**
+- [x] **BE: `ContestService` — API giải bài thật**
   📍 `server/src/modules/contest/contest.service.ts`, tham chiếu `judge.service.ts` (`runCode`/`submitCode`) và `problems.service.ts` (`findOne` — safe select không lộ `hiddenTestCases`).
   - `findOne(idOrSlug, userId?)`: mở rộng enrich `myStatus: { solved, attempts }` theo từng bài khi có `userId` (mirror pattern enrichment của `problems.service.findAll`).
   - `getContestProblem(contestIdOrSlug, problemSlug, userId?)`: safe select đề bài + status contest derived + `myStatus`/lịch sử nộp nếu đã đăng nhập.

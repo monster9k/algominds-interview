@@ -25,5 +25,38 @@
     "score": "Score",
     "penalty": "Penalty (min)",
     "empty": "No submissions yet."
+  },
+  "countdown": {
+    "startsIn": "Starts in {{time}}",
+    "endsIn": "Ends in {{time}}",
+    "ended": "Contest ended"
+  },
+  "solve": {
+    "loading": "Loading problem...",
+    "loadError": "Could not load this problem.",
+    "backToContest": "Back to contest",
+    "run": "Run",
+    "running": "Running...",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "points": "pts",
+    "alreadySolvedHint": "Already solved",
+    "emptyCode": "Write some code before running or submitting.",
+    "contestEndedBanner": "This contest has ended — submissions are closed.",
+    "contestNotStartedBanner": "This contest hasn't started yet.",
+    "tabTestcases": "Testcases",
+    "tabResult": "Result",
+    "noTestCases": "No sample test cases for this problem.",
+    "runResultFirst": "Run or submit your code to see results here.",
+    "caseLabel": "Case {{number}}",
+    "accepted": "Accepted",
+    "passedLabel": "{{passed}}/{{total}} passed",
+    "runtimeMemoryLabel": "Runtime: {{time}}ms · Memory: {{memory}}KB",
+    "pass": "Pass",
+    "fail": "Fail",
+    "input": "Input",
+    "expected": "Expected",
+    "actual": "Actual",
+    "error": "Error"
   }
 }

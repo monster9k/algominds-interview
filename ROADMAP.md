@@ -107,7 +107,7 @@
   - Thay logic chọn bài cố định bằng util `pickRandomProblemsByDifficulty` (xem task P1 bên dưới) — chỉ seed **1 contest mẫu** (không phải 2 như trước, vì không còn kịch bản leaderboard để "diễn"), `startTime` vài phút trước / `endTime` vài giờ sau để `deriveContestStatus()` đọc ra `ONGOING` ngay sau khi seed — dev mới clone repo chạy được full luồng list→detail→giải bài→nộp→leaderboard mà không cần setup tay.
   - Thêm bước promote 1 user seed sẵn có (vd user đầu tiên trong `seed.ts` chính) lên `role: 'ADMIN'` (upsert idempotent) để test API tạo contest (P1) mà không cần sửa tay DB. Log hint ra console sau khi seed xong.
 
-- [ ] **FE: trang giải bài contest mới**
+- [x] **FE: trang giải bài contest mới**
   📍 `client/src/features/contest/pages/contest-solve-page.tsx`, route `/contests/:contestId/problems/:problemSlug` đăng ký trong `client/src/app/router-instance.tsx` dưới block `ProtectedRoute` (cạnh `/interview/:slug`) — Run/Submit cần auth phía BE nên FE cũng gate ở đây.
   - Layout tham khảo `ResizablePanelGroup` của `interview-room.tsx` nhưng **bỏ hẳn** tab chat chiến lược, `useInterviewSocket`, panel AI evaluation, state khoá-theo-phase — đây là trang riêng cho thi tốc độ, không phải bản copy interview-room (đã chốt: contest bỏ qua Phase 1 hoàn toàn).
   - Component mới, feature-local theo `design.md` (không tái dùng component "shaped around session" của `interview`):

@@ -25,5 +25,38 @@
     "score": "スコア",
     "penalty": "ペナルティ(分)",
     "empty": "まだ提出がありません。"
+  },
+  "countdown": {
+    "startsIn": "{{time}}後に開始",
+    "endsIn": "{{time}}後に終了",
+    "ended": "コンテストは終了しました"
+  },
+  "solve": {
+    "loading": "問題を読み込み中...",
+    "loadError": "この問題を読み込めませんでした。",
+    "backToContest": "コンテストに戻る",
+    "run": "実行",
+    "running": "実行中...",
+    "submit": "提出",
+    "submitting": "提出中...",
+    "points": "点",
+    "alreadySolvedHint": "解決済み",
+    "emptyCode": "実行・提出する前にコードを書いてください。",
+    "contestEndedBanner": "このコンテストは終了しました — 提出はできません。",
+    "contestNotStartedBanner": "このコンテストはまだ開始していません。",
+    "tabTestcases": "テストケース",
+    "tabResult": "結果",
+    "noTestCases": "この問題にはサンプルテストケースがありません。",
+    "runResultFirst": "実行または提出すると結果がここに表示されます。",
+    "caseLabel": "ケース {{number}}",
+    "accepted": "正解",
+    "passedLabel": "{{passed}}/{{total}} 通過",
+    "runtimeMemoryLabel": "実行時間: {{time}}ms · メモリ: {{memory}}KB",
+    "pass": "通過",
+    "fail": "不合格",
+    "input": "入力",
+    "expected": "期待値",
+    "actual": "実際の出力",
+    "error": "エラー"
   }
 }

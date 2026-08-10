@@ -16,7 +16,12 @@
     "hard": "Hard"
   },
   "problems": {
-    "title": "Problems"
+    "title": "Problems",
+    "attempts": "{{count}} attempt(s)"
+  },
+  "cta": {
+    "enterContest": "Enter Contest",
+    "viewResults": "View Leaderboard"
   },
   "leaderboard": {
     "title": "Leaderboard",

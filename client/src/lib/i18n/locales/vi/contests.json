@@ -16,7 +16,12 @@
     "hard": "Khó"
   },
   "problems": {
-    "title": "Danh sách bài"
+    "title": "Danh sách bài",
+    "attempts": "Đã thử {{count}} lần"
+  },
+  "cta": {
+    "enterContest": "Vào thi ngay",
+    "viewResults": "Xem bảng xếp hạng"
   },
   "leaderboard": {
     "title": "Bảng xếp hạng",

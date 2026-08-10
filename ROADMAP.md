@@ -156,15 +156,18 @@
   - Mở rộng `max-w-4xl` → `max-w-6xl`; `ContestCard` thêm `ContestCountdown`.
   - Không ép layout sidebar-widget kiểu `problems-page.tsx` (Calendar/TrendingCompanies) — chưa có widget nào tương ứng cho contest, ép vào chỉ tạo thêm khoảng trống rỗng. Có thể thêm 1 dải thống kê ngắn ("X cuộc thi · Y đang diễn ra") để đỡ trống thay vì sidebar giả.
 
-- [ ] **FE: component `contest-countdown.tsx` dùng chung**
-  📍 `client/src/features/contest/components/contest-countdown.tsx`. Tick client-side mỗi giây, props `{ startTime, endTime, status }` → "Bắt đầu sau HH:MM:SS" / "Kết thúc sau HH:MM:SS" / "Đã kết thúc". Dùng ở list card, detail page, header trang giải bài.
+- [x] **FE: component `contest-countdown.tsx` dùng chung**
+  📍 `client/src/features/contest/components/contest-countdown.tsx`. Tick client-side mỗi giây, props `{ startTime, endTime, status }` → "Bắt đầu sau HH:MM:SS" / "Kết thúc sau HH:MM:SS" / "Đã kết thúc". Dùng ở detail page, header trang giải bài — wiring vào list card vẫn thuộc task "redesign `contest-list-page.tsx`" ở trên, chưa đụng tới.
 
-- [ ] **FE: redesign `contest-detail-page.tsx`**
-  📍 `client/src/features/contest/pages/contest-detail-page.tsx`, `components/contest-leaderboard-table.tsx`.
+- [x] **FE: `contest-detail-page.tsx` — CTA "Vào thi ngay" + dòng bài tập bấm được** (bổ sung 2026-08-10: user báo có contest rồi nhưng không tìm được nút tham gia/dòng bài không bấm được)
+  📍 `client/src/features/contest/pages/contest-detail-page.tsx`.
   - `ContestCountdown` nổi bật dưới title/badge.
-  - CTA chính đổi theo trạng thái: ONGOING → "Vào thi ngay"; UPCOMING → disabled, chỉ hiện countdown; FINISHED → nhấn mạnh hướng xuống leaderboard.
-  - Dòng bài tập trở thành `Link` tới `/contests/:contestId/problems/:slug`, hiện chữ cái/title/độ khó/điểm + trạng thái đã giải (dấu tick nếu `myStatus.solved`, badge số lần thử nếu đã thử mà chưa giải) lấy thẳng từ response `findOne()` đã enrich — không cần round-trip riêng. Khoá + tooltip khi UPCOMING; vẫn click được (read-only) khi FINISHED.
-  - `ContestLeaderboardTable`: highlight dòng của user hiện tại (so `entry.userId` với `useAuthStore`), style rank huy chương cho top 3 (icon `Medal`/`Trophy` từ lucide, theo đúng quy ước màu độ khó đã dùng trong app).
+  - CTA chính đổi theo trạng thái: ONGOING → "Vào thi ngay" (Link tới bài đầu tiên theo `order`); UPCOMING → disabled + tooltip "chưa bắt đầu"; FINISHED → "Xem bảng xếp hạng" (scroll xuống card leaderboard).
+  - Dòng bài tập trở thành `Link` tới `/contests/:contestId/problems/:slug`, hiện chữ cái/title/độ khó/điểm + trạng thái đã giải (`myStatus.solved` → tick xanh, `myStatus.attempts > 0` → badge số lần thử) lấy thẳng từ response `findOne()` đã enrich. Khoá + tooltip khi UPCOMING; vẫn click được (read-only) khi FINISHED.
+
+- [ ] **FE: `ContestLeaderboardTable` — highlight hàng của tôi + huy chương top 3**
+  📍 `client/src/features/contest/components/contest-leaderboard-table.tsx`.
+  Highlight dòng của user hiện tại (so `entry.userId` với `useAuthStore`), style rank huy chương cho top 3 (icon `Medal`/`Trophy` từ lucide, theo đúng quy ước màu độ khó đã dùng trong app). Tách riêng khỏi task CTA ở trên vì đây là polish không liên quan tới complaint "không tìm được nút tham gia".
 
 - [x] **FE: fix link chết trong header**
   📍 `client/src/components/layout/dashboard-header.tsx:13` — `{ labelKey: "nav.contest", href: "#" }` → `href: "/contests"`.

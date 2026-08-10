@@ -16,7 +16,12 @@
     "hard": "難しい"
   },
   "problems": {
-    "title": "問題一覧"
+    "title": "問題一覧",
+    "attempts": "{{count}}回挑戦済み"
+  },
+  "cta": {
+    "enterContest": "今すぐ参加",
+    "viewResults": "リーダーボードを見る"
   },
   "leaderboard": {
     "title": "リーダーボード",

@@ -47,6 +47,8 @@
     "points": "điểm",
     "alreadySolvedHint": "Đã giải",
     "nextProblem": "Bài {{letter}} tiếp theo",
+    "autoAdvanceHint": "Tự động chuyển sau 2 giây, hoặc bấm ngay",
+    "allSolved": "🎉 Bạn đã hoàn thành tất cả bài trong contest này!",
     "emptyCode": "Hãy viết code trước khi chạy thử hoặc nộp bài.",
     "contestEndedBanner": "Cuộc thi đã kết thúc — không thể nộp bài nữa.",
     "contestNotStartedBanner": "Cuộc thi chưa bắt đầu.",

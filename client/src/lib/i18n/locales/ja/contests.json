@@ -47,6 +47,8 @@
     "points": "点",
     "alreadySolvedHint": "解決済み",
     "nextProblem": "次の問題 {{letter}}",
+    "autoAdvanceHint": "2秒後に自動的に移動します。今すぐクリックも可能",
+    "allSolved": "🎉 このコンテストの全問題を完了しました!",
     "emptyCode": "実行・提出する前にコードを書いてください。",
     "contestEndedBanner": "このコンテストは終了しました — 提出はできません。",
     "contestNotStartedBanner": "このコンテストはまだ開始していません。",

@@ -20,6 +20,7 @@ interface ContestConsolePanelProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   showNextProblemCta?: boolean;
+  allSolved?: boolean;
   nextProblemLetter?: string;
   onGoToNextProblem?: () => void;
 }
@@ -33,6 +34,7 @@ export function ContestConsolePanel({
   activeTab,
   onTabChange,
   showNextProblemCta,
+  allSolved,
   nextProblemLetter,
   onGoToNextProblem,
 }: ContestConsolePanelProps) {
@@ -126,14 +128,24 @@ export function ContestConsolePanel({
                     </span>
                   </div>
                   {showNextProblemCta && (
-                    <Button
-                      size="sm"
-                      className="mt-2 h-7 bg-emerald-600 text-white hover:bg-emerald-700"
-                      onClick={onGoToNextProblem}
-                    >
-                      {t("solve.nextProblem", { letter: nextProblemLetter })}
-                      <ChevronRight className="ml-1 h-3.5 w-3.5" />
-                    </Button>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <Button
+                        size="sm"
+                        className="h-7 bg-emerald-600 text-white hover:bg-emerald-700"
+                        onClick={onGoToNextProblem}
+                      >
+                        {t("solve.nextProblem", { letter: nextProblemLetter })}
+                        <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                      </Button>
+                      <span className="text-xs opacity-75">
+                        {t("solve.autoAdvanceHint")}
+                      </span>
+                    </div>
+                  )}
+                  {allSolved && (
+                    <p className="mt-2 text-sm font-medium">
+                      {t("solve.allSolved")}
+                    </p>
                   )}
                   {result.executionTime != null && (
                     <div className="text-xs opacity-75">

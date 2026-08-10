@@ -1,6 +1,7 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -19,13 +20,32 @@ import { useRunContestCode, useSubmitContestCode } from "../hooks/use-contest-ju
 import type {
   ContestDetail,
   ContestProblemDetail,
+  ContestProblemSummary,
   ContestRunResult,
   ContestSubmissionResult,
 } from "../types";
 
+const AUTO_ADVANCE_DELAY_MS = 2000;
+
 const isSubmissionResult = (
   r: ContestRunResult | ContestSubmissionResult,
 ): r is ContestSubmissionResult => "submittedAt" in r;
+
+// Tìm bài CHƯA GIẢI gần nhất theo thứ tự, có wrap vòng qua đầu danh sách —
+// khác next-by-index (problems[currentIndex+1]) vì bỏ qua các bài đã giải,
+// không dẫn user quay lại 1 bài đã xong.
+function findNextUnsolvedProblem(
+  problems: ContestProblemSummary[],
+  currentSlug: string,
+): ContestProblemSummary | undefined {
+  const currentIndex = problems.findIndex((p) => p.slug === currentSlug);
+  if (currentIndex === -1) return undefined;
+  for (let i = 1; i < problems.length; i++) {
+    const candidate = problems[(currentIndex + i) % problems.length];
+    if (!candidate.myStatus?.solved) return candidate;
+  }
+  return undefined;
+}
 
 // Trang giải bài contest — thi tốc độ, KHÔNG có Phase 1/chat chiến lược/AI
 // evaluation (đã chốt trong ROADMAP.md: contest bỏ qua Phase 1 hoàn toàn).
@@ -92,6 +112,10 @@ function ContestSolveView({
 }: ContestSolveViewProps) {
   const { t } = useTranslation("contests");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const autoAdvanceTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
   const [currentCode, setCurrentCode] = useState("");
   const [currentLanguage, setCurrentLanguage] = useState("typescript");
@@ -100,15 +124,16 @@ function ContestSolveView({
   >(null);
   const [activeConsoleTab, setActiveConsoleTab] = useState("testcase");
 
+  useEffect(() => {
+    return () => clearTimeout(autoAdvanceTimerRef.current);
+  }, []);
+
   const problems = contestDetail?.problems ?? [];
-  const currentIndex = problems.findIndex((p) => p.slug === problemSlug);
-  const nextProblem =
-    currentIndex >= 0 ? problems[currentIndex + 1] : undefined;
-  const showNextProblemCta =
-    !!result &&
-    isSubmissionResult(result) &&
-    result.status === "ACCEPTED" &&
-    !!nextProblem;
+  const nextProblem = findNextUnsolvedProblem(problems, problemSlug);
+  const isAcceptedSubmit =
+    !!result && isSubmissionResult(result) && result.status === "ACCEPTED";
+  const showNextProblemCta = isAcceptedSubmit && !!nextProblem;
+  const allSolved = isAcceptedSubmit && !nextProblem && problems.length > 0;
 
   const runMutation = useRunContestCode({
     onSuccess: (data) => {
@@ -121,6 +146,22 @@ function ContestSolveView({
     onSuccess: (data) => {
       setResult(data);
       setActiveConsoleTab("result");
+      // attempts (và có thể solved) đổi sau MỌI lần submit, không chỉ khi
+      // ACCEPTED — làm mới cache để nav bar + trang detail phản ánh ngay,
+      // không phải đợi hết staleTime 5 phút hoặc F5 lại trang.
+      queryClient.invalidateQueries({ queryKey: ["contest", contestId] });
+      queryClient.invalidateQueries({
+        queryKey: ["contest-problem", contestId, problemSlug],
+      });
+
+      if (data.status === "ACCEPTED") {
+        const next = findNextUnsolvedProblem(problems, problemSlug);
+        if (next) {
+          autoAdvanceTimerRef.current = setTimeout(() => {
+            navigate(`/contests/${contestId}/problems/${next.slug}`);
+          }, AUTO_ADVANCE_DELAY_MS);
+        }
+      }
     },
   });
 
@@ -261,6 +302,7 @@ function ContestSolveView({
                   activeTab={activeConsoleTab}
                   onTabChange={setActiveConsoleTab}
                   showNextProblemCta={showNextProblemCta}
+                  allSolved={allSolved}
                   nextProblemLetter={
                     nextProblem
                       ? String.fromCharCode(65 + nextProblem.order)
@@ -268,6 +310,7 @@ function ContestSolveView({
                   }
                   onGoToNextProblem={() => {
                     if (nextProblem) {
+                      clearTimeout(autoAdvanceTimerRef.current);
                       navigate(
                         `/contests/${contestId}/problems/${nextProblem.slug}`,
                       );

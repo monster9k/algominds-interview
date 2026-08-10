@@ -176,6 +176,12 @@
   - Nút "Bài X tiếp theo" chỉ hiện trong banner Result khi vừa Submit ACCEPTED (phân biệt với Run bằng field `submittedAt` chỉ có ở `ContestSubmissionResult`) và còn bài kế tiếp — không auto-navigate, để user chủ động.
   - **Bug phải fix cùng lúc**: route `/contests/:contestId/problems/:problemSlug` dùng chung 1 component cho mọi slug, React Router không remount khi chỉ đổi param — phải thêm `useEffect` reset `currentCode`/`result`/`activeConsoleTab` theo `problemSlug`, nếu không code/kết quả của bài cũ sẽ dính sang bài mới khi nhảy qua nav bar.
 
+- [x] **FE+bug fix: tự động chuyển bài chưa làm + fix dấu "đã giải" không hiện** (bổ sung 2026-08-10: user báo nav bar/trang detail không đánh dấu bài đã giải, và muốn tự động chuyển bài thay vì chỉ có nút)
+  📍 `client/src/features/contest/hooks/use-contest.ts`, `pages/contest-solve-page.tsx`, `components/contest-console-panel.tsx`.
+  - **Root cause xác nhận qua test API trực tiếp (không phải đoán)**: `useContest` không có guard `enabled: !isAuthLoading` như `use-problems.ts:12,17` đã có — `GET /contests/:id` bắn đi trước khi `AuthHydrator` (app/provider.tsx) refresh xong access token lúc app mount, axios interceptor không gắn `Authorization`, BE (`OptionalJwtAuthGuard`) coi ẩn danh → `myStatus: null` toàn bộ. Backend (`buildMyStatusMap`, `contest.service.ts:460-474`) đã đúng, verify bằng cách tự refresh token qua `POST /auth/refresh` rồi gọi thẳng API — trả đúng `myStatus.solved` cho các bài đã ACCEPTED. Fix: thêm `enabled: !!id && !isAuthLoading` giống hệt pattern `use-problems.ts`.
+  - **Bug thứ 2**: không có `queryClient.invalidateQueries(["contest", contestId])` sau Submit — nav bar/trang detail giữ snapshot cũ tới khi hết `staleTime` 5 phút. Fix: invalidate `["contest", contestId]` + `["contest-problem", contestId, problemSlug]` trong `onSuccess` của `submitMutation`, mọi lần submit (không chỉ ACCEPTED, vì `attempts` cũng đổi).
+  - **Tính năng**: thay `nextProblem = problems[currentIndex+1]` (next-by-index) bằng hàm tìm bài **chưa giải gần nhất theo thứ tự, có wrap vòng** (`findNextUnsolvedProblem`). Khi Submit ACCEPTED, tự động `navigate` sau 2s (giữ nút bấm-ngay hiện có + hint text), không tự chuyển nếu đã giải hết (hiện thông báo hoàn thành thay thế).
+
 - [x] **FE: fix link chết trong header**
   📍 `client/src/components/layout/dashboard-header.tsx:13` — `{ labelKey: "nav.contest", href: "#" }` → `href: "/contests"`.
 

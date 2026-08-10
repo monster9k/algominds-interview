@@ -15,6 +15,7 @@ const prisma = new PrismaClient({ adapter });
 
 const MIN_MS = 60 * 1000;
 const HOUR_MS = 60 * MIN_MS;
+const YEAR_MS = 365 * HOUR_MS * 24;
 
 const ADMIN_EMAIL = 'admin@algominds.dev';
 const ADMIN_PASSWORD = 'Admin@12345';
@@ -70,25 +71,34 @@ async function main() {
 
   const now = Date.now();
 
-  // 1 contest mẫu duy nhất, ONGOING ngay sau khi seed (bắt đầu vài phút
-  // trước, kết thúc vài giờ sau) — để dev mới clone repo chạy được full
-  // luồng list -> detail -> giải bài -> nộp -> leaderboard mà không cần setup
-  // tay. Bài gắn vào contest được chọn NGẪU NHIÊN từ pool Problem có sẵn
-  // (không hardcode như trước) qua cùng 1 util mà API tạo contest admin-gated
-  // (P1) sẽ dùng. Không còn user giả, không còn ContestSubmission fabricate —
-  // leaderboard bắt đầu HOÀN TOÀN TRỐNG, chỉ có data khi có người nộp bài thật.
+  // 1 contest mẫu duy nhất, ONGOING ngay sau khi seed — bắt đầu vài phút
+  // trước, kết thúc 5 NĂM sau. Window cố tình kéo rất dài (không phải
+  // "realistic weekly contest" vài tiếng như bản đầu) vì đây là data
+  // dev/debug cục bộ: nếu ngắn, contest tự FINISHED sau vài tiếng và không
+  // Run/Submit được nữa (đã xảy ra thật — xem ROADMAP.md). Bài gắn vào
+  // contest được chọn NGẪU NHIÊN từ pool Problem có sẵn (không hardcode như
+  // trước) qua cùng 1 util mà API tạo contest admin-gated (P1) sẽ dùng.
+  // Không còn user giả, không còn ContestSubmission fabricate — leaderboard
+  // bắt đầu HOÀN TOÀN TRỐNG, chỉ có data khi có người nộp bài thật.
   console.log('🔥 Seeding "AlgoMinds Weekly CodeSprint #1"...');
+
+  const startTime = new Date(now - 5 * MIN_MS);
+  const endTime = new Date(now + 5 * YEAR_MS);
 
   const contest = await prisma.contest.upsert({
     where: { slug: 'weekly-codesprint-1' },
-    update: {},
+    // Refresh lại window mỗi lần chạy seed — nếu chỉ update: {} thì contest
+    // đã tồn tại sẽ giữ nguyên startTime/endTime cũ mãi mãi, kể cả khi đã
+    // hết hạn thật (không tự phục hồi được bằng cách reseed). title/description
+    // không cần refresh vì hiếm khi đổi sau khi tạo.
+    update: { startTime, endTime, status: ContestStatus.ONGOING },
     create: {
       slug: 'weekly-codesprint-1',
       title: 'AlgoMinds Weekly CodeSprint #1',
       description:
         'Cuộc thi lập trình hàng tuần đầu tiên của AlgoMinds — vài bài từ Easy đến Hard, tính điểm và xếp hạng kiểu ICPC: tổng điểm cao nhất thắng, bằng điểm thì ai có tổng thời gian nộp + penalty thấp hơn xếp trên.',
-      startTime: new Date(now - 5 * MIN_MS),
-      endTime: new Date(now + 3 * HOUR_MS),
+      startTime,
+      endTime,
       // Chỉ là fallback hiển thị — trạng thái thật luôn được TÍNH theo thời
       // gian thực qua deriveContestStatus() trong contest.service.ts, không
       // đọc cột này cho bất kỳ logic gating nào (xem ROADMAP.md).

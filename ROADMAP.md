@@ -159,7 +159,7 @@
   - Dòng bài tập trở thành `Link` tới `/contests/:contestId/problems/:slug`, hiện chữ cái/title/độ khó/điểm + trạng thái đã giải (dấu tick nếu `myStatus.solved`, badge số lần thử nếu đã thử mà chưa giải) lấy thẳng từ response `findOne()` đã enrich — không cần round-trip riêng. Khoá + tooltip khi UPCOMING; vẫn click được (read-only) khi FINISHED.
   - `ContestLeaderboardTable`: highlight dòng của user hiện tại (so `entry.userId` với `useAuthStore`), style rank huy chương cho top 3 (icon `Medal`/`Trophy` từ lucide, theo đúng quy ước màu độ khó đã dùng trong app).
 
-- [ ] **FE: fix link chết trong header**
+- [x] **FE: fix link chết trong header**
   📍 `client/src/components/layout/dashboard-header.tsx:13` — `{ labelKey: "nav.contest", href: "#" }` → `href: "/contests"`.
 
 - [ ] **i18n: bổ sung key mới cho 3 ngôn ngữ**

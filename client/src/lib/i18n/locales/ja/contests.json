@@ -46,6 +46,7 @@
     "submitting": "提出中...",
     "points": "点",
     "alreadySolvedHint": "解決済み",
+    "nextProblem": "次の問題 {{letter}}",
     "emptyCode": "実行・提出する前にコードを書いてください。",
     "contestEndedBanner": "このコンテストは終了しました — 提出はできません。",
     "contestNotStartedBanner": "このコンテストはまだ開始していません。",

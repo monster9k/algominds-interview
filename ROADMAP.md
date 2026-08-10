@@ -169,6 +169,13 @@
   📍 `client/src/features/contest/components/contest-leaderboard-table.tsx`.
   Highlight dòng của user hiện tại (so `entry.userId` với `useAuthStore`), style rank huy chương cho top 3 (icon `Medal`/`Trophy` từ lucide, theo đúng quy ước màu độ khó đã dùng trong app). Tách riêng khỏi task CTA ở trên vì đây là polish không liên quan tới complaint "không tìm được nút tham gia".
 
+- [x] **FE: trang giải bài — nút "bài tiếp theo" sau ACCEPTED + thanh điều hướng tự do giữa các bài** (bổ sung 2026-08-10: user báo làm xong 1 bài không có cách chuyển bài, cũng không thấy danh sách bài để tự chọn)
+  📍 `client/src/features/contest/pages/contest-solve-page.tsx`, `components/contest-problem-nav-bar.tsx` (mới), `components/contest-console-panel.tsx`.
+  - Gọi thêm `useContest(contestId)` (hook đã có, dùng ở `contest-detail-page.tsx`) để lấy `problems[]` (slug/order/myStatus) — không cần đổi API/BE, `ContestProblemDetail` của trang solve vốn chỉ có 1 bài, không có sibling list.
+  - Thanh chip A/B/C... ngay dưới header, `Link` sang bài bất kỳ, tick xanh nếu `myStatus.solved`, highlight bài đang mở — user tự chọn thứ tự, không ép tuần tự.
+  - Nút "Bài X tiếp theo" chỉ hiện trong banner Result khi vừa Submit ACCEPTED (phân biệt với Run bằng field `submittedAt` chỉ có ở `ContestSubmissionResult`) và còn bài kế tiếp — không auto-navigate, để user chủ động.
+  - **Bug phải fix cùng lúc**: route `/contests/:contestId/problems/:problemSlug` dùng chung 1 component cho mọi slug, React Router không remount khi chỉ đổi param — phải thêm `useEffect` reset `currentCode`/`result`/`activeConsoleTab` theo `problemSlug`, nếu không code/kết quả của bài cũ sẽ dính sang bài mới khi nhảy qua nav bar.
+
 - [x] **FE: fix link chết trong header**
   📍 `client/src/components/layout/dashboard-header.tsx:13` — `{ labelKey: "nav.contest", href: "#" }` → `href: "/contests"`.
 

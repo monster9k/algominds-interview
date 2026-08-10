@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -12,9 +12,20 @@ import { CodeEditorPanel } from "@/features/interview/components/code-editor-pan
 import { ContestSolveHeader } from "../components/contest-solve-header";
 import { ContestProblemPanel } from "../components/contest-problem-panel";
 import { ContestConsolePanel } from "../components/contest-console-panel";
+import { ContestProblemNavBar } from "../components/contest-problem-nav-bar";
+import { useContest } from "../hooks/use-contest";
 import { useContestProblem } from "../hooks/use-contest-problem";
 import { useRunContestCode, useSubmitContestCode } from "../hooks/use-contest-judge";
-import type { ContestRunResult, ContestSubmissionResult } from "../types";
+import type {
+  ContestDetail,
+  ContestProblemDetail,
+  ContestRunResult,
+  ContestSubmissionResult,
+} from "../types";
+
+const isSubmissionResult = (
+  r: ContestRunResult | ContestSubmissionResult,
+): r is ContestSubmissionResult => "submittedAt" in r;
 
 // Trang giải bài contest — thi tốc độ, KHÔNG có Phase 1/chat chiến lược/AI
 // evaluation (đã chốt trong ROADMAP.md: contest bỏ qua Phase 1 hoàn toàn).
@@ -31,6 +42,56 @@ export function ContestSolvePage() {
     contestId,
     problemSlug,
   );
+  const { data: contestDetail } = useContest(contestId);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-background text-muted-foreground">
+        <Loader2 className="mb-4 h-8 w-8 animate-spin text-primary" />
+        <p>{t("solve.loading")}</p>
+      </div>
+    );
+  }
+
+  if (isError || !problem || !contestId || !problemSlug) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-background text-destructive">
+        <p>{t("solve.loadError")}</p>
+      </div>
+    );
+  }
+
+  // key={problemSlug}: bắt buộc remount toàn bộ view khi nhảy sang bài khác
+  // (vd qua ContestProblemNavBar) — route dùng chung 1 component cho mọi
+  // problemSlug nên React Router không tự remount khi chỉ đổi param, và
+  // currentCode/result/activeConsoleTab bên dưới là state cục bộ sẽ dính
+  // sang bài mới nếu không ép remount.
+  return (
+    <ContestSolveView
+      key={problemSlug}
+      contestId={contestId}
+      problemSlug={problemSlug}
+      problem={problem}
+      contestDetail={contestDetail}
+    />
+  );
+}
+
+interface ContestSolveViewProps {
+  contestId: string;
+  problemSlug: string;
+  problem: ContestProblemDetail;
+  contestDetail: ContestDetail | undefined;
+}
+
+function ContestSolveView({
+  contestId,
+  problemSlug,
+  problem,
+  contestDetail,
+}: ContestSolveViewProps) {
+  const { t } = useTranslation("contests");
+  const navigate = useNavigate();
 
   const [currentCode, setCurrentCode] = useState("");
   const [currentLanguage, setCurrentLanguage] = useState("typescript");
@@ -38,6 +99,16 @@ export function ContestSolvePage() {
     ContestRunResult | ContestSubmissionResult | null
   >(null);
   const [activeConsoleTab, setActiveConsoleTab] = useState("testcase");
+
+  const problems = contestDetail?.problems ?? [];
+  const currentIndex = problems.findIndex((p) => p.slug === problemSlug);
+  const nextProblem =
+    currentIndex >= 0 ? problems[currentIndex + 1] : undefined;
+  const showNextProblemCta =
+    !!result &&
+    isSubmissionResult(result) &&
+    result.status === "ACCEPTED" &&
+    !!nextProblem;
 
   const runMutation = useRunContestCode({
     onSuccess: (data) => {
@@ -53,11 +124,11 @@ export function ContestSolvePage() {
     },
   });
 
-  const isLocked = !!problem && problem.contest.status !== "ONGOING";
+  const isLocked = problem.contest.status !== "ONGOING";
 
   const handleRun = useCallback(() => {
     if (runMutation.isPending || submitMutation.isPending) return;
-    if (!contestId || !problemSlug || !currentCode.trim()) {
+    if (!currentCode.trim()) {
       toast.error(t("solve.emptyCode"));
       return;
     }
@@ -79,7 +150,7 @@ export function ContestSolvePage() {
 
   const handleSubmit = useCallback(() => {
     if (runMutation.isPending || submitMutation.isPending) return;
-    if (!contestId || !problemSlug || !currentCode.trim()) {
+    if (!currentCode.trim()) {
       toast.error(t("solve.emptyCode"));
       return;
     }
@@ -99,23 +170,6 @@ export function ContestSolvePage() {
     t,
   ]);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen w-full flex-col items-center justify-center bg-background text-muted-foreground">
-        <Loader2 className="mb-4 h-8 w-8 animate-spin text-primary" />
-        <p>{t("solve.loading")}</p>
-      </div>
-    );
-  }
-
-  if (isError || !problem) {
-    return (
-      <div className="flex h-screen w-full flex-col items-center justify-center bg-background text-destructive">
-        <p>{t("solve.loadError")}</p>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-background text-sm">
       <ContestSolveHeader
@@ -126,6 +180,14 @@ export function ContestSolvePage() {
         isSubmitting={submitMutation.isPending}
         isLocked={isLocked}
       />
+
+      {problems.length > 1 && (
+        <ContestProblemNavBar
+          problems={problems}
+          contestSlug={contestId}
+          currentSlug={problemSlug}
+        />
+      )}
 
       {problem.contest.status === "FINISHED" && (
         <div className="border-b border-border bg-muted px-4 py-1.5 text-center text-xs text-muted-foreground">
@@ -198,6 +260,19 @@ export function ContestSolvePage() {
                   result={result}
                   activeTab={activeConsoleTab}
                   onTabChange={setActiveConsoleTab}
+                  showNextProblemCta={showNextProblemCta}
+                  nextProblemLetter={
+                    nextProblem
+                      ? String.fromCharCode(65 + nextProblem.order)
+                      : undefined
+                  }
+                  onGoToNextProblem={() => {
+                    if (nextProblem) {
+                      navigate(
+                        `/contests/${contestId}/problems/${nextProblem.slug}`,
+                      );
+                    }
+                  }}
                 />
               </ResizablePanel>
             </ResizablePanelGroup>

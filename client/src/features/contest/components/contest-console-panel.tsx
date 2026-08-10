@@ -1,7 +1,8 @@
-import { Beaker, Bug } from "lucide-react";
+import { Beaker, Bug, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ContestTestCaseItem } from "./contest-test-case-item";
 import type {
@@ -18,6 +19,9 @@ interface ContestConsolePanelProps {
   result: ContestRunResult | ContestSubmissionResult | null;
   activeTab: string;
   onTabChange: (tab: string) => void;
+  showNextProblemCta?: boolean;
+  nextProblemLetter?: string;
+  onGoToNextProblem?: () => void;
 }
 
 // 2 tab thuần: Testcases (sample có sẵn trong đề) và Result (kết quả Run/Submit
@@ -28,6 +32,9 @@ export function ContestConsolePanel({
   result,
   activeTab,
   onTabChange,
+  showNextProblemCta,
+  nextProblemLetter,
+  onGoToNextProblem,
 }: ContestConsolePanelProps) {
   const { t } = useTranslation("contests");
   const isAccepted = result?.status === "ACCEPTED";
@@ -118,6 +125,16 @@ export function ContestConsolePanel({
                       })}
                     </span>
                   </div>
+                  {showNextProblemCta && (
+                    <Button
+                      size="sm"
+                      className="mt-2 h-7 bg-emerald-600 text-white hover:bg-emerald-700"
+                      onClick={onGoToNextProblem}
+                    >
+                      {t("solve.nextProblem", { letter: nextProblemLetter })}
+                      <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                    </Button>
+                  )}
                   {result.executionTime != null && (
                     <div className="text-xs opacity-75">
                       {t("solve.runtimeMemoryLabel", {

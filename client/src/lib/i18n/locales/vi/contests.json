@@ -46,6 +46,7 @@
     "submitting": "Đang nộp...",
     "points": "điểm",
     "alreadySolvedHint": "Đã giải",
+    "nextProblem": "Bài {{letter}} tiếp theo",
     "emptyCode": "Hãy viết code trước khi chạy thử hoặc nộp bài.",
     "contestEndedBanner": "Cuộc thi đã kết thúc — không thể nộp bài nữa.",
     "contestNotStartedBanner": "Cuộc thi chưa bắt đầu.",

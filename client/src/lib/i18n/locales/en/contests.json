@@ -46,6 +46,7 @@
     "submitting": "Submitting...",
     "points": "pts",
     "alreadySolvedHint": "Already solved",
+    "nextProblem": "Next: Problem {{letter}}",
     "emptyCode": "Write some code before running or submitting.",
     "contestEndedBanner": "This contest has ended — submissions are closed.",
     "contestNotStartedBanner": "This contest hasn't started yet.",

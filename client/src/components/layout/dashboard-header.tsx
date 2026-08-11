@@ -13,7 +13,7 @@ const navLinks = [
   { labelKey: "nav.contest", href: "/contests" },
   { labelKey: "nav.discuss", href: "#" },
   { labelKey: "nav.interview", href: "#", hasDropdown: true },
-  { labelKey: "nav.store", href: "#", hasDropdown: true },
+  { labelKey: "nav.store", href: "/store" },
 ];
 
 export function DashboardHeader() {

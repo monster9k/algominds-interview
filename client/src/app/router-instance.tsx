@@ -16,6 +16,7 @@ import { SettingsPage } from "@/features/settings/pages/settings-page";
 import { InterviewRoom } from "@/features/interview/pages/interview-room";
 import { SessionReplayPage } from "@/features/interview/pages/session-replay-page";
 import { QuestHubPage } from "@/features/quest/pages/quest-hub-page";
+import { StorePage } from "@/features/store/pages/store-page";
 import { ContestListPage } from "@/features/contest/pages/contest-list-page";
 import { ContestDetailPage } from "@/features/contest/pages/contest-detail-page";
 import { ContestSolvePage } from "@/features/contest/pages/contest-solve-page";
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "problems", element: <ProblemsPage /> },
       { path: "quest", element: <QuestHubPage /> },
+      { path: "store", element: <StorePage /> },
       { path: "contests", element: <ContestListPage /> },
       { path: "contests/:id", element: <ContestDetailPage /> },
       { path: "career", element: <CareerJourneyPage /> },

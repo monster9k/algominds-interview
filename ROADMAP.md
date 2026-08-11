@@ -82,7 +82,7 @@
 - [x] **BE: seed data vật phẩm**
   📍 `server/seed-shop-items.ts` (root, mirror `seed-badges.ts`) — catalog ~6-8 item cosmetic (2-3 khung avatar, 2-3 danh hiệu, 2-3 màu badge), giá xu khác nhau theo độ hiếm, `upsert` theo `key`. Không wire vào `package.json`, chạy tay `npx ts-node seed-shop-items.ts`.
 
-- [ ] **FE: feature folder `store` + route + nav**
+- [x] **FE: feature folder `store` + route + nav**
   📍 `client/src/features/store/` mirror cấu trúc `quest/` (`api/hooks/components/pages/types`):
   - `api/store-api.ts`: `getItems`, `getInventory`, `purchaseItem`.
   - `hooks/use-store-items.ts`, `use-my-inventory.ts` (pattern `enabled: !isAuthLoading && isAuthenticated` từ `use-user-profile.ts`), `use-purchase-item.ts` (mutation, toast, invalidate `["store-items"]`/`["store-inventory"]`/`["user-profile"]`).

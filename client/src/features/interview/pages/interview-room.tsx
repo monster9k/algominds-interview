@@ -328,6 +328,7 @@ export function InterviewRoom() {
           >
             <ProblemPanel
               problem={session.problem}
+              problemId={session.problemId}
               submissions={submissions}
               latestSubmission={latestSubmission}
               activeTab={problemPanelTab}

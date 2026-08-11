@@ -45,7 +45,12 @@
       "editorial": "Editorial",
       "solutions": "Solutions",
       "submissions": "Submissions",
-      "accepted": "Accepted"
+      "accepted": "Accepted",
+      "discuss": "Discuss"
+    },
+    "discussTab": {
+      "loadError": "Could not load this problem's discussion.",
+      "empty": "No discussion posts for this problem yet."
     },
     "closeTooltip": "Close",
     "editorialComingSoon": {

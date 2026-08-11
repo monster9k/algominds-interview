@@ -45,7 +45,12 @@
       "editorial": "解説",
       "solutions": "解答例",
       "submissions": "提出履歴",
-      "accepted": "正解"
+      "accepted": "正解",
+      "discuss": "ディスカッション"
+    },
+    "discussTab": {
+      "loadError": "この問題のディスカッションを読み込めませんでした。",
+      "empty": "この問題にはまだディスカッション投稿がありません。"
     },
     "closeTooltip": "閉じる",
     "editorialComingSoon": {

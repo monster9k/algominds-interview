@@ -7,10 +7,12 @@ import {
   XCircle,
   X,
   Lightbulb,
+  MessageSquare,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DescriptionTab } from "./problem-panel/description-tab";
+import { DiscussTab } from "./problem-panel/discuss-tab";
 import { SubmissionsTab } from "./problem-panel/submissions-tab";
 import { SubmissionDetail } from "./submission-detail";
 import type { SubmissionResponse } from "../types";
@@ -25,6 +27,10 @@ import { formatStatusText } from "../utils/submissionFormatters";
  */
 interface ProblemPanelProps {
   problem?: Problem;
+  // Problem type ở trang này (problem-panel/types.ts) không có field `id` —
+  // truyền riêng từ session.problemId (interview-room.tsx) để tab Discuss
+  // biết lọc theo bài toán nào.
+  problemId?: string;
   submissions: SubmissionResponse[];
   // Bài submit gần nhất (bất kể ACCEPTED hay không) — hiển thị trong tab
   // "Result" ngay khi bấm Submit, không cần mở popup riêng.
@@ -36,6 +42,7 @@ interface ProblemPanelProps {
 
 export function ProblemPanel({
   problem,
+  problemId,
   submissions,
   latestSubmission,
   activeTab = "description",
@@ -78,6 +85,13 @@ export function ProblemPanel({
           >
             <Lightbulb className="h-3.5 w-3.5 text-blue-500" />{" "}
             {t("problemPanel.tabs.solutions")}
+          </TabsTrigger>
+          <TabsTrigger
+            value="discuss"
+            className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none  h-full px-4 py-2 text-muted-foreground font-medium text-xs flex gap-2 hover:bg-accent rounded transition-colors"
+          >
+            <MessageSquare className="h-3.5 w-3.5 text-primary" />{" "}
+            {t("problemPanel.tabs.discuss")}
           </TabsTrigger>
           <TabsTrigger
             value="submissions"
@@ -148,6 +162,13 @@ export function ProblemPanel({
               </h3>
               <p>{t("problemPanel.solutionsComingSoon.body")}</p>
             </div>
+          </TabsContent>
+
+          {/* TAB: DISCUSS */}
+          <TabsContent value="discuss" className="mt-0">
+            {problem && problemId && (
+              <DiscussTab problemId={problemId} problemTitle={problem.title} />
+            )}
           </TabsContent>
 
           {/* TAB: SUBMISSIONS */}

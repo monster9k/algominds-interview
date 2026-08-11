@@ -128,7 +128,7 @@
   📍 `client/src/components/layout/dashboard-sidebar.tsx` — thêm entry `{ icon: MessageSquare, labelKey: "sidebar.discuss", href: "/discuss" }` (cùng danh sách `Trophy`/`Lock`/`Compass`/`Users` hiện có).
   📍 i18n: `client/src/lib/i18n/locales/{vi,en,ja}/discuss.json` (namespace mới) — title/subtitle, card labels, filter/sort labels, create-post form labels, sidebar widget titles, community rules text, error/empty states. Thêm `sidebar.discuss` vào `common.json` 3 locale (mirror các `sidebar.*` key có sẵn).
 
-- [ ] **FE: tab "Thảo luận" trong problem panel (gắn theo từng bài)**
+- [x] **FE: tab "Thảo luận" trong problem panel (gắn theo từng bài)**
   📍 `client/src/features/interview/components/problem-panel.tsx` — thêm `TabsTrigger value="discuss"` (icon `MessageSquare`, theo đúng khuôn `editorial`/`solutions` đã có) + `TabsContent value="discuss"` render `<DiscussTab problemId={problemId} />` (component mới, tái dùng `DiscussPostCard`/hooks từ feature `discuss`, gọi `GET /discuss?problemId=...`, có nút thu gọn "Tạo bài viết mới" mở `create-post-dialog.tsx` với `problemId` prefill).
   `ProblemPanelProps` thêm `problemId?: string`.
   📍 `client/src/features/interview/pages/interview-room.tsx` — truyền `problemId={session.problemId}` vào `<ProblemPanel />`.

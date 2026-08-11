@@ -45,7 +45,12 @@
       "editorial": "Bài giải",
       "solutions": "Lời giải",
       "submissions": "Bài nộp",
-      "accepted": "Đã chấp nhận"
+      "accepted": "Đã chấp nhận",
+      "discuss": "Thảo luận"
+    },
+    "discussTab": {
+      "loadError": "Không tải được thảo luận của bài này.",
+      "empty": "Chưa có bài thảo luận nào cho bài toán này."
     },
     "closeTooltip": "Đóng",
     "editorialComingSoon": {

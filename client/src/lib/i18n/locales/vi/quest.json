@@ -9,7 +9,13 @@
   "setup": {
     "chooseDifficulty": "Độ khó",
     "chooseLanguage": "Ngôn ngữ",
-    "play": "Chơi"
+    "play": "Chơi",
+    "pointsSuffix": "điểm/câu"
+  },
+  "stats": {
+    "bestScore": "Điểm cao nhất",
+    "gamesPlayed": "Lượt chơi",
+    "badgesEarned": "Huy hiệu"
   },
   "language": {
     "random": "Ngẫu nhiên",
@@ -37,6 +43,7 @@
   "leaderboard": {
     "title": "Bảng xếp hạng",
     "empty": "Chưa có điểm nào ở độ khó này.",
-    "scorePoints": "{{score}} điểm"
+    "scorePoints": "{{score}} điểm",
+    "you": "Bạn"
   }
 }

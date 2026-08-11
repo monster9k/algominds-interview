@@ -9,7 +9,13 @@
   "setup": {
     "chooseDifficulty": "難易度",
     "chooseLanguage": "言語",
-    "play": "プレイ"
+    "play": "プレイ",
+    "pointsSuffix": "点/問"
+  },
+  "stats": {
+    "bestScore": "最高スコア",
+    "gamesPlayed": "プレイ回数",
+    "badgesEarned": "獲得バッジ"
   },
   "language": {
     "random": "ランダム",
@@ -37,6 +43,7 @@
   "leaderboard": {
     "title": "ランキング",
     "empty": "この難易度のスコアはまだありません。",
-    "scorePoints": "{{score}} 点"
+    "scorePoints": "{{score}} 点",
+    "you": "あなた"
   }
 }

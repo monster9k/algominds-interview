@@ -4,6 +4,8 @@
   "empty": "No posts yet.",
   "backToList": "Back to discuss",
   "viewCount": "{{count}} views",
+  "copyLink": "Copy link",
+  "linkCopied": "Post link copied",
   "filter": {
     "all": "All"
   },

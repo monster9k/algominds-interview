@@ -4,6 +4,8 @@
   "empty": "Chưa có bài viết nào.",
   "backToList": "Về danh sách thảo luận",
   "viewCount": "{{count}} lượt xem",
+  "copyLink": "Sao chép liên kết",
+  "linkCopied": "Đã sao chép liên kết bài viết",
   "filter": {
     "all": "Tất cả"
   },

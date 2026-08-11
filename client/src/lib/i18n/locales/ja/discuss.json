@@ -4,6 +4,8 @@
   "empty": "投稿はまだありません。",
   "backToList": "ディスカッション一覧に戻る",
   "viewCount": "{{count}} 閲覧",
+  "copyLink": "リンクをコピー",
+  "linkCopied": "投稿のリンクをコピーしました",
   "filter": {
     "all": "すべて"
   },

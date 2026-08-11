@@ -37,19 +37,25 @@ export function DiscussListPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
-        <div className="space-y-4 min-w-0">
+        <div className="min-w-0 rounded-lg border border-border bg-card overflow-hidden">
           {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-36 w-full" />
-            ))
+            <div className="space-y-4 p-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full" />
+              ))}
+            </div>
           ) : isError ? (
-            <p className="text-sm text-destructive">{t("loadError")}</p>
+            <p className="p-6 text-sm text-destructive">{t("loadError")}</p>
           ) : !posts || posts.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-10">
+            <p className="p-10 text-sm text-muted-foreground text-center">
               {t("empty")}
             </p>
           ) : (
-            posts.map((post) => <DiscussPostCard key={post.id} post={post} />)
+            <div className="divide-y divide-border">
+              {posts.map((post) => (
+                <DiscussPostCard key={post.id} post={post} />
+              ))}
+            </div>
           )}
         </div>
 

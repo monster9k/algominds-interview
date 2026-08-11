@@ -39,7 +39,7 @@ export function DiscussTab({ problemId, problemTitle }: DiscussTabProps) {
           {t("problemPanel.discussTab.empty")}
         </p>
       ) : (
-        <div className="space-y-3">
+        <div className="rounded-lg border border-border bg-card divide-y divide-border overflow-hidden">
           {posts.map((post) => (
             <DiscussPostCard key={post.id} post={post} />
           ))}

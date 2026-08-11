@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { judgeApi } from "../api/judge-api";
 import { toast } from "sonner";
 import { RunCodeResponse, SubmissionResponse } from "../types";
@@ -30,6 +30,8 @@ interface UseSubmitCodeOptions {
 }
 
 export const useSubmitCode = ({ onSuccess }: UseSubmitCodeOptions = {}) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: judgeApi.submitCode,
     onSuccess: (data: SubmissionResponse) => {
@@ -37,6 +39,12 @@ export const useSubmitCode = ({ onSuccess }: UseSubmitCodeOptions = {}) => {
         toast.success("Accepted!", {
           description: `Passed ${data.passedTests}/${data.totalTests} test cases`,
         });
+        if (data.coinsAwarded) {
+          toast.success(`+${data.coinsAwarded} xu`, {
+            description: "Phần thưởng cho lần giải đúng đầu tiên của bài này.",
+          });
+          void queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+        }
       } else {
         toast.error("Submission failed", {
           description: `${data.status} - ${data.passedTests}/${data.totalTests} tests passed`,

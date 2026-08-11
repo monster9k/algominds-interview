@@ -65,6 +65,7 @@ export class AuthController {
     return {
       accessToken: result.access_token,
       user: result.user,
+      dailyReward: result.dailyReward,
     };
   }
 
@@ -92,12 +93,14 @@ export class AuthController {
 
     // Đây là 1 browser redirect flow, không phải JSON API — nếu throw thẳng
     // exception thì user sẽ thấy trang lỗi 401 thô thay vì quay lại app.
-    let user: Awaited<ReturnType<typeof this.authService.validateGoogleUser>>;
+    let validated: Awaited<
+      ReturnType<typeof this.authService.validateGoogleUser>
+    >;
     try {
       // This route is guarded by AuthGuard('google'), so req.user is always
       // the GoogleValidatedUser shape GoogleStrategy.validate() set — not
       // the JWT RequestUser shape most other guarded routes see.
-      user = await this.authService.validateGoogleUser(
+      validated = await this.authService.validateGoogleUser(
         req.user as GoogleValidatedUser,
       );
     } catch {
@@ -107,6 +110,7 @@ export class AuthController {
     }
 
     // 2. Tạo Token cho user này
+    const { user, dailyReward } = validated;
     const data = await this.authService.issueTokensForUser(user);
 
     res.cookie(
@@ -115,7 +119,13 @@ export class AuthController {
       this.getRefreshCookieOptions(),
     );
 
-    return res.redirect(`${frontendUrl}/auth/google-callback`);
+    // FE gọi POST /auth/refresh để lấy access token (không đọc được body của
+    // redirect này) — gắn dailyReward qua query param để google-callback-page
+    // vẫn hiện được toast "+1 xu" dù đi qua đường refresh, không phải login.
+    const rewardParam = dailyReward.awarded ? '&dailyReward=1' : '';
+    return res.redirect(
+      `${frontendUrl}/auth/google-callback?ok=1${rewardParam}`,
+    );
   }
 
   @Throttle(AUTH_THROTTLE)

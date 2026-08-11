@@ -118,6 +118,7 @@ describe('AuthService', () => {
       expect(result.access_token).toBe('signed-token');
       expect(usersService.recordDailyLogin).toHaveBeenCalledTimes(1);
       expect(usersService.recordDailyLogin).toHaveBeenCalledWith(activeUser.id);
+      expect(result.dailyReward).toEqual({ awarded: false });
     });
   });
 
@@ -146,18 +147,19 @@ describe('AuthService', () => {
 
       const result = await service.validateGoogleUser(googleUser);
 
-      expect(result).toBe(googleLinkedUser);
+      expect(result.user).toBe(googleLinkedUser);
       expect(usersService.create).not.toHaveBeenCalled();
       expect(usersService.recordDailyLogin).toHaveBeenCalledWith(
         googleLinkedUser.id,
       );
+      expect(result.dailyReward).toEqual({ awarded: false });
     });
 
     it('creates a new google-provider user when no account exists for the email', async () => {
       usersService.findByEmail.mockResolvedValue(null);
       usersService.create.mockResolvedValue({ id: 'user-2', ...googleUser });
 
-      await service.validateGoogleUser(googleUser);
+      const result = await service.validateGoogleUser(googleUser);
 
       expect(usersService.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -166,6 +168,7 @@ describe('AuthService', () => {
         }),
       );
       expect(usersService.recordDailyLogin).toHaveBeenCalledWith('user-2');
+      expect(result.user).toEqual({ id: 'user-2', ...googleUser });
     });
   });
 

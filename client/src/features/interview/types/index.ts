@@ -94,6 +94,9 @@ export interface SubmissionResponse {
     memory: number;
   };
   runtimeDistribution?: number[];
+  // Xu (Store) thưởng nếu ACCEPTED lần đầu bài này — 0 nếu đã giải trước đó
+  // hoặc không ACCEPTED (server: judge.service.ts#submitCode).
+  coinsAwarded?: number;
 }
 
 // Kết quả "Run" — chỉ chấm bằng sampleTestCases, KHÔNG được lưu DB ở backend.

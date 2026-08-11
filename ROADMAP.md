@@ -109,7 +109,7 @@
 - [x] **FE: chip số dư xu ở header**
   📍 `client/src/components/layout/dashboard-header.tsx` — icon `Coins` + số, lấy từ `useUserProfile()` sẵn có (`features/users/hooks/use-user-profile.ts`), không tạo hook/API riêng chỉ để lấy số dư.
 
-- [ ] **FE: toast thưởng xu**
+- [x] **FE: toast thưởng xu**
   📍 Login thành công + `awarded: true` từ BE → toast "+1 xu điểm danh hôm nay". Sau submit ACCEPTED có `coinsAwarded > 0` (hook `use-judge.ts` hiện có) → toast "+X xu".
 
 - [ ] **i18n: `store.json` cho 3 ngôn ngữ**

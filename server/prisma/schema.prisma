@@ -54,6 +54,12 @@ enum ContestStatus {
   FINISHED
 }
 
+enum ShopItemCategory {
+  AVATAR_FRAME
+  TITLE
+  BADGE_COLOR
+}
+
 // --- MODELS ---
 
 model User {
@@ -86,6 +92,7 @@ model User {
   careerJourneys     CareerJourney[]
   personaUnlocks     UserPersonaUnlock[]
   contestSubmissions ContestSubmission[]
+  userItems          UserItem[]
 
   candidateInPeerSessions       PeerInterviewSession[] @relation("PeerInterviewCandidate")
   peerInterviewerInPeerSessions PeerInterviewSession[] @relation("PeerInterviewInterviewer")
@@ -119,6 +126,13 @@ model UserStats {
   streakDays    Int       @default(0)
   lastActiveAt  DateTime?
   credits       Int       @default(10) // 10 lượt free
+
+  // Store — xu (coin) kiếm được qua điểm danh hàng ngày + giải bài, KHÔNG
+  // liên quan `credits` ở trên (đó là quota chat AI, đã có quyết định sản
+  // phẩm từ trước là không đụng vào). `lastDailyRewardAt` dùng để chặn claim
+  // quá 1 lần/ngày (so theo ngày UTC), độc lập với `streakDays`.
+  coins             Int       @default(0)
+  lastDailyRewardAt DateTime?
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -747,4 +761,40 @@ model ContestSubmission {
   @@index([contestId, userId])
   @@index([contestId, problemId])
   @@map("contest_submissions")
+}
+
+// --- STORE MODULE ---
+
+model ShopItem {
+  id          String           @id @default(uuid())
+  // Định danh ổn định dùng để seed/upsert và đối chiếu logic mua/equip —
+  // tách khỏi `name` (text hiển thị, có thể đổi/dịch sau này), cùng convention
+  // với Badge.key.
+  key         String           @unique
+  name        String
+  description String
+  category    ShopItemCategory
+  price       Int
+  iconKey     String // map sang lucide-react icon hoặc mã màu ở FE, không lưu ảnh
+  createdAt   DateTime         @default(now())
+
+  users UserItem[]
+
+  @@map("shop_items")
+}
+
+model UserItem {
+  id          String   @id @default(uuid())
+  userId      String
+  itemId      String
+  purchasedAt DateTime @default(now())
+  // Chỉ 1 item equipped/category — enforce ở service layer (unequip item
+  // cùng category trước khi equip item mới), không ép bằng DB constraint.
+  equipped    Boolean  @default(false)
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item ShopItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+  @@map("user_items")
 }

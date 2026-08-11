@@ -14,7 +14,7 @@
 
 ## 🔴 P0 — Xu (coins) + vật phẩm cosmetic + trang Store cơ bản
 
-- [ ] **DB: thêm field xu + model vật phẩm**
+- [x] **DB: thêm field xu + model vật phẩm**
   📍 `server/prisma/schema.prisma`.
   - `UserStats` thêm `coins Int @default(0)` và `lastDailyRewardAt DateTime?` (ngày cuối đã claim xu điểm danh, so theo **ngày UTC**).
   - Model mới:

@@ -24,10 +24,10 @@ const sidebarItems = [
 
 const itemClasses = (isActive: boolean) =>
   cn(
-    "flex w-full items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150",
+    "flex w-full items-center gap-2.5 border-l-2 px-2.5 py-2 text-sm font-medium rounded-md transition-colors duration-150",
     isActive
-      ? "bg-primary/10 text-primary border border-primary/20"
-      : "text-muted-foreground hover:text-foreground hover:bg-muted",
+      ? "border-primary bg-primary/15 text-primary"
+      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted",
   );
 
 export function DashboardSidebar() {
@@ -76,13 +76,10 @@ export function DashboardSidebar() {
 
           <button
             type="button"
-            className="flex w-full items-center justify-between gap-2.5 rounded-lg px-3 py-2 text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
+            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
           >
-            <span className="flex items-center gap-2.5">
-              <Star className="h-4 w-4 text-amber-400" />
-              {t("sidebar.favorite")}
-            </span>
-            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+            <Star className="h-4 w-4" />
+            {t("sidebar.favorite")}
           </button>
         </div>
       </div>

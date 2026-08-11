@@ -63,17 +63,7 @@ export function DashboardHeader() {
         })}
       </nav>
 
-      <div className="ml-auto flex items-center gap-4">
-        {coins !== undefined && (
-          <Link
-            to="/store"
-            className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-2.5 py-1 text-sm font-semibold text-primary hover:bg-primary/25 transition-colors"
-          >
-            <Coins className="h-4 w-4" />
-            {coins}
-          </Link>
-        )}
-
+      <div className="ml-auto flex items-center gap-3">
         <Button
           variant="ghost"
           size="icon"
@@ -82,6 +72,16 @@ export function DashboardHeader() {
           <Bell className="h-5 w-5" />
           <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary animate-pulse" />
         </Button>
+
+        {coins !== undefined && (
+          <Link
+            to="/store"
+            className="flex items-center gap-1 rounded-md border border-red-900/50 bg-red-950/70 px-2 py-1.5 text-sm font-semibold text-foreground hover:bg-red-950 transition-colors"
+          >
+            <Coins className="h-4 w-4 text-amber-400" />
+            {coins}
+          </Link>
+        )}
 
         <UserNavMenu />
       </div>

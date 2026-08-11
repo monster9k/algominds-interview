@@ -62,7 +62,7 @@
   - **Không** gọi trong `refreshTokens()` — không phải hành vi "đăng nhập" thật, chạy tự động/lặp lại nhiều lần/ngày.
   - `auth.service.spec.ts` (test suite sẵn có, phải giữ pass): mock `usersService.recordDailyLogin`, assert gọi đúng 1 lần ở `login()` và nhánh existing-user của Google OAuth.
 
-- [ ] **BE: xu khi giải bài đúng (kèm fix farm-bug bắt buộc)**
+- [x] **BE: xu khi giải bài đúng (kèm fix farm-bug bắt buộc)**
   📍 `server/src/modules/judge/judge.service.ts`, trong `$transaction` của `submitCode()` (dòng ~110-160).
   - Trước khi tạo `savedSubmission`: query `tx.submission.findFirst({ where: { status: 'ACCEPTED', session: { userId, problemId: session.problemId } } })` → `hasSolvedBefore`.
   - Nhánh `finalStatus === ACCEPTED`: luôn cộng `coins: { increment: COINS_BY_DIFFICULTY[session.problem.difficulty] }` (hằng số mới, ví dụ Easy 10 / Medium 20 / Hard 30 — thang riêng, không trùng `POINTS_BY_DIFFICULTY` của contest); chỉ cộng `totalSolved: { increment: 1 }` khi `!hasSolvedBefore` (đây là chỗ tiện fix luôn farm-bug cũ của `totalSolved` — dùng chung 1 query, ghi rõ trong commit message đây là side-effect cần thiết, không phải dọn dẹp ngoài phạm vi).

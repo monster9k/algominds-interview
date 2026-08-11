@@ -79,7 +79,7 @@
   `purchaseItem(userId, itemId)`: `$transaction` — check `UserStats.coins >= item.price`, check chưa sở hữu (`UserItem` unique constraint), `coins: { decrement: price }`, `userItem.create`. `ConflictException` nếu đã sở hữu, `BadRequestException` nếu không đủ xu.
   Không đổi shape lớn của `GET /users/me` — chỉ thêm `coins` vào `UserStats` select sẵn có.
 
-- [ ] **BE: seed data vật phẩm**
+- [x] **BE: seed data vật phẩm**
   📍 `server/seed-shop-items.ts` (root, mirror `seed-badges.ts`) — catalog ~6-8 item cosmetic (2-3 khung avatar, 2-3 danh hiệu, 2-3 màu badge), giá xu khác nhau theo độ hiếm, `upsert` theo `key`. Không wire vào `package.json`, chạy tay `npx ts-node seed-shop-items.ts`.
 
 - [ ] **FE: feature folder `store` + route + nav**

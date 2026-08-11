@@ -165,7 +165,7 @@
   - CTA chính đổi theo trạng thái: ONGOING → "Vào thi ngay" (Link tới bài đầu tiên theo `order`); UPCOMING → disabled + tooltip "chưa bắt đầu"; FINISHED → "Xem bảng xếp hạng" (scroll xuống card leaderboard).
   - Dòng bài tập trở thành `Link` tới `/contests/:contestId/problems/:slug`, hiện chữ cái/title/độ khó/điểm + trạng thái đã giải (`myStatus.solved` → tick xanh, `myStatus.attempts > 0` → badge số lần thử) lấy thẳng từ response `findOne()` đã enrich. Khoá + tooltip khi UPCOMING; vẫn click được (read-only) khi FINISHED.
 
-- [ ] **FE: `ContestLeaderboardTable` — highlight hàng của tôi + huy chương top 3**
+- [x] **FE: `ContestLeaderboardTable` — highlight hàng của tôi + huy chương top 3**
   📍 `client/src/features/contest/components/contest-leaderboard-table.tsx`.
   Highlight dòng của user hiện tại (so `entry.userId` với `useAuthStore`), style rank huy chương cho top 3 (icon `Medal`/`Trophy` từ lucide, theo đúng quy ước màu độ khó đã dùng trong app). Tách riêng khỏi task CTA ở trên vì đây là polish không liên quan tới complaint "không tìm được nút tham gia".
 

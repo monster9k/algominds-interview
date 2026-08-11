@@ -36,7 +36,8 @@
     "player": "Người chơi",
     "score": "Điểm",
     "penalty": "Penalty (phút)",
-    "empty": "Chưa có lượt nộp bài nào."
+    "empty": "Chưa có lượt nộp bài nào.",
+    "you": "Bạn"
   },
   "countdown": {
     "startsIn": "Bắt đầu sau {{time}}",

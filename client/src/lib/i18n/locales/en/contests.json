@@ -36,7 +36,8 @@
     "player": "Player",
     "score": "Score",
     "penalty": "Penalty (min)",
-    "empty": "No submissions yet."
+    "empty": "No submissions yet.",
+    "you": "You"
   },
   "countdown": {
     "startsIn": "Starts in {{time}}",

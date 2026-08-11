@@ -36,7 +36,8 @@
     "player": "プレイヤー",
     "score": "スコア",
     "penalty": "ペナルティ(分)",
-    "empty": "まだ提出がありません。"
+    "empty": "まだ提出がありません。",
+    "you": "あなた"
   },
   "countdown": {
     "startsIn": "{{time}}後に開始",

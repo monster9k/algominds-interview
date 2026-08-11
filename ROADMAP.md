@@ -137,16 +137,20 @@
 
 ## 🟡 P1 — Sidebar widget thật, view count, i18n đầy đủ, test
 
-- [ ] **FE: nối "Chủ đề Nổi Bật" và "Đóng Góp Nổi Bật" với API thật**
+- [x] **FE: nối "Chủ đề Nổi Bật" và "Đóng Góp Nổi Bật" với API thật**
   📍 `discuss-trending-tags-card.tsx`/`discuss-top-contributors-card.tsx` dùng `use-trending-tags.ts`/`use-top-contributors.ts` (đã tạo khung ở P0, P1 là lúc nối UI thật + loading/empty state).
+  Đã xong sẵn từ P0 — cả 2 component đã dùng đúng hook thật (không mock) kèm loading skeleton + empty state; xác nhận lại bằng cách đọc code hiện tại trước khi tick, không cần code thêm.
 
-- [ ] **BE: tăng `viewCount` khi xem chi tiết bài**
+- [x] **BE: tăng `viewCount` khi xem chi tiết bài**
   📍 `discuss.service.ts getPostById()` — tăng đơn giản mỗi lần gọi (chấp nhận có thể bị inflate do refresh nhiều lần, ghi rõ giới hạn trong comment, giống mức độ đơn giản hoá đã chấp nhận ở view/count khác trong repo — không làm dedupe theo session phức tạp ở P1).
+  Đã xong sẵn từ P0 — `findPostById()` gọi `discussPost.update({ data: { viewCount: { increment: 1 } } })` kèm comment ghi rõ giới hạn (chưa dedupe theo session/IP, để P2). Xác nhận lại code hiện tại trước khi tick.
 
-- [ ] **i18n**: rà lại `discuss.json` 3 locale đầy đủ key đã dùng ở P0 (nếu P0 làm tắt 1 locale để verify nhanh thì P1 hoàn thiện nốt 2 locale còn lại).
+- [x] **i18n**: rà lại `discuss.json` 3 locale đầy đủ key đã dùng ở P0 (nếu P0 làm tắt 1 locale để verify nhanh thì P1 hoàn thiện nốt 2 locale còn lại).
+  Đã xong sẵn từ P0 — so sánh key path (dot-flatten) giữa `vi/en/ja/discuss.json` cho kết quả giống hệt nhau, không thiếu key nào ở locale nào.
 
-- [ ] **BE: test suite `discuss.service.spec.ts`**
+- [x] **BE: test suite `discuss.service.spec.ts`**
   📍 `server/src/modules/discuss/discuss.service.spec.ts`, style mock giống `judge.service.spec.ts`/`store.service.spec.ts`. Case: tạo bài thành công, vote toggle đúng (vote rồi unvote không lệch count), tạo comment tăng đúng `commentCount`, filter theo `problemId` đúng, guest (không JWT) vẫn GET được list/detail.
+  12 test case, cover đủ các case liệt kê trên (`createPost`, `toggleVote` cả 2 chiều, `createComment`, `findPosts` filter `problemId`, `findPosts`/`findPostById` không cần userId vẫn chạy được). `npm run test` (server) 5 suite/61 test pass, `npm run lint` (server) sạch.
 
 ---
 

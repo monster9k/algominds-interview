@@ -99,7 +99,7 @@
 - [x] **FE: thêm `Textarea` primitive còn thiếu**
   📍 `client/src/components/ui/textarea.tsx` — theo đúng style các file `ui/*.tsx` khác (`input.tsx` làm mẫu), cần cho ô nhập nội dung bài viết/comment.
 
-- [ ] **BE: module `discuss` mới**
+- [x] **BE: module `discuss` mới**
   📍 `server/src/modules/discuss/` (`discuss.module.ts`, `discuss.controller.ts`, `discuss.service.ts`, `dto/`), tham khảo `store` module (routing đơn giản) + `quest.service.ts` (groupBy leaderboard) + `problems.service.ts` (`findAll` với filter động qua `Prisma.XWhereInput`).
   ```
   GET  /discuss                    OptionalJwtAuthGuard   → list bài viết, query: problemId?, tag?, sort? (newest|mostViewed|mostUpvoted), search?

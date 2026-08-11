@@ -1,0 +1,23 @@
+{
+  "title": "ストア",
+  "subtitle": "毎日ログインしたり問題を解いたりしてコインを獲得し、コスメアイテムと交換しよう。",
+  "tabs": {
+    "browse": "ストア",
+    "inventory": "持ち物"
+  },
+  "category": {
+    "all": "すべて",
+    "avatar_frame": "アバターフレーム",
+    "title": "称号",
+    "badge_color": "バッジカラー"
+  },
+  "card": {
+    "buy": "購入する（{{price}} コイン）",
+    "insufficientCoins": "コインが不足しています",
+    "owned": "所有済み",
+    "equip": "装備する",
+    "equipped": "装備中"
+  },
+  "emptyItems": "このカテゴリーにはまだアイテムがありません。",
+  "emptyInventory": "まだ何も購入していません。ストアを見てみましょう。"
+}

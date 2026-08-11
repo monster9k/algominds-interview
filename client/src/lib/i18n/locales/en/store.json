@@ -1,0 +1,23 @@
+{
+  "title": "Store",
+  "subtitle": "Earn coins by logging in daily and solving problems, then spend them on cosmetics.",
+  "tabs": {
+    "browse": "Browse",
+    "inventory": "My Items"
+  },
+  "category": {
+    "all": "All",
+    "avatar_frame": "Avatar Frames",
+    "title": "Titles",
+    "badge_color": "Badge Colors"
+  },
+  "card": {
+    "buy": "Buy ({{price}} coins)",
+    "insufficientCoins": "Not enough coins",
+    "owned": "Owned",
+    "equip": "Equip",
+    "equipped": "Equipped"
+  },
+  "emptyItems": "No items in this category yet.",
+  "emptyInventory": "You haven't bought anything yet — browse the store to get started."
+}

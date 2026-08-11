@@ -112,7 +112,7 @@
 - [x] **FE: toast thưởng xu**
   📍 Login thành công + `awarded: true` từ BE → toast "+1 xu điểm danh hôm nay". Sau submit ACCEPTED có `coinsAwarded > 0` (hook `use-judge.ts` hiện có) → toast "+X xu".
 
-- [ ] **i18n: `store.json` cho 3 ngôn ngữ**
+- [x] **i18n: `store.json` cho 3 ngôn ngữ**
   📍 `client/src/lib/i18n/locales/{en,vi,ja}/store.json` — title, tabs, item card (price/owned/equip/equipped/buy/insufficientCoins), toast messages. Key `nav.store` đã có sẵn trong `common.json`, không cần thêm.
 
 - [ ] **BE: test suite `store.service.spec.ts`**

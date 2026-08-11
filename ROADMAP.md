@@ -69,7 +69,7 @@
   - Trả thêm `coinsAwarded` (0 nếu đã giải trước đó) trong response `submitCode()`.
   - `judge.service.spec.ts`: thêm test "đã ACCEPTED bài này trước đó → không cộng coins/totalSolved lần 2", "ACCEPTED lần đầu → cộng đúng coins theo difficulty".
 
-- [ ] **BE: module `store` mới (catalog, túi đồ, mua)**
+- [x] **BE: module `store` mới (catalog, túi đồ, mua)**
   📍 `server/src/modules/store/` (`store.module.ts`, `store.controller.ts`, `store.service.ts`, `dto/`), tham khảo `quest` module cho awarding-pattern, `problems` module cho pattern guard.
   ```
   GET  /store/items               OptionalJwtAuthGuard   → catalog + owned/equipped flag nếu có user

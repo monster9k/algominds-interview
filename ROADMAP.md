@@ -102,7 +102,7 @@
   POST /store/items/:itemId/equip   JwtAuthGuard   → equip (unequip item cùng category trước)
   ```
 
-- [ ] **FE: UI equip/unequip + hiển thị item đã trang bị**
+- [x] **FE: UI equip/unequip + hiển thị item đã trang bị**
   📍 `client/src/features/store/hooks/use-equip-item.ts`, `components/store-item-card.tsx` (nút Trang bị/Đã trang bị).
   Cân nhắc hiển thị item đã equip trên `profile-info-card.tsx` (khung avatar/danh hiệu).
 

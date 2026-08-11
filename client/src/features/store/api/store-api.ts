@@ -16,4 +16,9 @@ export const storeApi = {
     const response = await api.post(`/store/purchase/${itemId}`);
     return response.data;
   },
+
+  equipItem: async (itemId: string): Promise<UserItemEntry> => {
+    const response = await api.post(`/store/items/${itemId}/equip`);
+    return response.data;
+  },
 };

@@ -1,10 +1,11 @@
-import { Check, ShoppingCart } from "lucide-react";
+import { Check, ShieldCheck, ShoppingCart } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShopItem } from "../types";
 import { StoreIcon } from "./store-icon";
+import { useEquipItem } from "../hooks/use-equip-item";
 import { usePurchaseItem } from "../hooks/use-purchase-item";
 
 interface StoreItemCardProps {
@@ -15,6 +16,7 @@ interface StoreItemCardProps {
 export function StoreItemCard({ item, coins }: StoreItemCardProps) {
   const { t } = useTranslation("store");
   const purchase = usePurchaseItem();
+  const equip = useEquipItem();
 
   const isHexColor = item.iconKey.startsWith("#");
   const canAfford = coins >= item.price;
@@ -66,6 +68,19 @@ export function StoreItemCard({ item, coins }: StoreItemCardProps) {
             {canAfford
               ? t("card.buy", { price: item.price })
               : t("card.insufficientCoins")}
+          </Button>
+        )}
+
+        {item.owned && !item.equipped && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full"
+            disabled={equip.isPending}
+            onClick={() => equip.mutate(item.id)}
+          >
+            <ShieldCheck className="h-3.5 w-3.5" />
+            {t("card.equip")}
           </Button>
         )}
       </CardContent>

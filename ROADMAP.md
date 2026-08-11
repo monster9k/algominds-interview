@@ -112,7 +112,7 @@
   ```
   `createComment`: `$transaction` tăng `commentCount` trên post. `toggleVote`: `$transaction` tìm/tạo/xoá `DiscussPostVote` + tăng/giảm `upvoteCount` (mirror pattern `store.service.ts purchaseItem` dùng `$transaction`).
 
-- [ ] **BE: seed data**
+- [x] **BE: seed data**
   📍 `server/seed-discuss.ts` (root, mirror `seed-shop-items.ts`) — vài bài viết mẫu (có bài gắn `problemId`, có bài không), vài tag tái dùng từ `Tag` có sẵn hoặc thêm mới (`Algorithms`, `System Design`, `Career Advice`...), vài comment mẫu.
 
 - [ ] **FE: feature folder `discuss` + route + nav**

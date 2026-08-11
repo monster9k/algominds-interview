@@ -106,7 +106,7 @@
   📍 `client/src/features/store/hooks/use-equip-item.ts`, `components/store-item-card.tsx` (nút Trang bị/Đã trang bị).
   Cân nhắc hiển thị item đã equip trên `profile-info-card.tsx` (khung avatar/danh hiệu).
 
-- [ ] **FE: chip số dư xu ở header**
+- [x] **FE: chip số dư xu ở header**
   📍 `client/src/components/layout/dashboard-header.tsx` — icon `Coins` + số, lấy từ `useUserProfile()` sẵn có (`features/users/hooks/use-user-profile.ts`), không tạo hook/API riêng chỉ để lấy số dư.
 
 - [ ] **FE: toast thưởng xu**

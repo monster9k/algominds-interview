@@ -1,10 +1,11 @@
-import { Bell, ChevronDown, Menu } from "lucide-react";
+import { Bell, ChevronDown, Coins, Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "@/components/ui/logo";
+import { useUserProfile } from "@/features/users/hooks/use-user-profile";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { UserNavMenu } from "./user-nav-menu";
 
@@ -19,6 +20,8 @@ const navLinks = [
 export function DashboardHeader() {
   const location = useLocation();
   const { t } = useTranslation("common");
+  const { data: profile } = useUserProfile();
+  const coins = profile?.stats?.coins;
 
   return (
     <header className="sticky top-0 z-40 h-14 shrink-0 bg-background/80 backdrop-blur-md border-b border-border flex items-stretch px-4 md:px-6">
@@ -62,6 +65,16 @@ export function DashboardHeader() {
       </nav>
 
       <div className="ml-auto flex items-center gap-4">
+        {coins !== undefined && (
+          <Link
+            to="/store"
+            className="flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-1 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+          >
+            <Coins className="h-4 w-4 text-amber-500" />
+            {coins}
+          </Link>
+        )}
+
         <Button
           variant="ghost"
           size="icon"

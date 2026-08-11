@@ -137,6 +137,35 @@ export class UsersService {
     };
   }
 
+  // Xu điểm danh hàng ngày (Store) — idempotent theo ngày UTC, tách biệt
+  // hoàn toàn với UserStats.credits (quota chat AI). Gọi từ AuthService ở
+  // mọi nhánh thực sự phát hành token (login email/password + cả 2 nhánh
+  // Google OAuth), KHÔNG gọi khi refresh token vì đó không phải hành vi
+  // "đăng nhập" thật.
+  async recordDailyLogin(
+    userId: string,
+  ): Promise<{ awarded: boolean; coins: number }> {
+    const stats = await this.prisma.userStats.findUnique({
+      where: { userId },
+    });
+
+    const now = new Date();
+    const todayUtc = now.toISOString().slice(0, 10);
+    const lastClaimUtc = stats?.lastDailyRewardAt?.toISOString().slice(0, 10);
+
+    if (lastClaimUtc === todayUtc) {
+      return { awarded: false, coins: stats?.coins ?? 0 };
+    }
+
+    const updated = await this.prisma.userStats.upsert({
+      where: { userId },
+      create: { userId, coins: 1, lastDailyRewardAt: now },
+      update: { coins: { increment: 1 }, lastDailyRewardAt: now },
+    });
+
+    return { awarded: true, coins: updated.coins };
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto) {
     const updatedUser = await this.prisma.user.update({
       where: { id },

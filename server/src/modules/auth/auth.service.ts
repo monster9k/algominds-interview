@@ -102,7 +102,9 @@ export class AuthService {
       throw new UnauthorizedException('Sai tài khoản hoặc mật khẩu');
     }
 
-    // Pass đúng -> Gọi hàm tạo token và lưu refresh token hash
+    // Pass đúng -> ghi nhận xu điểm danh hôm nay (no-op nếu đã claim) rồi
+    // tạo token và lưu refresh token hash
+    await this.usersService.recordDailyLogin(user.id);
     return this.issueTokensForUser(user);
   }
 
@@ -122,7 +124,9 @@ export class AuthService {
         );
       }
 
-      // Đã liên kết Google từ trước -> Trả về luôn để login
+      // Đã liên kết Google từ trước -> ghi nhận xu điểm danh hôm nay rồi
+      // trả về luôn để login (controller sẽ issueTokensForUser ngay sau đó)
+      await this.usersService.recordDailyLogin(user.id);
       return user;
     }
 
@@ -137,6 +141,9 @@ export class AuthService {
       providerId: providerId,
       avatarUrl: avatarUrl,
     });
+
+    // Lần đăng nhập đầu tiên trong ngày cũng tính là điểm danh.
+    await this.usersService.recordDailyLogin(newUser.id);
 
     return newUser;
   }

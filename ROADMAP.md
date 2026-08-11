@@ -54,7 +54,7 @@
   - "Equip theo category" (chỉ 1 item equipped/category) xử lý ở service layer, không ép bằng DB constraint.
   - Áp dụng bằng `npx prisma db push` (đúng convention prototype repo đang dùng cho model mới, xem tiền lệ `ContestSubmission`), sau đó `npx prisma generate`.
 
-- [ ] **BE: xu điểm danh hàng ngày (daily login)**
+- [x] **BE: xu điểm danh hàng ngày (daily login)**
   📍 `server/src/modules/users/users.service.ts` — thêm `recordDailyLogin(userId)`: so `UserStats.lastDailyRewardAt` (phần ngày UTC) với hôm nay; khác/null → `upsert` `coins: { increment: 1 }`, `lastDailyRewardAt: new Date()`, trả `{ awarded, coins }`; cùng ngày → no-op, trả `{ awarded: false }`.
   📍 `server/src/modules/auth/auth.service.ts` — gọi `usersService.recordDailyLogin(user.id)`:
   - Trong `login()` (email/password), trước khi return token.

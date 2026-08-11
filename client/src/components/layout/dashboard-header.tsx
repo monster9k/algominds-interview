@@ -41,27 +41,33 @@ export function DashboardHeader() {
         <Logo size="sm" iconOnly />
       </div>
 
-      <nav className="hidden md:flex items-stretch gap-6 md:ml-2 lg:ml-0">
-        {navLinks.map((link) => {
-          const isActive =
-            link.href !== "#" && location.pathname.startsWith(link.href);
-          return (
-            <Link
-              key={link.labelKey}
-              to={link.href}
-              className={cn(
-                "flex items-center gap-1 border-b-2 text-sm font-medium transition-colors",
-                isActive
-                  ? "border-foreground text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {t(link.labelKey)}
-              {link.hasDropdown && <ChevronDown className="h-3.5 w-3.5" />}
-            </Link>
-          );
-        })}
-      </nav>
+      <div className="hidden md:flex items-stretch gap-8">
+        <div className="flex items-center">
+          <Logo size="sm" />
+        </div>
+
+        <nav className="flex items-stretch gap-6">
+          {navLinks.map((link) => {
+            const isActive =
+              link.href !== "#" && location.pathname.startsWith(link.href);
+            return (
+              <Link
+                key={link.labelKey}
+                to={link.href}
+                className={cn(
+                  "flex items-center gap-1 border-b-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t(link.labelKey)}
+                {link.hasDropdown && <ChevronDown className="h-3.5 w-3.5" />}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
 
       <div className="ml-auto flex items-center gap-3">
         <Button

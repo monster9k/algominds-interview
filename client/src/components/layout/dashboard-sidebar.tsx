@@ -8,7 +8,6 @@ import {
   Plus,
   Lock,
   Trophy,
-  ShoppingBag,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -18,7 +17,7 @@ const sidebarItems = [
   { icon: Library, labelKey: "sidebar.library", href: "/problems" },
   { icon: Swords, labelKey: "sidebar.quest", href: "/quest" },
   { icon: Trophy, labelKey: "sidebar.contests", href: "/contests" },
-  { icon: ShoppingBag, labelKey: "sidebar.store", href: "/store" },
+  { icon: Lock, labelKey: "sidebar.store", href: "/store" },
   { icon: Compass, labelKey: "sidebar.career", href: "/career" },
   { icon: Users, labelKey: "sidebar.peerInterview", href: "/peer-interview" },
 ];

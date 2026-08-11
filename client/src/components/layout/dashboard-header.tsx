@@ -14,7 +14,6 @@ const navLinks = [
   { labelKey: "nav.contest", href: "/contests" },
   { labelKey: "nav.discuss", href: "#" },
   { labelKey: "nav.interview", href: "#", hasDropdown: true },
-  { labelKey: "nav.store", href: "/store" },
 ];
 
 export function DashboardHeader() {
@@ -68,9 +67,9 @@ export function DashboardHeader() {
         {coins !== undefined && (
           <Link
             to="/store"
-            className="flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-1 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+            className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-2.5 py-1 text-sm font-semibold text-primary hover:bg-primary/25 transition-colors"
           >
-            <Coins className="h-4 w-4 text-amber-500" />
+            <Coins className="h-4 w-4" />
             {coins}
           </Link>
         )}

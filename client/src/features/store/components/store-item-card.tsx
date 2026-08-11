@@ -1,5 +1,6 @@
-import { Check, ShieldCheck, ShoppingCart } from "lucide-react";
+import { Check, Coins, ShieldCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,23 +23,17 @@ export function StoreItemCard({ item, coins }: StoreItemCardProps) {
   const canAfford = coins >= item.price;
 
   return (
-    <Card>
+    <Card className="rounded-xl bg-card">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div
-            className="flex h-10 w-10 items-center justify-center rounded-full shrink-0"
-            style={
-              isHexColor
-                ? { backgroundColor: `${item.iconKey}22`, color: item.iconKey }
-                : undefined
-            }
+            className={cn(
+              "flex h-11 w-11 items-center justify-center rounded-full shrink-0",
+              !isHexColor && "bg-secondary text-foreground",
+            )}
+            style={isHexColor ? { backgroundColor: item.iconKey } : undefined}
           >
-            {isHexColor ? (
-              <span
-                className="h-5 w-5 rounded-full"
-                style={{ backgroundColor: item.iconKey }}
-              />
-            ) : (
+            {!isHexColor && (
               <StoreIcon iconKey={item.iconKey} className="h-5 w-5" />
             )}
           </div>
@@ -60,11 +55,15 @@ export function StoreItemCard({ item, coins }: StoreItemCardProps) {
         {!item.owned && (
           <Button
             size="sm"
-            className="w-full"
+            className={cn(
+              "w-full",
+              !canAfford &&
+                "bg-red-950/60 text-red-300/80 border border-red-900/50 hover:bg-red-950/60 disabled:opacity-100",
+            )}
             disabled={!canAfford || purchase.isPending}
             onClick={() => purchase.mutate(item.id)}
           >
-            <ShoppingCart className="h-3.5 w-3.5" />
+            <Coins className="h-3.5 w-3.5" />
             {canAfford
               ? t("card.buy", { price: item.price })
               : t("card.insufficientCoins")}

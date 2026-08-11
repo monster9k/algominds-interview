@@ -28,7 +28,7 @@ import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
-import { CodeGeneratorService } from './src/modules/judge/services/code-generator.service';
+import { CodeGeneratorService } from './src/modules/code-execution/services/code-generator.service';
 
 dotenv.config();
 

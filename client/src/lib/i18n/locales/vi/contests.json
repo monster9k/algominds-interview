@@ -5,6 +5,13 @@
   "loadError": "Không tải được dữ liệu cuộc thi.",
   "problemCount": "{{count}} bài",
   "backToList": "Về danh sách cuộc thi",
+  "stats": "{{total}} cuộc thi · {{ongoing}} đang diễn ra",
+  "tabs": {
+    "all": "Tất cả",
+    "upcoming": "Sắp diễn ra",
+    "ongoing": "Đang diễn ra",
+    "finished": "Đã kết thúc"
+  },
   "status": {
     "upcoming": "Sắp diễn ra",
     "ongoing": "Đang diễn ra",
@@ -16,7 +23,12 @@
     "hard": "Khó"
   },
   "problems": {
-    "title": "Danh sách bài"
+    "title": "Danh sách bài",
+    "attempts": "Đã thử {{count}} lần"
+  },
+  "cta": {
+    "enterContest": "Vào thi ngay",
+    "viewResults": "Xem bảng xếp hạng"
   },
   "leaderboard": {
     "title": "Bảng xếp hạng",
@@ -24,6 +36,43 @@
     "player": "Người chơi",
     "score": "Điểm",
     "penalty": "Penalty (phút)",
-    "empty": "Chưa có lượt nộp bài nào."
+    "empty": "Chưa có lượt nộp bài nào.",
+    "you": "Bạn"
+  },
+  "countdown": {
+    "startsIn": "Bắt đầu sau {{time}}",
+    "endsIn": "Kết thúc sau {{time}}",
+    "ended": "Cuộc thi đã kết thúc"
+  },
+  "solve": {
+    "loading": "Đang tải đề bài...",
+    "loadError": "Không tải được đề bài này.",
+    "backToContest": "Về trang cuộc thi",
+    "run": "Chạy thử",
+    "running": "Đang chạy...",
+    "submit": "Nộp bài",
+    "submitting": "Đang nộp...",
+    "points": "điểm",
+    "alreadySolvedHint": "Đã giải",
+    "nextProblem": "Bài {{letter}} tiếp theo",
+    "autoAdvanceHint": "Tự động chuyển sau 2 giây, hoặc bấm ngay",
+    "allSolved": "🎉 Bạn đã hoàn thành tất cả bài trong contest này!",
+    "emptyCode": "Hãy viết code trước khi chạy thử hoặc nộp bài.",
+    "contestEndedBanner": "Cuộc thi đã kết thúc — không thể nộp bài nữa.",
+    "contestNotStartedBanner": "Cuộc thi chưa bắt đầu.",
+    "tabTestcases": "Test case",
+    "tabResult": "Kết quả",
+    "noTestCases": "Bài này không có test case mẫu.",
+    "runResultFirst": "Chạy thử hoặc nộp bài để xem kết quả ở đây.",
+    "caseLabel": "Test {{number}}",
+    "accepted": "Chính xác",
+    "passedLabel": "{{passed}}/{{total}} test đúng",
+    "runtimeMemoryLabel": "Thời gian: {{time}}ms · Bộ nhớ: {{memory}}KB",
+    "pass": "Đúng",
+    "fail": "Sai",
+    "input": "Đầu vào",
+    "expected": "Kỳ vọng",
+    "actual": "Thực tế",
+    "error": "Lỗi"
   }
 }

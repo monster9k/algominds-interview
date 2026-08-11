@@ -5,8 +5,9 @@ import { NotFoundException } from '@nestjs/common';
 import { SubmissionStatus } from '@prisma/client';
 import { JudgeService } from './judge.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CodeGeneratorService } from './services/code-generator.service';
-import { PistonService } from './services/piston.service';
+import { CodeGeneratorService } from '../code-execution/services/code-generator.service';
+import { PistonService } from '../code-execution/services/piston.service';
+import { TestExecutionService } from '../code-execution/services/test-execution.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 interface PrismaMock {
@@ -79,10 +80,19 @@ describe('JudgeService', () => {
 
     eventEmitter = { emit: jest.fn() };
 
-    service = new JudgeService(
-      prisma as unknown as PrismaService,
+    // TestExecutionService is real (not mocked) — it's the byte-for-byte
+    // extracted runTestCases/runSingleTestCase logic that used to live
+    // directly on JudgeService. Wiring it with the same codeGenerator/
+    // pistonService mocks below keeps every assertion in this file exercising
+    // the identical code path it always did.
+    const testExecution = new TestExecutionService(
       codeGenerator as unknown as CodeGeneratorService,
       pistonService as unknown as PistonService,
+    );
+
+    service = new JudgeService(
+      prisma as unknown as PrismaService,
+      testExecution,
       eventEmitter as unknown as EventEmitter2,
     );
   });

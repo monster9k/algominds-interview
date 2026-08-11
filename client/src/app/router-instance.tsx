@@ -18,6 +18,7 @@ import { SessionReplayPage } from "@/features/interview/pages/session-replay-pag
 import { QuestHubPage } from "@/features/quest/pages/quest-hub-page";
 import { ContestListPage } from "@/features/contest/pages/contest-list-page";
 import { ContestDetailPage } from "@/features/contest/pages/contest-detail-page";
+import { ContestSolvePage } from "@/features/contest/pages/contest-solve-page";
 import { CareerJourneyPage } from "@/features/career/pages/career-journey-page";
 import { EventLeaderboardPage } from "@/features/career/pages/event-leaderboard-page";
 import { PeerInterviewLobbyPage } from "@/features/peer-interview/pages/peer-interview-lobby-page";
@@ -75,6 +76,10 @@ export const router = createBrowserRouter([
       {
         path: "/peer-interview/:id",
         element: <PeerInterviewRoomPage />,
+      },
+      {
+        path: "/contests/:contestId/problems/:problemSlug",
+        element: <ContestSolvePage />,
       },
     ],
   },

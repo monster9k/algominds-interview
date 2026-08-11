@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Contest, ContestStatus } from "../types";
+import { ContestCountdown } from "./contest-countdown";
 
 const STATUS_BADGE_CLASS: Record<ContestStatus, string> = {
   UPCOMING: "bg-blue-500/10 text-blue-500 border-blue-500/20",
@@ -39,6 +40,11 @@ export function ContestCard({ contest }: { contest: Contest }) {
               {t("problemCount", { count: contest.problemCount })}
             </span>
           </div>
+          <ContestCountdown
+            startTime={contest.startTime}
+            endTime={contest.endTime}
+            status={contest.status}
+          />
         </CardContent>
       </Card>
     </Link>

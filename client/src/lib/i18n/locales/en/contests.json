@@ -5,6 +5,13 @@
   "loadError": "Could not load contest data.",
   "problemCount": "{{count}} problems",
   "backToList": "Back to contests",
+  "stats": "{{total}} contests · {{ongoing}} ongoing",
+  "tabs": {
+    "all": "All",
+    "upcoming": "Upcoming",
+    "ongoing": "Ongoing",
+    "finished": "Finished"
+  },
   "status": {
     "upcoming": "Upcoming",
     "ongoing": "Ongoing",
@@ -16,7 +23,12 @@
     "hard": "Hard"
   },
   "problems": {
-    "title": "Problems"
+    "title": "Problems",
+    "attempts": "{{count}} attempt(s)"
+  },
+  "cta": {
+    "enterContest": "Enter Contest",
+    "viewResults": "View Leaderboard"
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -24,6 +36,43 @@
     "player": "Player",
     "score": "Score",
     "penalty": "Penalty (min)",
-    "empty": "No submissions yet."
+    "empty": "No submissions yet.",
+    "you": "You"
+  },
+  "countdown": {
+    "startsIn": "Starts in {{time}}",
+    "endsIn": "Ends in {{time}}",
+    "ended": "Contest ended"
+  },
+  "solve": {
+    "loading": "Loading problem...",
+    "loadError": "Could not load this problem.",
+    "backToContest": "Back to contest",
+    "run": "Run",
+    "running": "Running...",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "points": "pts",
+    "alreadySolvedHint": "Already solved",
+    "nextProblem": "Next: Problem {{letter}}",
+    "autoAdvanceHint": "Auto-advancing in 2s, or click now",
+    "allSolved": "🎉 You've completed all problems in this contest!",
+    "emptyCode": "Write some code before running or submitting.",
+    "contestEndedBanner": "This contest has ended — submissions are closed.",
+    "contestNotStartedBanner": "This contest hasn't started yet.",
+    "tabTestcases": "Testcases",
+    "tabResult": "Result",
+    "noTestCases": "No sample test cases for this problem.",
+    "runResultFirst": "Run or submit your code to see results here.",
+    "caseLabel": "Case {{number}}",
+    "accepted": "Accepted",
+    "passedLabel": "{{passed}}/{{total}} passed",
+    "runtimeMemoryLabel": "Runtime: {{time}}ms · Memory: {{memory}}KB",
+    "pass": "Pass",
+    "fail": "Fail",
+    "input": "Input",
+    "expected": "Expected",
+    "actual": "Actual",
+    "error": "Error"
   }
 }

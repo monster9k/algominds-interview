@@ -3,14 +3,25 @@ import { Throttle } from '@nestjs/throttler';
 import { ContestService } from './contest.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../common/types/request-user.type';
 import { RunContestProblemDto } from './dto/run-contest-problem.dto';
 import { SubmitContestProblemDto } from './dto/submit-contest-problem.dto';
+import { CreateContestDto } from './dto/create-contest.dto';
 
 @Controller('contests')
 export class ContestController {
   constructor(private readonly contestService: ContestService) {}
+
+  // POST /contests (Admin only) — bài gắn vào contest chọn ngẫu nhiên theo problemCounts
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  create(@Body() createContestDto: CreateContestDto) {
+    return this.contestService.createContest(createContestDto);
+  }
 
   // GET /contests
   @Get()

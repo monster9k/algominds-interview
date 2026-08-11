@@ -1,12 +1,25 @@
 import {
+  BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ContestStatus, Prisma, SubmissionStatus } from '@prisma/client';
+import {
+  ContestStatus,
+  Prisma,
+  Problem,
+  SubmissionStatus,
+} from '@prisma/client';
+import slugify from 'slugify';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TestExecutionService } from '../code-execution/services/test-execution.service';
 import { TestCase } from '../code-execution/types';
+import { CreateContestDto } from './dto/create-contest.dto';
+import {
+  DifficultyCounts,
+  pickRandomProblemsByDifficulty,
+} from './contest-problem-picker.util';
 
 // Phút phạt cho 1 lần nộp KHÔNG được ACCEPTED (không tính lần nộp đầu tiên
 // ACCEPTED của 1 bài — xem getLeaderboard: cell.solved chặn mọi lần nộp sau).
@@ -139,6 +152,60 @@ export class ContestService {
         myStatus: myStatusByProblemId?.get(cp.problem.id) ?? null,
       })),
     };
+  }
+
+  // Tạo contest mới (admin-gated ở controller) — bài gắn vào được chọn NGẪU
+  // NHIÊN từ pool Problem theo problemCounts, dùng chung thuật toán với
+  // seed-contests.ts qua pickRandomProblemsByDifficulty (strict: true ở đây —
+  // API tạo contest thật sự nên phải báo lỗi rõ ràng nếu thiếu bài, khác seed
+  // script vốn best-effort).
+  async createContest(dto: CreateContestDto) {
+    const { title, description, startTime, endTime, problemCounts } = dto;
+
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    if (start >= end) {
+      throw new BadRequestException('startTime phải trước endTime');
+    }
+
+    const slug = slugify(title, { lower: true, strict: true });
+    const exists = await this.prisma.contest.findUnique({ where: { slug } });
+    if (exists) {
+      throw new ConflictException('Cuộc thi này đã tồn tại');
+    }
+
+    const pool = await this.prisma.problem.findMany({
+      where: { deletedAt: null },
+    });
+
+    const picked = this.pickProblemsOrThrow(pool, problemCounts);
+
+    // Thứ tự bands trong pickRandomProblemsByDifficulty là EASY -> MEDIUM ->
+    // HARD nên `picked` đã đúng thứ tự A/B/C mong muốn, chỉ cần đánh order
+    // tuần tự theo index.
+    return this.prisma.$transaction(async (tx) => {
+      const contest = await tx.contest.create({
+        data: {
+          slug,
+          title,
+          description,
+          startTime: start,
+          endTime: end,
+          status: deriveContestStatus(start, end),
+        },
+      });
+
+      await tx.contestProblem.createMany({
+        data: picked.map((problem, index) => ({
+          contestId: contest.id,
+          problemId: problem.id,
+          points: POINTS_BY_DIFFICULTY[problem.difficulty],
+          order: index,
+        })),
+      });
+
+      return contest;
+    });
   }
 
   // Đề bài + trạng thái contest + (nếu đăng nhập) trạng thái/lịch sử nộp bài
@@ -412,6 +479,22 @@ export class ContestService {
     );
 
     return entries.map((entry, index) => ({ rank: index + 1, ...entry }));
+  }
+
+  // Wrap picker "strict" mode: pickRandomProblemsByDifficulty throw plain
+  // Error (không phụ thuộc Nest) khi 1 băng độ khó không đủ bài — convert
+  // thành BadRequestException để trả 400 kèm message rõ ràng thay vì 500.
+  private pickProblemsOrThrow(
+    pool: Problem[],
+    wanted: DifficultyCounts,
+  ): Problem[] {
+    try {
+      return pickRandomProblemsByDifficulty(pool, wanted, { strict: true });
+    } catch (err) {
+      throw new BadRequestException(
+        err instanceof Error ? err.message : 'Không thể chọn bài cho contest',
+      );
+    }
   }
 
   private async findContestOrThrow(idOrSlug: string) {

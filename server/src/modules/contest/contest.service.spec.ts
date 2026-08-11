@@ -1,16 +1,32 @@
 // jest's `expect.objectContaining`/`expect.arrayContaining` type as `any`,
 // which trips no-unsafe-assignment on nested matcher objects below.
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { SubmissionStatus } from '@prisma/client';
 import { ContestService, deriveContestStatus } from './contest.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TestExecutionService } from '../code-execution/services/test-execution.service';
 
 interface PrismaMock {
-  contest: { findFirst: jest.Mock; findMany: jest.Mock };
-  contestProblem: { findFirst: jest.Mock; findMany: jest.Mock };
+  contest: {
+    findFirst: jest.Mock;
+    findMany: jest.Mock;
+    findUnique: jest.Mock;
+    create: jest.Mock;
+  };
+  contestProblem: {
+    findFirst: jest.Mock;
+    findMany: jest.Mock;
+    createMany: jest.Mock;
+  };
   contestSubmission: { findMany: jest.Mock; create: jest.Mock };
+  problem: { findMany: jest.Mock };
+  $transaction: jest.Mock;
 }
 
 describe('deriveContestStatus', () => {
@@ -79,15 +95,22 @@ describe('ContestService', () => {
       contest: {
         findFirst: jest.fn().mockResolvedValue(ongoingContest),
         findMany: jest.fn().mockResolvedValue([]),
+        findUnique: jest.fn().mockResolvedValue(null),
+        create: jest.fn(),
       },
       contestProblem: {
         findFirst: jest.fn().mockResolvedValue(contestProblem),
         findMany: jest.fn().mockResolvedValue([contestProblem]),
+        createMany: jest.fn(),
       },
       contestSubmission: {
         findMany: jest.fn().mockResolvedValue([]),
         create: jest.fn(),
       },
+      problem: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      $transaction: jest.fn((fn: (tx: PrismaMock) => unknown) => fn(prisma)),
     };
 
     testExecution = { runTestCases: jest.fn() };
@@ -96,6 +119,96 @@ describe('ContestService', () => {
       prisma as unknown as PrismaService,
       testExecution as unknown as TestExecutionService,
     );
+  });
+
+  describe('createContest', () => {
+    const easyProblem = { id: 'p-easy', difficulty: 'EASY' };
+    const mediumProblem = { id: 'p-medium', difficulty: 'MEDIUM' };
+    const hardProblem = { id: 'p-hard', difficulty: 'HARD' };
+
+    const dto = {
+      title: 'New Contest',
+      description: 'desc',
+      startTime: '2026-09-01T00:00:00.000Z',
+      endTime: '2026-09-02T00:00:00.000Z',
+      problemCounts: { easy: 1, medium: 1, hard: 1 },
+    };
+
+    it('creates the contest and attaches picked problems in Easy->Medium->Hard order', async () => {
+      prisma.problem.findMany.mockResolvedValueOnce([
+        easyProblem,
+        mediumProblem,
+        hardProblem,
+      ]);
+      prisma.contest.create.mockResolvedValueOnce({
+        id: 'new-contest',
+        slug: 'new-contest',
+        ...dto,
+      });
+
+      const result = await service.createContest(dto);
+
+      expect(prisma.contest.findUnique).toHaveBeenCalledWith({
+        where: { slug: 'new-contest' },
+      });
+      expect(prisma.contest.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          slug: 'new-contest',
+          title: dto.title,
+          startTime: new Date(dto.startTime),
+          endTime: new Date(dto.endTime),
+        }),
+      });
+      expect(prisma.contestProblem.createMany).toHaveBeenCalledWith({
+        data: [
+          expect.objectContaining({
+            problemId: 'p-easy',
+            points: 100,
+            order: 0,
+          }),
+          expect.objectContaining({
+            problemId: 'p-medium',
+            points: 300,
+            order: 1,
+          }),
+          expect.objectContaining({
+            problemId: 'p-hard',
+            points: 500,
+            order: 2,
+          }),
+        ],
+      });
+      expect(result).toMatchObject({ id: 'new-contest' });
+    });
+
+    it('throws ConflictException when a contest with the same slug already exists', async () => {
+      prisma.contest.findUnique.mockResolvedValueOnce({ id: 'existing' });
+
+      await expect(service.createContest(dto)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(prisma.contest.create).not.toHaveBeenCalled();
+    });
+
+    it('throws BadRequestException when startTime is not before endTime', async () => {
+      await expect(
+        service.createContest({
+          ...dto,
+          startTime: dto.endTime,
+          endTime: dto.startTime,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.contest.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('throws BadRequestException when the problem pool lacks enough problems for a requested band', async () => {
+      prisma.problem.findMany.mockResolvedValueOnce([easyProblem]); // no medium/hard available
+
+      await expect(service.createContest(dto)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(prisma.contest.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('runContestProblem', () => {

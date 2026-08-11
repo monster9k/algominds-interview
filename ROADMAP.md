@@ -136,7 +136,7 @@
   📍 `server/src/modules/contest/contest-problem-picker.util.ts` — không phụ thuộc Nest DI/Prisma Client, nhận vào `Problem[]` thuần để `seed-contests.ts` (script `PrismaClient` thuần, theo đúng tiền lệ `seed.ts`/`seed-quest.ts`/`seed-badges.ts`) gọi lại được cùng 1 thuật toán mà không cần bootstrap Nest app context.
   Thuật toán: Fisher-Yates shuffle + lấy N bài mỗi băng độ khó; nếu pool không đủ, throw kèm tên băng thiếu (dùng `strict: true` ở API admin, `strict: false` best-effort ở seed script để không crash DB dev còn ít bài).
 
-- [ ] **BE: `POST /contests` — tạo contest admin-gated**
+- [x] **BE: `POST /contests` — tạo contest admin-gated**
   📍 `server/src/modules/contest/contest.controller.ts` + `contest.service.ts`, copy đúng pattern `problems.controller.ts:24-29`.
   ```ts
   @Post()

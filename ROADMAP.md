@@ -115,7 +115,7 @@
 - [x] **i18n: `store.json` cho 3 ngôn ngữ**
   📍 `client/src/lib/i18n/locales/{en,vi,ja}/store.json` — title, tabs, item card (price/owned/equip/equipped/buy/insufficientCoins), toast messages. Key `nav.store` đã có sẵn trong `common.json`, không cần thêm.
 
-- [ ] **BE: test suite `store.service.spec.ts`**
+- [x] **BE: test suite `store.service.spec.ts`**
   📍 `server/src/modules/store/store.service.spec.ts`, style mock giống `judge.service.spec.ts`. Case: not-found item, không đủ xu, đã sở hữu, mua thành công trừ đúng xu, equip unequip đúng category.
 
 ---

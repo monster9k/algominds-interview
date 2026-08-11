@@ -5,6 +5,13 @@
   "loadError": "Could not load contest data.",
   "problemCount": "{{count}} problems",
   "backToList": "Back to contests",
+  "stats": "{{total}} contests · {{ongoing}} ongoing",
+  "tabs": {
+    "all": "All",
+    "upcoming": "Upcoming",
+    "ongoing": "Ongoing",
+    "finished": "Finished"
+  },
   "status": {
     "upcoming": "Upcoming",
     "ongoing": "Ongoing",

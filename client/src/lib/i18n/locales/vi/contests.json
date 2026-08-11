@@ -5,6 +5,13 @@
   "loadError": "Không tải được dữ liệu cuộc thi.",
   "problemCount": "{{count}} bài",
   "backToList": "Về danh sách cuộc thi",
+  "stats": "{{total}} cuộc thi · {{ongoing}} đang diễn ra",
+  "tabs": {
+    "all": "Tất cả",
+    "upcoming": "Sắp diễn ra",
+    "ongoing": "Đang diễn ra",
+    "finished": "Đã kết thúc"
+  },
   "status": {
     "upcoming": "Sắp diễn ra",
     "ongoing": "Đang diễn ra",

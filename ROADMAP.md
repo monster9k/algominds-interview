@@ -150,7 +150,7 @@
   `createContest()`: slugify title (`ConflictException` khi trùng, mirror `problems.service.create`), validate `startTime < endTime`, gọi `pickRandomProblemsByDifficulty` theo từng băng độ khó yêu cầu, `$transaction` tạo `Contest` + `createMany` `ContestProblem` (điểm theo `POINTS_BY_DIFFICULTY`, `order` tuần tự theo Easy→Medium→Hard).
   Chưa cần UI admin — test qua curl/Postman bằng account đã promote ADMIN ở task seed (P0) là đủ cho giai đoạn này.
 
-- [ ] **FE: redesign `contest-list-page.tsx`**
+- [x] **FE: redesign `contest-list-page.tsx`**
   📍 `client/src/features/contest/pages/contest-list-page.tsx`, `components/contest-card.tsx`.
   - Thêm `Tabs` (shadcn) Tất cả/Sắp diễn ra/Đang diễn ra/Đã kết thúc, filter client-side trên kết quả `useContests()` sẵn có.
   - Mở rộng `max-w-4xl` → `max-w-6xl`; `ContestCard` thêm `ContestCountdown`.

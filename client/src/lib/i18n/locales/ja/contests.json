@@ -5,6 +5,13 @@
   "loadError": "コンテストデータを読み込めませんでした。",
   "problemCount": "{{count}}問",
   "backToList": "コンテスト一覧に戻る",
+  "stats": "{{total}}件のコンテスト · {{ongoing}}件が開催中",
+  "tabs": {
+    "all": "すべて",
+    "upcoming": "開催予定",
+    "ongoing": "開催中",
+    "finished": "終了"
+  },
   "status": {
     "upcoming": "開催予定",
     "ongoing": "開催中",

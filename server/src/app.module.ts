@@ -13,6 +13,7 @@ import { QuestModule } from './modules/quest/quest.module';
 import { CareerModule } from './modules/career/career.module';
 import { PeerInterviewModule } from './modules/peer-interview/peer-interview.module';
 import { ContestModule } from './modules/contest/contest.module';
+import { StoreModule } from './modules/store/store.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
@@ -44,6 +45,7 @@ import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
     CareerModule,
     PeerInterviewModule,
     ContestModule,
+    StoreModule,
     EventEmitterModule.forRoot(),
     // Default áp cho MỌI route chưa tự override bằng @Throttle() — nới từ
     // 10/60s lên 60/60s vì 1 lần load trang (problems list + profile +

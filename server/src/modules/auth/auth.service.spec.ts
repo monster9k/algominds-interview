@@ -22,7 +22,11 @@ interface PrismaMock {
 
 describe('AuthService', () => {
   let service: AuthService;
-  let usersService: { findByEmail: jest.Mock; create: jest.Mock };
+  let usersService: {
+    findByEmail: jest.Mock;
+    create: jest.Mock;
+    recordDailyLogin: jest.Mock;
+  };
   let jwtService: { signAsync: jest.Mock; verifyAsync: jest.Mock };
   let prisma: PrismaMock;
 
@@ -38,6 +42,7 @@ describe('AuthService', () => {
     usersService = {
       findByEmail: jest.fn(),
       create: jest.fn(),
+      recordDailyLogin: jest.fn().mockResolvedValue({ awarded: false }),
     };
     jwtService = {
       signAsync: jest.fn().mockResolvedValue('signed-token'),
@@ -111,6 +116,9 @@ describe('AuthService', () => {
       );
       expect(prisma.refreshToken.create).toHaveBeenCalled();
       expect(result.access_token).toBe('signed-token');
+      expect(usersService.recordDailyLogin).toHaveBeenCalledTimes(1);
+      expect(usersService.recordDailyLogin).toHaveBeenCalledWith(activeUser.id);
+      expect(result.dailyReward).toEqual({ awarded: false });
     });
   });
 
@@ -130,6 +138,7 @@ describe('AuthService', () => {
         service.validateGoogleUser(googleUser),
       ).rejects.toBeInstanceOf(UnauthorizedException);
       expect(usersService.create).not.toHaveBeenCalled();
+      expect(usersService.recordDailyLogin).not.toHaveBeenCalled();
     });
 
     it('returns the existing user when the account was already linked to Google', async () => {
@@ -138,15 +147,19 @@ describe('AuthService', () => {
 
       const result = await service.validateGoogleUser(googleUser);
 
-      expect(result).toBe(googleLinkedUser);
+      expect(result.user).toBe(googleLinkedUser);
       expect(usersService.create).not.toHaveBeenCalled();
+      expect(usersService.recordDailyLogin).toHaveBeenCalledWith(
+        googleLinkedUser.id,
+      );
+      expect(result.dailyReward).toEqual({ awarded: false });
     });
 
     it('creates a new google-provider user when no account exists for the email', async () => {
       usersService.findByEmail.mockResolvedValue(null);
       usersService.create.mockResolvedValue({ id: 'user-2', ...googleUser });
 
-      await service.validateGoogleUser(googleUser);
+      const result = await service.validateGoogleUser(googleUser);
 
       expect(usersService.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -154,6 +167,8 @@ describe('AuthService', () => {
           provider: 'google',
         }),
       );
+      expect(usersService.recordDailyLogin).toHaveBeenCalledWith('user-2');
+      expect(result.user).toEqual({ id: 'user-2', ...googleUser });
     });
   });
 

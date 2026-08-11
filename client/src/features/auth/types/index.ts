@@ -24,4 +24,8 @@ export interface User {
 export interface AuthResponse {
   accessToken: string;
   user: User;
+  // Chỉ có ở response POST /auth/login (email/password) — không có ở
+  // /auth/refresh, kể cả khi refresh đó đứng sau 1 lần đăng nhập Google mới
+  // (xem GoogleCallbackPage, đọc dailyReward qua query param thay vì đây).
+  dailyReward?: { awarded: boolean; coins?: number };
 }

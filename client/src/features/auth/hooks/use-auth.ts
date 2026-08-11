@@ -25,6 +25,11 @@ export const useLogin = () => {
       toast("Đăng nhập thành công!", {
         description: `Chào mừng trở lại, ${data.user.name || data.user.email}`,
       });
+      if (data.dailyReward?.awarded) {
+        toast.success("+1 xu", {
+          description: "Phần thưởng điểm danh hôm nay.",
+        });
+      }
       navigate("/");
     },
     onError: (error) => {

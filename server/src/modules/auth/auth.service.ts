@@ -102,8 +102,12 @@ export class AuthService {
       throw new UnauthorizedException('Sai tài khoản hoặc mật khẩu');
     }
 
-    // Pass đúng -> Gọi hàm tạo token và lưu refresh token hash
-    return this.issueTokensForUser(user);
+    // Pass đúng -> ghi nhận xu điểm danh hôm nay (no-op nếu đã claim), gắn
+    // kết quả vào response để FE hiện toast "+1 xu" khi awarded, rồi tạo
+    // token và lưu refresh token hash
+    const dailyReward = await this.usersService.recordDailyLogin(user.id);
+    const tokens = await this.issueTokensForUser(user);
+    return { ...tokens, dailyReward };
   }
 
   async validateGoogleUser(googleUser: GoogleValidatedUser) {
@@ -122,8 +126,11 @@ export class AuthService {
         );
       }
 
-      // Đã liên kết Google từ trước -> Trả về luôn để login
-      return user;
+      // Đã liên kết Google từ trước -> ghi nhận xu điểm danh hôm nay rồi trả
+      // về (controller redirect flow đọc dailyReward để quyết định query
+      // param cho FE hiện toast, sau đó issueTokensForUser ngay sau đó)
+      const dailyReward = await this.usersService.recordDailyLogin(user.id);
+      return { user, dailyReward };
     }
 
     // B. Nếu chưa có -> Tạo mới (Register)
@@ -138,7 +145,10 @@ export class AuthService {
       avatarUrl: avatarUrl,
     });
 
-    return newUser;
+    // Lần đăng nhập đầu tiên trong ngày cũng tính là điểm danh.
+    const dailyReward = await this.usersService.recordDailyLogin(newUser.id);
+
+    return { user: newUser, dailyReward };
   }
 
   async refreshTokens(refreshToken: string) {

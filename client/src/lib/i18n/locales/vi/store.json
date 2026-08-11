@@ -1,0 +1,23 @@
+{
+  "title": "Cửa hàng",
+  "subtitle": "Kiếm xu bằng cách điểm danh mỗi ngày và giải bài tập, rồi đổi lấy vật phẩm trang trí.",
+  "tabs": {
+    "browse": "Cửa hàng",
+    "inventory": "Túi đồ"
+  },
+  "category": {
+    "all": "Tất cả",
+    "avatar_frame": "Khung avatar",
+    "title": "Danh hiệu",
+    "badge_color": "Màu badge"
+  },
+  "card": {
+    "buy": "Mua ({{price}} xu)",
+    "insufficientCoins": "Không đủ xu",
+    "owned": "Đã sở hữu",
+    "equip": "Trang bị",
+    "equipped": "Đã trang bị"
+  },
+  "emptyItems": "Chưa có vật phẩm nào trong danh mục này.",
+  "emptyInventory": "Bạn chưa mua vật phẩm nào — ghé cửa hàng để bắt đầu."
+}

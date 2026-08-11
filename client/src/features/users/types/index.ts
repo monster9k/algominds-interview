@@ -10,6 +10,8 @@ export interface UserStats {
   streakDays: number;
   lastActiveAt: string | null;
   credits: number;
+  // Xu (Store) — tách biệt với credits (quota chat AI ở trên).
+  coins: number;
 }
 
 export interface UserProfileResponse {

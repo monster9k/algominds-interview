@@ -12,7 +12,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 interface PrismaMock {
   session: { findUnique: jest.Mock; update: jest.Mock };
-  submission: { create: jest.Mock; findMany: jest.Mock };
+  submission: { create: jest.Mock; findMany: jest.Mock; findFirst: jest.Mock };
   userStats: { upsert: jest.Mock };
   evaluation: { findUnique: jest.Mock };
   $transaction: jest.Mock;
@@ -28,6 +28,7 @@ describe('JudgeService', () => {
   const problem = {
     id: 'problem-1',
     functionName: 'twoSum',
+    difficulty: 'EASY',
     sampleTestCases: [{ input: { nums: [2, 7], target: 9 }, output: [0, 1] }],
     hiddenTestCases: [] as unknown[],
     timeLimitMs: 1000,
@@ -51,6 +52,7 @@ describe('JudgeService', () => {
       submission: {
         create: jest.fn(),
         findMany: jest.fn().mockResolvedValue([]),
+        findFirst: jest.fn().mockResolvedValue(null),
       },
       userStats: {
         upsert: jest.fn(),
@@ -116,7 +118,7 @@ describe('JudgeService', () => {
         'session-1',
         'code',
         'javascript',
-      )) as { evaluationStatus: string };
+      )) as { evaluationStatus: string; coinsAwarded: number };
 
       expect(prisma.submission.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -127,7 +129,14 @@ describe('JudgeService', () => {
           }),
         }),
       );
-      expect(prisma.userStats.upsert).toHaveBeenCalled();
+      expect(prisma.userStats.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: expect.objectContaining({
+            totalSolved: { increment: 1 },
+            coins: { increment: 10 }, // EASY -> COINS_BY_DIFFICULTY.EASY
+          }),
+        }),
+      );
       expect(prisma.session.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'session-1', version: 1 },
@@ -145,6 +154,48 @@ describe('JudgeService', () => {
         }),
       );
       expect(result.evaluationStatus).toBe('PENDING');
+      expect(result.coinsAwarded).toBe(10);
+    });
+
+    it('awards 0 coins and does not increment totalSolved again when this problem was already ACCEPTED before (farm-guard)', async () => {
+      prisma.submission.findFirst.mockResolvedValueOnce({ id: 'old-sub' });
+      pistonService.execute.mockResolvedValue({
+        output: '[0,1]',
+        error: null,
+        timeMs: 12,
+        memoryKb: 1000,
+      });
+      prisma.submission.create.mockResolvedValue({
+        id: 'sub-5',
+        status: SubmissionStatus.ACCEPTED,
+        language: 'javascript',
+      });
+
+      const result = (await service.submitCode(
+        'user-1',
+        'session-1',
+        'code',
+        'javascript',
+      )) as { coinsAwarded: number };
+
+      expect(prisma.submission.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            status: SubmissionStatus.ACCEPTED,
+            session: { userId: 'user-1', problemId: 'problem-1' },
+          },
+        }),
+      );
+      const upsertCallArgs: unknown[] = prisma.userStats.upsert.mock
+        .calls[0] as unknown[];
+      const upsertCall = upsertCallArgs[0] as {
+        update: Record<string, unknown>;
+      };
+      expect(upsertCall.update).not.toHaveProperty('totalSolved');
+      expect(upsertCall.update).not.toHaveProperty('coins');
+      // Session vẫn chuyển COMPLETED bình thường dù không cộng thêm gì.
+      expect(prisma.session.update).toHaveBeenCalled();
+      expect(result.coinsAwarded).toBe(0);
     });
 
     it('marks the submission WRONG_ANSWER and skips stats/evaluation event when output does not match', async () => {

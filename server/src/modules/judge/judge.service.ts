@@ -7,6 +7,14 @@ import { RunCodeResult, TestCase } from './types';
 
 type EvaluationStatus = 'NOT_AVAILABLE' | 'PENDING' | 'COMPLETED';
 
+// Xu (Store) thưởng khi ACCEPTED lần đầu 1 bài, theo độ khó — thang riêng,
+// không trùng POINTS_BY_DIFFICULTY của contest (contest.service.ts).
+export const COINS_BY_DIFFICULTY: Record<string, number> = {
+  EASY: 10,
+  MEDIUM: 20,
+  HARD: 30,
+};
+
 @Injectable()
 export class JudgeService {
   constructor(
@@ -107,57 +115,84 @@ export class JudgeService {
       );
 
     // 3. Lưu DB
-    const submission = await this.prisma.$transaction(async (tx) => {
-      // A. Lưu Submission
-      const savedSubmission = await tx.submission.create({
-        data: {
-          sessionId,
-          code,
-          language,
-          status: finalStatus,
-          passedTests,
-          totalTests: tests.length,
-          executionTime,
-          memoryUsage,
-          testCaseResults: results as unknown as Prisma.InputJsonValue,
-        },
-      });
+    const { submission, coinsAwarded } = await this.prisma.$transaction(
+      async (tx) => {
+        // Kiểm tra xem bài này user đã từng giải đúng trước đây chưa — quyết
+        // định cả việc có cộng totalSolved lần nữa hay không (farm-guard) lẫn
+        // có thưởng xu hay không (chỉ thưởng lần ACCEPTED đầu tiên/bài).
+        const hasSolvedBefore =
+          finalStatus === SubmissionStatus.ACCEPTED &&
+          Boolean(
+            await tx.submission.findFirst({
+              where: {
+                status: SubmissionStatus.ACCEPTED,
+                session: { userId, problemId: session.problemId },
+              },
+            }),
+          );
 
-      // B. Nếu bài đúng -> Cập nhật User Stats
-      if (finalStatus === SubmissionStatus.ACCEPTED) {
-        // Kiểm tra xem bài này user đã từng giải đúng trước đây chưa?
-        // (Nếu giải rồi thì không cộng thêm totalSolved nữa để tránh farm điểm)
-        // Logic này hơi phức tạp, tạm thời ta cứ cộng thẳng để demo
-
-        await tx.userStats.upsert({
-          where: { userId },
-          create: {
-            userId,
-            totalSolved: 1,
-            totalSessions: 1,
-            lastActiveAt: new Date(),
-          },
-          update: {
-            totalSolved: { increment: 1 },
-            lastActiveAt: new Date(),
-            // Logic streakDays cần phức tạp hơn, tạm để sau
-          },
-        });
-
-        // C. Update Session thành COMPLETED — kèm tăng version (optimistic
-        // lock, xem workflow.md) vì đây cũng là 1 lần chuyển phase.
-        await tx.session.update({
-          where: { id: sessionId, version: session.version },
+        // A. Lưu Submission
+        const savedSubmission = await tx.submission.create({
           data: {
-            status: 'COMPLETED',
-            finishedAt: new Date(),
-            version: { increment: 1 },
+            sessionId,
+            code,
+            language,
+            status: finalStatus,
+            passedTests,
+            totalTests: tests.length,
+            executionTime,
+            memoryUsage,
+            testCaseResults: results as unknown as Prisma.InputJsonValue,
           },
         });
-      }
 
-      return savedSubmission;
-    });
+        let coinsAwardedThisSubmission = 0;
+
+        // B. Nếu bài đúng -> Cập nhật User Stats
+        if (finalStatus === SubmissionStatus.ACCEPTED) {
+          // Chỉ thưởng xu + cộng totalSolved khi đây là lần ACCEPTED đầu tiên
+          // của bài này — tránh farm xu bằng cách resubmit bài đã accept.
+          coinsAwardedThisSubmission = hasSolvedBefore
+            ? 0
+            : COINS_BY_DIFFICULTY[session.problem.difficulty];
+
+          await tx.userStats.upsert({
+            where: { userId },
+            create: {
+              userId,
+              totalSolved: 1,
+              totalSessions: 1,
+              lastActiveAt: new Date(),
+              coins: coinsAwardedThisSubmission,
+            },
+            update: {
+              ...(hasSolvedBefore ? {} : { totalSolved: { increment: 1 } }),
+              lastActiveAt: new Date(),
+              ...(coinsAwardedThisSubmission > 0
+                ? { coins: { increment: coinsAwardedThisSubmission } }
+                : {}),
+              // Logic streakDays cần phức tạp hơn, tạm để sau
+            },
+          });
+
+          // C. Update Session thành COMPLETED — kèm tăng version (optimistic
+          // lock, xem workflow.md) vì đây cũng là 1 lần chuyển phase.
+          await tx.session.update({
+            where: { id: sessionId, version: session.version },
+            data: {
+              status: 'COMPLETED',
+              finishedAt: new Date(),
+              version: { increment: 1 },
+            },
+          });
+        }
+
+        return {
+          submission: savedSubmission,
+          coinsAwarded: coinsAwardedThisSubmission,
+        };
+      },
+    );
 
     // PHASE 3: Emit event for AI Code Evaluation (Only if ACCEPTED)
     if (submission.status === SubmissionStatus.ACCEPTED) {
@@ -183,6 +218,7 @@ export class JudgeService {
       ...enrichedSubmission,
       evaluationStatus,
       evaluation: null,
+      coinsAwarded,
     };
   }
 

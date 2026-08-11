@@ -185,9 +185,10 @@
 - [x] **FE: fix link chết trong header**
   📍 `client/src/components/layout/dashboard-header.tsx:13` — `{ labelKey: "nav.contest", href: "#" }` → `href: "/contests"`.
 
-- [ ] **i18n: bổ sung key mới cho 3 ngôn ngữ**
+- [x] **i18n: bổ sung key mới cho 3 ngôn ngữ**
   📍 `client/src/lib/i18n/locales/{en,vi,ja}/contests.json`.
   Nhóm key mới: `tabs.*` (all/upcoming/ongoing/finished), `countdown.*` (startsIn/endsIn/ended), `cta.*` (enterContest/viewResults/solve), `problems.{solved,attempts,lockedUpcoming}`, `solve.*` (backToContest/run/submit/running/submitting/tabTestcases/tabResult/contestEndedBanner/contestNotStartedBanner/alreadySolvedHint/emptyCode), `leaderboard.you`. Key cũ (`status.*`, `difficulty.*`, `leaderboard.{title,rank,player,score,penalty,empty}`) giữ nguyên.
+  **Ghi chú khi hoàn tất**: `countdown.*`, `cta.enterContest/viewResults`, `solve.*` đã được thêm sẵn từ các task trước đó (countdown component, CTA "Vào thi ngay"). Task này chỉ còn thiếu `tabs.*`, `stats` (dải thống kê), và `leaderboard.you` — đã thêm cùng lúc với 2 task FE redesign list-page/leaderboard ở trên thay vì tách riêng, vì key mới luôn đi kèm component tiêu thụ nó. `problems.{solved,lockedUpcoming}` và `cta.solve` **không thêm** — implementation thực tế tái dùng `solve.alreadySolvedHint`/`solve.contestNotStartedBanner` sẵn có cho đúng 2 chỗ đó, không cần key trùng lặp.
 
 ---
 

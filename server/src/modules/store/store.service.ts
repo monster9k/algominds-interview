@@ -78,4 +78,34 @@ export class StoreService {
       });
     });
   }
+
+  async equipItem(userId: string, itemId: string) {
+    const userItem = await this.prisma.userItem.findUnique({
+      where: { userId_itemId: { userId, itemId } },
+      include: { item: true },
+    });
+    if (!userItem) {
+      throw new NotFoundException('Bạn chưa sở hữu vật phẩm này');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // Chỉ 1 item equipped/category — unequip mọi item cùng category trước
+      // khi equip item mới (enforce ở service layer, xem comment
+      // UserItem.equipped trong schema.prisma).
+      await tx.userItem.updateMany({
+        where: {
+          userId,
+          equipped: true,
+          item: { category: userItem.item.category },
+        },
+        data: { equipped: false },
+      });
+
+      return tx.userItem.update({
+        where: { userId_itemId: { userId, itemId } },
+        data: { equipped: true },
+        include: { item: true },
+      });
+    });
+  }
 }

@@ -96,7 +96,7 @@
 
 ## 🟡 P1 — Equip UI, hiển thị số dư, toast, i18n, test
 
-- [ ] **BE: endpoint equip vật phẩm**
+- [x] **BE: endpoint equip vật phẩm**
   📍 `server/src/modules/store/store.controller.ts` + `store.service.ts`.
   ```
   POST /store/items/:itemId/equip   JwtAuthGuard   → equip (unequip item cùng category trước)

@@ -32,4 +32,11 @@ export class StoreController {
   ) {
     return this.storeService.purchaseItem(user.userId, itemId);
   }
+
+  // POST /store/items/:itemId/equip
+  @Post('items/:itemId/equip')
+  @UseGuards(JwtAuthGuard)
+  equipItem(@CurrentUser() user: RequestUser, @Param('itemId') itemId: string) {
+    return this.storeService.equipItem(user.userId, itemId);
+  }
 }

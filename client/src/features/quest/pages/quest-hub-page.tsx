@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Award, Flame, Heart, Swords, Timer } from "lucide-react";
+import {
+  Award,
+  Flame,
+  Gamepad2,
+  Heart,
+  Medal,
+  Swords,
+  Timer,
+  Trophy,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -9,6 +19,8 @@ import { BugWhackerBoard } from "../components/bug-whacker-board";
 import { QuestLeaderboardCard } from "../components/quest-leaderboard-card";
 import { QuestResultDialog } from "../components/quest-result-dialog";
 import { QuestSetupPanel } from "../components/quest-setup-panel";
+import { useMyBadges } from "../hooks/use-my-badges";
+import { useMyQuestAttempts } from "../hooks/use-my-quest-attempts";
 import { useQuestSnippets } from "../hooks/use-quest-snippets";
 import { useSubmitQuestAnswer } from "../hooks/use-submit-quest-answer";
 import { useSubmitQuestAttempt } from "../hooks/use-submit-quest-attempt";
@@ -19,6 +31,34 @@ import {
   SubmitAnswerResult,
   UnlockedBadge,
 } from "../types";
+
+// Số ván gần nhất lấy để tính "điểm cao nhất / lượt chơi" trên dải thống kê —
+// server giới hạn tối đa 50 (MAX_ATTEMPTS_LIMIT ở quest.service.ts), không có
+// endpoint tổng hợp all-time riêng nên đây là xấp xỉ trên lịch sử gần nhất,
+// cùng kiểu giới hạn leaderboard (top 10) đã chấp nhận ở nơi khác trong app.
+const ATTEMPTS_STAT_LIMIT = 50;
+
+function QuestStatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-lg font-bold leading-none text-foreground">{value}</p>
+        <p className="mt-1 truncate text-xs text-muted-foreground">{label}</p>
+      </div>
+    </div>
+  );
+}
 
 const POINTS_BY_DIFFICULTY: Record<QuestDifficulty, number> = {
   EASY: 10,
@@ -75,6 +115,18 @@ export function QuestHubPage() {
   );
   const submitAnswer = useSubmitQuestAnswer();
   const submitAttempt = useSubmitQuestAttempt();
+
+  const { data: recentAttempts } = useMyQuestAttempts(ATTEMPTS_STAT_LIMIT);
+  const { data: badges } = useMyBadges();
+  const bestScore = useMemo(
+    () =>
+      recentAttempts && recentAttempts.length > 0
+        ? Math.max(...recentAttempts.map((a) => a.score))
+        : 0,
+    [recentAttempts],
+  );
+  const gamesPlayed = recentAttempts?.length ?? 0;
+  const badgesEarned = badges?.length ?? 0;
 
   const currentSnippet = snippets?.[currentSnippetIndex];
 
@@ -186,17 +238,31 @@ export function QuestHubPage() {
 
   if (status === "idle" || status === "finished") {
     return (
-      <div className="w-full pb-10 max-w-2xl mx-auto">
-        <div className="flex items-center gap-2 mb-6">
-          <Swords className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-semibold text-foreground">
-            {t("title")}
-          </h1>
+      <div className="w-full pb-10 max-w-5xl mx-auto space-y-6">
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6">
+          <Swords
+            className="absolute -right-8 -bottom-8 h-44 w-44 text-primary/5 rotate-12 pointer-events-none"
+            aria-hidden
+          />
+          <div className="relative flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+              <Swords className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
+            </div>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground mb-6">{t("subtitle")}</p>
-        <QuestSetupPanel onPlay={handleStart} />
 
-        <div className="mt-6">
+        <div className="grid grid-cols-3 gap-3">
+          <QuestStatCard icon={Trophy} label={t("stats.bestScore")} value={bestScore} />
+          <QuestStatCard icon={Gamepad2} label={t("stats.gamesPlayed")} value={gamesPlayed} />
+          <QuestStatCard icon={Medal} label={t("stats.badgesEarned")} value={badgesEarned} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+          <QuestSetupPanel onPlay={handleStart} />
           <QuestLeaderboardCard />
         </div>
 

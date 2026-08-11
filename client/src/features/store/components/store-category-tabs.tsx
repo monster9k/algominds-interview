@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { ShopItemCategory } from "../types";
 
 const CATEGORIES: Array<ShopItemCategory | "ALL"> = [
@@ -21,21 +21,25 @@ export function StoreCategoryTabs({
   const { t } = useTranslation("store");
 
   return (
-    <Tabs
-      value={value}
-      onValueChange={(v) => onValueChange(v as ShopItemCategory | "ALL")}
-    >
-      <TabsList>
-        {CATEGORIES.map((c) => (
-          <TabsTrigger
+    <div className="flex flex-wrap gap-2">
+      {CATEGORIES.map((c) => {
+        const isActive = value === c;
+        return (
+          <button
             key={c}
-            value={c}
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+            type="button"
+            onClick={() => onValueChange(c)}
+            className={cn(
+              "rounded-full px-4 py-1.5 text-sm font-semibold transition-colors",
+              isActive
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
+            )}
           >
             {t(`category.${c.toLowerCase()}`)}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
+          </button>
+        );
+      })}
+    </div>
   );
 }

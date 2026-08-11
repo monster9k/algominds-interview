@@ -14,7 +14,6 @@ const navLinks = [
   { labelKey: "nav.contest", href: "/contests" },
   { labelKey: "nav.discuss", href: "#" },
   { labelKey: "nav.interview", href: "#", hasDropdown: true },
-  { labelKey: "nav.store", href: "/store" },
 ];
 
 export function DashboardHeader() {
@@ -42,39 +41,35 @@ export function DashboardHeader() {
         <Logo size="sm" iconOnly />
       </div>
 
-      <nav className="hidden md:flex items-stretch gap-6 md:ml-2 lg:ml-0">
-        {navLinks.map((link) => {
-          const isActive =
-            link.href !== "#" && location.pathname.startsWith(link.href);
-          return (
-            <Link
-              key={link.labelKey}
-              to={link.href}
-              className={cn(
-                "flex items-center gap-1 border-b-2 text-sm font-medium transition-colors",
-                isActive
-                  ? "border-foreground text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {t(link.labelKey)}
-              {link.hasDropdown && <ChevronDown className="h-3.5 w-3.5" />}
-            </Link>
-          );
-        })}
-      </nav>
+      <div className="hidden md:flex items-stretch gap-8">
+        <div className="flex items-center">
+          <Logo size="sm" />
+        </div>
 
-      <div className="ml-auto flex items-center gap-4">
-        {coins !== undefined && (
-          <Link
-            to="/store"
-            className="flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-1 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-          >
-            <Coins className="h-4 w-4 text-amber-500" />
-            {coins}
-          </Link>
-        )}
+        <nav className="flex items-stretch gap-6">
+          {navLinks.map((link) => {
+            const isActive =
+              link.href !== "#" && location.pathname.startsWith(link.href);
+            return (
+              <Link
+                key={link.labelKey}
+                to={link.href}
+                className={cn(
+                  "flex items-center gap-1 border-b-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t(link.labelKey)}
+                {link.hasDropdown && <ChevronDown className="h-3.5 w-3.5" />}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
 
+      <div className="ml-auto flex items-center gap-3">
         <Button
           variant="ghost"
           size="icon"
@@ -83,6 +78,16 @@ export function DashboardHeader() {
           <Bell className="h-5 w-5" />
           <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary animate-pulse" />
         </Button>
+
+        {coins !== undefined && (
+          <Link
+            to="/store"
+            className="flex items-center gap-1 rounded-md border border-red-900/50 bg-red-950/70 px-2 py-1.5 text-sm font-semibold text-foreground hover:bg-red-950 transition-colors"
+          >
+            <Coins className="h-4 w-4 text-amber-400" />
+            {coins}
+          </Link>
+        )}
 
         <UserNavMenu />
       </div>

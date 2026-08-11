@@ -9,7 +9,13 @@
   "setup": {
     "chooseDifficulty": "Difficulty",
     "chooseLanguage": "Language",
-    "play": "Play"
+    "play": "Play",
+    "pointsSuffix": "pts each"
+  },
+  "stats": {
+    "bestScore": "Best score",
+    "gamesPlayed": "Games played",
+    "badgesEarned": "Badges earned"
   },
   "language": {
     "random": "Random",
@@ -37,6 +43,7 @@
   "leaderboard": {
     "title": "Leaderboard",
     "empty": "No scores yet for this difficulty.",
-    "scorePoints": "{{score}} pts"
+    "scorePoints": "{{score}} pts",
+    "you": "You"
   }
 }

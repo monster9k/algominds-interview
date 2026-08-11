@@ -115,7 +115,7 @@
 - [x] **BE: seed data**
   📍 `server/seed-discuss.ts` (root, mirror `seed-shop-items.ts`) — vài bài viết mẫu (có bài gắn `problemId`, có bài không), vài tag tái dùng từ `Tag` có sẵn hoặc thêm mới (`Algorithms`, `System Design`, `Career Advice`...), vài comment mẫu.
 
-- [ ] **FE: feature folder `discuss` + route + nav**
+- [x] **FE: feature folder `discuss` + route + nav**
   📍 `client/src/features/discuss/` mirror cấu trúc `store/`/`quest/` (`api/hooks/components/pages/types`):
   - `api/discuss-api.ts`: `getPosts(filters)`, `getPost(id)`, `createPost(dto)`, `createComment(postId, dto)`, `toggleUpvote(postId)`, `getTrendingTags()`, `getTopContributors()`.
   - `hooks/`: `use-discuss-posts.ts`, `use-discuss-post.ts`, `use-create-post.ts`, `use-create-comment.ts`, `use-toggle-upvote.ts` (mutation, optimistic hoặc invalidate `["discuss-post", id]`/`["discuss-posts"]`), `use-trending-tags.ts`, `use-top-contributors.ts`.

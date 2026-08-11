@@ -12,7 +12,7 @@ import { UserNavMenu } from "./user-nav-menu";
 const navLinks = [
   { labelKey: "nav.problems", href: "/problems" },
   { labelKey: "nav.contest", href: "/contests" },
-  { labelKey: "nav.discuss", href: "#" },
+  { labelKey: "nav.discuss", href: "/discuss" },
   { labelKey: "nav.interview", href: "#", hasDropdown: true },
 ];
 

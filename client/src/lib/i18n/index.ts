@@ -12,6 +12,7 @@ import enStore from "./locales/en/store.json";
 import enContests from "./locales/en/contests.json";
 import enCareer from "./locales/en/career.json";
 import enPeerInterview from "./locales/en/peer-interview.json";
+import enDiscuss from "./locales/en/discuss.json";
 
 import viCommon from "./locales/vi/common.json";
 import viAuth from "./locales/vi/auth.json";
@@ -24,6 +25,7 @@ import viStore from "./locales/vi/store.json";
 import viContests from "./locales/vi/contests.json";
 import viCareer from "./locales/vi/career.json";
 import viPeerInterview from "./locales/vi/peer-interview.json";
+import viDiscuss from "./locales/vi/discuss.json";
 
 import jaCommon from "./locales/ja/common.json";
 import jaAuth from "./locales/ja/auth.json";
@@ -36,6 +38,7 @@ import jaStore from "./locales/ja/store.json";
 import jaContests from "./locales/ja/contests.json";
 import jaCareer from "./locales/ja/career.json";
 import jaPeerInterview from "./locales/ja/peer-interview.json";
+import jaDiscuss from "./locales/ja/discuss.json";
 
 const STORAGE_KEY = "language-storage";
 
@@ -66,6 +69,7 @@ i18n.use(initReactI18next).init({
       contests: enContests,
       career: enCareer,
       peerInterview: enPeerInterview,
+      discuss: enDiscuss,
     },
     vi: {
       common: viCommon,
@@ -79,6 +83,7 @@ i18n.use(initReactI18next).init({
       contests: viContests,
       career: viCareer,
       peerInterview: viPeerInterview,
+      discuss: viDiscuss,
     },
     ja: {
       common: jaCommon,
@@ -92,6 +97,7 @@ i18n.use(initReactI18next).init({
       contests: jaContests,
       career: jaCareer,
       peerInterview: jaPeerInterview,
+      discuss: jaDiscuss,
     },
   },
   lng: getStoredLanguage(),
@@ -108,6 +114,7 @@ i18n.use(initReactI18next).init({
     "contests",
     "career",
     "peerInterview",
+    "discuss",
   ],
   defaultNS: "common",
   interpolation: { escapeValue: false },

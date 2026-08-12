@@ -111,7 +111,7 @@ Quyết định đã chốt với user trước khi code: **`/admin/career` ch�
 - [x] **FE: trang `/admin/store` — data table**
   📍 `admin-store-page.tsx` + `admin-store-table.tsx` — tái dùng `useStoreItems()` (`client/src/features/store/hooks/use-store-items.ts`, gọi `GET /store/items`), không viết API mới. Cột: ID, Tên, Danh mục (`Badge`, giá trị `ShopItemCategory`), Giá.
 
-- [ ] **FE: trang `/admin/discuss` — data table**
+- [x] **FE: trang `/admin/discuss` — data table**
   📍 `admin-discuss-page.tsx` + `admin-discuss-table.tsx` — tái dùng `useDiscussPosts()` (`client/src/features/discuss/hooks/use-discuss-posts.ts`, gọi `GET /discuss`). Cột: ID, Tiêu đề, Tác giả, View/Upvote/Comment count, Ngày tạo.
 
 - [ ] **FE: trang `/admin/career` — data table (Tracks only)**

@@ -98,8 +98,8 @@
 
 ## 🟢 P2 — Demo data, QA responsive, dọn code chết
 
-- [ ] **BE: `seed-demo-data.ts` — seed dev-only cho chart**
-  📍 `server/prisma/seed-demo-data.ts` (mới, KHÔNG wire vào `npx prisma db seed` mặc định) — script riêng `npm run seed:demo` (thêm vào `server/package.json`). Tạo vài User giả (+`UserStats`), Session trải ~90 ngày gần đây đủ trạng thái, Submission trạng thái đa dạng — tái dùng Problem có sẵn từ `sync-problems.ts` (~51 problem), không tạo problem mới.
+- [x] **BE: `seed-demo-data.ts` — seed dev-only cho chart**
+  📍 `server/prisma/seed-demo-data.ts` (mới, KHÔNG wire vào `npx prisma db seed` mặc định) — script riêng `npm run seed:demo` (thêm vào `server/package.json`). Tạo 8 User giả (+`UserStats`, email `@demo.algominds.dev`), mỗi user 3-8 Session trải ~90 ngày với đủ trạng thái, Submission trạng thái đa dạng cho session Phase 2/Completed — tái dùng Problem có sẵn trong DB (không tạo problem mới). Idempotent: tự xoá sạch slice demo cũ qua `deleteMany` theo domain email (cascade xoá Session/Submission/UserStats) trước khi tạo lại — verify chạy 2 lần liên tiếp không lỗi. Verify curl sau khi chạy: `totalUsers:13, totalSessions:77, totalSubmissions:97`, breakdown 4 status đúng tỉ lệ nghiêng COMPLETED.
 
 - [ ] **QA: responsive mobile (~375–420px) cho cả admin và user**
   📍 Dùng Chrome tool (bắt buộc theo `design.md`) — sidebar → `Sheet` không tràn ngang, chart co giãn được, top bar không vỡ layout, test cả golden path lẫn empty/loading state.

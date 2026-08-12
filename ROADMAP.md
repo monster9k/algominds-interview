@@ -88,8 +88,8 @@
 - [x] **FE: `dashboard-layout.tsx` đổi sang dùng `AppShell`**
   📍 `client/src/components/layout/dashboard-layout.tsx` — bỏ `DashboardHeader` + `ResizablePanelGroup`, thay bằng `<AppShell items={userSidebarItems} />`, dùng lại đúng mảng `sidebarItems` hiện có ở `dashboard-sidebar.tsx` (không đổi route/label/icon).
 
-- [ ] **Verify: profile dropdown + Settings + Help Center hoạt động đúng ở user side**
-  📍 Đã build sẵn ở P0 (shell dùng chung) — chỉ cần xác nhận qua browser thật: sidebar user hiển thị đúng, không còn nav ngang cũ, profile row mở đúng dropdown, Settings/Help Center link hoạt động, admin thấy thêm "Admin Panel" trong dropdown còn user thường thì không.
+- [x] **Verify: profile dropdown + Settings + Help Center hoạt động đúng ở user side**
+  📍 Đã build sẵn ở P0 (shell dùng chung) — xác nhận qua browser thật: `/problems` dùng shell mới đúng, không còn nav ngang cũ, profile row mở đúng dropdown (đầy đủ nội dung cũ + "Admin Panel" cho role ADMIN), click Admin Panel chuyển sang `/admin` mượt (cùng shell, khác nav item). Settings + Help Center active-state đúng khi click từ footer sidebar, `/help` render đúng nội dung FAQ. Không lỗi console. (Ghi chú: có lúc thấy "Guest" + toast lỗi mạng sau khi full-reload trực tiếp URL — do accessToken chỉ lưu ở memory/Zustand, mất khi reload cứng, refresh cookie đôi lúc chưa kịp hydrate; đây là hành vi có sẵn của app không liên quan tới thay đổi layout lần này, không thuộc scope sửa ở đây.)
 
 - [ ] **i18n: rà soát key còn thiếu phát sinh khi wiring user side**
   📍 3 locale `common.json`/`settings.json` — verify parity cuối P1.

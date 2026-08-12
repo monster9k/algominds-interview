@@ -11,6 +11,7 @@ datasource db {
 enum UserRole {
   USER
   ADMIN
+  MODERATOR
 }
 
 enum Difficulty {
@@ -96,6 +97,7 @@ model User {
   discussPosts       DiscussPost[]
   discussComments    DiscussComment[]
   discussPostVotes   DiscussPostVote[]
+  adminActionLogs    AdminActionLog[]
 
   candidateInPeerSessions       PeerInterviewSession[] @relation("PeerInterviewCandidate")
   peerInterviewerInPeerSessions PeerInterviewSession[] @relation("PeerInterviewInterviewer")
@@ -711,8 +713,9 @@ model Contest {
   endTime     DateTime
   status      ContestStatus @default(UPCOMING)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete — mirror Problem/User
 
   // Relations
   problems    ContestProblem[]
@@ -751,10 +754,10 @@ model ContestSubmission {
   // Audit trail đầy đủ — ngang hàng với model Submission — để có lịch sử nộp
   // bài thật (xem lại code đã nộp, breakdown từng testcase) thay vì chỉ có
   // đủ dữ liệu tính leaderboard.
-  code            String  @default("")
-  language        String  @default("javascript")
-  passedTests     Int     @default(0)
-  totalTests      Int     @default(0)
+  code            String @default("")
+  language        String @default("javascript")
+  passedTests     Int    @default(0)
+  totalTests      Int    @default(0)
   executionTime   Int? // ms
   memoryUsage     Int? // kb
   testCaseResults Json?
@@ -877,4 +880,22 @@ model DiscussPostTag {
 
   @@id([postId, tagId])
   @@map("discuss_post_tags")
+}
+
+// Nhật ký hành động ghi/xoá của admin (Problems/Contests/Users/Discuss
+// moderation) — mỗi row là 1 hành động, append-only, không update/xoá.
+model AdminActionLog {
+  id         String   @id @default(uuid())
+  adminId    String
+  action     String // "CREATE_PROBLEM" | "UPDATE_PROBLEM" | "DELETE_PROBLEM" | "CREATE_CONTEST" | "UPDATE_CONTEST" | "DELETE_CONTEST" | "UPDATE_USER_ROLE" | "DELETE_USER" | "DELETE_DISCUSS_POST"
+  targetType String // "Problem" | "Contest" | "User" | "DiscussPost"
+  targetId   String
+  metadata   Json? // vd { before, after } cho update
+  createdAt  DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([targetType, targetId])
+  @@map("admin_action_logs")
 }

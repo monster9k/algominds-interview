@@ -151,7 +151,7 @@ Quyết định đã chốt với user trước khi code:
 
 ### 🔴 P2a — Schema + BE nền tảng (làm trước, mọi task FE phụ thuộc)
 
-- [ ] **DB: `UserRole.MODERATOR` + `Contest.deletedAt` + model `AdminActionLog`**
+- [x] **DB: `UserRole.MODERATOR` + `Contest.deletedAt` + model `AdminActionLog`**
   📍 `server/prisma/schema.prisma`
   ```prisma
   enum UserRole {

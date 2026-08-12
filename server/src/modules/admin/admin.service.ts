@@ -1,5 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { deriveContestStatus } from '../contest/contest.service';
 
@@ -105,6 +109,50 @@ export class AdminService {
     ]);
 
     return { data, total, page, limit };
+  }
+
+  // Chặn admin tự đổi role/xoá chính mình — tránh tự khoá mình ra khỏi
+  // Admin Dashboard (không có cách nào tự nâng quyền lại nếu lỡ tay).
+  async updateUserRole(
+    currentUserId: string,
+    targetId: string,
+    role: UserRole,
+  ) {
+    if (targetId === currentUserId) {
+      throw new BadRequestException('Không thể tự đổi role của chính mình');
+    }
+
+    const existing = await this.prisma.user.findUnique({
+      where: { id: targetId },
+    });
+    if (!existing) {
+      throw new NotFoundException('Không tìm thấy user');
+    }
+
+    return this.prisma.user.update({
+      where: { id: targetId },
+      data: { role },
+      select: { id: true, email: true, name: true, role: true },
+    });
+  }
+
+  async softDeleteUser(currentUserId: string, targetId: string) {
+    if (targetId === currentUserId) {
+      throw new BadRequestException('Không thể tự xoá chính mình');
+    }
+
+    const existing = await this.prisma.user.findUnique({
+      where: { id: targetId },
+    });
+    if (!existing) {
+      throw new NotFoundException('Không tìm thấy user');
+    }
+
+    return this.prisma.user.update({
+      where: { id: targetId },
+      data: { deletedAt: new Date() },
+      select: { id: true, email: true, name: true },
+    });
   }
 
   async getContests(query: PaginationQuery) {

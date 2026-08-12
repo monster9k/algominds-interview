@@ -201,8 +201,8 @@ Quyết định đã chốt với user trước khi code:
   - `GET /admin/contests?page=&limit=&search=&sortBy=&sortDirection=`.
   - `GET /admin/users` mở rộng thêm param, đổi response shape sang `{data,total,page,limit}`.
 
-- [ ] **BE: `admin` — `PATCH /admin/users/:id/role`, `DELETE /admin/users/:id`**
-  📍 Cùng module — đổi role (nhận `role: UserRole` mới, validate qua DTO, chặn `targetId === currentUser.userId`), soft-delete user (set `deletedAt`, chặn tự xoá chính mình). Cả 2 gọi audit log.
+- [x] **BE: `admin` — `PATCH /admin/users/:id/role`, `DELETE /admin/users/:id`**
+  📍 Cùng module — đổi role (nhận `role: UserRole` mới, validate qua DTO, chặn `targetId === currentUser.userId`), soft-delete user (set `deletedAt`, chặn tự xoá chính mình). Cả 2 gọi audit log. Verify curl: đổi role QA Reviewer → MODERATOR → trả về USER, xác nhận chặn tự-đổi-role và tự-xoá chính tài khoản admin đang đăng nhập (400 đúng như thiết kế).
 
 - [ ] **BE: `discuss` — `DELETE /discuss/:id` (moderation)**
   📍 `discuss.controller.ts`/`discuss.service.ts` — soft-delete set `deletedAt`, guard `JwtAuthGuard + RolesGuard + @Roles('ADMIN', 'MODERATOR')`, gọi audit log với `targetType: "DiscussPost"`.

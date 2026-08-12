@@ -117,7 +117,7 @@ Quyết định đã chốt với user trước khi code: **`/admin/career` ch�
 - [x] **FE: trang `/admin/career` — data table (Tracks only)**
   📍 `admin-career-page.tsx` + `admin-career-table.tsx` — tái dùng `useCareerTracks()` (`client/src/features/career/hooks/use-career-tracks.ts`, gọi `GET /career/tracks`). Cột: ID, Tên track, Công ty (`track.company?.name` hoặc "Generic"), Trạng thái (`Badge`, theo `isActive`).
 
-- [ ] **FE: trang `/admin/quests` — data table**
+- [x] **FE: trang `/admin/quests` — data table**
   📍 `admin-quests-page.tsx` + `admin-quests-table.tsx` — dùng hook mới `useAdminQuests()` (`admin-api.ts` thêm `getQuests()` → `GET /admin/quests`). Cột: ID, Ngôn ngữ, Độ khó (`Badge`), Dòng lỗi (`buggyLine`), Trạng thái (`isActive` → Active/Inactive). Không hiển thị cột `code`/`explanation` đầy đủ trong bảng (quá dài cho 1 row) — để lại cho phase form chi tiết (P2).
 
 - [ ] **FE: trang `/admin/peer-interview` — data table**

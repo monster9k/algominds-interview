@@ -61,7 +61,7 @@
   📍 `client/src/features/admin/components/admin-header.tsx` — logo/title "Admin", `Avatar` (tái dùng `useAuthStore` lấy `user.name`/`user.avatarUrl` giống `user-nav-menu.tsx:74-75`), nút "Về trang chính" (`Link to="/problems"`).
   📍 `client/src/features/admin/layout/admin-layout.tsx` — `<div className="h-screen flex"><AdminSidebar/><div className="flex-1 flex flex-col"><AdminHeader/><main className="flex-1 overflow-y-auto p-6"><Outlet/></main></div></div>`.
 
-- [ ] **FE: đăng ký route `/admin/*`**
+- [x] **FE: đăng ký route `/admin/*`**
   📍 `client/src/app/router-instance.tsx` — thêm route group mới (ngang hàng khối `ProtectedRoute` hiện có, dòng 71-91):
   ```tsx
   {

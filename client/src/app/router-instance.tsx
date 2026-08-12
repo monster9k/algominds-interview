@@ -27,7 +27,13 @@ import { PeerInterviewRoomPage } from "@/features/peer-interview/pages/peer-inte
 import { DiscussListPage } from "@/features/discuss/pages/discuss-list-page";
 import { DiscussPostPage } from "@/features/discuss/pages/discuss-post-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
+import { AdminRoute } from "@/features/auth/components/admin-route";
 import { GoogleCallbackPage } from "@/features/auth/pages/google-callback-page";
+import { AdminLayout } from "@/features/admin/layout/admin-layout";
+import { AdminDashboardPage } from "@/features/admin/pages/admin-dashboard-page";
+import { AdminProblemsPage } from "@/features/admin/pages/admin-problems-page";
+import { AdminContestsPage } from "@/features/admin/pages/admin-contests-page";
+import { AdminUsersPage } from "@/features/admin/pages/admin-users-page";
 
 export const router = createBrowserRouter([
   {
@@ -86,6 +92,24 @@ export const router = createBrowserRouter([
       {
         path: "/contests/:contestId/problems/:problemSlug",
         element: <ContestSolvePage />,
+      },
+    ],
+  },
+
+  // Admin dashboard — client-side role gate (see AdminRoute), stack has no
+  // Next.js-style middleware to enforce this server-side.
+  {
+    element: <AdminRoute />,
+    children: [
+      {
+        path: "/admin",
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <AdminDashboardPage /> },
+          { path: "problems", element: <AdminProblemsPage /> },
+          { path: "contests", element: <AdminContestsPage /> },
+          { path: "users", element: <AdminUsersPage /> },
+        ],
       },
     ],
   },

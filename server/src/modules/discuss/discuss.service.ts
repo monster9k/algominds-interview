@@ -129,6 +129,19 @@ export class DiscussService {
     });
   }
 
+  // DELETE /discuss/:id (moderation — ADMIN/MODERATOR) — soft delete.
+  async deletePost(id: string) {
+    const post = await this.prisma.discussPost.findUnique({ where: { id } });
+    if (!post || post.deletedAt) {
+      throw new NotFoundException('Bài viết không tồn tại');
+    }
+
+    return this.prisma.discussPost.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
+
   // POST /discuss/:id/comments
   async createComment(postId: string, userId: string, dto: CreateCommentDto) {
     const post = await this.prisma.discussPost.findUnique({

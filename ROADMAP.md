@@ -56,7 +56,7 @@
   - `hooks/use-admin-stats.ts`, `hooks/use-admin-users.ts` (TanStack Query, mirror `use-user-profile.ts`).
   - `types/index.ts`: `AdminStats`, `AdminUser`.
 
-- [ ] **FE: `AdminSidebar` + `AdminHeader` + `AdminLayout`**
+- [x] **FE: `AdminSidebar` + `AdminHeader` + `AdminLayout`**
   📍 `client/src/features/admin/components/admin-sidebar.tsx` — 4 menu tĩnh: Tổng quan (`/admin`), Bài tập (`/admin/problems`), Cuộc thi (`/admin/contests`), Người dùng (`/admin/users`), theo đúng `itemClasses()`/cấu trúc `dashboard-sidebar.tsx:16-24, 26-32`.
   📍 `client/src/features/admin/components/admin-header.tsx` — logo/title "Admin", `Avatar` (tái dùng `useAuthStore` lấy `user.name`/`user.avatarUrl` giống `user-nav-menu.tsx:74-75`), nút "Về trang chính" (`Link to="/problems"`).
   📍 `client/src/features/admin/layout/admin-layout.tsx` — `<div className="h-screen flex"><AdminSidebar/><div className="flex-1 flex flex-col"><AdminHeader/><main className="flex-1 overflow-y-auto p-6"><Outlet/></main></div></div>`.

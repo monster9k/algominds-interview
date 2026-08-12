@@ -1,0 +1,59 @@
+{
+  "sidebar": {
+    "dashboard": "Tổng quan",
+    "problems": "Bài tập",
+    "contests": "Cuộc thi",
+    "users": "Người dùng"
+  },
+  "header": {
+    "title": "Quản trị",
+    "backToApp": "Về trang chính"
+  },
+  "dashboard": {
+    "title": "Tổng quan",
+    "totalUsers": "Tổng số Users",
+    "totalProblems": "Tổng số Bài tập",
+    "totalSubmissions": "Tổng số Submissions",
+    "loadError": "Không tải được số liệu thống kê."
+  },
+  "difficulty": {
+    "easy": "Dễ",
+    "medium": "Trung bình",
+    "hard": "Khó"
+  },
+  "problems": {
+    "title": "Quản lý Bài tập",
+    "createNew": "Tạo bài tập mới",
+    "columnId": "ID",
+    "columnTitle": "Tiêu đề",
+    "columnDifficulty": "Độ khó",
+    "columnStatus": "Trạng thái",
+    "statusActive": "Hoạt động",
+    "statusDeleted": "Đã xoá",
+    "empty": "Chưa có bài tập nào.",
+    "loadError": "Không tải được danh sách bài tập."
+  },
+  "contests": {
+    "title": "Quản lý Cuộc thi",
+    "createNew": "Tạo cuộc thi mới",
+    "columnId": "ID",
+    "columnTitle": "Tiêu đề",
+    "columnStatus": "Trạng thái",
+    "columnStart": "Bắt đầu",
+    "statusUpcoming": "Sắp diễn ra",
+    "statusOngoing": "Đang diễn ra",
+    "statusFinished": "Đã kết thúc",
+    "empty": "Chưa có cuộc thi nào.",
+    "loadError": "Không tải được danh sách cuộc thi."
+  },
+  "users": {
+    "title": "Quản lý Người dùng",
+    "columnId": "ID",
+    "columnEmail": "Email",
+    "columnName": "Tên",
+    "columnRole": "Vai trò",
+    "columnCreatedAt": "Ngày tạo",
+    "empty": "Chưa có người dùng nào.",
+    "loadError": "Không tải được danh sách người dùng."
+  }
+}

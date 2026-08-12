@@ -1,0 +1,59 @@
+{
+  "sidebar": {
+    "dashboard": "ダッシュボード",
+    "problems": "問題",
+    "contests": "コンテスト",
+    "users": "ユーザー"
+  },
+  "header": {
+    "title": "管理者",
+    "backToApp": "アプリに戻る"
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "totalUsers": "ユーザー総数",
+    "totalProblems": "問題総数",
+    "totalSubmissions": "提出総数",
+    "loadError": "統計情報の読み込みに失敗しました。"
+  },
+  "difficulty": {
+    "easy": "簡単",
+    "medium": "普通",
+    "hard": "難しい"
+  },
+  "problems": {
+    "title": "問題管理",
+    "createNew": "新しい問題を作成",
+    "columnId": "ID",
+    "columnTitle": "タイトル",
+    "columnDifficulty": "難易度",
+    "columnStatus": "状態",
+    "statusActive": "有効",
+    "statusDeleted": "削除済み",
+    "empty": "問題はまだありません。",
+    "loadError": "問題一覧の読み込みに失敗しました。"
+  },
+  "contests": {
+    "title": "コンテスト管理",
+    "createNew": "新しいコンテストを作成",
+    "columnId": "ID",
+    "columnTitle": "タイトル",
+    "columnStatus": "状態",
+    "columnStart": "開始日時",
+    "statusUpcoming": "開催予定",
+    "statusOngoing": "開催中",
+    "statusFinished": "終了",
+    "empty": "コンテストはまだありません。",
+    "loadError": "コンテスト一覧の読み込みに失敗しました。"
+  },
+  "users": {
+    "title": "ユーザー管理",
+    "columnId": "ID",
+    "columnEmail": "メール",
+    "columnName": "名前",
+    "columnRole": "権限",
+    "columnCreatedAt": "登録日",
+    "empty": "ユーザーはまだいません。",
+    "loadError": "ユーザー一覧の読み込みに失敗しました。"
+  }
+}

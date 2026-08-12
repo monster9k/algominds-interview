@@ -1,0 +1,59 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "problems": "Problems",
+    "contests": "Contests",
+    "users": "Users"
+  },
+  "header": {
+    "title": "Admin",
+    "backToApp": "Back to App"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalUsers": "Total Users",
+    "totalProblems": "Total Problems",
+    "totalSubmissions": "Total Submissions",
+    "loadError": "Failed to load stats."
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "problems": {
+    "title": "Manage Problems",
+    "createNew": "New Problem",
+    "columnId": "ID",
+    "columnTitle": "Title",
+    "columnDifficulty": "Difficulty",
+    "columnStatus": "Status",
+    "statusActive": "Active",
+    "statusDeleted": "Deleted",
+    "empty": "No problems yet.",
+    "loadError": "Failed to load problems."
+  },
+  "contests": {
+    "title": "Manage Contests",
+    "createNew": "New Contest",
+    "columnId": "ID",
+    "columnTitle": "Title",
+    "columnStatus": "Status",
+    "columnStart": "Start",
+    "statusUpcoming": "Upcoming",
+    "statusOngoing": "Ongoing",
+    "statusFinished": "Finished",
+    "empty": "No contests yet.",
+    "loadError": "Failed to load contests."
+  },
+  "users": {
+    "title": "Manage Users",
+    "columnId": "ID",
+    "columnEmail": "Email",
+    "columnName": "Name",
+    "columnRole": "Role",
+    "columnCreatedAt": "Created At",
+    "empty": "No users yet.",
+    "loadError": "Failed to load users."
+  }
+}

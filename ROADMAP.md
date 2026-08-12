@@ -85,7 +85,7 @@
 
 ## 🟡 P1 — Áp dụng App Shell cho user-facing layout
 
-- [ ] **FE: `dashboard-layout.tsx` đổi sang dùng `AppShell`**
+- [x] **FE: `dashboard-layout.tsx` đổi sang dùng `AppShell`**
   📍 `client/src/components/layout/dashboard-layout.tsx` — bỏ `DashboardHeader` + `ResizablePanelGroup`, thay bằng `<AppShell items={userSidebarItems} />`, dùng lại đúng mảng `sidebarItems` hiện có ở `dashboard-sidebar.tsx` (không đổi route/label/icon).
 
 - [ ] **Verify: profile dropdown + Settings + Help Center hoạt động đúng ở user side**

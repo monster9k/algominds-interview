@@ -98,7 +98,9 @@
     "columnRole": "Vai trò",
     "columnCreatedAt": "Ngày tạo",
     "empty": "Chưa có người dùng nào.",
-    "loadError": "Không tải được danh sách người dùng."
+    "loadError": "Không tải được danh sách người dùng.",
+    "deleteConfirmTitle": "Xoá người dùng này?",
+    "deleteConfirmDescription": "Tài khoản sẽ bị vô hiệu hoá (soft delete), có thể khôi phục sau nếu cần."
   },
   "store": {
     "title": "Quản lý Cửa hàng",

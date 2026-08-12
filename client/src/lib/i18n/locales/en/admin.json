@@ -98,7 +98,9 @@
     "columnRole": "Role",
     "columnCreatedAt": "Created At",
     "empty": "No users yet.",
-    "loadError": "Failed to load users."
+    "loadError": "Failed to load users.",
+    "deleteConfirmTitle": "Delete this user?",
+    "deleteConfirmDescription": "The account will be deactivated (soft delete), recoverable later if needed."
   },
   "store": {
     "title": "Manage Store",

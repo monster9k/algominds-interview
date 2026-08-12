@@ -98,7 +98,9 @@
     "columnRole": "権限",
     "columnCreatedAt": "登録日",
     "empty": "ユーザーはまだいません。",
-    "loadError": "ユーザー一覧の読み込みに失敗しました。"
+    "loadError": "ユーザー一覧の読み込みに失敗しました。",
+    "deleteConfirmTitle": "このユーザーを削除しますか？",
+    "deleteConfirmDescription": "アカウントは無効化されます（論理削除）。必要に応じて後で復元できます。"
   },
   "store": {
     "title": "ストア管理",

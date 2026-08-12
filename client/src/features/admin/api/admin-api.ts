@@ -19,8 +19,20 @@ export const adminApi = {
     return response.data;
   },
 
-  getUsers: async (): Promise<AdminUser[]> => {
-    const response = await api.get("/admin/users");
+  getUsers: async (
+    query: AdminListQuery,
+  ): Promise<PaginatedResponse<AdminUser>> => {
+    const response = await api.get("/admin/users", { params: query });
+    return response.data;
+  },
+
+  updateUserRole: async (id: string, role: string) => {
+    const response = await api.patch(`/admin/users/${id}/role`, { role });
+    return response.data;
+  },
+
+  deleteUser: async (id: string) => {
+    const response = await api.delete(`/admin/users/${id}`);
     return response.data;
   },
 

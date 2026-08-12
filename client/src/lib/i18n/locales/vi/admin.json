@@ -32,9 +32,35 @@
   "dashboard": {
     "title": "Tổng quan",
     "totalUsers": "Tổng số Users",
-    "totalProblems": "Tổng số Bài tập",
+    "totalSessions": "Tổng số Sessions",
+    "completionRate": "Tỉ lệ hoàn thành",
     "totalSubmissions": "Tổng số Submissions",
-    "loadError": "Không tải được số liệu thống kê."
+    "vsLastWeek": "so với tuần trước",
+    "loadError": "Không tải được số liệu thống kê.",
+    "sessionsChart": {
+      "title": "Sessions theo thời gian",
+      "empty": "Chưa có session nào trong khoảng này."
+    },
+    "recentActivity": {
+      "title": "Hoạt động gần đây",
+      "empty": "Chưa có hành động nào được ghi lại."
+    },
+    "sessionFunnel": {
+      "title": "Phễu phiên phỏng vấn",
+      "status": {
+        "PHASE_1_STRATEGY": "Chiến lược",
+        "PHASE_2_IMPLEMENT": "Triển khai",
+        "COMPLETED": "Hoàn thành",
+        "ABANDONED": "Bỏ dở"
+      }
+    },
+    "topCompanies": {
+      "title": "Top Công ty",
+      "empty": "Chưa có công ty nào."
+    },
+    "acceptanceChart": {
+      "title": "Tỉ lệ Accept theo Độ khó"
+    }
   },
   "difficulty": {
     "easy": "Dễ",

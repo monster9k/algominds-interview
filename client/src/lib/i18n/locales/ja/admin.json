@@ -32,9 +32,35 @@
   "dashboard": {
     "title": "ダッシュボード",
     "totalUsers": "ユーザー総数",
-    "totalProblems": "問題総数",
+    "totalSessions": "セッション総数",
+    "completionRate": "完了率",
     "totalSubmissions": "提出総数",
-    "loadError": "統計情報の読み込みに失敗しました。"
+    "vsLastWeek": "先週比",
+    "loadError": "統計情報の読み込みに失敗しました。",
+    "sessionsChart": {
+      "title": "セッション推移",
+      "empty": "この期間のセッションはまだありません。"
+    },
+    "recentActivity": {
+      "title": "最近のアクティビティ",
+      "empty": "記録されたアクションはまだありません。"
+    },
+    "sessionFunnel": {
+      "title": "セッションファネル",
+      "status": {
+        "PHASE_1_STRATEGY": "戦略",
+        "PHASE_2_IMPLEMENT": "実装",
+        "COMPLETED": "完了",
+        "ABANDONED": "中断"
+      }
+    },
+    "topCompanies": {
+      "title": "上位企業",
+      "empty": "企業がまだありません。"
+    },
+    "acceptanceChart": {
+      "title": "難易度別 正答率"
+    }
   },
   "difficulty": {
     "easy": "簡単",

@@ -32,9 +32,35 @@
   "dashboard": {
     "title": "Dashboard",
     "totalUsers": "Total Users",
-    "totalProblems": "Total Problems",
+    "totalSessions": "Total Sessions",
+    "completionRate": "Completion Rate",
     "totalSubmissions": "Total Submissions",
-    "loadError": "Failed to load stats."
+    "vsLastWeek": "vs last week",
+    "loadError": "Failed to load stats.",
+    "sessionsChart": {
+      "title": "Sessions Over Time",
+      "empty": "No sessions in this range yet."
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "empty": "No actions recorded yet."
+    },
+    "sessionFunnel": {
+      "title": "Session Funnel",
+      "status": {
+        "PHASE_1_STRATEGY": "Strategy",
+        "PHASE_2_IMPLEMENT": "Implementation",
+        "COMPLETED": "Completed",
+        "ABANDONED": "Abandoned"
+      }
+    },
+    "topCompanies": {
+      "title": "Top Companies",
+      "empty": "No companies yet."
+    },
+    "acceptanceChart": {
+      "title": "Acceptance Rate by Difficulty"
+    }
   },
   "difficulty": {
     "easy": "Easy",

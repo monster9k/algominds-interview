@@ -71,15 +71,15 @@
 - [x] **FE: `admin-api.ts` + hooks mới cho dashboard**
   📍 `client/src/features/admin/api/admin-api.ts` + `hooks/use-admin-sessions-timeseries.ts`, `use-admin-session-status.ts`, `use-admin-acceptance-by-difficulty.ts`, `use-admin-top-companies.ts` (TanStack Query, mirror `use-admin-stats.ts`).
 
-- [ ] **FE: rebuild `admin-dashboard-page.tsx` — KPI cards + charts theo tỉ lệ ảnh mẫu**
+- [x] **FE: rebuild `admin-dashboard-page.tsx` — KPI cards + charts theo tỉ lệ ảnh mẫu**
   📍 `client/src/features/admin/pages/admin-dashboard-page.tsx`:
   - Hàng 1: 4 KPI card (Users/Sessions/Completion Rate/Submissions) + badge trend ↑/↓ %.
   - Hàng 2: trái (rộng) = "Sessions Over Time" bar chart (recharts) + tab range 1W/1M/3M/ALL (`Tabs` có sẵn); phải (hẹp) = "Recent Activity" (audit log, badge màu theo action prefix như `admin-audit-log-table.tsx`).
   - Hàng 3 (3 cột desktop, xếp dọc mobile): "Session Funnel" (bar ngang theo `SessionStatus`), "Top Companies" (ranked list), "Acceptance Rate by Difficulty" (bar/donut nhỏ, màu theo `DIFFICULTY_BADGE_CLASS`).
   - Loading/error/empty đúng khuôn có sẵn (skeleton → text đỏ lỗi → text muted rỗng).
 
-- [ ] **i18n: key mới cho Admin Panel/Help Center/dashboard widgets — 3 locale**
-  📍 `client/src/lib/i18n/locales/{vi,en,ja}/{common,admin,settings}.json` — verify parity bằng script flatten so sánh key giữa 3 locale.
+- [x] **i18n: key mới cho Admin Panel/Help Center/dashboard widgets — 3 locale**
+  📍 `client/src/lib/i18n/locales/{vi,en,ja}/{common,admin,settings}.json` — làm dần cùng từng task (P0 task 3/4/11) thay vì 1 commit riêng cuối. Verify parity bằng script flatten: `admin.json` 173 key, `common.json` 38 key, `settings.json` 43 key — khớp tuyệt đối cả 3 locale, không thiếu/thừa.
 
 ---
 

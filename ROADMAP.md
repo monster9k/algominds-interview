@@ -108,8 +108,8 @@
 - [x] **Xoá code chết sau khi xác nhận không còn import**
   📍 Grep xác nhận không còn reference nào (kể cả `test-page.tsx` — trước đó nghi ngờ có import `header.tsx` nhưng đọc lại code thì không, chỉ dùng `useSidebar` store, không đụng tới) rồi xoá: `client/src/components/layout/dashboard-header.tsx`, `header.tsx`, `dashboard-sidebar.tsx`, `client/src/features/admin/components/admin-header.tsx`, `admin-sidebar.tsx`. Verify: `tsc -b` + `npm run lint` sạch (0 lỗi, 13 warning pre-existing không liên quan), browser thật xác nhận `/admin` vẫn render đúng 100%, không lỗi console.
 
-- [ ] **i18n: verify parity cuối cùng 3 locale**
-  📍 Script flatten so sánh toàn bộ key `en/vi/ja` sau khi cả 3 tier hoàn tất — không còn key thiếu/thừa.
+- [x] **i18n: verify parity cuối cùng 3 locale**
+  📍 Script flatten so sánh toàn bộ key `en/vi/ja` cho **mọi** namespace (không chỉ 3 file đã sửa trong roadmap này) — 12/13 file khớp tuyệt đối. `career.json` báo lệch (`events.closesInDays_other`, `stageCount_other` thiếu ở vi/ja) nhưng xác nhận là **false-positive**: đây là suffix số nhiều `_other` của i18next (tiếng Anh có dạng số nhiều, tiếng Việt/Nhật dùng chung 1 key không suffix — `vi/career.json` có sẵn `"stageCount": "{{count}} vòng"` không suffix, đúng hành vi, không phải thiếu key thật). File này cũng không nằm trong phạm vi roadmap này (không đụng tới `career.json` ở bất kỳ task nào) — không sửa gì thêm, không phải regression do lần này gây ra. 3 file thực sự có sửa (`admin.json`/`common.json`/`settings.json`) đều khớp hoàn toàn cả 3 locale.
 
 ---
 

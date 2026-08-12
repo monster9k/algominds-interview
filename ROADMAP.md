@@ -87,7 +87,7 @@
 - [x] **FE: trang `/admin/problems` — data table**
   📍 `client/src/features/admin/pages/admin-problems-page.tsx` + `client/src/features/admin/components/admin-problems-table.tsx` — cột ID (`displayId`), Tiêu đề, Độ khó (`Badge`), Trạng thái (theo `deletedAt`, xem khảo sát kỹ thuật). Dữ liệu từ `problemsApi.getProblems()` có sẵn (không viết hook mới, dùng `useQuery` trực tiếp hoặc hook `useProblems` đã có trong feature `problems` nếu phù hợp). Nút "Tạo bài tập mới" (`Button` + `onClick={() => console.log("TODO: create problem modal")}`).
 
-- [ ] **FE: trang `/admin/contests` — data table**
+- [x] **FE: trang `/admin/contests` — data table**
   📍 `client/src/features/admin/pages/admin-contests-page.tsx` + `client/src/features/admin/components/admin-contests-table.tsx` — cột ID, Tiêu đề, Trạng thái (`Badge`, tái dùng `STATUS_BADGE_CLASS` từ `contest-table.tsx:18-23`), Thời gian bắt đầu. Dữ liệu từ `contestApi.getContests()` có sẵn. Nút "Tạo cuộc thi mới" stub console.log.
 
 - [ ] **FE: trang `/admin/users` — data table**

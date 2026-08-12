@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -39,16 +40,16 @@ export function AdminUsersTable({ users, isLoading, isError }: AdminUsersTablePr
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   return (
-    <div className="rounded-lg overflow-hidden border border-border">
+    <div className="rounded-2xl overflow-hidden border border-border">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b border-border/80">
-            <TableHead className="text-muted-foreground text-xs">{t("users.columnId")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("users.columnEmail")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("users.columnName")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("users.columnRole")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("users.columnCreatedAt")}</TableHead>
-            <TableHead className="text-right text-muted-foreground text-xs">{t("problems.columnActions")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("users.columnId")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("users.columnName")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("users.columnEmail")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("users.columnRole")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("users.columnCreatedAt")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("problems.columnActions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -80,8 +81,17 @@ export function AdminUsersTable({ users, isLoading, isError }: AdminUsersTablePr
                   <TableCell className="text-muted-foreground text-xs font-mono">
                     {user.id.slice(0, 8)}
                   </TableCell>
-                  <TableCell className="text-foreground">{user.email}</TableCell>
-                  <TableCell className="text-foreground">{user.name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2.5">
+                      <Avatar className="h-7 w-7 shrink-0">
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                          {user.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-foreground font-medium">{user.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{user.email}</TableCell>
                   <TableCell>
                     {user.deletedAt ? (
                       <Badge variant="destructive">{t("problems.statusDeleted")}</Badge>

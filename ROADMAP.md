@@ -58,14 +58,15 @@
 - [x] **FE: `admin-layout.tsx` đổi sang dùng `AppShell`**
   📍 `client/src/features/admin/layout/admin-layout.tsx` — thay nội dung hiện tại (`AdminSidebar`+`AdminHeader` riêng) bằng `<AppShell items={adminSidebarItems} />`, dùng lại đúng mảng `sidebarItems` hiện có ở `admin-sidebar.tsx` (không đổi route/label/icon).
 
-- [ ] **BE: mở rộng `admin.service.ts`/`admin.controller.ts` — stats mở rộng + 4 endpoint mới**
+- [x] **BE: mở rộng `admin.service.ts`/`admin.controller.ts` — stats mở rộng + 4 endpoint mới**
   📍 `server/src/modules/admin/admin.service.ts`, `admin.controller.ts` (cùng class-level `@Roles('ADMIN')` guard có sẵn, không sửa guard):
   - `getStats()` mở rộng: thêm `totalSessions`, `completionRate` (COMPLETED/tổng session), %-delta so 7 ngày trước cho từng KPI.
   - `getSessionsTimeseries(range: '1W'|'1M'|'3M'|'ALL')` — bucket `Session.startedAt` trong JS (data nhỏ, không cần raw SQL) → `GET /admin/stats/sessions-timeseries?range=`.
   - `getSessionStatusBreakdown()` — `prisma.session.groupBy({by:['status'], _count:true})` → `GET /admin/stats/session-status`.
-  - `getAcceptanceByDifficulty()` — `prisma.problem.groupBy({by:['difficulty'], _avg:{acceptanceRate:true}})` → `GET /admin/stats/acceptance-by-difficulty`.
+  - `getAcceptanceByDifficulty()` — **sửa lại quyết định ban đầu**: `Problem.acceptanceRate`/`submitCount`/`passCount` denormalize sẵn nhưng khi đọc kỹ code phát hiện chưa từng được ghi ở bất kỳ đâu (luôn = 0 mặc định) — không dùng được. Tính trực tiếp từ `Submission.status` + `Session.problem.difficulty` (gom trong JS, cùng data volume nhỏ) thay thế → `GET /admin/stats/acceptance-by-difficulty`.
   - `getTopCompanies(limit=5)` — mirror query `companies.service.ts#findAll()`, top 5 theo `_count.problems` → `GET /admin/stats/top-companies`.
   - Recent Activity: tái dùng thẳng `GET /admin/audit-log?limit=5` có sẵn, không cần route mới.
+  - Verify: `auth.service.spec.ts` + `judge.service.spec.ts` (24 test) vẫn pass; curl với JWT admin xác nhận cả 4 endpoint mới trả dữ liệu thật đúng shape (`totalSessions:28, completionRate:60.7`, time-series 7 bucket, breakdown 3 status, acceptance 3 difficulty, top 5 company).
 
 - [ ] **FE: `admin-api.ts` + hooks mới cho dashboard**
   📍 `client/src/features/admin/api/admin-api.ts` + `hooks/use-admin-sessions-timeseries.ts`, `use-admin-session-status.ts`, `use-admin-acceptance-by-difficulty.ts`, `use-admin-top-companies.ts` (TanStack Query, mirror `use-admin-stats.ts`).

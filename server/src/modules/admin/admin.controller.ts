@@ -33,6 +33,30 @@ export class AdminController {
     return this.adminService.getStats();
   }
 
+  // GET /admin/stats/sessions-timeseries?range=1W|1M|3M|ALL
+  @Get('stats/sessions-timeseries')
+  getSessionsTimeseries(@Query('range') range?: string) {
+    return this.adminService.getSessionsTimeseries(range ?? '1M');
+  }
+
+  // GET /admin/stats/session-status
+  @Get('stats/session-status')
+  getSessionStatusBreakdown() {
+    return this.adminService.getSessionStatusBreakdown();
+  }
+
+  // GET /admin/stats/acceptance-by-difficulty
+  @Get('stats/acceptance-by-difficulty')
+  getAcceptanceByDifficulty() {
+    return this.adminService.getAcceptanceByDifficulty();
+  }
+
+  // GET /admin/stats/top-companies
+  @Get('stats/top-companies')
+  getTopCompanies() {
+    return this.adminService.getTopCompanies();
+  }
+
   // GET /admin/users?page=&limit=&search=&sortBy=&sortDirection=
   @Get('users')
   getUsers(@Query() query: PaginationQuery) {

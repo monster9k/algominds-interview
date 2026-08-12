@@ -22,18 +22,203 @@ function parsePagination(query: PaginationQuery) {
   return { page, limit, skip: (page - 1) * limit };
 }
 
+const SESSIONS_TIMESERIES_RANGE_DAYS: Record<string, number> = {
+  '1W': 7,
+  '1M': 30,
+  '3M': 90,
+  ALL: 365,
+};
+
 @Injectable()
 export class AdminService {
   constructor(private prisma: PrismaService) {}
 
+  // %-delta so 7 ngày trước — dùng chung cho mọi KPI ở getStats().
+  private pctDelta(current: number, previous: number): number {
+    if (previous === 0) {
+      return current > 0 ? 100 : 0;
+    }
+    return Math.round(((current - previous) / previous) * 1000) / 10;
+  }
+
   async getStats() {
-    const [totalUsers, totalProblems, totalSubmissions] = await Promise.all([
+    const currentStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const previousStart = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+
+    const [
+      totalUsers,
+      totalProblems,
+      totalSubmissions,
+      totalSessions,
+      completedSessions,
+      usersCurrent,
+      usersPrevious,
+      submissionsCurrent,
+      submissionsPrevious,
+      sessionsCurrent,
+      sessionsPrevious,
+      completedCurrent,
+      completedPrevious,
+    ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.problem.count(),
       this.prisma.submission.count(),
+      this.prisma.session.count(),
+      this.prisma.session.count({ where: { status: 'COMPLETED' } }),
+      this.prisma.user.count({ where: { createdAt: { gte: currentStart } } }),
+      this.prisma.user.count({
+        where: { createdAt: { gte: previousStart, lt: currentStart } },
+      }),
+      this.prisma.submission.count({
+        where: { createdAt: { gte: currentStart } },
+      }),
+      this.prisma.submission.count({
+        where: { createdAt: { gte: previousStart, lt: currentStart } },
+      }),
+      this.prisma.session.count({
+        where: { startedAt: { gte: currentStart } },
+      }),
+      this.prisma.session.count({
+        where: { startedAt: { gte: previousStart, lt: currentStart } },
+      }),
+      this.prisma.session.count({
+        where: { status: 'COMPLETED', startedAt: { gte: currentStart } },
+      }),
+      this.prisma.session.count({
+        where: {
+          status: 'COMPLETED',
+          startedAt: { gte: previousStart, lt: currentStart },
+        },
+      }),
     ]);
 
-    return { totalUsers, totalProblems, totalSubmissions };
+    const completionRate =
+      totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
+    const completionRateCurrent =
+      sessionsCurrent > 0 ? (completedCurrent / sessionsCurrent) * 100 : 0;
+    const completionRatePrevious =
+      sessionsPrevious > 0 ? (completedPrevious / sessionsPrevious) * 100 : 0;
+
+    return {
+      totalUsers,
+      totalUsersDeltaPct: this.pctDelta(usersCurrent, usersPrevious),
+      totalProblems,
+      totalSessions,
+      totalSessionsDeltaPct: this.pctDelta(sessionsCurrent, sessionsPrevious),
+      totalSubmissions,
+      totalSubmissionsDeltaPct: this.pctDelta(
+        submissionsCurrent,
+        submissionsPrevious,
+      ),
+      completionRate: Math.round(completionRate * 10) / 10,
+      completionRateDeltaPct: this.pctDelta(
+        completionRateCurrent,
+        completionRatePrevious,
+      ),
+    };
+  }
+
+  // GET /admin/stats/sessions-timeseries?range=1W|1M|3M|ALL — bucket theo
+  // Session.startedAt (SessionEvent chưa từng được ghi ở đâu trong codebase,
+  // không dùng được cho time-series). Gom trong JS thay vì raw SQL vì data
+  // volume nhỏ (dashboard admin, không phải analytics quy mô lớn).
+  async getSessionsTimeseries(range: string) {
+    const days = SESSIONS_TIMESERIES_RANGE_DAYS[range] ?? 30;
+    const bucketByWeek = days > 31;
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const sessions = await this.prisma.session.findMany({
+      where: { startedAt: { gte: since } },
+      select: { startedAt: true },
+    });
+
+    const buckets = new Map<string, number>();
+    for (const s of sessions) {
+      const key = bucketByWeek
+        ? this.weekBucketKey(s.startedAt)
+        : this.dayBucketKey(s.startedAt);
+      buckets.set(key, (buckets.get(key) ?? 0) + 1);
+    }
+
+    return Array.from(buckets.entries())
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([date, count]) => ({ date, count }));
+  }
+
+  private dayBucketKey(date: Date): string {
+    return date.toISOString().slice(0, 10);
+  }
+
+  private weekBucketKey(date: Date): string {
+    const d = new Date(date);
+    const isoDay = d.getUTCDay() || 7; // Monday = 1 ... Sunday = 7
+    d.setUTCDate(d.getUTCDate() - isoDay + 1);
+    return d.toISOString().slice(0, 10);
+  }
+
+  async getSessionStatusBreakdown() {
+    const rows = await this.prisma.session.groupBy({
+      by: ['status'],
+      _count: true,
+    });
+    return rows.map((r) => ({ status: r.status, count: r._count }));
+  }
+
+  // Problem.acceptanceRate/submitCount/passCount là field denormalize sẵn
+  // nhưng chưa từng được ghi ở bất kỳ đâu trong codebase (luôn = 0 mặc định)
+  // — không dùng được. Tính trực tiếp từ Submission + Session.problem thay
+  // thế, cùng data volume nhỏ nên gom trong JS như getSessionsTimeseries().
+  async getAcceptanceByDifficulty() {
+    const submissions = await this.prisma.submission.findMany({
+      select: {
+        status: true,
+        session: { select: { problem: { select: { difficulty: true } } } },
+      },
+    });
+
+    const buckets: Record<Difficulty, { total: number; accepted: number }> = {
+      EASY: { total: 0, accepted: 0 },
+      MEDIUM: { total: 0, accepted: 0 },
+      HARD: { total: 0, accepted: 0 },
+    };
+
+    for (const s of submissions) {
+      const bucket = buckets[s.session.problem.difficulty];
+      bucket.total += 1;
+      if (s.status === 'ACCEPTED') bucket.accepted += 1;
+    }
+
+    return (Object.keys(buckets) as Difficulty[]).map((difficulty) => {
+      const { total, accepted } = buckets[difficulty];
+      return {
+        difficulty,
+        acceptanceRate:
+          total > 0 ? Math.round((accepted / total) * 1000) / 10 : 0,
+      };
+    });
+  }
+
+  // Mirror query của companies.service.ts#findAll() (group theo số problem
+  // liên kết), giới hạn top N cho widget dashboard — không có khái niệm
+  // "sessions per company" trong schema (Company chỉ liên kết Problem).
+  async getTopCompanies(limit = 5) {
+    const companies = await this.prisma.company.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        _count: { select: { problems: true } },
+      },
+      orderBy: { problems: { _count: 'desc' } },
+      take: limit,
+    });
+
+    return companies.map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      count: c._count.problems,
+    }));
   }
 
   async getUsers(query: PaginationQuery) {

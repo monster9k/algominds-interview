@@ -207,8 +207,8 @@ Quyết định đã chốt với user trước khi code:
 - [x] **BE: `discuss` — `DELETE /discuss/:id` (moderation)** (verify: 12 test `discuss.service.spec.ts` pass, curl tạo→xoá bài throwaway → biến mất khỏi `GET /discuss`, unauthenticated request bị 401 đúng guard)
   📍 `discuss.controller.ts`/`discuss.service.ts` — soft-delete set `deletedAt`, guard `JwtAuthGuard + RolesGuard + @Roles('ADMIN', 'MODERATOR')`, gọi audit log với `targetType: "DiscussPost"`.
 
-- [ ] **BE: `admin` — `GET /admin/audit-log` (paginated)**
-  📍 Cùng module, `@Roles('ADMIN')` (không cho MODERATOR xem — nhạy cảm). Join `admin{id,name,email}`, trả `{data,total,page,limit}`.
+- [x] **BE: `admin` — `GET /admin/audit-log` (paginated)**
+  📍 Cùng module, kế thừa `@Roles('ADMIN')` ở class level của `AdminController` (không cho MODERATOR xem — nhạy cảm). Join `admin{id,name,email}`, trả `{data,total,page,limit}`. Verify curl: thấy đủ log của mọi hành động test trước đó (create/update/delete problem+contest, role change, discuss delete) đúng thứ tự mới nhất trước.
 
 ### 🟡 P2b — Frontend: component dùng chung, RBAC, CRUD 3 domain, moderation, audit log page
 

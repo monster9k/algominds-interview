@@ -193,6 +193,31 @@ export class AdminService {
     return { data, total, page, limit };
   }
 
+  // GET /admin/audit-log — ADMIN only (không cho MODERATOR xem, nhạy cảm).
+  async getAuditLog(query: PaginationQuery) {
+    const { page, limit, skip } = parsePagination(query);
+
+    const [data, total] = await Promise.all([
+      this.prisma.adminActionLog.findMany({
+        select: {
+          id: true,
+          action: true,
+          targetType: true,
+          targetId: true,
+          metadata: true,
+          createdAt: true,
+          admin: { select: { id: true, name: true, email: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.adminActionLog.count(),
+    ]);
+
+    return { data, total, page, limit };
+  }
+
   // Khác GET /quest/snippets — endpoint đó cố tình strip buggyLine/explanation
   // để chống lộ đáp án qua Network tab lúc chơi (xem quest.controller.ts).
   // Admin cần thấy đủ đáp án nên không tái dùng được endpoint đó.

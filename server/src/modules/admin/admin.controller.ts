@@ -51,6 +51,12 @@ export class AdminController {
     return this.adminService.getContests(query);
   }
 
+  // GET /admin/audit-log?page=&limit=
+  @Get('audit-log')
+  getAuditLog(@Query() query: PaginationQuery) {
+    return this.adminService.getAuditLog(query);
+  }
+
   // GET /admin/quests
   @Get('quests')
   getQuests() {

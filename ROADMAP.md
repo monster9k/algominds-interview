@@ -37,7 +37,7 @@
 - [x] **FE: cài `recharts` + shadcn `tooltip.tsx`**
   📍 `client/` — `npm install recharts`; thêm `client/src/components/ui/tooltip.tsx` (+ `@radix-ui/react-tooltip`), dùng cho label hover ở sidebar collapsed mode.
 
-- [ ] **FE: `sidebar-item-classes.ts` — tách helper dùng chung**
+- [x] **FE: `sidebar-item-classes.ts` — tách helper dùng chung**
   📍 `client/src/components/layout/sidebar-item-classes.ts` (mới) — chuyển `itemClasses()` đang lặp y hệt ở `admin-sidebar.tsx` và `dashboard-sidebar.tsx` vào đây, export dùng chung.
 
 - [ ] **FE: tách content dropdown của `UserNavMenu` + thêm item "Admin Panel"**

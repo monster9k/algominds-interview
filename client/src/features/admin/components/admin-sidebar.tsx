@@ -14,6 +14,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { sidebarItemClasses } from "@/components/layout/sidebar-item-classes";
 
 // adminOnly: true bị ẩn với MODERATOR — MODERATOR chỉ có quyền duyệt Discuss
 // trong toàn bộ Admin Dashboard (xem AdminOnlyRoute).
@@ -29,14 +30,6 @@ const sidebarItems = [
   { icon: Handshake, labelKey: "sidebar.peerInterview", href: "/admin/peer-interview", adminOnly: true },
   { icon: History, labelKey: "sidebar.auditLog", href: "/admin/audit-log", adminOnly: true },
 ];
-
-const itemClasses = (isActive: boolean) =>
-  cn(
-    "flex w-full items-center gap-2.5 border-l-2 px-2.5 py-2 text-sm font-medium rounded-md transition-colors duration-150",
-    isActive
-      ? "border-primary bg-primary/15 text-primary"
-      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted",
-  );
 
 export function AdminSidebar() {
   const location = useLocation();
@@ -55,7 +48,7 @@ export function AdminSidebar() {
             : location.pathname.startsWith(item.href);
 
           return (
-            <Link key={item.labelKey} to={item.href} className={itemClasses(isActive)}>
+            <Link key={item.labelKey} to={item.href} className={sidebarItemClasses(isActive)}>
               <item.icon
                 className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")}
               />

@@ -29,7 +29,6 @@
     "columnDifficulty": "Độ khó",
     "columnStatus": "Trạng thái",
     "statusActive": "Hoạt động",
-    "statusDeleted": "Đã xoá",
     "empty": "Chưa có bài tập nào.",
     "loadError": "Không tải được danh sách bài tập."
   },

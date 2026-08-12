@@ -93,8 +93,8 @@
 - [x] **FE: trang `/admin/users` — data table**
   📍 `client/src/features/admin/pages/admin-users-page.tsx` + `client/src/features/admin/components/admin-users-table.tsx` — cột ID, Email, Tên, Role (`Badge`), Ngày tạo. Dữ liệu từ `useAdminUsers()`.
 
-- [ ] **i18n: `admin.json` 3 locale**
-  📍 `client/src/lib/i18n/locales/{vi,en,ja}/admin.json` — sidebar labels, header, tiêu đề trang, tên cột bảng, empty/loading/error state, nút "Tạo mới". Đăng ký namespace `admin` vào cấu hình i18next (mirror cách các feature khác đã đăng ký, tìm file `client/src/lib/i18n/index.ts` hoặc tương đương).
+- [x] **i18n: `admin.json` 3 locale**
+  📍 `client/src/lib/i18n/locales/{vi,en,ja}/admin.json` — làm dần cùng từng trang thay vì 1 commit riêng cuối cùng (tránh hardcode string rồi phải sửa lại 2 lần). Verify tính đầy đủ: 43 key khớp nhau ở cả 3 locale (script flatten + so sánh), và mọi key `t("...")` dùng trong `src/features/admin/**` (kể cả key động qua `labelKey`/map như `STATUS_LABEL_KEY`, `difficulty.${...}`) đều có mặt trong file JSON. Đã xoá `problems.statusDeleted` (3 locale) vì không dùng đến — quyết định "Trạng thái" tĩnh ở khảo sát kỹ thuật khiến key này thành dead code.
 
 ---
 

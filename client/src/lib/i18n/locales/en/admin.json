@@ -29,7 +29,6 @@
     "columnDifficulty": "Difficulty",
     "columnStatus": "Status",
     "statusActive": "Active",
-    "statusDeleted": "Deleted",
     "empty": "No problems yet.",
     "loadError": "Failed to load problems."
   },

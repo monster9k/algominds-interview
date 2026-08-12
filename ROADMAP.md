@@ -5,6 +5,8 @@
 > Bản này thay thế nó hoàn toàn. Mục tiêu: redesign UI kiểu **"Apple-style" — bo góc rộng hơn, spacing thoáng hơn, tỉ lệ card/table tinh gọn** (tham chiếu ảnh mẫu dashboard tối dạng Sales/Admin, KHÔNG copy màu gradient của ảnh) cho **9 trang bảng trong khu vực `/admin`**: Problems, Contests, Users, Store, Discuss, Career, Quests, Peer Interview, Audit Log.
 >
 > Bản kế hoạch đầy đủ (bối cảnh, câu hỏi đã hỏi user, khảo sát Explore agent) nằm ở plan file phiên làm việc đã tạo bản này — tóm tắt lại các quyết định quan trọng ở phần "Khảo sát" và "Quyết định phạm vi" bên dưới.
+>
+> **Trạng thái: 100% P0/P1/P2 hoàn thành** — 9/9 bảng admin đã redesign, verify qua Chrome tool (dark+light, console sạch), `tsc -b` + `npm run lint` (client) sạch. Không đụng Dashboard/chrome dùng chung theo đúng phạm vi đã chốt.
 
 ## Cách đọc file này
 - `🔴 P0` — Định nghĩa pattern chung + thí điểm trên 1 bảng, **bắt buộc checkpoint xác nhận với user** trước khi làm tiếp.
@@ -65,50 +67,50 @@
 - [x] **QA bằng Chrome tool** (bắt buộc theo `design.md`)
   📍 Trang `/admin/audit-log` — đã chụp cả dark theme (mặc định) và light theme (toggle qua `document.documentElement.classList` để so sánh nhanh, do không tìm thấy toggle theme khả dụng trong menu "Appearance" của UI — submenu không mở được qua click/hover, ghi nhận lại làm known issue chứ không sửa vì ngoài phạm vi roadmap này). Cả 2 theme hiển thị đúng: badge màu rõ, container bo góc `rounded-2xl` hiển thị đúng, header uppercase/tracking-wider dễ đọc. `npm run lint` (0 error, 13 warning có sẵn không liên quan) + `tsc -b` sạch. Console không phát sinh lỗi mới. **Chưa verify được viewport hẹp** — `resize_window` tool không áp dụng được lên cửa sổ Chrome hiện tại (window vẫn giữ nguyên kích thước theo `window.screen`), nhưng thay đổi lần này chỉ động vào bo góc container + typography header, không đụng breakpoint/layout responsive nên rủi ro thấp.
 
-- [ ] **Checkpoint: chờ user xác nhận trực tiếp trước khi làm P1** — không lặp lại kịch bản `ProblemTable` (làm hết 8 bảng rồi mới bị revert toàn bộ).
+- [x] **Checkpoint: chờ user xác nhận trực tiếp trước khi làm P1** — user xác nhận tiếp tục ("Hãy thực hiện các task còn lại") sau khi xem `/admin/audit-log`, không lặp lại kịch bản `ProblemTable` (làm hết 8 bảng rồi mới bị revert toàn bộ).
 
 ---
 
 ## 🟡 P1 — Rollout pattern đã xác nhận sang 8 bảng còn lại
 
-*(Chỉ bắt đầu sau khi P0 được user xác nhận rõ ràng.)*
+*(User xác nhận tiếp tục sau khi xem P0 — "Hãy thực hiện các task còn lại".)*
 
-- [ ] **Contests**
-  📍 `client/src/features/admin/components/admin-contests-table.tsx` — áp dụng pattern, giữ nguyên `STATUS_BADGE_CLASS` riêng của bảng này (khác `contest-table.tsx` phía user-facing).
+- [x] **Contests**
+  📍 `client/src/features/admin/components/admin-contests-table.tsx` — đã áp dụng pattern (`rounded-2xl` + header uppercase/tracking-wider), giữ nguyên `STATUS_BADGE_CLASS` riêng của bảng này (khác `contest-table.tsx` phía user-facing). QA qua Chrome tool: OK.
 
-- [ ] **Users**
-  📍 `client/src/features/admin/components/admin-users-table.tsx` — áp dụng pattern. Cân nhắc thêm cột avatar tròn (dùng lại `Avatar`/`AvatarFallback`, đã có sẵn pattern dùng trong `icon-sidebar.tsx`) cạnh tên user — chi tiết duy nhất lấy từ ảnh mẫu hợp lý áp dụng vì đây đúng là bảng "người dùng"; **không** áp dụng avatar cho các bảng khác không có dữ liệu phù hợp.
+- [x] **Users**
+  📍 `client/src/features/admin/components/admin-users-table.tsx` — đã áp dụng pattern + thêm cột avatar tròn (`Avatar`/`AvatarFallback`, initials-only vì `AdminUser` không có `avatarUrl` trong response backend — không mở rộng backend cho việc này, ngoài phạm vi redesign UI). Đổi thứ tự cột Name lên trước Email, Email lùi thành text phụ `text-muted-foreground text-xs` để cột Name (có avatar) nổi bật hơn, giống layout "identity column" trong ảnh mẫu. QA qua Chrome tool: OK, avatar hiển thị đúng initials + màu `bg-primary/10 text-primary`.
 
-- [ ] **Store**
-  📍 `client/src/features/admin/components/admin-store-table.tsx` — áp dụng pattern.
+- [x] **Store**
+  📍 `client/src/features/admin/components/admin-store-table.tsx` — đã áp dụng pattern. QA: OK.
 
-- [ ] **Discuss**
-  📍 `client/src/features/admin/components/admin-discuss-table.tsx` — áp dụng pattern.
+- [x] **Discuss**
+  📍 `client/src/features/admin/components/admin-discuss-table.tsx` — đã áp dụng pattern (kể cả 3 cột `text-center`: Views/Upvotes/Comments). QA: OK, cột căn giữa đúng.
 
-- [ ] **Career**
-  📍 `client/src/features/admin/components/admin-career-table.tsx` — áp dụng pattern.
+- [x] **Career**
+  📍 `client/src/features/admin/components/admin-career-table.tsx` — đã áp dụng pattern. QA: OK.
 
-- [ ] **Quests**
-  📍 `client/src/features/admin/components/admin-quests-table.tsx` — áp dụng pattern, giữ nguyên `DIFFICULTY_BADGE_CLASS`.
+- [x] **Quests**
+  📍 `client/src/features/admin/components/admin-quests-table.tsx` — đã áp dụng pattern, giữ nguyên `DIFFICULTY_BADGE_CLASS`. QA: OK.
 
-- [ ] **Peer Interview**
-  📍 `client/src/features/admin/components/admin-peer-interview-table.tsx` — áp dụng pattern, giữ nguyên `STATUS_BADGE_CLASS`.
+- [x] **Peer Interview**
+  📍 `client/src/features/admin/components/admin-peer-interview-table.tsx` — đã áp dụng pattern, giữ nguyên `STATUS_BADGE_CLASS`. QA: OK kể cả empty state ("No peer interview sessions yet.").
 
-- [ ] **Problems** (thận trọng hơn — có tiền lệ bị revert ở trang `/problems` khác, tuy khác file nhưng cùng class rủi ro)
-  📍 `client/src/features/admin/components/admin-problems-table.tsx` — chỉ đổi bo góc container + row padding + (nếu có) pagination; **không** động vào `table-fixed`/width cột đã ổn định, **không** đổi `DIFFICULTY_BADGE_CLASS`, **không** đổi logic sort/checkbox/ConfirmDialog.
+- [x] **Problems** (thận trọng hơn — có tiền lệ bị revert ở trang `/problems` khác, tuy khác file nhưng cùng class rủi ro)
+  📍 `client/src/features/admin/components/admin-problems-table.tsx` — chỉ đổi container `rounded-xl` → `rounded-2xl` (header đã sẵn style uppercase/tracking-wider từ trước, không cần đổi thêm); **không** động vào `table-fixed`/width cột, **không** đổi `DIFFICULTY_BADGE_CLASS`, **không** đổi logic sort/checkbox/ConfirmDialog. QA: OK, cột vẫn thẳng hàng đúng.
 
 ---
 
-## 🟢 P2 — Polish thêm (sau khi P1 xong hết)
+## 🟢 P2 — Polish thêm
 
-- [ ] **Pagination pill-style**
-  📍 `client/src/features/admin/components/admin-pagination.tsx`, `admin-table-footer.tsx` — đọc kỹ nội dung hiện tại trước, cân nhắc đổi nút số trang sang dạng `rounded-full` giống ảnh mẫu, áp dụng nhất quán cho cả 9 trang dùng chung 2 component này.
+- [x] **Pagination pill-style**
+  📍 `client/src/features/admin/components/admin-table-footer.tsx` — prev/next đã sẵn `rounded-full` từ trước, không cần đổi. `admin-pagination.tsx` (dùng ở Users/Contests/Audit Log) — thêm `rounded-full` cho 2 nút Previous/Next để đồng bộ với `admin-table-footer.tsx`. Đồng thời phát hiện search input ở `admin-users-page.tsx`/`admin-contests-page.tsx` thiếu `rounded-full` trong khi `admin-problems-page.tsx` đã có sẵn (từ bản redesign admin trước) → thêm `rounded-full` vào cả 2 cho nhất quán hình dạng "pill" xuyên suốt khu vực admin.
 
-- [ ] **Rà lại lỗi lệch cột kiểu đã gặp ở `ProblemTable`**
-  📍 Từng bảng trong 9 bảng — kiểm tra có thiếu `table-fixed` hoặc width chỉ set ở `TableHead` không set ở `TableCell` tương ứng không (bug class đã xác nhận ở `problem-table.tsx` cũ, xem lịch sử `8ee5418`). Sửa nếu phát hiện.
+- [x] **Rà lại lỗi lệch cột kiểu đã gặp ở `ProblemTable`**
+  📍 Đã đọc lại cả 8 bảng còn lại — **không phát hiện bug tương tự**: không bảng nào dùng `table-fixed` kết hợp width chỉ khai báo ở `TableHead`, và toàn bộ nội dung cell là text/badge 1 dòng (không có tag-wrap nhiều dòng như `ProblemTable` cũ từng gặp) nên không có rủi ro row-height không đều gây lệch cột. Không cần sửa gì thêm.
 
-- [ ] **Đồng bộ chiều cao control phía trên bảng**
-  📍 Từng trang `admin-*-page.tsx` — search/filter bar/nút "Tạo mới" nên khớp nhịp chiều cao với header bảng bên dưới, tránh cảm giác "jump" (bug class tương tự `ProblemFilters` vs `TableHead` ở bản roadmap trước).
+- [x] **Đồng bộ chiều cao control phía trên bảng**
+  📍 Chỉ 3/9 trang có search/filter bar phía trên bảng (Problems, Users, Contests) — 6 trang còn lại chỉ có `<h1>` tiêu đề, không có control bar nên không áp dụng được. `Input` mặc định `h-10` đã đủ gần `h-11` của table header mới, không tạo cảm giác "jump" rõ rệt — không cần chỉnh height, chỉ cần đồng bộ hình dạng pill (xem task trên).
 
 ---
 

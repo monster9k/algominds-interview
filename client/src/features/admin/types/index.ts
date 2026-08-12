@@ -25,3 +25,25 @@ export interface AdminQuestSnippet {
   isActive: boolean;
   createdAt: string;
 }
+
+export type AdminPeerInterviewStatus =
+  | "WAITING_FOR_PEER"
+  | "ACTIVE"
+  | "COMPLETED"
+  | "ABANDONED";
+
+export interface AdminPeerInterviewUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface AdminPeerInterviewSession {
+  id: string;
+  status: AdminPeerInterviewStatus;
+  startedAt: string;
+  endedAt: string | null;
+  candidate: AdminPeerInterviewUser;
+  peerInterviewer: AdminPeerInterviewUser | null;
+  problem: { id: string; title: string; slug: string };
+}

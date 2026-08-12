@@ -120,7 +120,7 @@ Quyết định đã chốt với user trước khi code: **`/admin/career` ch�
 - [x] **FE: trang `/admin/quests` — data table**
   📍 `admin-quests-page.tsx` + `admin-quests-table.tsx` — dùng hook mới `useAdminQuests()` (`admin-api.ts` thêm `getQuests()` → `GET /admin/quests`). Cột: ID, Ngôn ngữ, Độ khó (`Badge`), Dòng lỗi (`buggyLine`), Trạng thái (`isActive` → Active/Inactive). Không hiển thị cột `code`/`explanation` đầy đủ trong bảng (quá dài cho 1 row) — để lại cho phase form chi tiết (P2).
 
-- [ ] **FE: trang `/admin/peer-interview` — data table**
+- [x] **FE: trang `/admin/peer-interview` — data table**
   📍 `admin-peer-interview-page.tsx` + `admin-peer-interview-table.tsx` — dùng hook mới `useAdminPeerInterviews()` (`admin-api.ts` thêm `getPeerInterviews()` → `GET /admin/peer-interviews`). Cột: ID, Candidate, Interviewer (hoặc "Đang chờ" nếu null), Bài tập, Trạng thái (`Badge`, theo `PeerSessionStatus`), Bắt đầu lúc.
 
 - [ ] **FE: đăng ký 5 route mới + i18n**

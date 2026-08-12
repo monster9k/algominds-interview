@@ -1,5 +1,10 @@
 import api from "@/lib/axios";
-import { AdminStats, AdminUser, AdminQuestSnippet } from "../types";
+import {
+  AdminStats,
+  AdminUser,
+  AdminQuestSnippet,
+  AdminPeerInterviewSession,
+} from "../types";
 
 export const adminApi = {
   getStats: async (): Promise<AdminStats> => {
@@ -14,6 +19,11 @@ export const adminApi = {
 
   getQuests: async (): Promise<AdminQuestSnippet[]> => {
     const response = await api.get("/admin/quests");
+    return response.data;
+  },
+
+  getPeerInterviews: async (): Promise<AdminPeerInterviewSession[]> => {
+    const response = await api.get("/admin/peer-interviews");
     return response.data;
   },
 };

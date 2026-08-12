@@ -1,0 +1,215 @@
+{
+  "common": {
+    "cancel": "Huỷ",
+    "confirm": "Xác nhận",
+    "previous": "Trước",
+    "next": "Sau",
+    "pageOf": "Trang {{page}}/{{totalPages}}",
+    "search": "Tìm kiếm...",
+    "save": "Lưu",
+    "saving": "Đang lưu...",
+    "create": "Tạo",
+    "creating": "Đang tạo...",
+    "edit": "Sửa",
+    "delete": "Xoá"
+  },
+  "sidebar": {
+    "dashboard": "Tổng quan",
+    "problems": "Bài tập",
+    "contests": "Cuộc thi",
+    "users": "Người dùng",
+    "store": "Cửa hàng",
+    "discuss": "Thảo luận",
+    "career": "Career",
+    "quests": "Quest",
+    "peerInterview": "Phỏng vấn chéo",
+    "auditLog": "Nhật ký hành động"
+  },
+  "header": {
+    "title": "Quản trị",
+    "backToApp": "Về trang chính"
+  },
+  "dashboard": {
+    "title": "Tổng quan",
+    "totalUsers": "Tổng số Users",
+    "totalSessions": "Tổng số Sessions",
+    "completionRate": "Tỉ lệ hoàn thành",
+    "totalSubmissions": "Tổng số Submissions",
+    "vsLastWeek": "so với tuần trước",
+    "loadError": "Không tải được số liệu thống kê.",
+    "sessionsChart": {
+      "title": "Sessions theo thời gian",
+      "empty": "Chưa có session nào trong khoảng này."
+    },
+    "recentActivity": {
+      "title": "Hoạt động gần đây",
+      "empty": "Chưa có hành động nào được ghi lại."
+    },
+    "sessionFunnel": {
+      "title": "Phễu phiên phỏng vấn",
+      "status": {
+        "PHASE_1_STRATEGY": "Chiến lược",
+        "PHASE_2_IMPLEMENT": "Triển khai",
+        "COMPLETED": "Hoàn thành",
+        "ABANDONED": "Bỏ dở"
+      }
+    },
+    "topCompanies": {
+      "title": "Top Công ty",
+      "empty": "Chưa có công ty nào."
+    },
+    "acceptanceChart": {
+      "title": "Tỉ lệ Accept theo Độ khó"
+    }
+  },
+  "difficulty": {
+    "easy": "Dễ",
+    "medium": "Trung bình",
+    "hard": "Khó"
+  },
+  "problems": {
+    "title": "Quản lý Bài tập",
+    "subtitle": "{{count}} bài tập trong ngân hàng đề",
+    "createNew": "Tạo bài tập mới",
+    "columnId": "ID",
+    "columnTitle": "Tiêu đề",
+    "columnDifficulty": "Độ khó",
+    "columnStatus": "Trạng thái",
+    "columnActions": "Hành động",
+    "statusActive": "Hoạt động",
+    "statusDeleted": "Đã xoá",
+    "empty": "Chưa có bài tập nào.",
+    "loadError": "Không tải được danh sách bài tập.",
+    "createTitle": "Tạo bài tập mới",
+    "editTitle": "Sửa bài tập",
+    "fieldTitle": "Tiêu đề",
+    "fieldContent": "Nội dung đề bài (HTML)",
+    "fieldFunctionName": "Tên hàm",
+    "fieldTimeLimit": "Giới hạn thời gian (ms)",
+    "fieldMemoryLimit": "Giới hạn bộ nhớ (MB)",
+    "fieldTags": "Tags (cách nhau bởi dấu phẩy)",
+    "fieldInitialCode": "Initial Code (JSON)",
+    "fieldSampleTestCases": "Sample Test Cases (JSON)",
+    "fieldHiddenTestCases": "Hidden Test Cases (JSON, tuỳ chọn)",
+    "jsonError": "1 trong các trường JSON không hợp lệ — kiểm tra lại cú pháp.",
+    "deleteConfirmTitle": "Xoá bài tập này?",
+    "deleteConfirmDescription": "Bài tập sẽ bị ẩn khỏi danh sách công khai (soft delete), có thể khôi phục sau nếu cần.",
+    "bulkDeleteConfirmTitle": "Xoá {{count}} bài tập đã chọn?",
+    "selectAll": "Chọn tất cả",
+    "selectedCount": "Đã chọn {{count}} mục",
+    "filterDifficulty": "Độ khó",
+    "filterClear": "Xoá lọc",
+    "footerRange": "{{start}}-{{end}} trên {{total}}",
+    "rowsPerPage": "Số dòng/trang:"
+  },
+  "contests": {
+    "title": "Quản lý Cuộc thi",
+    "createNew": "Tạo cuộc thi mới",
+    "columnId": "ID",
+    "columnTitle": "Tiêu đề",
+    "columnStatus": "Trạng thái",
+    "columnStart": "Bắt đầu",
+    "statusUpcoming": "Sắp diễn ra",
+    "statusOngoing": "Đang diễn ra",
+    "statusFinished": "Đã kết thúc",
+    "empty": "Chưa có cuộc thi nào.",
+    "loadError": "Không tải được danh sách cuộc thi.",
+    "createTitle": "Tạo cuộc thi mới",
+    "editTitle": "Sửa cuộc thi",
+    "fieldTitle": "Tiêu đề",
+    "fieldDescription": "Mô tả",
+    "fieldStart": "Bắt đầu",
+    "fieldEnd": "Kết thúc",
+    "fieldProblemCounts": "Số lượng bài theo độ khó",
+    "problemCountsHint": "Bài sẽ được chọn ngẫu nhiên từ ngân hàng đề theo độ khó — không chọn tay từng bài ở round này.",
+    "deleteConfirmTitle": "Xoá cuộc thi này?",
+    "deleteConfirmDescription": "Cuộc thi sẽ bị ẩn khỏi danh sách công khai (soft delete), lịch sử nộp bài vẫn được giữ lại."
+  },
+  "users": {
+    "title": "Quản lý Người dùng",
+    "columnId": "ID",
+    "columnEmail": "Email",
+    "columnName": "Tên",
+    "columnRole": "Vai trò",
+    "columnCreatedAt": "Ngày tạo",
+    "empty": "Chưa có người dùng nào.",
+    "loadError": "Không tải được danh sách người dùng.",
+    "deleteConfirmTitle": "Xoá người dùng này?",
+    "deleteConfirmDescription": "Tài khoản sẽ bị vô hiệu hoá (soft delete), có thể khôi phục sau nếu cần."
+  },
+  "store": {
+    "title": "Quản lý Cửa hàng",
+    "columnId": "ID",
+    "columnName": "Tên",
+    "columnCategory": "Danh mục",
+    "columnPrice": "Giá",
+    "categoryAvatarFrame": "Khung Avatar",
+    "categoryTitle": "Danh hiệu",
+    "categoryBadgeColor": "Màu Badge",
+    "empty": "Chưa có vật phẩm nào.",
+    "loadError": "Không tải được danh sách vật phẩm."
+  },
+  "discuss": {
+    "title": "Quản lý Thảo luận",
+    "columnId": "ID",
+    "columnTitle": "Tiêu đề",
+    "columnAuthor": "Tác giả",
+    "columnViews": "Lượt xem",
+    "columnUpvotes": "Upvote",
+    "columnComments": "Comment",
+    "columnCreatedAt": "Ngày tạo",
+    "empty": "Chưa có bài thảo luận nào.",
+    "loadError": "Không tải được danh sách bài thảo luận.",
+    "deleteConfirmTitle": "Xoá bài thảo luận này?",
+    "deleteConfirmDescription": "Bài viết sẽ bị ẩn khỏi danh sách công khai (soft delete), có thể khôi phục sau nếu cần."
+  },
+  "career": {
+    "title": "Quản lý Career Track",
+    "columnId": "ID",
+    "columnName": "Tên track",
+    "columnCompany": "Công ty",
+    "columnStatus": "Trạng thái",
+    "companyGeneric": "Chung",
+    "statusActive": "Hoạt động",
+    "statusInactive": "Ngừng hoạt động",
+    "empty": "Chưa có career track nào.",
+    "loadError": "Không tải được danh sách career track."
+  },
+  "quests": {
+    "title": "Quản lý Quest",
+    "columnId": "ID",
+    "columnLanguage": "Ngôn ngữ",
+    "columnDifficulty": "Độ khó",
+    "columnBuggyLine": "Dòng lỗi",
+    "columnStatus": "Trạng thái",
+    "statusActive": "Hoạt động",
+    "statusInactive": "Ngừng hoạt động",
+    "empty": "Chưa có quest nào.",
+    "loadError": "Không tải được danh sách quest."
+  },
+  "peerInterview": {
+    "title": "Quản lý Phỏng vấn chéo",
+    "columnId": "ID",
+    "columnCandidate": "Candidate",
+    "columnInterviewer": "Interviewer",
+    "columnProblem": "Bài tập",
+    "columnStatus": "Trạng thái",
+    "columnStartedAt": "Bắt đầu lúc",
+    "waiting": "Đang chờ",
+    "statusWaitingForPeer": "Chờ người tham gia",
+    "statusActive": "Đang diễn ra",
+    "statusCompleted": "Hoàn thành",
+    "statusAbandoned": "Đã huỷ",
+    "empty": "Chưa có phiên phỏng vấn chéo nào.",
+    "loadError": "Không tải được danh sách phiên phỏng vấn chéo."
+  },
+  "auditLog": {
+    "title": "Nhật ký hành động Admin",
+    "columnAdmin": "Admin",
+    "columnAction": "Hành động",
+    "columnTarget": "Đối tượng",
+    "columnCreatedAt": "Thời gian",
+    "empty": "Chưa có hành động nào được ghi lại.",
+    "loadError": "Không tải được nhật ký hành động."
+  }
+}

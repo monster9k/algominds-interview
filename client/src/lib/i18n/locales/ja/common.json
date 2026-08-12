@@ -3,7 +3,8 @@
     "problems": "問題",
     "contest": "コンテスト",
     "discuss": "ディスカッション",
-    "interview": "面接"
+    "interview": "面接",
+    "admin": "管理者"
   },
   "sidebar": {
     "library": "ライブラリ",
@@ -13,8 +14,8 @@
     "career": "キャリアジャーニー",
     "peerInterview": "ピア面接",
     "discuss": "ディスカッション",
-    "myLists": "マイリスト",
-    "favorite": "お気に入り"
+    "settings": "設定",
+    "helpCenter": "ヘルプセンター"
   },
   "userMenu": {
     "guest": "ゲスト",
@@ -28,6 +29,7 @@
     "myPlaygrounds": "マイプレイグラウンド",
     "settings": "設定",
     "appearance": "外観",
+    "adminPanel": "管理者パネル",
     "signOut": "ログアウト"
   },
   "errorBoundary": {

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -11,13 +12,19 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../common/types/request-user.type';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreatePostDto } from './dto/create-post.dto';
 import { DiscussService } from './discuss.service';
+import { AdminAuditService } from '../admin/admin-audit.service';
 
 @Controller('discuss')
 export class DiscussController {
-  constructor(private readonly discussService: DiscussService) {}
+  constructor(
+    private readonly discussService: DiscussService,
+    private readonly adminAuditService: AdminAuditService,
+  ) {}
 
   // GET /discuss?problemId=&tag=&sort=&search= — khách vãng lai cũng xem
   // được, đúng kiểu LeetCode Discuss công khai.
@@ -84,5 +91,21 @@ export class DiscussController {
   @UseGuards(JwtAuthGuard)
   toggleVote(@CurrentUser() user: RequestUser, @Param('id') id: string) {
     return this.discussService.toggleVote(id, user.userId);
+  }
+
+  // DELETE /discuss/:id — moderation, cả ADMIN và MODERATOR đều xoá được
+  // (MODERATOR chỉ có quyền này trong toàn bộ Admin Dashboard).
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'MODERATOR')
+  async deletePost(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    const post = await this.discussService.deletePost(id);
+    await this.adminAuditService.log(
+      user.userId,
+      'DELETE_DISCUSS_POST',
+      'DiscussPost',
+      post.id,
+    );
+    return post;
   }
 }

@@ -1,168 +1,117 @@
-# 🗺️ AlgoMinds — Roadmap: Thảo luận (Discuss) — forum kiểu LeetCode
+# 🗺️ AlgoMinds — Roadmap: Redesign UI (Admin Dashboard + Unified Icon-Sidebar Shell)
 
-> Bản roadmap trước (Store: xu & vật phẩm cosmetic) đã hoàn thành 100% ở P0/P1 và merge vào `main` — xem lịch sử git (commit cuối chỉnh sửa: `1d190a3`) nếu cần tham chiếu lại nội dung cũ. P2 của bản đó (item ảnh thật, streak bonus, leaderboard giàu nhất, Admin UI catalog) vẫn còn treo nhưng nằm ngoài scope hiện tại — không đụng tới trong roadmap này.
-> Bản này thay thế nó. Tính năng hoàn toàn mới, chưa có gì tồn tại (đã grep xác nhận: không có model `Post`/`Comment`/`Vote`/`Discuss` nào trong `schema.prisma`, không có module backend, không có feature folder frontend). Nav header đã có sẵn label `nav.discuss` ("Thảo luận") nhưng `href: "#"` — placeholder chết giống hệt kiểu `nav.store`/`nav.contest` từng bị trước khi được xây (`client/src/components/layout/dashboard-header.tsx:15`).
+> Bản roadmap trước (Admin Dashboard nền tảng — phân quyền, layout admin cũ, data table CRUD, RBAC MODERATOR, audit log) đã hoàn thành 100% P0/P1/P2 — xem lịch sử git (commit cuối chỉnh sửa file này: `0e21c685416b77aa7d21b594202ffdc042a03ad`) nếu cần tham chiếu lại nội dung cũ.
+> Bản này thay thế nó. Mục tiêu: redesign toàn bộ UI theo ảnh tham chiếu (Pivora CRM dashboard) — hợp nhất layout admin/user thành 1 shared shell (icon-sidebar + top bar tối giản), chuyển profile vào sidebar, rebuild Admin Dashboard với KPI card + biểu đồ. Không đụng logic nghiệp vụ (`sessions.service.ts`/`judge.service.ts`/`auth.service.ts`, `Session.version`) — thay đổi chỉ ở layer UI + aggregate query read-only mới trong `admin.service.ts`.
 >
-> Yêu cầu sản phẩm:
-> 1. **UI trang `/discuss`**: theo đúng mockup user gửi — header "Thảo luận" + nút Lọc/Mới nhất + nút "TẠO BÀI VIẾT MỚI" nổi bật; list bài viết dạng card (avatar, tên, thời gian, tiêu đề, excerpt, tag pill, view/comment/upvote count); sidebar phải: "Chủ đề Nổi Bật" (tag cloud), "Đóng Góp Nổi Bật" (leaderboard), "Quy định cộng đồng". **Giữ nguyên theme màu** — mockup vốn đã dùng đúng tông màu nền tối + accent đỏ/hồng của app hiện tại, chỉ map đúng token màu sẵn có (`primary`, `emerald-500`, `muted`...), không bịa màu mới.
-> 2. **Không chỉ 1 trang riêng** — mỗi bài toán (problem) trong lúc làm bài phải có tab "Thảo luận" riêng, đúng kiểu tab Discuss của LeetCode thật, lọc theo đúng problem đó.
+> Bản kế hoạch đầy đủ (bối cảnh, quyết định đã chốt với user, phân tích) nằm ở plan file phiên làm việc — tóm tắt lại các quyết định quan trọng ở phần "Khảo sát" bên dưới.
 
 ## Cách đọc file này
-- `🔴 P0` — Lõi bắt buộc: schema DB (post/comment/vote/tag), module backend `discuss`, seed data, FE route + nav + trang `/discuss` cơ bản (list + tạo bài + vote), tab "Thảo luận" gắn trong problem panel.
-- `🟡 P1` — Hoàn thiện: sidebar widget nối API thật (trending tags/top contributors), view count, i18n đầy đủ 3 ngôn ngữ, test suite (`discuss`).
-- `🟢 P2` — Mở rộng (ngoài scope hiện tại, ghi lại để làm sau): reply lồng nhau + vote comment, report/flag + duyệt admin, sửa/xoá bài, markdown editor có preview, thông báo real-time, dedupe view count.
+- `🔴 P0` — Ưu tiên cao nhất theo đúng yêu cầu user ("trước tiên... trang admin dashboard trước"): Shared App Shell (`IconSidebar`+`TopBar`+`AppShell`, dùng chung admin/user), áp dụng cho `AdminLayout`, rebuild `AdminDashboardPage` với KPI card + chart (cần mở rộng backend `admin.service.ts`).
+- `🟡 P1` — Áp dụng cùng shell đã build ở P0 cho `DashboardLayout` (user-facing), bỏ `DashboardHeader` navbar ngang cũ.
+- `🟢 P2` — Seed data demo cho chart, QA responsive mobile cả 2 khu vực, dọn code chết, verify i18n parity cuối cùng.
 - Mỗi task ghi **vị trí code** liên quan để bắt tay vào làm ngay.
-- **Lưu ý thứ tự bắt buộc**: task DB schema (P0, mục đầu tiên) phải xong trước mọi task BE khác. Task "tab Discuss trong problem panel" phụ thuộc feature folder `discuss` (hooks/components) đã có từ task FE ngay trước đó trong P0 — làm sau cùng trong P0.
+- **Thứ tự bắt buộc**: `sidebar-item-classes.ts` + tách `UserNavMenu` content xong trước `icon-sidebar.tsx` (icon-sidebar cần cả 2). `icon-sidebar.tsx`+`top-bar.tsx` xong trước `app-shell.tsx`. `app-shell.tsx` xong trước khi sửa `admin-layout.tsx`/`dashboard-layout.tsx`. BE mở rộng `admin.service.ts` xong trước khi FE viết hook mới gọi endpoint đó. `/help` route cần có trước khi sidebar footer link tới nó không bị 404.
 
 ---
 
 ## Khảo sát kỹ thuật quan trọng (ảnh hưởng thiết kế)
 
-- **Quy ước Prisma**: `id String @id @default(uuid())`, `@@map snake_case`, many-to-many qua bảng trung gian kiểu `ProblemTag` (`problemId`/`tagId`, `@@id([...])`) — tái dùng y hệt cho tag bài viết. Chưa có tiền lệ vote/upvote nào trong schema — đây sẽ là tính năng đầu tiên, dùng pattern đếm denormalize (`upvoteCount Int @default(0)` như `Problem.submitCount`) + bảng join `@@unique([userId, postId])` kiểu `UserItem` để chống vote 2 lần (dùng 2 bảng vote riêng cho post/comment thay vì 1 bảng union — tránh bẫy NULL không unique của Postgres khi 1 cột FK nullable).
-- **`Tag` model có sẵn** (`schema.prisma:189`) dùng cho Problem — tái sử dụng nguyên model này cho tag bài thảo luận qua bảng trung gian mới `DiscussPostTag`, không tạo model tag riêng.
-- **Guard pattern**: `OptionalJwtAuthGuard` (`server/src/modules/auth/optional-jwt-auth.guard.ts`) cho các API đọc (khách vãng lai cũng xem được list/detail — đúng kiểu LeetCode Discuss công khai), `JwtAuthGuard` cho API ghi (tạo bài/comment/vote). **Quan trọng**: `DashboardLayout` không tự chặn route theo auth — chỉ có axios interceptor tự redirect `/auth/login` khi API trả 401 (`client/src/lib/axios.ts:97`), nên nếu lỡ gắn `JwtAuthGuard` vào endpoint GET list, khách chưa đăng nhập vào `/discuss` sẽ bị văng thẳng ra trang login — **bắt buộc dùng `OptionalJwtAuthGuard` cho mọi GET**.
-- **Leaderboard/groupBy pattern** đã có sẵn ở `quest.service.ts:275-307` (`prisma.questAttempt.groupBy` + `orderBy: { _max: { score: 'desc' } }` + enrich N+1) — tái dùng y hệt cho "Đóng góp nổi bật" (groupBy theo `authorId`, sắp theo tổng upvote nhận được) và "Chủ đề nổi bật" (groupBy theo `tagId` trên `DiscussPostTag`, sắp theo số bài).
-- **Tab bài toán**: `client/src/features/interview/components/problem-panel.tsx` đã có sẵn 2 tab "coming soon" (`editorial`, `solutions`) làm khuôn mẫu y hệt cho việc thêm tab `discuss` mới. `Problem` type dùng ở trang này (`problem-panel/types.ts`) **không có field `id`** — phải lấy problem id qua prop mới `problemId` (nguồn: `session.problemId` đã có sẵn trong `interview-room.tsx`), không sửa `Problem` type.
-- **Thiếu 1 shadcn primitive**: `client/src/components/ui/textarea.tsx` chưa tồn tại — cần thêm (theo đúng style các file `ui/*.tsx` khác) để làm ô nhập nội dung bài viết/comment.
+- **2 bộ code layout hiện tại trùng lặp gần như y hệt nhau** — `AdminSidebar`/`AdminHeader`/`AdminLayout` (`client/src/features/admin/{components,layout}/`) và `DashboardSidebar`/`DashboardHeader`/`DashboardLayout` (`client/src/components/layout/`) dùng chung 1 pattern `itemClasses()` (border-l-2 + `bg-primary/15 text-primary` khi active) bị copy-paste ở 2 nơi. Đây là cơ hội hợp nhất — tách `itemClasses()` thành `sidebar-item-classes.ts` dùng chung, xây 1 `IconSidebar`/`TopBar`/`AppShell` nhận `items` khác nhau cho admin/user thay vì duy trì 2 bộ song song.
+- **Chưa cài thư viện chart nào** (`client/package.json` không có `recharts`/`chart.js`) — đã hỏi và được xác nhận dùng **recharts** (`npm install recharts`).
+- **Chưa có `tooltip.tsx`** trong `components/ui/` (cũng không có `@radix-ui/react-tooltip`) — cần cho label hover ở sidebar collapsed (icon-only) mode.
+- **`client/src/stores/use-sidebar.ts` hiện chỉ được dùng bởi `header.tsx` (component chết, chỉ ref bởi `test-page.tsx`)** — an toàn để repurpose làm store lưu trạng thái collapse của `IconSidebar` mới, không cần tạo store riêng.
+- **`user-nav-menu.tsx` (`client/src/components/layout/user-nav-menu.tsx`) đã có sẵn toàn bộ nội dung dropdown profile** (avatar+tên header → `/profile`, grid 4 shortcut, list Settings/Orders/..., Sign out) — chỉ cần tách phần content ra khỏi trigger hiện tại (avatar tròn góc phải header) để gắn vào profile row mới trong sidebar, **giữ nguyên nội dung** đúng yêu cầu user. Thêm 1 item đầu `listItems`: "Admin Panel" → `navigate("/admin")`, hiện khi `role === "ADMIN"` (logic mirror `dashboard-header.tsx#visibleNavLinks`).
+- **`admin-dashboard-page.tsx` hiện chỉ có 3 stat card tĩnh** (`Users`/`Problems`/`Submissions`, không trend, không chart) từ `useAdminStats()` → `GET /admin/stats` hiện chỉ trả `{totalUsers, totalProblems, totalSubmissions}` (`admin.service.ts:29-37`) — cần mở rộng cả 2 phía.
+- **Widget "Calendar" trong ảnh mẫu không có tính năng tương ứng trong AlgoMinds** — đã hỏi và chốt: thay bằng **Recent Activity feed**, tái dùng thẳng `GET /admin/audit-log?limit=5` có sẵn (`admin.service.ts#getAuditLog`), không cần endpoint mới.
+- **Widget "Top Country" → "Top Companies"** — tái dùng đúng pattern query đã có ở `companies.service.ts#findAll()` (group theo `_count.problems`, đã có hook `useCompanies()` + component tham khảo style `trending-companies-widget.tsx` ở `client/src/features/problems/components/`).
+- **`Problem.acceptanceRate`/`submitCount`/`passCount` đã denormalize sẵn** (`schema.prisma`, model `Problem`) — dùng thẳng cho widget "Acceptance Rate by Difficulty" (`groupBy(['difficulty'], _avg: {acceptanceRate: true})`), không cần tính lại từ `Submission`.
+- **`SessionEvent` là bảng chết** (không có `sessionEvent.create()` nào trong codebase) — KHÔNG dùng bảng này cho time-series, dùng `Session.startedAt` trực tiếp thay thế.
+- **DB dev gần như trống Session/Submission** (`seed.ts` chỉ seed 2 problem mẫu + `sync-problems.ts` có ~51 problem từ file, không seed user/session/submission nào) — đã hỏi và chốt: viết **seed script riêng cho dev** (`seed-demo-data.ts`, không đụng `seed.ts`/`npx prisma db seed` mặc định), xếp ở P2 (không block P0 — dashboard vẫn phải chạy đúng với dữ liệu thật/thưa, empty-state phải đẹp).
+- **Không thêm shadow nặng/gradient tuỳ hứng** (theo `.claude/rules/design.md`) — mọi card mới dùng `Card`/`CardHeader`/`CardContent` sẵn có, màu badge trend dùng đúng công thức `bg-{color}-500/10 text-{color}-500 border-{color}-500/20` đã có tiền lệ ở `DIFFICULTY_BADGE_CLASS`/`ACTION_BADGE_CLASS`.
+- **Không đụng `sessions.service.ts`/`judge.service.ts`/`auth.service.ts`** — toàn bộ BE task ở roadmap này chỉ thêm method mới trong `admin.service.ts` (read-only aggregate), không sửa logic 3 file nhạy cảm trên.
 
 ---
 
-## 🔴 P0 — Schema, module `discuss` backend, trang `/discuss` cơ bản, tab Discuss trong problem
+## 🔴 P0 — Shared App Shell + Admin Dashboard (KPI cards + charts)
 
-- [x] **DB: schema bài viết/comment/vote/tag**
-  📍 `server/prisma/schema.prisma`
-  ```prisma
-  model DiscussPost {
-    id           String    @id @default(uuid())
-    authorId     String
-    problemId    String?   // null = thảo luận chung, có giá trị = gắn 1 bài toán cụ thể
-    title        String
-    content      String    // markdown thô, render ở FE
-    viewCount    Int       @default(0)
-    upvoteCount  Int       @default(0)
-    commentCount Int       @default(0)
-    createdAt    DateTime  @default(now())
-    updatedAt    DateTime  @updatedAt
-    deletedAt    DateTime?
+- [x] **FE: cài `recharts` + shadcn `tooltip.tsx`**
+  📍 `client/` — `npm install recharts`; thêm `client/src/components/ui/tooltip.tsx` (+ `@radix-ui/react-tooltip`), dùng cho label hover ở sidebar collapsed mode.
 
-    author   User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
-    problem  Problem?         @relation(fields: [problemId], references: [id], onDelete: SetNull)
-    tags     DiscussPostTag[]
-    comments DiscussComment[]
-    votes    DiscussPostVote[]
+- [x] **FE: `sidebar-item-classes.ts` — tách helper dùng chung**
+  📍 `client/src/components/layout/sidebar-item-classes.ts` (mới) — chuyển `itemClasses()` đang lặp y hệt ở `admin-sidebar.tsx` và `dashboard-sidebar.tsx` vào đây, export dùng chung.
 
-    @@map("discuss_posts")
-  }
+- [x] **FE: tách content dropdown của `UserNavMenu` + thêm item "Admin Panel"**
+  📍 `client/src/components/layout/user-nav-menu.tsx` — giữ nguyên toàn bộ nội dung dropdown hiện có (header avatar+tên → `/profile`, grid 4 shortcut, list Settings/Orders/..., Sign out), refactor để trigger nhận từ ngoài truyền vào (dùng lại từ `icon-sidebar.tsx` bên dưới thay vì avatar góc phải header cũ). Thêm 1 item đầu `listItems`: "Admin Panel" → `navigate("/admin")`, hiện khi `useAuthStore().user?.role === "ADMIN"`.
 
-  model DiscussComment {
-    id        String    @id @default(uuid())
-    postId    String
-    authorId  String
-    content   String
-    createdAt DateTime  @default(now())
-    deletedAt DateTime?
+- [x] **FE: trang Help Center mới + route `/help`**
+  📍 `client/src/features/settings/pages/help-center-page.tsx` (mới, tái dùng layout/style các trang Settings hiện có) — nội dung tối giản (FAQ ngắn + kênh liên hệ). Đăng ký route `/help` trong `client/src/app/router-instance.tsx`, cùng nhóm `DashboardLayout`.
 
-    post   DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-    author User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+- [x] **FE: `icon-sidebar.tsx` — sidebar mới dùng chung admin/user**
+  📍 `client/src/components/layout/icon-sidebar.tsx` (mới) — props `{ items }`: Logo (`components/ui/logo.tsx`) + nút collapse (state lưu ở `client/src/stores/use-sidebar.ts`, repurpose store hiện có, không tạo mới) → profile row (avatar+tên/email+chevron, trigger cho dropdown đã tách ở task trên) → nav items (render `items` qua `itemClasses()` dùng chung) → footer ghim đáy: Settings (`/settings`) + Help Center (`/help`). Collapsed mode: icon-only + `Tooltip`. Mobile (<lg): ẩn mặc định, mở qua `Sheet` có sẵn (`components/ui/sheet.tsx`).
 
-    @@map("discuss_comments")
-  }
+- [x] **FE: `top-bar.tsx` — top bar tối giản dùng chung admin/user**
+  📍 `client/src/components/layout/top-bar.tsx` (mới) — hamburger (mobile, mở `IconSidebar` trong `Sheet`) + tên trang hiện tại (tra theo route active trong `items` truyền vào). Giữ chuông thông báo + coin-balance pill (tính năng thật đang chạy) ở góc phải cho biến thể user; biến thể admin không cần.
 
-  model DiscussPostVote {
-    id        String   @id @default(uuid())
-    userId    String
-    postId    String
-    createdAt DateTime @default(now())
+- [x] **FE: `app-shell.tsx` — compose `IconSidebar`+`TopBar`+`Outlet`**
+  📍 `client/src/components/layout/app-shell.tsx` (mới) — nhận `items` khác nhau cho admin/user, đây là shell dùng chung duy nhất.
 
-    user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-    post DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+- [x] **FE: `admin-layout.tsx` đổi sang dùng `AppShell`**
+  📍 `client/src/features/admin/layout/admin-layout.tsx` — thay nội dung hiện tại (`AdminSidebar`+`AdminHeader` riêng) bằng `<AppShell items={adminSidebarItems} />`, dùng lại đúng mảng `sidebarItems` hiện có ở `admin-sidebar.tsx` (không đổi route/label/icon).
 
-    @@unique([userId, postId])
-    @@map("discuss_post_votes")
-  }
+- [x] **BE: mở rộng `admin.service.ts`/`admin.controller.ts` — stats mở rộng + 4 endpoint mới**
+  📍 `server/src/modules/admin/admin.service.ts`, `admin.controller.ts` (cùng class-level `@Roles('ADMIN')` guard có sẵn, không sửa guard):
+  - `getStats()` mở rộng: thêm `totalSessions`, `completionRate` (COMPLETED/tổng session), %-delta so 7 ngày trước cho từng KPI.
+  - `getSessionsTimeseries(range: '1W'|'1M'|'3M'|'ALL')` — bucket `Session.startedAt` trong JS (data nhỏ, không cần raw SQL) → `GET /admin/stats/sessions-timeseries?range=`.
+  - `getSessionStatusBreakdown()` — `prisma.session.groupBy({by:['status'], _count:true})` → `GET /admin/stats/session-status`.
+  - `getAcceptanceByDifficulty()` — **sửa lại quyết định ban đầu**: `Problem.acceptanceRate`/`submitCount`/`passCount` denormalize sẵn nhưng khi đọc kỹ code phát hiện chưa từng được ghi ở bất kỳ đâu (luôn = 0 mặc định) — không dùng được. Tính trực tiếp từ `Submission.status` + `Session.problem.difficulty` (gom trong JS, cùng data volume nhỏ) thay thế → `GET /admin/stats/acceptance-by-difficulty`.
+  - `getTopCompanies(limit=5)` — mirror query `companies.service.ts#findAll()`, top 5 theo `_count.problems` → `GET /admin/stats/top-companies`.
+  - Recent Activity: tái dùng thẳng `GET /admin/audit-log?limit=5` có sẵn, không cần route mới.
+  - Verify: `auth.service.spec.ts` + `judge.service.spec.ts` (24 test) vẫn pass; curl với JWT admin xác nhận cả 4 endpoint mới trả dữ liệu thật đúng shape (`totalSessions:28, completionRate:60.7`, time-series 7 bucket, breakdown 3 status, acceptance 3 difficulty, top 5 company).
 
-  model DiscussPostTag {
-    postId String
-    tagId  String
+- [x] **FE: `admin-api.ts` + hooks mới cho dashboard**
+  📍 `client/src/features/admin/api/admin-api.ts` + `hooks/use-admin-sessions-timeseries.ts`, `use-admin-session-status.ts`, `use-admin-acceptance-by-difficulty.ts`, `use-admin-top-companies.ts` (TanStack Query, mirror `use-admin-stats.ts`).
 
-    post DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-    tag  Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+- [x] **FE: rebuild `admin-dashboard-page.tsx` — KPI cards + charts theo tỉ lệ ảnh mẫu**
+  📍 `client/src/features/admin/pages/admin-dashboard-page.tsx`:
+  - Hàng 1: 4 KPI card (Users/Sessions/Completion Rate/Submissions) + badge trend ↑/↓ %.
+  - Hàng 2: trái (rộng) = "Sessions Over Time" bar chart (recharts) + tab range 1W/1M/3M/ALL (`Tabs` có sẵn); phải (hẹp) = "Recent Activity" (audit log, badge màu theo action prefix như `admin-audit-log-table.tsx`).
+  - Hàng 3 (3 cột desktop, xếp dọc mobile): "Session Funnel" (bar ngang theo `SessionStatus`), "Top Companies" (ranked list), "Acceptance Rate by Difficulty" (bar/donut nhỏ, màu theo `DIFFICULTY_BADGE_CLASS`).
+  - Loading/error/empty đúng khuôn có sẵn (skeleton → text đỏ lỗi → text muted rỗng).
 
-    @@id([postId, tagId])
-    @@map("discuss_post_tags")
-  }
-  ```
-  Thêm quan hệ ngược: `Tag.discussPosts DiscussPostTag[]`, `Problem.discussPosts DiscussPost[]`, `User.discussPosts/discussComments/discussPostVotes`.
-  P0 **cố tình chưa làm reply lồng nhau / vote comment** (giữ comment phẳng, không vote) — để P2, đúng tinh thần "core trước, polish sau" đã áp dụng ở roadmap Store.
-  Áp dụng bằng `npx prisma db push` (theo đúng tiền lệ prototype các model mới gần đây), sau đó `npx prisma generate`.
-
-- [x] **FE: thêm `Textarea` primitive còn thiếu**
-  📍 `client/src/components/ui/textarea.tsx` — theo đúng style các file `ui/*.tsx` khác (`input.tsx` làm mẫu), cần cho ô nhập nội dung bài viết/comment.
-
-- [x] **BE: module `discuss` mới**
-  📍 `server/src/modules/discuss/` (`discuss.module.ts`, `discuss.controller.ts`, `discuss.service.ts`, `dto/`), tham khảo `store` module (routing đơn giản) + `quest.service.ts` (groupBy leaderboard) + `problems.service.ts` (`findAll` với filter động qua `Prisma.XWhereInput`).
-  ```
-  GET  /discuss                    OptionalJwtAuthGuard   → list bài viết, query: problemId?, tag?, sort? (newest|mostViewed|mostUpvoted), search?
-  GET  /discuss/:id                OptionalJwtAuthGuard   → chi tiết bài + comments, tăng viewCount (throttle theo session/IP đơn giản hoặc bỏ qua nếu phức tạp — ghi rõ giới hạn trong code comment)
-  POST /discuss                    JwtAuthGuard           → tạo bài (title, content, tagIds[], problemId?)
-  POST /discuss/:id/comments       JwtAuthGuard           → tạo comment
-  POST /discuss/:id/vote           JwtAuthGuard           → toggle upvote (tạo/xoá row `DiscussPostVote`, `$transaction` cập nhật `upvoteCount`)
-  GET  /discuss/tags/trending      OptionalJwtAuthGuard   → top tag theo số bài (groupBy DiscussPostTag)
-  GET  /discuss/contributors/top   OptionalJwtAuthGuard   → top user theo tổng upvote nhận được (groupBy DiscussPost.authorId, sum upvoteCount)
-  ```
-  `createComment`: `$transaction` tăng `commentCount` trên post. `toggleVote`: `$transaction` tìm/tạo/xoá `DiscussPostVote` + tăng/giảm `upvoteCount` (mirror pattern `store.service.ts purchaseItem` dùng `$transaction`).
-
-- [x] **BE: seed data**
-  📍 `server/seed-discuss.ts` (root, mirror `seed-shop-items.ts`) — vài bài viết mẫu (có bài gắn `problemId`, có bài không), vài tag tái dùng từ `Tag` có sẵn hoặc thêm mới (`Algorithms`, `System Design`, `Career Advice`...), vài comment mẫu.
-
-- [x] **FE: feature folder `discuss` + route + nav**
-  📍 `client/src/features/discuss/` mirror cấu trúc `store/`/`quest/` (`api/hooks/components/pages/types`):
-  - `api/discuss-api.ts`: `getPosts(filters)`, `getPost(id)`, `createPost(dto)`, `createComment(postId, dto)`, `toggleUpvote(postId)`, `getTrendingTags()`, `getTopContributors()`.
-  - `hooks/`: `use-discuss-posts.ts`, `use-discuss-post.ts`, `use-create-post.ts`, `use-create-comment.ts`, `use-toggle-upvote.ts` (mutation, optimistic hoặc invalidate `["discuss-post", id]`/`["discuss-posts"]`), `use-trending-tags.ts`, `use-top-contributors.ts`.
-  - `components/discuss-post-card.tsx` (list item — avatar/tên/thời gian/tiêu đề/excerpt/tag pill/view-comment-upvote stats, theo đúng bố cục mockup), `discuss-filter-bar.tsx` (nút Lọc = dropdown tag/problem-only, nút sort = dropdown Mới nhất/Nhiều view/Nhiều upvote, dùng shadcn `DropdownMenu` đã có sẵn), `create-post-dialog.tsx` (Dialog: title input, content Textarea, tag multi-select, problem Select optional — mở từ nút "Tạo bài viết mới"), `discuss-trending-tags-card.tsx`, `discuss-top-contributors-card.tsx` (rank badge + avatar + tên + điểm, style giống `contest-leaderboard-table.tsx` phần medal top 3), `discuss-community-rules-card.tsx` (nội dung tĩnh từ i18n, danh sách checkmark).
-  - `pages/discuss-list-page.tsx`: layout `grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6` — cột trái list post card + filter bar, cột phải 3 card sidebar, theo đúng bố cục 2 cột đã dùng ở `quest-hub-page.tsx`.
-  - `pages/discuss-post-page.tsx`: chi tiết bài + list comment + form comment.
-  - `types/index.ts`.
-  📍 `client/src/app/router-instance.tsx` — thêm `{ path: "discuss", element: <DiscussListPage /> }`, `{ path: "discuss/:postId", element: <DiscussPostPage /> }` vào children `DashboardLayout` (cùng tầng `contests`/`contests/:id`).
-  📍 `client/src/components/layout/dashboard-header.tsx:15` — đổi `href: "#"` → `href: "/discuss"`.
-  📍 `client/src/components/layout/dashboard-sidebar.tsx` — thêm entry `{ icon: MessageSquare, labelKey: "sidebar.discuss", href: "/discuss" }` (cùng danh sách `Trophy`/`Lock`/`Compass`/`Users` hiện có).
-  📍 i18n: `client/src/lib/i18n/locales/{vi,en,ja}/discuss.json` (namespace mới) — title/subtitle, card labels, filter/sort labels, create-post form labels, sidebar widget titles, community rules text, error/empty states. Thêm `sidebar.discuss` vào `common.json` 3 locale (mirror các `sidebar.*` key có sẵn).
-
-- [x] **FE: tab "Thảo luận" trong problem panel (gắn theo từng bài)**
-  📍 `client/src/features/interview/components/problem-panel.tsx` — thêm `TabsTrigger value="discuss"` (icon `MessageSquare`, theo đúng khuôn `editorial`/`solutions` đã có) + `TabsContent value="discuss"` render `<DiscussTab problemId={problemId} />` (component mới, tái dùng `DiscussPostCard`/hooks từ feature `discuss`, gọi `GET /discuss?problemId=...`, có nút thu gọn "Tạo bài viết mới" mở `create-post-dialog.tsx` với `problemId` prefill).
-  `ProblemPanelProps` thêm `problemId?: string`.
-  📍 `client/src/features/interview/pages/interview-room.tsx` — truyền `problemId={session.problemId}` vào `<ProblemPanel />`.
+- [x] **i18n: key mới cho Admin Panel/Help Center/dashboard widgets — 3 locale**
+  📍 `client/src/lib/i18n/locales/{vi,en,ja}/{common,admin,settings}.json` — làm dần cùng từng task (P0 task 3/4/11) thay vì 1 commit riêng cuối. Verify parity bằng script flatten: `admin.json` 173 key, `common.json` 38 key, `settings.json` 43 key — khớp tuyệt đối cả 3 locale, không thiếu/thừa.
 
 ---
 
-## 🟡 P1 — Sidebar widget thật, view count, i18n đầy đủ, test
+## 🟡 P1 — Áp dụng App Shell cho user-facing layout
 
-- [x] **FE: nối "Chủ đề Nổi Bật" và "Đóng Góp Nổi Bật" với API thật**
-  📍 `discuss-trending-tags-card.tsx`/`discuss-top-contributors-card.tsx` dùng `use-trending-tags.ts`/`use-top-contributors.ts` (đã tạo khung ở P0, P1 là lúc nối UI thật + loading/empty state).
-  Đã xong sẵn từ P0 — cả 2 component đã dùng đúng hook thật (không mock) kèm loading skeleton + empty state; xác nhận lại bằng cách đọc code hiện tại trước khi tick, không cần code thêm.
+- [x] **FE: `dashboard-layout.tsx` đổi sang dùng `AppShell`**
+  📍 `client/src/components/layout/dashboard-layout.tsx` — bỏ `DashboardHeader` + `ResizablePanelGroup`, thay bằng `<AppShell items={userSidebarItems} />`, dùng lại đúng mảng `sidebarItems` hiện có ở `dashboard-sidebar.tsx` (không đổi route/label/icon).
 
-- [x] **BE: tăng `viewCount` khi xem chi tiết bài**
-  📍 `discuss.service.ts getPostById()` — tăng đơn giản mỗi lần gọi (chấp nhận có thể bị inflate do refresh nhiều lần, ghi rõ giới hạn trong comment, giống mức độ đơn giản hoá đã chấp nhận ở view/count khác trong repo — không làm dedupe theo session phức tạp ở P1).
-  Đã xong sẵn từ P0 — `findPostById()` gọi `discussPost.update({ data: { viewCount: { increment: 1 } } })` kèm comment ghi rõ giới hạn (chưa dedupe theo session/IP, để P2). Xác nhận lại code hiện tại trước khi tick.
+- [x] **Verify: profile dropdown + Settings + Help Center hoạt động đúng ở user side**
+  📍 Đã build sẵn ở P0 (shell dùng chung) — xác nhận qua browser thật: `/problems` dùng shell mới đúng, không còn nav ngang cũ, profile row mở đúng dropdown (đầy đủ nội dung cũ + "Admin Panel" cho role ADMIN), click Admin Panel chuyển sang `/admin` mượt (cùng shell, khác nav item). Settings + Help Center active-state đúng khi click từ footer sidebar, `/help` render đúng nội dung FAQ. Không lỗi console. (Ghi chú: có lúc thấy "Guest" + toast lỗi mạng sau khi full-reload trực tiếp URL — do accessToken chỉ lưu ở memory/Zustand, mất khi reload cứng, refresh cookie đôi lúc chưa kịp hydrate; đây là hành vi có sẵn của app không liên quan tới thay đổi layout lần này, không thuộc scope sửa ở đây.)
 
-- [x] **i18n**: rà lại `discuss.json` 3 locale đầy đủ key đã dùng ở P0 (nếu P0 làm tắt 1 locale để verify nhanh thì P1 hoàn thiện nốt 2 locale còn lại).
-  Đã xong sẵn từ P0 — so sánh key path (dot-flatten) giữa `vi/en/ja/discuss.json` cho kết quả giống hệt nhau, không thiếu key nào ở locale nào.
-
-- [x] **BE: test suite `discuss.service.spec.ts`**
-  📍 `server/src/modules/discuss/discuss.service.spec.ts`, style mock giống `judge.service.spec.ts`/`store.service.spec.ts`. Case: tạo bài thành công, vote toggle đúng (vote rồi unvote không lệch count), tạo comment tăng đúng `commentCount`, filter theo `problemId` đúng, guest (không JWT) vẫn GET được list/detail.
-  12 test case, cover đủ các case liệt kê trên (`createPost`, `toggleVote` cả 2 chiều, `createComment`, `findPosts` filter `problemId`, `findPosts`/`findPostById` không cần userId vẫn chạy được). `npm run test` (server) 5 suite/61 test pass, `npm run lint` (server) sạch.
+- [ ] **i18n: rà soát key còn thiếu phát sinh khi wiring user side**
+  📍 3 locale `common.json`/`settings.json` — verify parity cuối P1.
 
 ---
 
-## 🟢 P2 — Mở rộng (ngoài scope hiện tại)
+## 🟢 P2 — Demo data, QA responsive, dọn code chết
 
-- [ ] **Reply lồng nhau cho comment** (`DiscussComment.parentId` tự tham chiếu) + vote comment (`DiscussCommentVote`).
-- [ ] **Report/flag bài viết vi phạm** + màn hình duyệt cho admin (`RolesGuard` + `@Roles('ADMIN')`, chưa có tiền lệ nào trong repo — thiết kế mới hoàn toàn).
-- [ ] **Sửa/xoá bài viết của chính mình**, markdown editor có preview thay vì textarea thô.
-- [ ] **Thông báo real-time** khi có người trả lời bài/comment của mình (Socket.io, tái dùng pattern `career.gateway`/`chat.gateway` đã có).
-- [ ] **Dedupe view count** theo session/IP thay vì tăng vô điều kiện.
+- [x] **BE: `seed-demo-data.ts` — seed dev-only cho chart**
+  📍 `server/prisma/seed-demo-data.ts` (mới, KHÔNG wire vào `npx prisma db seed` mặc định) — script riêng `npm run seed:demo` (thêm vào `server/package.json`). Tạo 8 User giả (+`UserStats`, email `@demo.algominds.dev`), mỗi user 3-8 Session trải ~90 ngày với đủ trạng thái, Submission trạng thái đa dạng cho session Phase 2/Completed — tái dùng Problem có sẵn trong DB (không tạo problem mới). Idempotent: tự xoá sạch slice demo cũ qua `deleteMany` theo domain email (cascade xoá Session/Submission/UserStats) trước khi tạo lại — verify chạy 2 lần liên tiếp không lỗi. Verify curl sau khi chạy: `totalUsers:13, totalSessions:77, totalSubmissions:97`, breakdown 4 status đúng tỉ lệ nghiêng COMPLETED.
+
+- [x] **QA: responsive mobile (~375–420px) cho cả admin và user**
+  📍 **Giới hạn công cụ đã gặp**: `resize_window` (Chrome tool) không có tác dụng thật trong môi trường này — verify bằng `window.innerWidth` qua JS sau mỗi lần resize vẫn trả về kích thước màn hình đầy đủ (1745px/1920px) dù tool báo "resized to 390x844" thành công, thử cả trên tab hiện có lẫn tab mới đều vậy (khả năng cửa sổ Chrome đang ở trạng thái maximize/snap cấp OS mà extension không override được). Không thể chụp screenshot thật ở viewport mobile trong phiên này — nói rõ giới hạn thay vì báo khống đã test.
+  📍 Thay vào đó đã làm **code-level review** kỹ: `app-shell.tsx` ẩn `IconSidebar` desktop dưới `lg` (`hidden lg:flex`), `top-bar.tsx` hamburger chỉ hiện dưới `lg` (`lg:hidden`) mở `IconSidebar` qua `Sheet` (`w-64`, nhỏ hơn giới hạn `w-3/4` mặc định của `sheet.tsx` nên không tràn ở viewport ~390px). Toàn bộ layout dashboard mới (KPI grid, hàng chart, hàng 3 cột) đều dùng `grid-cols-1 sm:.../lg:...` hoặc `flex-col lg:flex-row` — xếp dọc đúng dưới breakpoint, không cột cứng. Không có `w-[...]`/`min-w-[...]` cứng nào trong các component mới (`icon-sidebar.tsx`, `top-bar.tsx`, `dashboard-*.tsx`) có thể gây tràn ngang — grep xác nhận. Pattern mobile Sheet này y hệt pattern cũ đã chạy tốt ở `DashboardHeader`/`DashboardSidebar` (đã bị thay thế nhưng cấu trúc responsive kế thừa nguyên).
+
+- [x] **Xoá code chết sau khi xác nhận không còn import**
+  📍 Grep xác nhận không còn reference nào (kể cả `test-page.tsx` — trước đó nghi ngờ có import `header.tsx` nhưng đọc lại code thì không, chỉ dùng `useSidebar` store, không đụng tới) rồi xoá: `client/src/components/layout/dashboard-header.tsx`, `header.tsx`, `dashboard-sidebar.tsx`, `client/src/features/admin/components/admin-header.tsx`, `admin-sidebar.tsx`. Verify: `tsc -b` + `npm run lint` sạch (0 lỗi, 13 warning pre-existing không liên quan), browser thật xác nhận `/admin` vẫn render đúng 100%, không lỗi console.
+
+- [x] **i18n: verify parity cuối cùng 3 locale**
+  📍 Script flatten so sánh toàn bộ key `en/vi/ja` cho **mọi** namespace (không chỉ 3 file đã sửa trong roadmap này) — 12/13 file khớp tuyệt đối. `career.json` báo lệch (`events.closesInDays_other`, `stageCount_other` thiếu ở vi/ja) nhưng xác nhận là **false-positive**: đây là suffix số nhiều `_other` của i18next (tiếng Anh có dạng số nhiều, tiếng Việt/Nhật dùng chung 1 key không suffix — `vi/career.json` có sẵn `"stageCount": "{{count}} vòng"` không suffix, đúng hành vi, không phải thiếu key thật). File này cũng không nằm trong phạm vi roadmap này (không đụng tới `career.json` ở bất kỳ task nào) — không sửa gì thêm, không phải regression do lần này gây ra. 3 file thực sự có sửa (`admin.json`/`common.json`/`settings.json`) đều khớp hoàn toàn cả 3 locale.
 
 ---
 
 ## Ghi chú thứ tự ưu tiên
-DB đi trước BE, BE đi trước FE. Trong P0, task "tab Discuss trong problem panel" phụ thuộc feature folder `discuss` (hooks/components) đã có từ task FE ngay trước đó — làm sau cùng trong P0. Seed data nên chạy sau khi module `discuss` đã có API GET để verify bằng cách gọi thử, không chỉ chạy script rồi để đó (đúng bài học đã ghi ở roadmap Store).
+`sidebar-item-classes.ts` + tách `UserNavMenu` content + trang `/help` làm trước `icon-sidebar.tsx` (icon-sidebar phụ thuộc cả 3). `icon-sidebar.tsx`+`top-bar.tsx` xong trước `app-shell.tsx`. `app-shell.tsx` xong trước khi sửa `admin-layout.tsx` (P0) rồi mới tới `dashboard-layout.tsx` (P1, dùng lại nguyên `AppShell` đã build ở P0 — không viết lại). BE mở rộng `admin.service.ts` độc lập, có thể làm song song với phần FE shell, nhưng phải xong trước khi viết hook FE gọi endpoint mới. Seed demo data (P2) không block P0/P1 — dashboard vẫn phải chạy đúng với dữ liệu thật/thưa trước khi có data đẹp để demo.

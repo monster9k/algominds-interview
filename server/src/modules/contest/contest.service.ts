@@ -16,6 +16,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { TestExecutionService } from '../code-execution/services/test-execution.service';
 import { TestCase } from '../code-execution/types';
 import { CreateContestDto } from './dto/create-contest.dto';
+import { UpdateContestDto } from './dto/update-contest.dto';
 import {
   DifficultyCounts,
   pickRandomProblemsByDifficulty,
@@ -99,6 +100,7 @@ export class ContestService {
 
   async findAll() {
     const contests = await this.prisma.contest.findMany({
+      where: { deletedAt: null },
       orderBy: { startTime: 'desc' },
       include: { _count: { select: { problems: true } } },
     });
@@ -205,6 +207,41 @@ export class ContestService {
       });
 
       return contest;
+    });
+  }
+
+  // Cập nhật thông tin cấp contest (title/description/thời gian) — KHÔNG
+  // đổi problem đã gán (chọn tay từng problem là tính năng khác, để P3).
+  async update(idOrSlug: string, dto: UpdateContestDto) {
+    const contest = await this.findContestOrThrow(idOrSlug);
+
+    const start = dto.startTime ? new Date(dto.startTime) : contest.startTime;
+    const end = dto.endTime ? new Date(dto.endTime) : contest.endTime;
+    if (start >= end) {
+      throw new BadRequestException('startTime phải trước endTime');
+    }
+
+    return this.prisma.contest.update({
+      where: { id: contest.id },
+      data: {
+        ...(dto.title !== undefined && { title: dto.title }),
+        ...(dto.description !== undefined && {
+          description: dto.description,
+        }),
+        ...(dto.startTime !== undefined && { startTime: start }),
+        ...(dto.endTime !== undefined && { endTime: end }),
+        status: deriveContestStatus(start, end),
+      },
+    });
+  }
+
+  // Soft delete — giữ ContestProblem/ContestSubmission thay vì hard-delete
+  // cascade (Contest không có deletedAt trước P2, đã thêm mới).
+  async softDelete(idOrSlug: string) {
+    const contest = await this.findContestOrThrow(idOrSlug);
+    return this.prisma.contest.update({
+      where: { id: contest.id },
+      data: { deletedAt: new Date() },
     });
   }
 
@@ -499,7 +536,7 @@ export class ContestService {
 
   private async findContestOrThrow(idOrSlug: string) {
     const contest = await this.prisma.contest.findFirst({
-      where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+      where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }], deletedAt: null },
     });
     if (!contest) {
       throw new NotFoundException(`Contest "${idOrSlug}" not found`);

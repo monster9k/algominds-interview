@@ -41,5 +41,31 @@
   "danger": {
     "title": "Danger Zone",
     "deleteAccount": "Delete Account"
+  },
+  "helpCenter": {
+    "title": "Help Center",
+    "description": "Quick answers to common questions about how AlgoMinds works.",
+    "faq": {
+      "thinkFirst": {
+        "question": "What does \"Think-First\" mean?",
+        "answer": "Before you can write code, you explain your strategy to the AI interviewer in the chat panel. Once your strategy is approved, the code editor unlocks for Phase 2."
+      },
+      "credits": {
+        "question": "What are credits and how do I earn more?",
+        "answer": "Credits let you request extra AI feedback during a session. You earn more by solving problems, keeping your daily streak, and completing quests."
+      },
+      "quest": {
+        "question": "What is Quest (Bug Whacker)?",
+        "answer": "Quest is a timed mini-game where you spot the buggy line in a code snippet before time runs out. Check the Quest tab for leaderboards and badges."
+      },
+      "contests": {
+        "question": "How do contests work?",
+        "answer": "Contests are timed events with a set of problems chosen by difficulty. Submit your solutions before the contest ends to appear on the leaderboard."
+      },
+      "peerInterview": {
+        "question": "What is Peer Interview?",
+        "answer": "Peer Interview pairs you with another user to practice a mock interview together — one of you plays interviewer, the other candidate."
+      }
+    }
   }
 }

@@ -1,0 +1,215 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {{page}}/{{totalPages}}",
+    "search": "Search...",
+    "save": "Save",
+    "saving": "Saving...",
+    "create": "Create",
+    "creating": "Creating...",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "problems": "Problems",
+    "contests": "Contests",
+    "users": "Users",
+    "store": "Store",
+    "discuss": "Discuss",
+    "career": "Career",
+    "quests": "Quests",
+    "peerInterview": "Peer Interview",
+    "auditLog": "Audit Log"
+  },
+  "header": {
+    "title": "Admin",
+    "backToApp": "Back to App"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalUsers": "Total Users",
+    "totalSessions": "Total Sessions",
+    "completionRate": "Completion Rate",
+    "totalSubmissions": "Total Submissions",
+    "vsLastWeek": "vs last week",
+    "loadError": "Failed to load stats.",
+    "sessionsChart": {
+      "title": "Sessions Over Time",
+      "empty": "No sessions in this range yet."
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "empty": "No actions recorded yet."
+    },
+    "sessionFunnel": {
+      "title": "Session Funnel",
+      "status": {
+        "PHASE_1_STRATEGY": "Strategy",
+        "PHASE_2_IMPLEMENT": "Implementation",
+        "COMPLETED": "Completed",
+        "ABANDONED": "Abandoned"
+      }
+    },
+    "topCompanies": {
+      "title": "Top Companies",
+      "empty": "No companies yet."
+    },
+    "acceptanceChart": {
+      "title": "Acceptance Rate by Difficulty"
+    }
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "problems": {
+    "title": "Manage Problems",
+    "subtitle": "{{count}} problems in the bank",
+    "createNew": "New Problem",
+    "columnId": "ID",
+    "columnTitle": "Title",
+    "columnDifficulty": "Difficulty",
+    "columnStatus": "Status",
+    "columnActions": "Actions",
+    "statusActive": "Active",
+    "statusDeleted": "Deleted",
+    "empty": "No problems yet.",
+    "loadError": "Failed to load problems.",
+    "createTitle": "Create New Problem",
+    "editTitle": "Edit Problem",
+    "fieldTitle": "Title",
+    "fieldContent": "Content (HTML)",
+    "fieldFunctionName": "Function Name",
+    "fieldTimeLimit": "Time Limit (ms)",
+    "fieldMemoryLimit": "Memory Limit (MB)",
+    "fieldTags": "Tags (comma-separated)",
+    "fieldInitialCode": "Initial Code (JSON)",
+    "fieldSampleTestCases": "Sample Test Cases (JSON)",
+    "fieldHiddenTestCases": "Hidden Test Cases (JSON, optional)",
+    "jsonError": "One of the JSON fields is invalid — check the syntax.",
+    "deleteConfirmTitle": "Delete this problem?",
+    "deleteConfirmDescription": "The problem will be hidden from the public list (soft delete), recoverable later if needed.",
+    "bulkDeleteConfirmTitle": "Delete {{count}} selected problems?",
+    "selectAll": "Select all",
+    "selectedCount": "{{count}} selected",
+    "filterDifficulty": "Difficulty",
+    "filterClear": "Clear",
+    "footerRange": "{{start}}-{{end}} of {{total}}",
+    "rowsPerPage": "Rows per page:"
+  },
+  "contests": {
+    "title": "Manage Contests",
+    "createNew": "New Contest",
+    "columnId": "ID",
+    "columnTitle": "Title",
+    "columnStatus": "Status",
+    "columnStart": "Start",
+    "statusUpcoming": "Upcoming",
+    "statusOngoing": "Ongoing",
+    "statusFinished": "Finished",
+    "empty": "No contests yet.",
+    "loadError": "Failed to load contests.",
+    "createTitle": "Create New Contest",
+    "editTitle": "Edit Contest",
+    "fieldTitle": "Title",
+    "fieldDescription": "Description",
+    "fieldStart": "Start",
+    "fieldEnd": "End",
+    "fieldProblemCounts": "Problem Count by Difficulty",
+    "problemCountsHint": "Problems are randomly picked from the bank by difficulty — manual per-problem selection isn't part of this round.",
+    "deleteConfirmTitle": "Delete this contest?",
+    "deleteConfirmDescription": "The contest will be hidden from the public list (soft delete); submission history is kept."
+  },
+  "users": {
+    "title": "Manage Users",
+    "columnId": "ID",
+    "columnEmail": "Email",
+    "columnName": "Name",
+    "columnRole": "Role",
+    "columnCreatedAt": "Created At",
+    "empty": "No users yet.",
+    "loadError": "Failed to load users.",
+    "deleteConfirmTitle": "Delete this user?",
+    "deleteConfirmDescription": "The account will be deactivated (soft delete), recoverable later if needed."
+  },
+  "store": {
+    "title": "Manage Store",
+    "columnId": "ID",
+    "columnName": "Name",
+    "columnCategory": "Category",
+    "columnPrice": "Price",
+    "categoryAvatarFrame": "Avatar Frame",
+    "categoryTitle": "Title",
+    "categoryBadgeColor": "Badge Color",
+    "empty": "No items yet.",
+    "loadError": "Failed to load items."
+  },
+  "discuss": {
+    "title": "Manage Discuss",
+    "columnId": "ID",
+    "columnTitle": "Title",
+    "columnAuthor": "Author",
+    "columnViews": "Views",
+    "columnUpvotes": "Upvotes",
+    "columnComments": "Comments",
+    "columnCreatedAt": "Created At",
+    "empty": "No posts yet.",
+    "loadError": "Failed to load posts.",
+    "deleteConfirmTitle": "Delete this post?",
+    "deleteConfirmDescription": "The post will be hidden from the public list (soft delete), recoverable later if needed."
+  },
+  "career": {
+    "title": "Manage Career Tracks",
+    "columnId": "ID",
+    "columnName": "Track Name",
+    "columnCompany": "Company",
+    "columnStatus": "Status",
+    "companyGeneric": "Generic",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "empty": "No career tracks yet.",
+    "loadError": "Failed to load career tracks."
+  },
+  "quests": {
+    "title": "Manage Quests",
+    "columnId": "ID",
+    "columnLanguage": "Language",
+    "columnDifficulty": "Difficulty",
+    "columnBuggyLine": "Buggy Line",
+    "columnStatus": "Status",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "empty": "No quests yet.",
+    "loadError": "Failed to load quests."
+  },
+  "peerInterview": {
+    "title": "Manage Peer Interviews",
+    "columnId": "ID",
+    "columnCandidate": "Candidate",
+    "columnInterviewer": "Interviewer",
+    "columnProblem": "Problem",
+    "columnStatus": "Status",
+    "columnStartedAt": "Started At",
+    "waiting": "Waiting",
+    "statusWaitingForPeer": "Waiting for Peer",
+    "statusActive": "Active",
+    "statusCompleted": "Completed",
+    "statusAbandoned": "Abandoned",
+    "empty": "No peer interview sessions yet.",
+    "loadError": "Failed to load peer interview sessions."
+  },
+  "auditLog": {
+    "title": "Admin Audit Log",
+    "columnAdmin": "Admin",
+    "columnAction": "Action",
+    "columnTarget": "Target",
+    "columnCreatedAt": "Time",
+    "empty": "No actions recorded yet.",
+    "loadError": "Failed to load audit log."
+  }
+}

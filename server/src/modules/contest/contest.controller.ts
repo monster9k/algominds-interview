@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { ContestService } from './contest.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -10,17 +19,68 @@ import type { RequestUser } from '../../common/types/request-user.type';
 import { RunContestProblemDto } from './dto/run-contest-problem.dto';
 import { SubmitContestProblemDto } from './dto/submit-contest-problem.dto';
 import { CreateContestDto } from './dto/create-contest.dto';
+import { UpdateContestDto } from './dto/update-contest.dto';
+import { AdminAuditService } from '../admin/admin-audit.service';
 
 @Controller('contests')
 export class ContestController {
-  constructor(private readonly contestService: ContestService) {}
+  constructor(
+    private readonly contestService: ContestService,
+    private readonly adminAuditService: AdminAuditService,
+  ) {}
 
   // POST /contests (Admin only) — bài gắn vào contest chọn ngẫu nhiên theo problemCounts
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  create(@Body() createContestDto: CreateContestDto) {
-    return this.contestService.createContest(createContestDto);
+  async create(
+    @CurrentUser() user: RequestUser,
+    @Body() createContestDto: CreateContestDto,
+  ) {
+    const contest = await this.contestService.createContest(createContestDto);
+    await this.adminAuditService.log(
+      user.userId,
+      'CREATE_CONTEST',
+      'Contest',
+      contest.id,
+      { title: contest.title },
+    );
+    return contest;
+  }
+
+  // PATCH /contests/:id (Admin only)
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async update(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Body() updateContestDto: UpdateContestDto,
+  ) {
+    const contest = await this.contestService.update(id, updateContestDto);
+    await this.adminAuditService.log(
+      user.userId,
+      'UPDATE_CONTEST',
+      'Contest',
+      contest.id,
+      { fields: Object.keys(updateContestDto) },
+    );
+    return contest;
+  }
+
+  // DELETE /contests/:id (Admin only) — soft delete
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async remove(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    const contest = await this.contestService.softDelete(id);
+    await this.adminAuditService.log(
+      user.userId,
+      'DELETE_CONTEST',
+      'Contest',
+      contest.id,
+    );
+    return contest;
   }
 
   // GET /contests

@@ -3,7 +3,8 @@
     "problems": "Problems",
     "contest": "Contest",
     "discuss": "Discuss",
-    "interview": "Interview"
+    "interview": "Interview",
+    "admin": "Admin"
   },
   "sidebar": {
     "library": "Library",
@@ -13,8 +14,8 @@
     "career": "Career Journey",
     "peerInterview": "Peer Interview",
     "discuss": "Discuss",
-    "myLists": "My Lists",
-    "favorite": "Favorite"
+    "settings": "Settings",
+    "helpCenter": "Help Center"
   },
   "userMenu": {
     "guest": "Guest",
@@ -28,6 +29,7 @@
     "myPlaygrounds": "My Playgrounds",
     "settings": "Settings",
     "appearance": "Appearance",
+    "adminPanel": "Admin Panel",
     "signOut": "Sign Out"
   },
   "errorBoundary": {

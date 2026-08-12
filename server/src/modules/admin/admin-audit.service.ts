@@ -1,0 +1,37 @@
+import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
+
+export type AdminAction =
+  | 'CREATE_PROBLEM'
+  | 'UPDATE_PROBLEM'
+  | 'DELETE_PROBLEM'
+  | 'CREATE_CONTEST'
+  | 'UPDATE_CONTEST'
+  | 'DELETE_CONTEST'
+  | 'UPDATE_USER_ROLE'
+  | 'DELETE_USER'
+  | 'DELETE_DISCUSS_POST';
+
+export type AdminActionTargetType =
+  | 'Problem'
+  | 'Contest'
+  | 'User'
+  | 'DiscussPost';
+
+@Injectable()
+export class AdminAuditService {
+  constructor(private prisma: PrismaService) {}
+
+  log(
+    adminId: string,
+    action: AdminAction,
+    targetType: AdminActionTargetType,
+    targetId: string,
+    metadata?: Prisma.InputJsonValue,
+  ) {
+    return this.prisma.adminActionLog.create({
+      data: { adminId, action, targetType, targetId, metadata },
+    });
+  }
+}

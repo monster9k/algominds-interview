@@ -1,0 +1,215 @@
+{
+  "common": {
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "previous": "前へ",
+    "next": "次へ",
+    "pageOf": "ページ {{page}}/{{totalPages}}",
+    "search": "検索...",
+    "save": "保存",
+    "saving": "保存中...",
+    "create": "作成",
+    "creating": "作成中...",
+    "edit": "編集",
+    "delete": "削除"
+  },
+  "sidebar": {
+    "dashboard": "ダッシュボード",
+    "problems": "問題",
+    "contests": "コンテスト",
+    "users": "ユーザー",
+    "store": "ストア",
+    "discuss": "ディスカッション",
+    "career": "キャリア",
+    "quests": "クエスト",
+    "peerInterview": "ピア面接",
+    "auditLog": "操作履歴"
+  },
+  "header": {
+    "title": "管理者",
+    "backToApp": "アプリに戻る"
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "totalUsers": "ユーザー総数",
+    "totalSessions": "セッション総数",
+    "completionRate": "完了率",
+    "totalSubmissions": "提出総数",
+    "vsLastWeek": "先週比",
+    "loadError": "統計情報の読み込みに失敗しました。",
+    "sessionsChart": {
+      "title": "セッション推移",
+      "empty": "この期間のセッションはまだありません。"
+    },
+    "recentActivity": {
+      "title": "最近のアクティビティ",
+      "empty": "記録されたアクションはまだありません。"
+    },
+    "sessionFunnel": {
+      "title": "セッションファネル",
+      "status": {
+        "PHASE_1_STRATEGY": "戦略",
+        "PHASE_2_IMPLEMENT": "実装",
+        "COMPLETED": "完了",
+        "ABANDONED": "中断"
+      }
+    },
+    "topCompanies": {
+      "title": "上位企業",
+      "empty": "企業がまだありません。"
+    },
+    "acceptanceChart": {
+      "title": "難易度別 正答率"
+    }
+  },
+  "difficulty": {
+    "easy": "簡単",
+    "medium": "普通",
+    "hard": "難しい"
+  },
+  "problems": {
+    "title": "問題管理",
+    "subtitle": "問題バンクに {{count}} 件",
+    "createNew": "新しい問題を作成",
+    "columnId": "ID",
+    "columnTitle": "タイトル",
+    "columnDifficulty": "難易度",
+    "columnStatus": "状態",
+    "columnActions": "操作",
+    "statusActive": "有効",
+    "statusDeleted": "削除済み",
+    "empty": "問題はまだありません。",
+    "loadError": "問題一覧の読み込みに失敗しました。",
+    "createTitle": "新しい問題を作成",
+    "editTitle": "問題を編集",
+    "fieldTitle": "タイトル",
+    "fieldContent": "内容 (HTML)",
+    "fieldFunctionName": "関数名",
+    "fieldTimeLimit": "時間制限 (ms)",
+    "fieldMemoryLimit": "メモリ制限 (MB)",
+    "fieldTags": "タグ（カンマ区切り）",
+    "fieldInitialCode": "初期コード (JSON)",
+    "fieldSampleTestCases": "サンプルテストケース (JSON)",
+    "fieldHiddenTestCases": "非公開テストケース (JSON, 任意)",
+    "jsonError": "JSONフィールドのいずれかが無効です — 構文を確認してください。",
+    "deleteConfirmTitle": "この問題を削除しますか？",
+    "deleteConfirmDescription": "問題は公開リストから非表示になります（論理削除）。必要に応じて後で復元できます。",
+    "bulkDeleteConfirmTitle": "選択した{{count}}件の問題を削除しますか？",
+    "selectAll": "すべて選択",
+    "selectedCount": "{{count}}件選択中",
+    "filterDifficulty": "難易度",
+    "filterClear": "クリア",
+    "footerRange": "{{total}}件中 {{start}}-{{end}}件",
+    "rowsPerPage": "表示件数:"
+  },
+  "contests": {
+    "title": "コンテスト管理",
+    "createNew": "新しいコンテストを作成",
+    "columnId": "ID",
+    "columnTitle": "タイトル",
+    "columnStatus": "状態",
+    "columnStart": "開始日時",
+    "statusUpcoming": "開催予定",
+    "statusOngoing": "開催中",
+    "statusFinished": "終了",
+    "empty": "コンテストはまだありません。",
+    "loadError": "コンテスト一覧の読み込みに失敗しました。",
+    "createTitle": "新しいコンテストを作成",
+    "editTitle": "コンテストを編集",
+    "fieldTitle": "タイトル",
+    "fieldDescription": "説明",
+    "fieldStart": "開始日時",
+    "fieldEnd": "終了日時",
+    "fieldProblemCounts": "難易度別の問題数",
+    "problemCountsHint": "問題は難易度に応じて問題バンクからランダムに選ばれます — 今回は個別選択に対応していません。",
+    "deleteConfirmTitle": "このコンテストを削除しますか？",
+    "deleteConfirmDescription": "コンテストは公開リストから非表示になります（論理削除）。提出履歴は保持されます。"
+  },
+  "users": {
+    "title": "ユーザー管理",
+    "columnId": "ID",
+    "columnEmail": "メール",
+    "columnName": "名前",
+    "columnRole": "権限",
+    "columnCreatedAt": "登録日",
+    "empty": "ユーザーはまだいません。",
+    "loadError": "ユーザー一覧の読み込みに失敗しました。",
+    "deleteConfirmTitle": "このユーザーを削除しますか？",
+    "deleteConfirmDescription": "アカウントは無効化されます（論理削除）。必要に応じて後で復元できます。"
+  },
+  "store": {
+    "title": "ストア管理",
+    "columnId": "ID",
+    "columnName": "名前",
+    "columnCategory": "カテゴリー",
+    "columnPrice": "価格",
+    "categoryAvatarFrame": "アバターフレーム",
+    "categoryTitle": "称号",
+    "categoryBadgeColor": "バッジカラー",
+    "empty": "アイテムはまだありません。",
+    "loadError": "アイテム一覧の読み込みに失敗しました。"
+  },
+  "discuss": {
+    "title": "ディスカッション管理",
+    "columnId": "ID",
+    "columnTitle": "タイトル",
+    "columnAuthor": "投稿者",
+    "columnViews": "閲覧数",
+    "columnUpvotes": "評価数",
+    "columnComments": "コメント数",
+    "columnCreatedAt": "投稿日",
+    "empty": "投稿はまだありません。",
+    "loadError": "投稿一覧の読み込みに失敗しました。",
+    "deleteConfirmTitle": "この投稿を削除しますか？",
+    "deleteConfirmDescription": "投稿は公開リストから非表示になります（論理削除）。必要に応じて後で復元できます。"
+  },
+  "career": {
+    "title": "キャリアトラック管理",
+    "columnId": "ID",
+    "columnName": "トラック名",
+    "columnCompany": "企業",
+    "columnStatus": "状態",
+    "companyGeneric": "汎用",
+    "statusActive": "有効",
+    "statusInactive": "無効",
+    "empty": "キャリアトラックはまだありません。",
+    "loadError": "キャリアトラック一覧の読み込みに失敗しました。"
+  },
+  "quests": {
+    "title": "クエスト管理",
+    "columnId": "ID",
+    "columnLanguage": "言語",
+    "columnDifficulty": "難易度",
+    "columnBuggyLine": "バグ行",
+    "columnStatus": "状態",
+    "statusActive": "有効",
+    "statusInactive": "無効",
+    "empty": "クエストはまだありません。",
+    "loadError": "クエスト一覧の読み込みに失敗しました。"
+  },
+  "peerInterview": {
+    "title": "ピア面接管理",
+    "columnId": "ID",
+    "columnCandidate": "候補者",
+    "columnInterviewer": "面接官",
+    "columnProblem": "問題",
+    "columnStatus": "状態",
+    "columnStartedAt": "開始日時",
+    "waiting": "待機中",
+    "statusWaitingForPeer": "相手待ち",
+    "statusActive": "進行中",
+    "statusCompleted": "完了",
+    "statusAbandoned": "中止",
+    "empty": "ピア面接セッションはまだありません。",
+    "loadError": "ピア面接セッション一覧の読み込みに失敗しました。"
+  },
+  "auditLog": {
+    "title": "管理者操作履歴",
+    "columnAdmin": "管理者",
+    "columnAction": "操作",
+    "columnTarget": "対象",
+    "columnCreatedAt": "日時",
+    "empty": "記録された操作はまだありません。",
+    "loadError": "操作履歴の読み込みに失敗しました。"
+  }
+}

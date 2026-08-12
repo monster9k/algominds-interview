@@ -1,168 +1,123 @@
-# 🗺️ AlgoMinds — Roadmap: Thảo luận (Discuss) — forum kiểu LeetCode
+# 🗺️ AlgoMinds — Roadmap: Admin Dashboard (nền tảng)
 
-> Bản roadmap trước (Store: xu & vật phẩm cosmetic) đã hoàn thành 100% ở P0/P1 và merge vào `main` — xem lịch sử git (commit cuối chỉnh sửa: `1d190a3`) nếu cần tham chiếu lại nội dung cũ. P2 của bản đó (item ảnh thật, streak bonus, leaderboard giàu nhất, Admin UI catalog) vẫn còn treo nhưng nằm ngoài scope hiện tại — không đụng tới trong roadmap này.
-> Bản này thay thế nó. Tính năng hoàn toàn mới, chưa có gì tồn tại (đã grep xác nhận: không có model `Post`/`Comment`/`Vote`/`Discuss` nào trong `schema.prisma`, không có module backend, không có feature folder frontend). Nav header đã có sẵn label `nav.discuss` ("Thảo luận") nhưng `href: "#"` — placeholder chết giống hệt kiểu `nav.store`/`nav.contest` từng bị trước khi được xây (`client/src/components/layout/dashboard-header.tsx:15`).
+> Bản roadmap trước (Thảo luận/Discuss — forum kiểu LeetCode) đã hoàn thành 100% ở P0/P1 và merge vào `main` — xem lịch sử git (commit cuối chỉnh sửa: `b879622`) nếu cần tham chiếu lại nội dung cũ. P2 của bản đó (reply lồng nhau, report/flag + duyệt admin, sửa/xoá bài, thông báo real-time, dedupe view count) vẫn còn treo nhưng nằm ngoài scope hiện tại — không đụng tới trong roadmap này.
+> Bản này thay thế nó. Mục tiêu: dựng **nền tảng** Admin Dashboard — phân quyền, layout admin, data table danh sách (Read-only) cho Bài tập và Cuộc thi. Các form Create/Update/Delete phức tạp **không** làm ở roadmap này (theo đúng yêu cầu — để phase sau).
 >
-> Yêu cầu sản phẩm:
-> 1. **UI trang `/discuss`**: theo đúng mockup user gửi — header "Thảo luận" + nút Lọc/Mới nhất + nút "TẠO BÀI VIẾT MỚI" nổi bật; list bài viết dạng card (avatar, tên, thời gian, tiêu đề, excerpt, tag pill, view/comment/upvote count); sidebar phải: "Chủ đề Nổi Bật" (tag cloud), "Đóng Góp Nổi Bật" (leaderboard), "Quy định cộng đồng". **Giữ nguyên theme màu** — mockup vốn đã dùng đúng tông màu nền tối + accent đỏ/hồng của app hiện tại, chỉ map đúng token màu sẵn có (`primary`, `emerald-500`, `muted`...), không bịa màu mới.
-> 2. **Không chỉ 1 trang riêng** — mỗi bài toán (problem) trong lúc làm bài phải có tab "Thảo luận" riêng, đúng kiểu tab Discuss của LeetCode thật, lọc theo đúng problem đó.
+> **Lệch stack cần lưu ý**: yêu cầu gốc mô tả theo convention Next.js App Router (`app/(admin)/admin/layout.tsx`, Middleware) — nhưng repo này dùng **React Router v7** (`client/src/app/router-instance.tsx:32`, `createBrowserRouter`), không phải Next.js, không có khái niệm middleware server-side cho route FE. Roadmap này thay bằng: route group lồng trong `router-instance.tsx` + component `AdminRoute` chặn ở client (mirror `ProtectedRoute` sẵn có), đúng pattern đang dùng cho `/interview/:slug` (`router-instance.tsx:71-91`).
 
 ## Cách đọc file này
-- `🔴 P0` — Lõi bắt buộc: schema DB (post/comment/vote/tag), module backend `discuss`, seed data, FE route + nav + trang `/discuss` cơ bản (list + tạo bài + vote), tab "Thảo luận" gắn trong problem panel.
-- `🟡 P1` — Hoàn thiện: sidebar widget nối API thật (trending tags/top contributors), view count, i18n đầy đủ 3 ngôn ngữ, test suite (`discuss`).
-- `🟢 P2` — Mở rộng (ngoài scope hiện tại, ghi lại để làm sau): reply lồng nhau + vote comment, report/flag + duyệt admin, sửa/xoá bài, markdown editor có preview, thông báo real-time, dedupe view count.
+- `🔴 P0` — Lõi bắt buộc: seed tài khoản admin, module backend `admin` (stats + list users), `AdminRoute` guard FE, `AdminLayout`/`AdminSidebar`/`AdminHeader`, trang `/admin` (stat card), `/admin/problems`, `/admin/contests`, `/admin/users` (data table, Read-only), i18n `admin.json` 3 ngôn ngữ.
+- `🟡 P1` — Mở rộng sang các domain khác mà user liệt kê thêm cuối yêu cầu gốc (`/admin/quests`, `/admin/career`, `/admin/peer-interview`, `/admin/discuss`, `/admin/store`) — **chưa làm ở lượt này** vì (a) câu context gốc chỉ nói rõ phạm vi "nền tảng" là Bài tập + Cuộc thi, (b) một số domain thiếu sẵn API list phù hợp cho admin (xem ghi chú gap từng mục).
+- `🟢 P2` — Ngoài scope: form Create/Update/Delete thật, phân trang/sort/search cho bảng admin, audit log hành động admin, RBAC nhiều cấp hơn `USER`/`ADMIN`.
 - Mỗi task ghi **vị trí code** liên quan để bắt tay vào làm ngay.
-- **Lưu ý thứ tự bắt buộc**: task DB schema (P0, mục đầu tiên) phải xong trước mọi task BE khác. Task "tab Discuss trong problem panel" phụ thuộc feature folder `discuss` (hooks/components) đã có từ task FE ngay trước đó trong P0 — làm sau cùng trong P0.
+- **Thứ tự bắt buộc**: seed admin (P0, mục đầu) không phụ thuộc gì, làm trước để có tài khoản test guard. Module `admin` BE xong trước khi FE gọi `admin-api.ts`. `AdminRoute` + `AdminLayout` xong trước khi đăng ký route `/admin/*`. Các trang `/admin/problems`, `/admin/contests` phụ thuộc `AdminLayout` đã đăng ký route.
 
 ---
 
 ## Khảo sát kỹ thuật quan trọng (ảnh hưởng thiết kế)
 
-- **Quy ước Prisma**: `id String @id @default(uuid())`, `@@map snake_case`, many-to-many qua bảng trung gian kiểu `ProblemTag` (`problemId`/`tagId`, `@@id([...])`) — tái dùng y hệt cho tag bài viết. Chưa có tiền lệ vote/upvote nào trong schema — đây sẽ là tính năng đầu tiên, dùng pattern đếm denormalize (`upvoteCount Int @default(0)` như `Problem.submitCount`) + bảng join `@@unique([userId, postId])` kiểu `UserItem` để chống vote 2 lần (dùng 2 bảng vote riêng cho post/comment thay vì 1 bảng union — tránh bẫy NULL không unique của Postgres khi 1 cột FK nullable).
-- **`Tag` model có sẵn** (`schema.prisma:189`) dùng cho Problem — tái sử dụng nguyên model này cho tag bài thảo luận qua bảng trung gian mới `DiscussPostTag`, không tạo model tag riêng.
-- **Guard pattern**: `OptionalJwtAuthGuard` (`server/src/modules/auth/optional-jwt-auth.guard.ts`) cho các API đọc (khách vãng lai cũng xem được list/detail — đúng kiểu LeetCode Discuss công khai), `JwtAuthGuard` cho API ghi (tạo bài/comment/vote). **Quan trọng**: `DashboardLayout` không tự chặn route theo auth — chỉ có axios interceptor tự redirect `/auth/login` khi API trả 401 (`client/src/lib/axios.ts:97`), nên nếu lỡ gắn `JwtAuthGuard` vào endpoint GET list, khách chưa đăng nhập vào `/discuss` sẽ bị văng thẳng ra trang login — **bắt buộc dùng `OptionalJwtAuthGuard` cho mọi GET**.
-- **Leaderboard/groupBy pattern** đã có sẵn ở `quest.service.ts:275-307` (`prisma.questAttempt.groupBy` + `orderBy: { _max: { score: 'desc' } }` + enrich N+1) — tái dùng y hệt cho "Đóng góp nổi bật" (groupBy theo `authorId`, sắp theo tổng upvote nhận được) và "Chủ đề nổi bật" (groupBy theo `tagId` trên `DiscussPostTag`, sắp theo số bài).
-- **Tab bài toán**: `client/src/features/interview/components/problem-panel.tsx` đã có sẵn 2 tab "coming soon" (`editorial`, `solutions`) làm khuôn mẫu y hệt cho việc thêm tab `discuss` mới. `Problem` type dùng ở trang này (`problem-panel/types.ts`) **không có field `id`** — phải lấy problem id qua prop mới `problemId` (nguồn: `session.problemId` đã có sẵn trong `interview-room.tsx`), không sửa `Problem` type.
-- **Thiếu 1 shadcn primitive**: `client/src/components/ui/textarea.tsx` chưa tồn tại — cần thêm (theo đúng style các file `ui/*.tsx` khác) để làm ô nhập nội dung bài viết/comment.
+- **Đã có sẵn, không cần tạo mới**: `User.role UserRole @default(USER)` (`server/prisma/schema.prisma:69`, enum `UserRole { USER, ADMIN }` tại dòng 11-14) — **không cần migration/schema change**. `RolesGuard` (`server/src/common/guards/roles.guard.ts:16-35`, đọc metadata qua `Reflector`, `ForbiddenException` nếu role không khớp) + `@Roles(...)` decorator (`server/src/common/decorators/roles.decorator.ts:3-4`) đã có tiền lệ dùng thật ở `problems.controller.ts:25-27` (`POST /problems`) và `contest.controller.ts:19-21` (`POST /contests`) — module `admin` mới tái dùng y hệt cặp guard này, không viết lại.
+- **Chưa có module `admin`** trong `server/src/modules/*` — tạo mới theo skill `add-nestjs-module`, chỉ 2 endpoint GET (`stats`, `users`), không có job nền, tham khảo cấu trúc đơn giản của module `store` (`store.controller.ts`).
+- **Danh sách Bài tập/Cuộc thi: tái dùng nguyên API GET đã có, không tạo endpoint admin riêng** — `GET /problems` (`problems.controller.ts:33-52`, `OptionalJwtAuthGuard`) và `GET /contests` (`contest.controller.ts:19-30`) đã trả đủ dữ liệu cần cho bảng admin; FE gọi thẳng `problemsApi.getProblems()` (`client/src/features/problems/api/problems-api.ts:5`) và `contestApi.getContests()` (`client/src/features/contest/api/contest-api.ts:19`) — không viết thêm hook/API mới cho 2 domain này.
+- **Cột "Trạng thái" của bảng Problems không map field DB nào có sẵn tên vậy** — `Problem` model (`schema.prisma:146-190`) không có field publish/draft; chỉ có `deletedAt DateTime?` (soft-delete, dòng 172). Quyết định: cột "Trạng thái" hiển thị `deletedAt == null ? "Hoạt động" : "Đã xoá"` — dữ liệu thật, không bịa field mới. Cột "Trạng thái" của Contest thì dùng thẳng `Contest.status ContestStatus` (`schema.prisma:712`, `UPCOMING`/`ONGOING`/`FINISHED`) — đã có sẵn Badge màu mẫu ở `contest-table.tsx:18-23` (`STATUS_BADGE_CLASS`), tái dùng đúng bảng màu này cho nhất quán.
+- **Chưa có API "list toàn bộ user"** — `users.controller.ts` hiện chỉ có `GET users/me` (không list). Đây là gap thật cần bổ sung ở module `admin` mới (`GET /admin/users`), không phải lỗi thiếu sót cần "fix" ở module `users` — đặt đúng namespace `admin` vì đây là nhu cầu riêng của dashboard quản trị (list toàn bộ, không phải profile cá nhân).
+- **FE `ProtectedRoute` hiện tại chỉ check đăng nhập, không check role** (`client/src/features/auth/components/protected-route.tsx:5-19`, chỉ đọc `isAuthenticated`/`isLoading` từ `useAuthStore`). `User` type (`client/src/features/auth/types/index.ts:16-22`) **đã có field `role: string`** sẵn trong JWT payload trả về lúc login — đủ để viết `AdminRoute` mới (component riêng, KHÔNG sửa `ProtectedRoute` hiện có vì nó đang được dùng đúng cho luồng interview/peer-interview/contest-solve, sửa chung sẽ ảnh hưởng các route đó).
+- **Không cần thêm shadcn `Sidebar` primitive tổng quát** — `DashboardSidebar` hiện tại (`client/src/components/layout/dashboard-sidebar.tsx`) cũng không dùng primitive `sidebar.tsx` nào cả, chỉ là `div` + `Link` + `cn()` thuần (đã có sẵn style pattern `itemClasses()` dòng 26-32). `AdminSidebar` sẽ theo đúng pattern này để nhất quán — không giới thiệu abstraction mới, không chạy `npx shadcn add sidebar`.
+- **`AdminLayout` không cần resizable panel** như `DashboardLayout` (`dashboard-layout.tsx` dùng `ResizablePanelGroup` cho trải nghiệm người dùng cuối) — admin dashboard chỉ cần sidebar cố định đơn giản (`flex`), tránh phức tạp hoá không cần thiết.
+- **Bảng dữ liệu**: `client/src/components/ui/table.tsx` đã có sẵn, cách dùng mẫu chuẩn ở `contest-table.tsx` (loading skeleton, empty state, error state) — `AdminProblemsTable`/`AdminContestsTable`/`AdminUsersTable` bám sát khuôn này.
+- **Seed admin**: `server/prisma/seed.ts` hiện chưa seed `User` nào cả. Password hash dùng `bcrypt.hash(..., 10)` đúng round hiện tại của `auth.service.ts:58`. Cần `import * as bcrypt from 'bcrypt'` vào `seed.ts`.
+- **i18n**: `client/src/lib/i18n/locales/{vi,en,ja}/` chưa có `admin.json` — namespace mới, theo đúng pattern 3 locale hiện dùng cho các feature khác.
 
 ---
 
-## 🔴 P0 — Schema, module `discuss` backend, trang `/discuss` cơ bản, tab Discuss trong problem
+## 🔴 P0 — Phân quyền, layout admin, data table Bài tập/Cuộc thi/Users (Read-only)
 
-- [x] **DB: schema bài viết/comment/vote/tag**
-  📍 `server/prisma/schema.prisma`
-  ```prisma
-  model DiscussPost {
-    id           String    @id @default(uuid())
-    authorId     String
-    problemId    String?   // null = thảo luận chung, có giá trị = gắn 1 bài toán cụ thể
-    title        String
-    content      String    // markdown thô, render ở FE
-    viewCount    Int       @default(0)
-    upvoteCount  Int       @default(0)
-    commentCount Int       @default(0)
-    createdAt    DateTime  @default(now())
-    updatedAt    DateTime  @updatedAt
-    deletedAt    DateTime?
+- [ ] **BE: seed tài khoản admin**
+  📍 `server/prisma/seed.ts` — thêm `prisma.user.upsert({ where: { email: 'admin@algominds.dev' }, update: { role: UserRole.ADMIN }, create: { email: 'admin@algominds.dev', name: 'Admin', password: await bcrypt.hash('Admin@123', 10), role: UserRole.ADMIN, provider: 'email' } })`, import thêm `UserRole` từ `@prisma/client` và `* as bcrypt from 'bcrypt'`. Chạy `npx prisma db seed` để verify, in log email/password mẫu ra console để dễ test đăng nhập (không lưu secret thật vào seed, đây chỉ là tài khoản dev).
 
-    author   User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
-    problem  Problem?         @relation(fields: [problemId], references: [id], onDelete: SetNull)
-    tags     DiscussPostTag[]
-    comments DiscussComment[]
-    votes    DiscussPostVote[]
+- [ ] **BE: module `admin` mới — `GET /admin/stats`, `GET /admin/users`**
+  📍 `server/src/modules/admin/` (`admin.module.ts`, `admin.controller.ts`, `admin.service.ts`), đăng ký vào `AppModule`.
+  ```
+  GET /admin/stats   JwtAuthGuard + RolesGuard + @Roles('ADMIN')
+    → { totalUsers, totalProblems, totalSubmissions } (prisma.user.count() / problem.count() / submission.count())
 
-    @@map("discuss_posts")
-  }
+  GET /admin/users   JwtAuthGuard + RolesGuard + @Roles('ADMIN')
+    → danh sách user: select id, email, name, role, isPro, createdAt (KHÔNG select password/providerId)
+  ```
+  Guard pattern tái dùng y hệt `problems.controller.ts:25-27`.
 
-  model DiscussComment {
-    id        String    @id @default(uuid())
-    postId    String
-    authorId  String
-    content   String
-    createdAt DateTime  @default(now())
-    deletedAt DateTime?
+- [ ] **FE: `AdminRoute` guard component**
+  📍 `client/src/features/auth/components/admin-route.tsx` — mirror `protected-route.tsx`, thêm check `user?.role === "ADMIN"` sau khi đã xác nhận `isAuthenticated`; không phải ADMIN → `<Navigate to="/problems" replace />`.
 
-    post   DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-    author User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+- [ ] **FE: feature folder `admin` — api + hooks**
+  📍 `client/src/features/admin/`:
+  - `api/admin-api.ts`: `getStats()` → `GET /admin/stats`, `getUsers()` → `GET /admin/users`.
+  - `hooks/use-admin-stats.ts`, `hooks/use-admin-users.ts` (TanStack Query, mirror `use-user-profile.ts`).
+  - `types/index.ts`: `AdminStats`, `AdminUser`.
 
-    @@map("discuss_comments")
-  }
+- [ ] **FE: `AdminSidebar` + `AdminHeader` + `AdminLayout`**
+  📍 `client/src/features/admin/components/admin-sidebar.tsx` — 4 menu tĩnh: Tổng quan (`/admin`), Bài tập (`/admin/problems`), Cuộc thi (`/admin/contests`), Người dùng (`/admin/users`), theo đúng `itemClasses()`/cấu trúc `dashboard-sidebar.tsx:16-24, 26-32`.
+  📍 `client/src/features/admin/components/admin-header.tsx` — logo/title "Admin", `Avatar` (tái dùng `useAuthStore` lấy `user.name`/`user.avatarUrl` giống `user-nav-menu.tsx:74-75`), nút "Về trang chính" (`Link to="/problems"`).
+  📍 `client/src/features/admin/layout/admin-layout.tsx` — `<div className="h-screen flex"><AdminSidebar/><div className="flex-1 flex flex-col"><AdminHeader/><main className="flex-1 overflow-y-auto p-6"><Outlet/></main></div></div>`.
 
-  model DiscussPostVote {
-    id        String   @id @default(uuid())
-    userId    String
-    postId    String
-    createdAt DateTime @default(now())
-
-    user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-    post DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-    @@unique([userId, postId])
-    @@map("discuss_post_votes")
-  }
-
-  model DiscussPostTag {
-    postId String
-    tagId  String
-
-    post DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-    tag  Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-    @@id([postId, tagId])
-    @@map("discuss_post_tags")
+- [ ] **FE: đăng ký route `/admin/*`**
+  📍 `client/src/app/router-instance.tsx` — thêm route group mới (ngang hàng khối `ProtectedRoute` hiện có, dòng 71-91):
+  ```tsx
+  {
+    element: <AdminRoute />,
+    children: [
+      {
+        path: "/admin",
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <AdminDashboardPage /> },
+          { path: "problems", element: <AdminProblemsPage /> },
+          { path: "contests", element: <AdminContestsPage /> },
+          { path: "users", element: <AdminUsersPage /> },
+        ],
+      },
+    ],
   }
   ```
-  Thêm quan hệ ngược: `Tag.discussPosts DiscussPostTag[]`, `Problem.discussPosts DiscussPost[]`, `User.discussPosts/discussComments/discussPostVotes`.
-  P0 **cố tình chưa làm reply lồng nhau / vote comment** (giữ comment phẳng, không vote) — để P2, đúng tinh thần "core trước, polish sau" đã áp dụng ở roadmap Store.
-  Áp dụng bằng `npx prisma db push` (theo đúng tiền lệ prototype các model mới gần đây), sau đó `npx prisma generate`.
 
-- [x] **FE: thêm `Textarea` primitive còn thiếu**
-  📍 `client/src/components/ui/textarea.tsx` — theo đúng style các file `ui/*.tsx` khác (`input.tsx` làm mẫu), cần cho ô nhập nội dung bài viết/comment.
+- [ ] **FE: trang `/admin` — stat card**
+  📍 `client/src/features/admin/pages/admin-dashboard-page.tsx` — 3 `Card` (shadcn) hiển thị Tổng số Users/Bài tập/Submissions từ `useAdminStats()`, loading skeleton khi đang fetch.
 
-- [x] **BE: module `discuss` mới**
-  📍 `server/src/modules/discuss/` (`discuss.module.ts`, `discuss.controller.ts`, `discuss.service.ts`, `dto/`), tham khảo `store` module (routing đơn giản) + `quest.service.ts` (groupBy leaderboard) + `problems.service.ts` (`findAll` với filter động qua `Prisma.XWhereInput`).
-  ```
-  GET  /discuss                    OptionalJwtAuthGuard   → list bài viết, query: problemId?, tag?, sort? (newest|mostViewed|mostUpvoted), search?
-  GET  /discuss/:id                OptionalJwtAuthGuard   → chi tiết bài + comments, tăng viewCount (throttle theo session/IP đơn giản hoặc bỏ qua nếu phức tạp — ghi rõ giới hạn trong code comment)
-  POST /discuss                    JwtAuthGuard           → tạo bài (title, content, tagIds[], problemId?)
-  POST /discuss/:id/comments       JwtAuthGuard           → tạo comment
-  POST /discuss/:id/vote           JwtAuthGuard           → toggle upvote (tạo/xoá row `DiscussPostVote`, `$transaction` cập nhật `upvoteCount`)
-  GET  /discuss/tags/trending      OptionalJwtAuthGuard   → top tag theo số bài (groupBy DiscussPostTag)
-  GET  /discuss/contributors/top   OptionalJwtAuthGuard   → top user theo tổng upvote nhận được (groupBy DiscussPost.authorId, sum upvoteCount)
-  ```
-  `createComment`: `$transaction` tăng `commentCount` trên post. `toggleVote`: `$transaction` tìm/tạo/xoá `DiscussPostVote` + tăng/giảm `upvoteCount` (mirror pattern `store.service.ts purchaseItem` dùng `$transaction`).
+- [ ] **FE: trang `/admin/problems` — data table**
+  📍 `client/src/features/admin/pages/admin-problems-page.tsx` + `client/src/features/admin/components/admin-problems-table.tsx` — cột ID (`displayId`), Tiêu đề, Độ khó (`Badge`), Trạng thái (theo `deletedAt`, xem khảo sát kỹ thuật). Dữ liệu từ `problemsApi.getProblems()` có sẵn (không viết hook mới, dùng `useQuery` trực tiếp hoặc hook `useProblems` đã có trong feature `problems` nếu phù hợp). Nút "Tạo bài tập mới" (`Button` + `onClick={() => console.log("TODO: create problem modal")}`).
 
-- [x] **BE: seed data**
-  📍 `server/seed-discuss.ts` (root, mirror `seed-shop-items.ts`) — vài bài viết mẫu (có bài gắn `problemId`, có bài không), vài tag tái dùng từ `Tag` có sẵn hoặc thêm mới (`Algorithms`, `System Design`, `Career Advice`...), vài comment mẫu.
+- [ ] **FE: trang `/admin/contests` — data table**
+  📍 `client/src/features/admin/pages/admin-contests-page.tsx` + `client/src/features/admin/components/admin-contests-table.tsx` — cột ID, Tiêu đề, Trạng thái (`Badge`, tái dùng `STATUS_BADGE_CLASS` từ `contest-table.tsx:18-23`), Thời gian bắt đầu. Dữ liệu từ `contestApi.getContests()` có sẵn. Nút "Tạo cuộc thi mới" stub console.log.
 
-- [x] **FE: feature folder `discuss` + route + nav**
-  📍 `client/src/features/discuss/` mirror cấu trúc `store/`/`quest/` (`api/hooks/components/pages/types`):
-  - `api/discuss-api.ts`: `getPosts(filters)`, `getPost(id)`, `createPost(dto)`, `createComment(postId, dto)`, `toggleUpvote(postId)`, `getTrendingTags()`, `getTopContributors()`.
-  - `hooks/`: `use-discuss-posts.ts`, `use-discuss-post.ts`, `use-create-post.ts`, `use-create-comment.ts`, `use-toggle-upvote.ts` (mutation, optimistic hoặc invalidate `["discuss-post", id]`/`["discuss-posts"]`), `use-trending-tags.ts`, `use-top-contributors.ts`.
-  - `components/discuss-post-card.tsx` (list item — avatar/tên/thời gian/tiêu đề/excerpt/tag pill/view-comment-upvote stats, theo đúng bố cục mockup), `discuss-filter-bar.tsx` (nút Lọc = dropdown tag/problem-only, nút sort = dropdown Mới nhất/Nhiều view/Nhiều upvote, dùng shadcn `DropdownMenu` đã có sẵn), `create-post-dialog.tsx` (Dialog: title input, content Textarea, tag multi-select, problem Select optional — mở từ nút "Tạo bài viết mới"), `discuss-trending-tags-card.tsx`, `discuss-top-contributors-card.tsx` (rank badge + avatar + tên + điểm, style giống `contest-leaderboard-table.tsx` phần medal top 3), `discuss-community-rules-card.tsx` (nội dung tĩnh từ i18n, danh sách checkmark).
-  - `pages/discuss-list-page.tsx`: layout `grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6` — cột trái list post card + filter bar, cột phải 3 card sidebar, theo đúng bố cục 2 cột đã dùng ở `quest-hub-page.tsx`.
-  - `pages/discuss-post-page.tsx`: chi tiết bài + list comment + form comment.
-  - `types/index.ts`.
-  📍 `client/src/app/router-instance.tsx` — thêm `{ path: "discuss", element: <DiscussListPage /> }`, `{ path: "discuss/:postId", element: <DiscussPostPage /> }` vào children `DashboardLayout` (cùng tầng `contests`/`contests/:id`).
-  📍 `client/src/components/layout/dashboard-header.tsx:15` — đổi `href: "#"` → `href: "/discuss"`.
-  📍 `client/src/components/layout/dashboard-sidebar.tsx` — thêm entry `{ icon: MessageSquare, labelKey: "sidebar.discuss", href: "/discuss" }` (cùng danh sách `Trophy`/`Lock`/`Compass`/`Users` hiện có).
-  📍 i18n: `client/src/lib/i18n/locales/{vi,en,ja}/discuss.json` (namespace mới) — title/subtitle, card labels, filter/sort labels, create-post form labels, sidebar widget titles, community rules text, error/empty states. Thêm `sidebar.discuss` vào `common.json` 3 locale (mirror các `sidebar.*` key có sẵn).
+- [ ] **FE: trang `/admin/users` — data table**
+  📍 `client/src/features/admin/pages/admin-users-page.tsx` + `client/src/features/admin/components/admin-users-table.tsx` — cột ID, Email, Tên, Role (`Badge`), Ngày tạo. Dữ liệu từ `useAdminUsers()`.
 
-- [x] **FE: tab "Thảo luận" trong problem panel (gắn theo từng bài)**
-  📍 `client/src/features/interview/components/problem-panel.tsx` — thêm `TabsTrigger value="discuss"` (icon `MessageSquare`, theo đúng khuôn `editorial`/`solutions` đã có) + `TabsContent value="discuss"` render `<DiscussTab problemId={problemId} />` (component mới, tái dùng `DiscussPostCard`/hooks từ feature `discuss`, gọi `GET /discuss?problemId=...`, có nút thu gọn "Tạo bài viết mới" mở `create-post-dialog.tsx` với `problemId` prefill).
-  `ProblemPanelProps` thêm `problemId?: string`.
-  📍 `client/src/features/interview/pages/interview-room.tsx` — truyền `problemId={session.problemId}` vào `<ProblemPanel />`.
+- [ ] **i18n: `admin.json` 3 locale**
+  📍 `client/src/lib/i18n/locales/{vi,en,ja}/admin.json` — sidebar labels, header, tiêu đề trang, tên cột bảng, empty/loading/error state, nút "Tạo mới". Đăng ký namespace `admin` vào cấu hình i18next (mirror cách các feature khác đã đăng ký, tìm file `client/src/lib/i18n/index.ts` hoặc tương đương).
 
 ---
 
-## 🟡 P1 — Sidebar widget thật, view count, i18n đầy đủ, test
+## 🟡 P1 — Mở rộng sang domain khác (chưa làm ở lượt này, ghi lại để làm sau)
 
-- [x] **FE: nối "Chủ đề Nổi Bật" và "Đóng Góp Nổi Bật" với API thật**
-  📍 `discuss-trending-tags-card.tsx`/`discuss-top-contributors-card.tsx` dùng `use-trending-tags.ts`/`use-top-contributors.ts` (đã tạo khung ở P0, P1 là lúc nối UI thật + loading/empty state).
-  Đã xong sẵn từ P0 — cả 2 component đã dùng đúng hook thật (không mock) kèm loading skeleton + empty state; xác nhận lại bằng cách đọc code hiện tại trước khi tick, không cần code thêm.
+Các trang này nằm trong yêu cầu gốc của user nhưng **không khớp với câu context "bắt đầu bằng nền tảng: Problems & Contests"** — để tránh phình scope nền tảng, roadmap này chỉ ghi nhận lại, chưa code:
 
-- [x] **BE: tăng `viewCount` khi xem chi tiết bài**
-  📍 `discuss.service.ts getPostById()` — tăng đơn giản mỗi lần gọi (chấp nhận có thể bị inflate do refresh nhiều lần, ghi rõ giới hạn trong comment, giống mức độ đơn giản hoá đã chấp nhận ở view/count khác trong repo — không làm dedupe theo session phức tạp ở P1).
-  Đã xong sẵn từ P0 — `findPostById()` gọi `discussPost.update({ data: { viewCount: { increment: 1 } } })` kèm comment ghi rõ giới hạn (chưa dedupe theo session/IP, để P2). Xác nhận lại code hiện tại trước khi tick.
-
-- [x] **i18n**: rà lại `discuss.json` 3 locale đầy đủ key đã dùng ở P0 (nếu P0 làm tắt 1 locale để verify nhanh thì P1 hoàn thiện nốt 2 locale còn lại).
-  Đã xong sẵn từ P0 — so sánh key path (dot-flatten) giữa `vi/en/ja/discuss.json` cho kết quả giống hệt nhau, không thiếu key nào ở locale nào.
-
-- [x] **BE: test suite `discuss.service.spec.ts`**
-  📍 `server/src/modules/discuss/discuss.service.spec.ts`, style mock giống `judge.service.spec.ts`/`store.service.spec.ts`. Case: tạo bài thành công, vote toggle đúng (vote rồi unvote không lệch count), tạo comment tăng đúng `commentCount`, filter theo `problemId` đúng, guest (không JWT) vẫn GET được list/detail.
-  12 test case, cover đủ các case liệt kê trên (`createPost`, `toggleVote` cả 2 chiều, `createComment`, `findPosts` filter `problemId`, `findPosts`/`findPostById` không cần userId vẫn chạy được). `npm run test` (server) 5 suite/61 test pass, `npm run lint` (server) sạch.
+- [ ] **`/admin/store`** (không phải `/admin/stores` — tên module thật số ít, route `store.controller.ts` là `@Controller('store')`). Data có sẵn: `GET store/items` (`store.controller.ts:13`) — làm tương tự pattern Problems/Contests, không có gap backend.
+- [ ] **`/admin/discuss`**. Data có sẵn: `GET /discuss` (`discuss.controller.ts:24`) — không có gap backend, làm được ngay theo pattern P0.
+- [ ] **`/admin/career`**. Data có sẵn: `GET career/tracks`, `GET career/events` (`career.controller.ts:16,26`) — nhưng chưa rõ user muốn liệt kê "track" hay "event" hay cả hai ở 1 bảng, cần hỏi lại trước khi thiết kế cột.
+- [ ] **`/admin/quests`**. **Gap backend**: `GET quest/snippets` (`quest.controller.ts:23`) cố tình strip `buggyLine`/`explanation` trước khi trả về (chống lộ đáp án qua Network tab, xem `CLAUDE.md` mục `quest`) — admin cần thấy đủ đáp án nên **không thể tái dùng endpoint này**, phải thêm `GET /admin/quests` riêng (RolesGuard) trả đầy đủ field `BugSnippet`.
+- [ ] **`/admin/peer-interview`**. **Gap backend**: `peer-interview.controller.ts` hiện chỉ có `GET :id` (lấy 1 session), không có endpoint list nhiều session — phải thêm `GET /admin/peer-interviews` (hoặc mở rộng module `peer-interview`) trước khi làm UI.
 
 ---
 
-## 🟢 P2 — Mở rộng (ngoài scope hiện tại)
+## 🟢 P2 — Ngoài scope hiện tại
 
-- [ ] **Reply lồng nhau cho comment** (`DiscussComment.parentId` tự tham chiếu) + vote comment (`DiscussCommentVote`).
-- [ ] **Report/flag bài viết vi phạm** + màn hình duyệt cho admin (`RolesGuard` + `@Roles('ADMIN')`, chưa có tiền lệ nào trong repo — thiết kế mới hoàn toàn).
-- [ ] **Sửa/xoá bài viết của chính mình**, markdown editor có preview thay vì textarea thô.
-- [ ] **Thông báo real-time** khi có người trả lời bài/comment của mình (Socket.io, tái dùng pattern `career.gateway`/`chat.gateway` đã có).
-- [ ] **Dedupe view count** theo session/IP thay vì tăng vô điều kiện.
+- [ ] Form Create/Update/Delete thật cho Problems/Contests/Users (hiện tại nút "Tạo mới" chỉ console.log theo đúng constraint round này).
+- [ ] Phân trang/sort/search cho các bảng admin (hiện `GET /admin/users`, `GET /problems`, `GET /contests` trả nguyên mảng, chưa cần thiết ở quy mô dữ liệu hiện tại).
+- [ ] Audit log hành động admin (ai sửa/xoá gì, khi nào) — chưa có tiền lệ `AdminActionLog` nào trong schema.
+- [ ] RBAC nhiều cấp hơn `USER`/`ADMIN` (vd `MODERATOR` chỉ duyệt discuss, không sửa problems).
+- [ ] Bảo vệ `/admin/*` ở tầng server-side/SSR — không áp dụng cho stack Vite CSR hiện tại, chỉ có thể chặn ở client (`AdminRoute`) + guard BE cho mọi API ghi (đã có).
 
 ---
 
 ## Ghi chú thứ tự ưu tiên
-DB đi trước BE, BE đi trước FE. Trong P0, task "tab Discuss trong problem panel" phụ thuộc feature folder `discuss` (hooks/components) đã có từ task FE ngay trước đó — làm sau cùng trong P0. Seed data nên chạy sau khi module `discuss` đã có API GET để verify bằng cách gọi thử, không chỉ chạy script rồi để đó (đúng bài học đã ghi ở roadmap Store).
+Seed admin không phụ thuộc gì, làm trước để có tài khoản test. BE module `admin` xong trước khi FE viết `admin-api.ts`. `AdminRoute`/`AdminLayout` xong trước khi đăng ký route `/admin/*` trong `router-instance.tsx`. 3 trang data table (`problems`/`contests`/`users`) độc lập với nhau, có thể làm theo thứ tự bất kỳ sau khi route đã đăng ký — nhưng `users` phụ thuộc `GET /admin/users` đã xong ở BE.

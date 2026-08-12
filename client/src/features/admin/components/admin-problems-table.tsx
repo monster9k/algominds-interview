@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -9,19 +11,29 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProblems } from "@/features/problems/hooks/use-problems";
-import { Difficulty } from "@/features/problems/types";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AdminProblemListItem } from "../types";
+import { ConfirmDialog } from "./confirm-dialog";
+import { useDeleteProblem } from "../hooks/use-delete-problem";
 
-const DIFFICULTY_BADGE_CLASS: Record<Difficulty, string> = {
+const DIFFICULTY_BADGE_CLASS: Record<AdminProblemListItem["difficulty"], string> = {
   EASY: "bg-teal-500/10 text-teal-500 border-teal-500/20",
   MEDIUM: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
   HARD: "bg-red-500/10 text-red-500 border-red-500/20",
 };
 
-export function AdminProblemsTable() {
+interface AdminProblemsTableProps {
+  problems?: AdminProblemListItem[];
+  isLoading: boolean;
+  isError: boolean;
+  onEdit: (id: string) => void;
+}
+
+export function AdminProblemsTable({ problems, isLoading, isError, onEdit }: AdminProblemsTableProps) {
   const { t } = useTranslation("admin");
-  const { data: problems, isLoading, isError } = useProblems();
+  const deleteProblem = useDeleteProblem();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   return (
     <div className="rounded-lg overflow-hidden border border-border">
@@ -32,26 +44,27 @@ export function AdminProblemsTable() {
             <TableHead className="text-muted-foreground text-xs">{t("problems.columnTitle")}</TableHead>
             <TableHead className="text-muted-foreground text-xs">{t("problems.columnDifficulty")}</TableHead>
             <TableHead className="text-muted-foreground text-xs">{t("problems.columnStatus")}</TableHead>
+            <TableHead className="text-right text-muted-foreground text-xs">{t("problems.columnActions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i} className="border-0">
-                <TableCell colSpan={4}>
+                <TableCell colSpan={5}>
                   <Skeleton className="h-6 w-full" />
                 </TableCell>
               </TableRow>
             ))
           ) : isError ? (
             <TableRow className="border-0">
-              <TableCell colSpan={4} className="h-32 text-center text-destructive">
+              <TableCell colSpan={5} className="h-32 text-center text-destructive">
                 {t("problems.loadError")}
               </TableCell>
             </TableRow>
           ) : problems?.length === 0 ? (
             <TableRow className="border-0">
-              <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+              <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
                 {t("problems.empty")}
               </TableCell>
             </TableRow>
@@ -66,16 +79,41 @@ export function AdminProblemsTable() {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {/* GET /problems luôn where deletedAt: null (problems.service.ts:74) —
-                      mọi row trả về chắc chắn đang hoạt động, không có cách phân biệt
-                      "đã xoá" qua endpoint này. */}
-                  <Badge variant="outline">{t("problems.statusActive")}</Badge>
+                  <Badge variant={problem.deletedAt ? "destructive" : "outline"}>
+                    {problem.deletedAt ? t("problems.statusDeleted") : t("problems.statusActive")}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button variant="ghost" size="icon" onClick={() => onEdit(problem.id)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => setDeletingId(problem.id)}
+                    disabled={!!problem.deletedAt}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))
           )}
         </TableBody>
       </Table>
+
+      <ConfirmDialog
+        open={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        title={t("problems.deleteConfirmTitle")}
+        description={t("problems.deleteConfirmDescription")}
+        isLoading={deleteProblem.isPending}
+        onConfirm={() => {
+          if (!deletingId) return;
+          deleteProblem.mutate(deletingId, { onSuccess: () => setDeletingId(null) });
+        }}
+      />
     </div>
   );
 }

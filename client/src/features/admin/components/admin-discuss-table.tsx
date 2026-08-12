@@ -22,18 +22,18 @@ export function AdminDiscussTable() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   return (
-    <div className="rounded-lg overflow-hidden border border-border">
+    <div className="rounded-2xl overflow-hidden border border-border">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b border-border/80">
-            <TableHead className="text-muted-foreground text-xs">{t("discuss.columnId")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("discuss.columnTitle")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("discuss.columnAuthor")}</TableHead>
-            <TableHead className="text-center text-muted-foreground text-xs">{t("discuss.columnViews")}</TableHead>
-            <TableHead className="text-center text-muted-foreground text-xs">{t("discuss.columnUpvotes")}</TableHead>
-            <TableHead className="text-center text-muted-foreground text-xs">{t("discuss.columnComments")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("discuss.columnCreatedAt")}</TableHead>
-            <TableHead className="text-right text-muted-foreground text-xs">{t("problems.columnActions")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("discuss.columnId")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("discuss.columnTitle")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("discuss.columnAuthor")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("discuss.columnViews")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("discuss.columnUpvotes")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("discuss.columnComments")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("discuss.columnCreatedAt")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("problems.columnActions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

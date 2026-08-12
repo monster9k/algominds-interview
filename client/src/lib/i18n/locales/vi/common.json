@@ -15,7 +15,9 @@
     "peerInterview": "Phỏng vấn chéo",
     "discuss": "Thảo luận",
     "myLists": "Danh sách của tôi",
-    "favorite": "Yêu thích"
+    "favorite": "Yêu thích",
+    "settings": "Cài đặt",
+    "helpCenter": "Trung tâm trợ giúp"
   },
   "userMenu": {
     "guest": "Khách",
@@ -29,6 +31,7 @@
     "myPlaygrounds": "Playground của tôi",
     "settings": "Cài đặt",
     "appearance": "Giao diện",
+    "adminPanel": "Trang quản trị",
     "signOut": "Đăng xuất"
   },
   "errorBoundary": {

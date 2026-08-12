@@ -15,7 +15,9 @@
     "peerInterview": "Peer Interview",
     "discuss": "Discuss",
     "myLists": "My Lists",
-    "favorite": "Favorite"
+    "favorite": "Favorite",
+    "settings": "Settings",
+    "helpCenter": "Help Center"
   },
   "userMenu": {
     "guest": "Guest",
@@ -29,6 +31,7 @@
     "myPlaygrounds": "My Playgrounds",
     "settings": "Settings",
     "appearance": "Appearance",
+    "adminPanel": "Admin Panel",
     "signOut": "Sign Out"
   },
   "errorBoundary": {

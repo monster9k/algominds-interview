@@ -47,7 +47,7 @@
   ```
   Guard pattern tái dùng y hệt `problems.controller.ts:25-27`.
 
-- [ ] **FE: `AdminRoute` guard component**
+- [x] **FE: `AdminRoute` guard component**
   📍 `client/src/features/auth/components/admin-route.tsx` — mirror `protected-route.tsx`, thêm check `user?.role === "ADMIN"` sau khi đã xác nhận `isAuthenticated`; không phải ADMIN → `<Navigate to="/problems" replace />`.
 
 - [ ] **FE: feature folder `admin` — api + hooks**

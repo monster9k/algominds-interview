@@ -98,15 +98,37 @@
 
 ---
 
-## 🟡 P1 — Mở rộng sang domain khác (chưa làm ở lượt này, ghi lại để làm sau)
+## 🟡 P1 — Mở rộng sang domain khác (Store/Discuss/Career/Quests/Peer Interview, Read-only)
 
-Các trang này nằm trong yêu cầu gốc của user nhưng **không khớp với câu context "bắt đầu bằng nền tảng: Problems & Contests"** — để tránh phình scope nền tảng, roadmap này chỉ ghi nhận lại, chưa code:
+Quyết định đã chốt với user trước khi code: **`/admin/career` chỉ hiển thị bảng Career Tracks** (không làm Hiring Events, không gộp 2 bảng — có thể thêm Events ở P2 nếu cần sau).
 
-- [ ] **`/admin/store`** (không phải `/admin/stores` — tên module thật số ít, route `store.controller.ts` là `@Controller('store')`). Data có sẵn: `GET store/items` (`store.controller.ts:13`) — làm tương tự pattern Problems/Contests, không có gap backend.
-- [ ] **`/admin/discuss`**. Data có sẵn: `GET /discuss` (`discuss.controller.ts:24`) — không có gap backend, làm được ngay theo pattern P0.
-- [ ] **`/admin/career`**. Data có sẵn: `GET career/tracks`, `GET career/events` (`career.controller.ts:16,26`) — nhưng chưa rõ user muốn liệt kê "track" hay "event" hay cả hai ở 1 bảng, cần hỏi lại trước khi thiết kế cột.
-- [ ] **`/admin/quests`**. **Gap backend**: `GET quest/snippets` (`quest.controller.ts:23`) cố tình strip `buggyLine`/`explanation` trước khi trả về (chống lộ đáp án qua Network tab, xem `CLAUDE.md` mục `quest`) — admin cần thấy đủ đáp án nên **không thể tái dùng endpoint này**, phải thêm `GET /admin/quests` riêng (RolesGuard) trả đầy đủ field `BugSnippet`.
-- [ ] **`/admin/peer-interview`**. **Gap backend**: `peer-interview.controller.ts` hiện chỉ có `GET :id` (lấy 1 session), không có endpoint list nhiều session — phải thêm `GET /admin/peer-interviews` (hoặc mở rộng module `peer-interview`) trước khi làm UI.
+- [x] **BE: mở rộng module `admin` — `GET /admin/quests`**
+  📍 `server/src/modules/admin/admin.service.ts`/`admin.controller.ts` — thêm `getQuests()`: `prisma.bugSnippet.findMany({ orderBy: { createdAt: 'desc' } })`, trả đầy đủ field kể cả `buggyLine`/`explanation` (khác hẳn `GET quest/snippets` — endpoint đó cố tình strip 2 field này để chống lộ đáp án qua Network tab lúc chơi, xem `quest.controller.ts:23`). Guard giữ nguyên `JwtAuthGuard + RolesGuard + @Roles('ADMIN')` ở class level của `AdminController`.
+
+- [x] **BE: mở rộng module `admin` — `GET /admin/peer-interviews`**
+  📍 Cùng file — thêm `getPeerInterviews()`: `prisma.peerInterviewSession.findMany({ select: {...} })` join `candidate{id,name,email}`, `peerInterviewer{id,name,email}` (nullable — session chưa có người join), `problem{id,title,slug}`, `orderBy: { startedAt: 'desc' }`. `peer-interview.controller.ts` hiện chỉ có `GET :id` (1 session) — đây là endpoint list đầu tiên cho domain này.
+
+- [ ] **FE: `AdminSidebar` — thêm 5 menu item mới**
+  📍 `client/src/features/admin/components/admin-sidebar.tsx` — thêm Store (`/admin/store`), Discuss (`/admin/discuss`), Career (`/admin/career`), Quests (`/admin/quests`), Peer Interview (`/admin/peer-interview`) vào mảng `sidebarItems`, sau `Users`. Icon: `Lock`=Store, `MessageSquare`=Discuss, `Compass`=Career, `Swords`=Quests, `Handshake`=Peer Interview (mirror icon set của `dashboard-sidebar.tsx` khi trùng nghĩa, tránh trùng icon `Users` đã dùng cho menu "Người dùng").
+
+- [ ] **FE: trang `/admin/store` — data table**
+  📍 `admin-store-page.tsx` + `admin-store-table.tsx` — tái dùng `useStoreItems()` (`client/src/features/store/hooks/use-store-items.ts`, gọi `GET /store/items`), không viết API mới. Cột: ID, Tên, Danh mục (`Badge`, giá trị `ShopItemCategory`), Giá.
+
+- [ ] **FE: trang `/admin/discuss` — data table**
+  📍 `admin-discuss-page.tsx` + `admin-discuss-table.tsx` — tái dùng `useDiscussPosts()` (`client/src/features/discuss/hooks/use-discuss-posts.ts`, gọi `GET /discuss`). Cột: ID, Tiêu đề, Tác giả, View/Upvote/Comment count, Ngày tạo.
+
+- [ ] **FE: trang `/admin/career` — data table (Tracks only)**
+  📍 `admin-career-page.tsx` + `admin-career-table.tsx` — tái dùng `useCareerTracks()` (`client/src/features/career/hooks/use-career-tracks.ts`, gọi `GET /career/tracks`). Cột: ID, Tên track, Công ty (`track.company?.name` hoặc "Generic"), Trạng thái (`Badge`, theo `isActive`).
+
+- [ ] **FE: trang `/admin/quests` — data table**
+  📍 `admin-quests-page.tsx` + `admin-quests-table.tsx` — dùng hook mới `useAdminQuests()` (`admin-api.ts` thêm `getQuests()` → `GET /admin/quests`). Cột: ID, Ngôn ngữ, Độ khó (`Badge`), Dòng lỗi (`buggyLine`), Trạng thái (`isActive` → Active/Inactive). Không hiển thị cột `code`/`explanation` đầy đủ trong bảng (quá dài cho 1 row) — để lại cho phase form chi tiết (P2).
+
+- [ ] **FE: trang `/admin/peer-interview` — data table**
+  📍 `admin-peer-interview-page.tsx` + `admin-peer-interview-table.tsx` — dùng hook mới `useAdminPeerInterviews()` (`admin-api.ts` thêm `getPeerInterviews()` → `GET /admin/peer-interviews`). Cột: ID, Candidate, Interviewer (hoặc "Đang chờ" nếu null), Bài tập, Trạng thái (`Badge`, theo `PeerSessionStatus`), Bắt đầu lúc.
+
+- [ ] **FE: đăng ký 5 route mới + i18n**
+  📍 `client/src/app/router-instance.tsx` — thêm 5 route con vào children của `/admin` (`store`, `discuss`, `career`, `quests`, `peer-interview`).
+  📍 `client/src/lib/i18n/locales/{vi,en,ja}/admin.json` — thêm namespace con `sidebar.store/discuss/career/quests/peerInterview` + `store{}`/`discuss{}`/`career{}`/`quests{}`/`peerInterview{}` (title, cột, empty, loadError, status label nếu có). Verify lại parity 3 locale bằng script flatten (như đã làm ở P0) trước khi tick.
 
 ---
 

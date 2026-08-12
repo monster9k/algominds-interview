@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { PencilSimple, Trash } from "@phosphor-icons/react";
-import "@fontsource/geist-mono/500.css";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -95,10 +94,9 @@ export function AdminProblemsTable({ problems, isLoading, isError, onEdit }: Adm
               >
                 <TableCell
                   className={cn(
-                    "py-2.5 border-l-2 border-l-transparent transition-colors text-xs text-muted-foreground",
+                    "py-2.5 border-l-2 border-l-transparent transition-colors font-mono text-xs text-muted-foreground",
                     DIFFICULTY_ROW_ACCENT[problem.difficulty],
                   )}
-                  style={{ fontFamily: '"Geist Mono", monospace' }}
                 >
                   {problem.displayId}
                 </TableCell>
@@ -117,7 +115,7 @@ export function AdminProblemsTable({ problems, isLoading, isError, onEdit }: Adm
                 </TableCell>
                 <TableCell className="py-2.5 text-right">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(problem.id)}>
-                    <PencilSimple className="h-3.5 w-3.5" />
+                    <Pencil className="h-3.5 w-3.5" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -126,7 +124,7 @@ export function AdminProblemsTable({ problems, isLoading, isError, onEdit }: Adm
                     onClick={() => setDeletingId(problem.id)}
                     disabled={!!problem.deletedAt}
                   >
-                    <Trash className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </TableCell>
               </TableRow>

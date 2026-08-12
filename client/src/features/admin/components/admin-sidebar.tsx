@@ -12,17 +12,20 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/use-auth-store";
 
+// adminOnly: true bị ẩn với MODERATOR — MODERATOR chỉ có quyền duyệt Discuss
+// trong toàn bộ Admin Dashboard (xem AdminOnlyRoute).
 const sidebarItems = [
-  { icon: LayoutDashboard, labelKey: "sidebar.dashboard", href: "/admin", end: true },
-  { icon: Library, labelKey: "sidebar.problems", href: "/admin/problems" },
-  { icon: Trophy, labelKey: "sidebar.contests", href: "/admin/contests" },
-  { icon: Users, labelKey: "sidebar.users", href: "/admin/users" },
-  { icon: Lock, labelKey: "sidebar.store", href: "/admin/store" },
-  { icon: MessageSquare, labelKey: "sidebar.discuss", href: "/admin/discuss" },
-  { icon: Compass, labelKey: "sidebar.career", href: "/admin/career" },
-  { icon: Swords, labelKey: "sidebar.quests", href: "/admin/quests" },
-  { icon: Handshake, labelKey: "sidebar.peerInterview", href: "/admin/peer-interview" },
+  { icon: LayoutDashboard, labelKey: "sidebar.dashboard", href: "/admin", end: true, adminOnly: true },
+  { icon: Library, labelKey: "sidebar.problems", href: "/admin/problems", adminOnly: true },
+  { icon: Trophy, labelKey: "sidebar.contests", href: "/admin/contests", adminOnly: true },
+  { icon: Users, labelKey: "sidebar.users", href: "/admin/users", adminOnly: true },
+  { icon: Lock, labelKey: "sidebar.store", href: "/admin/store", adminOnly: true },
+  { icon: MessageSquare, labelKey: "sidebar.discuss", href: "/admin/discuss", adminOnly: false },
+  { icon: Compass, labelKey: "sidebar.career", href: "/admin/career", adminOnly: true },
+  { icon: Swords, labelKey: "sidebar.quests", href: "/admin/quests", adminOnly: true },
+  { icon: Handshake, labelKey: "sidebar.peerInterview", href: "/admin/peer-interview", adminOnly: true },
 ];
 
 const itemClasses = (isActive: boolean) =>
@@ -36,11 +39,15 @@ const itemClasses = (isActive: boolean) =>
 export function AdminSidebar() {
   const location = useLocation();
   const { t } = useTranslation("admin");
+  const role = useAuthStore((state) => state.user?.role);
+  const visibleItems = sidebarItems.filter(
+    (item) => !item.adminOnly || role === "ADMIN",
+  );
 
   return (
     <div className="flex h-full w-56 shrink-0 flex-col bg-background border-r border-border text-sm">
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
-        {sidebarItems.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = item.end
             ? location.pathname === item.href
             : location.pathname.startsWith(item.href);

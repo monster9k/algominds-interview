@@ -215,9 +215,10 @@ Quyết định đã chốt với user trước khi code:
 - [x] **FE: `ConfirmDialog` + `AdminPagination` component dùng chung**
   📍 `client/src/features/admin/components/confirm-dialog.tsx` (dựa `dialog.tsx` sẵn có), `client/src/features/admin/components/admin-pagination.tsx` (prev/next + số trang, props `page/totalPages/onPageChange`).
 
-- [ ] **FE: RBAC — `AdminRoute` cho phép `MODERATOR`, chặn trang ngoài Discuss**
-  📍 `admin-route.tsx` — đổi điều kiện thành `role !== "ADMIN" && role !== "MODERATOR"` mới redirect. Thêm guard con mới `admin-only-route.tsx` (`role !== "ADMIN"` → `<Navigate to="/admin/discuss" />`) bọc riêng children Dashboard/Problems/Contests/Users/Store/Career/Quests/Peer-Interview/Audit-log trong `router-instance.tsx`; `discuss` route đứng ngoài, dùng chung `AdminRoute` thôi.
-  📍 `admin-sidebar.tsx` — nhận biết role hiện tại (`useAuthStore`), MODERATOR chỉ thấy Dashboard + Discuss.
+- [x] **FE: RBAC — `AdminRoute` cho phép `MODERATOR`, chặn trang ngoài Discuss**
+  📍 `admin-route.tsx` — đổi điều kiện thành `role !== "ADMIN" && role !== "MODERATOR"` mới redirect. Thêm guard con mới `admin-only-route.tsx` (`role !== "ADMIN"` → `<Navigate to="/admin/discuss" />`) bọc riêng children Dashboard/Problems/Contests/Users/Store/Career/Quests/Peer-Interview trong `router-instance.tsx`; `discuss` route đứng ngoài guard con.
+  📍 `admin-sidebar.tsx` — nhận biết role hiện tại (`useAuthStore`), MODERATOR chỉ thấy **Discuss** (không phải Dashboard+Discuss như dự tính ban đầu — sửa lại vì `GET /admin/stats` vẫn ADMIN-only ở guard BE, cho MODERATOR vào Dashboard sẽ ra trang lỗi; đơn giản hơn là chỉ cho họ đúng 1 trang họ thực sự dùng được).
+  Verify thực tế qua browser: đăng ký + promote 1 tài khoản throwaway lên MODERATOR, login, xác nhận sidebar chỉ còn "Discuss", vào thẳng `/admin` hoặc `/admin/problems` đều bị redirect về `/admin/discuss`, sau đó xoá tài khoản throwaway.
 
 - [ ] **FE: `/admin/problems` — Create/Edit dialog + Delete + pagination/search**
   📍 `admin-problems-page.tsx`/`admin-problems-table.tsx` — đổi sang `useAdminProblems({page,search,sort})` (hook mới, gọi `GET /admin/problems`), thêm ô search + `AdminPagination`, cột Trạng thái đổi sang đọc `deletedAt` thật (Active/Deleted). Nút "Tạo bài tập mới" mở `problem-form-dialog.tsx` (title/difficulty/content/functionName/timeLimitMs/memoryLimitMb/tags input phẩy, initialCode/sampleTestCases/hiddenTestCases dạng textarea JSON có validate parse trước khi submit) — dùng chung cho Create lẫn Edit. Nút Delete mỗi row mở `ConfirmDialog`.

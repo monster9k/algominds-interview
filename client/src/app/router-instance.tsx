@@ -28,6 +28,7 @@ import { DiscussListPage } from "@/features/discuss/pages/discuss-list-page";
 import { DiscussPostPage } from "@/features/discuss/pages/discuss-post-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { AdminRoute } from "@/features/auth/components/admin-route";
+import { AdminOnlyRoute } from "@/features/auth/components/admin-only-route";
 import { GoogleCallbackPage } from "@/features/auth/pages/google-callback-page";
 import { AdminLayout } from "@/features/admin/layout/admin-layout";
 import { AdminDashboardPage } from "@/features/admin/pages/admin-dashboard-page";
@@ -102,7 +103,11 @@ export const router = createBrowserRouter([
   },
 
   // Admin dashboard — client-side role gate (see AdminRoute), stack has no
-  // Next.js-style middleware to enforce this server-side.
+  // Next.js-style middleware to enforce this server-side. MODERATOR only
+  // gets past AdminRoute (not ADMIN-only AdminOnlyRoute below) for /discuss
+  // — every other page here also needs GET /admin/stats etc. which are
+  // ADMIN-only at the API guard, so there's no page for MODERATOR to land
+  // on besides Discuss.
   {
     element: <AdminRoute />,
     children: [
@@ -110,15 +115,20 @@ export const router = createBrowserRouter([
         path: "/admin",
         element: <AdminLayout />,
         children: [
-          { index: true, element: <AdminDashboardPage /> },
-          { path: "problems", element: <AdminProblemsPage /> },
-          { path: "contests", element: <AdminContestsPage /> },
-          { path: "users", element: <AdminUsersPage /> },
-          { path: "store", element: <AdminStorePage /> },
           { path: "discuss", element: <AdminDiscussPage /> },
-          { path: "career", element: <AdminCareerPage /> },
-          { path: "quests", element: <AdminQuestsPage /> },
-          { path: "peer-interview", element: <AdminPeerInterviewPage /> },
+          {
+            element: <AdminOnlyRoute />,
+            children: [
+              { index: true, element: <AdminDashboardPage /> },
+              { path: "problems", element: <AdminProblemsPage /> },
+              { path: "contests", element: <AdminContestsPage /> },
+              { path: "users", element: <AdminUsersPage /> },
+              { path: "store", element: <AdminStorePage /> },
+              { path: "career", element: <AdminCareerPage /> },
+              { path: "quests", element: <AdminQuestsPage /> },
+              { path: "peer-interview", element: <AdminPeerInterviewPage /> },
+            ],
+          },
         ],
       },
     ],

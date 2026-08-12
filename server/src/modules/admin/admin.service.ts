@@ -111,6 +111,20 @@ export class AdminService {
     return { data, total, page, limit };
   }
 
+  // GET /admin/problems/:id — chi tiết đầy đủ để prefill form Edit, KHÁC
+  // problems.service.ts#findOne() (public, theo slug, cố tình bỏ
+  // hiddenTestCases) — admin cần thấy hết để sửa đúng.
+  async getProblemById(id: string) {
+    const problem = await this.prisma.problem.findUnique({
+      where: { id },
+      include: { tags: { include: { tag: true } } },
+    });
+    if (!problem) {
+      throw new NotFoundException('Không tìm thấy bài tập');
+    }
+    return problem;
+  }
+
   // Chặn admin tự đổi role/xoá chính mình — tránh tự khoá mình ra khỏi
   // Admin Dashboard (không có cách nào tự nâng quyền lại nếu lỡ tay).
   async updateUserRole(

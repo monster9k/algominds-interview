@@ -45,6 +45,14 @@ export class AdminController {
     return this.adminService.getProblems(query);
   }
 
+  // GET /admin/problems/:id — chi tiết đầy đủ (prefill form Edit). Khai báo
+  // TRƯỚC "contests" không quan trọng (path khác nhau), nhưng để cùng nhóm
+  // với getProblems ở trên cho dễ đọc.
+  @Get('problems/:id')
+  getProblemById(@Param('id') id: string) {
+    return this.adminService.getProblemById(id);
+  }
+
   // GET /admin/contests?page=&limit=&search=&sortBy=&sortDirection=
   @Get('contests')
   getContests(@Query() query: PaginationQuery) {

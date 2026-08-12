@@ -18,6 +18,7 @@ Claude Code đọc project memory từ `CLAUDE.md` ở **root repo** (`D:\algomi
 | `agents/nestjs-reviewer.md` | Subagent review code backend theo convention hiện có. Gọi qua Agent tool hoặc nhắc "dùng agent nestjs-reviewer review giúp". | Có |
 | `agents/feature-scaffolder.md` | Subagent dựng khung feature/module mới đúng pattern. | Có |
 | `skills/*/SKILL.md` | Các playbook nhiều bước, tái sử dụng, tự động được Claude nhận diện theo ngữ cảnh (hoặc gọi thủ công `/add-nestjs-module`...). | Có |
+| `skills/frontend-design/SKILL.md` | Ngoại lệ trong `skills/` — vendor **nguyên văn** từ skill chính thức `anthropics/claude-code` (không phải tự viết cho repo này). Quy trình thiết kế UI có chủ đích, tránh 3 kiểu "AI-generated look" mặc định. Gu thiết kế riêng của AlgoMinds (màu, font, pattern badge đã có) nằm ở `rules/design.md`, mục "Gu thiết kế". | Có |
 | `commands/check-phase-flow.md` | Slash command thủ công `/check-phase-flow <sessionId>` — tra nhanh trạng thái 1 session. | Có |
 
 ## Skills vs Agents vs Commands — khác nhau thế nào?

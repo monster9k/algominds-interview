@@ -34,7 +34,7 @@
 
 ## 🔴 P0 — Shared App Shell + Admin Dashboard (KPI cards + charts)
 
-- [ ] **FE: cài `recharts` + shadcn `tooltip.tsx`**
+- [x] **FE: cài `recharts` + shadcn `tooltip.tsx`**
   📍 `client/` — `npm install recharts`; thêm `client/src/components/ui/tooltip.tsx` (+ `@radix-ui/react-tooltip`), dùng cho label hover ở sidebar collapsed mode.
 
 - [ ] **FE: `sidebar-item-classes.ts` — tách helper dùng chung**

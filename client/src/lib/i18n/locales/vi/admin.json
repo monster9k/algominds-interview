@@ -67,7 +67,14 @@
     "fieldHiddenTestCases": "Hidden Test Cases (JSON, tuỳ chọn)",
     "jsonError": "1 trong các trường JSON không hợp lệ — kiểm tra lại cú pháp.",
     "deleteConfirmTitle": "Xoá bài tập này?",
-    "deleteConfirmDescription": "Bài tập sẽ bị ẩn khỏi danh sách công khai (soft delete), có thể khôi phục sau nếu cần."
+    "deleteConfirmDescription": "Bài tập sẽ bị ẩn khỏi danh sách công khai (soft delete), có thể khôi phục sau nếu cần.",
+    "bulkDeleteConfirmTitle": "Xoá {{count}} bài tập đã chọn?",
+    "selectAll": "Chọn tất cả",
+    "selectedCount": "Đã chọn {{count}} mục",
+    "filterDifficulty": "Độ khó",
+    "filterClear": "Xoá lọc",
+    "footerRange": "{{start}}-{{end}} trên {{total}}",
+    "rowsPerPage": "Số dòng/trang:"
   },
   "contests": {
     "title": "Quản lý Cuộc thi",

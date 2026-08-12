@@ -67,7 +67,14 @@
     "fieldHiddenTestCases": "Hidden Test Cases (JSON, optional)",
     "jsonError": "One of the JSON fields is invalid — check the syntax.",
     "deleteConfirmTitle": "Delete this problem?",
-    "deleteConfirmDescription": "The problem will be hidden from the public list (soft delete), recoverable later if needed."
+    "deleteConfirmDescription": "The problem will be hidden from the public list (soft delete), recoverable later if needed.",
+    "bulkDeleteConfirmTitle": "Delete {{count}} selected problems?",
+    "selectAll": "Select all",
+    "selectedCount": "{{count}} selected",
+    "filterDifficulty": "Difficulty",
+    "filterClear": "Clear",
+    "footerRange": "{{start}}-{{end}} of {{total}}",
+    "rowsPerPage": "Rows per page:"
   },
   "contests": {
     "title": "Manage Contests",

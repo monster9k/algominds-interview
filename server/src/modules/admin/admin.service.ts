@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, UserRole } from '@prisma/client';
+import { Difficulty, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { deriveContestStatus } from '../contest/contest.service';
 
@@ -13,6 +13,7 @@ export interface PaginationQuery {
   search?: string;
   sortBy?: string;
   sortDirection?: string;
+  difficulty?: string;
 }
 
 function parsePagination(query: PaginationQuery) {
@@ -81,6 +82,16 @@ export class AdminService {
     const where: Prisma.ProblemWhereInput = query.search
       ? { title: { contains: query.search, mode: 'insensitive' } }
       : {};
+
+    // difficulty=EASY,MEDIUM — dùng cho popover filter ở /admin/problems.
+    const validDifficulties = Object.values(Difficulty) as string[];
+    const difficulties = (query.difficulty ?? '')
+      .split(',')
+      .map((d) => d.trim().toUpperCase())
+      .filter((d) => validDifficulties.includes(d)) as Difficulty[];
+    if (difficulties.length > 0) {
+      where.difficulty = { in: difficulties };
+    }
 
     const sortable = ['title', 'difficulty', 'createdAt', 'displayId'];
     const sortBy = sortable.includes(query.sortBy ?? '')

@@ -17,6 +17,7 @@ export interface AdminListQuery {
   search?: string;
   sortBy?: string;
   sortDirection?: "asc" | "desc";
+  difficulty?: string;
 }
 
 export interface AdminUser {

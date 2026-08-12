@@ -67,7 +67,14 @@
     "fieldHiddenTestCases": "非公開テストケース (JSON, 任意)",
     "jsonError": "JSONフィールドのいずれかが無効です — 構文を確認してください。",
     "deleteConfirmTitle": "この問題を削除しますか？",
-    "deleteConfirmDescription": "問題は公開リストから非表示になります（論理削除）。必要に応じて後で復元できます。"
+    "deleteConfirmDescription": "問題は公開リストから非表示になります（論理削除）。必要に応じて後で復元できます。",
+    "bulkDeleteConfirmTitle": "選択した{{count}}件の問題を削除しますか？",
+    "selectAll": "すべて選択",
+    "selectedCount": "{{count}}件選択中",
+    "filterDifficulty": "難易度",
+    "filterClear": "クリア",
+    "footerRange": "{{total}}件中 {{start}}-{{end}}件",
+    "rowsPerPage": "表示件数:"
   },
   "contests": {
     "title": "コンテスト管理",

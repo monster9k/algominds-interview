@@ -52,7 +52,7 @@
 - [x] **FE: `top-bar.tsx` — top bar tối giản dùng chung admin/user**
   📍 `client/src/components/layout/top-bar.tsx` (mới) — hamburger (mobile, mở `IconSidebar` trong `Sheet`) + tên trang hiện tại (tra theo route active trong `items` truyền vào). Giữ chuông thông báo + coin-balance pill (tính năng thật đang chạy) ở góc phải cho biến thể user; biến thể admin không cần.
 
-- [ ] **FE: `app-shell.tsx` — compose `IconSidebar`+`TopBar`+`Outlet`**
+- [x] **FE: `app-shell.tsx` — compose `IconSidebar`+`TopBar`+`Outlet`**
   📍 `client/src/components/layout/app-shell.tsx` (mới) — nhận `items` khác nhau cho admin/user, đây là shell dùng chung duy nhất.
 
 - [ ] **FE: `admin-layout.tsx` đổi sang dùng `AppShell`**

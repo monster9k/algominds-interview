@@ -108,7 +108,7 @@ Quyết định đã chốt với user trước khi code: **`/admin/career` ch�
 - [x] **FE: `AdminSidebar` — thêm 5 menu item mới** (gộp cùng commit: thêm sẵn toàn bộ key i18n cho 5 trang P1 vào `admin.json` 3 locale, để các trang sau dùng ngay không phải sửa lại — verify parity 101 key khớp cả 3 locale)
   📍 `client/src/features/admin/components/admin-sidebar.tsx` — thêm Store (`/admin/store`), Discuss (`/admin/discuss`), Career (`/admin/career`), Quests (`/admin/quests`), Peer Interview (`/admin/peer-interview`) vào mảng `sidebarItems`, sau `Users`. Icon: `Lock`=Store, `MessageSquare`=Discuss, `Compass`=Career, `Swords`=Quests, `Handshake`=Peer Interview (mirror icon set của `dashboard-sidebar.tsx` khi trùng nghĩa, tránh trùng icon `Users` đã dùng cho menu "Người dùng").
 
-- [ ] **FE: trang `/admin/store` — data table**
+- [x] **FE: trang `/admin/store` — data table**
   📍 `admin-store-page.tsx` + `admin-store-table.tsx` — tái dùng `useStoreItems()` (`client/src/features/store/hooks/use-store-items.ts`, gọi `GET /store/items`), không viết API mới. Cột: ID, Tên, Danh mục (`Badge`, giá trị `ShopItemCategory`), Giá.
 
 - [ ] **FE: trang `/admin/discuss` — data table**

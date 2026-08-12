@@ -130,13 +130,111 @@ Quyết định đã chốt với user trước khi code: **`/admin/career` ch�
 
 ---
 
-## 🟢 P2 — Ngoài scope hiện tại
+## 🟢 P2 — CRUD thật, phân trang/sort/search, audit log, RBAC (`MODERATOR`)
 
-- [ ] Form Create/Update/Delete thật cho Problems/Contests/Users (hiện tại nút "Tạo mới" chỉ console.log theo đúng constraint round này).
-- [ ] Phân trang/sort/search cho các bảng admin (hiện `GET /admin/users`, `GET /problems`, `GET /contests` trả nguyên mảng, chưa cần thiết ở quy mô dữ liệu hiện tại).
-- [ ] Audit log hành động admin (ai sửa/xoá gì, khi nào) — chưa có tiền lệ `AdminActionLog` nào trong schema.
-- [ ] RBAC nhiều cấp hơn `USER`/`ADMIN` (vd `MODERATOR` chỉ duyệt discuss, không sửa problems).
-- [ ] Bảo vệ `/admin/*` ở tầng server-side/SSR — không áp dụng cho stack Vite CSR hiện tại, chỉ có thể chặn ở client (`AdminRoute`) + guard BE cho mọi API ghi (đã có).
+Quyết định đã chốt với user trước khi code:
+- Làm **cả 4 mục** (CRUD, pagination/search, audit log, RBAC) trong round này, không tách nhỏ hơn nữa.
+- **RBAC**: role mới `MODERATOR` chỉ có quyền duyệt/xoá bài **Discuss** — không đụng Problems/Contests/Users. Vào được `/admin` (thấy Dashboard + Discuss) nhưng bị chặn ở các trang admin khác.
+
+### Khảo sát kỹ thuật quan trọng cho P2 (ảnh hưởng thiết kế)
+
+- **`Contest` KHÔNG có `deletedAt`** (`schema.prisma:705-722`, khác `Problem`/`User`/`DiscussPost` đều có) — phải thêm field này qua migration mới để "Delete Contest" là soft-delete, tránh hard-delete cascade xoá mất `ContestProblem`/`ContestSubmission` (mất lịch sử thi thật).
+- **`User.deletedAt` đã có sẵn** (`schema.prisma:84`) và đã được `findByEmail`/`findOne` lọc (`users.service.ts:16-17,70`) nhưng **chưa từng được set** — chưa có hàm xoá user nào tồn tại, phải viết từ đầu. Thêm chặn tự-xoá/tự-hạ-quyền chính mình (so `targetId !== currentUser.userId`) để admin không tự khoá mình ra khỏi hệ thống.
+- **`DiscussPost.deletedAt`/`DiscussComment.deletedAt` đã có sẵn** (`schema.prisma:825,844`, đã lọc ở `discuss.service.ts:41,68,137,166`) nhưng cũng **chưa từng được set** — chưa có `DELETE /discuss/:id` nào. Route mới đặt trong `discuss.controller.ts` (đúng module, không phải `admin`), guard `@Roles('ADMIN', 'MODERATOR')` — `RolesGuard` đã hỗ trợ sẵn nhiều role trong 1 `@Roles(...)` (`roles.decorator.ts:3-4`), không cần sửa guard.
+- **`CreateProblemDto` thiếu field `functionName`** (`create-problem.dto.ts`) dù `Problem.functionName` không có logic tự suy ra từ `initialCode` — mọi problem tạo qua Admin UI trước giờ (không có, vì chưa có UI) sẽ luôn bị `functionName: "solution"` mặc định của Prisma nếu không sửa DTO, sai với hàm thật trong code → PistonService gọi nhầm hàm lúc chấm. Bug tiềm ẩn, fix bằng cách thêm `functionName?: string` vào DTO khi làm form Create.
+- **Slug tự sinh từ `title`** (`problems.service.ts:26`, `slugify(title, {lower:true, strict:true})`) — form Create/Update **không cần field slug**, chỉ cần `title`.
+- **Không có endpoint `GET /tags`** và **không có tiền lệ multi-select tag** trong repo — `create-post-dialog.tsx` (discuss) dùng input text đơn, tag cách nhau dấu phẩy, tự `.split(",")` thành `tagNames: string[]`, tag `connectOrCreate` theo `name` (service tự slugify). **Tái dùng nguyên pattern này** cho form Problem thay vì xây multi-select mới — nhất quán với duy nhất tiền lệ có sẵn, không thêm phức tạp không cần thiết.
+- **Contest hiện KHÔNG cho chọn tay từng problem** — `createContest` random-pick theo `problemCounts: {easy, medium, hard}` (`create-contest.dto.ts:11-23`, `contest.service.ts:162-209`). `ContestProblem` có field riêng `points`/`order` (`schema.prisma:726-738`) nên 1 UI "chọn tay + set points/order" sẽ là API + UI hoàn toàn mới, tách biệt khỏi cơ chế hiện tại. **Quyết định phạm vi**: form Create/Update Contest ở P2 dùng đúng cơ chế `problemCounts` random-pick sẵn có (title/description/thời gian + số lượng bài theo độ khó) — KHÔNG xây tính năng chọn tay problem (để P3 nếu cần, ghi chú lại).
+- **Không có `alert-dialog.tsx`/`pagination.tsx`/`checkbox.tsx` trong `components/ui/`** — xây `ConfirmDialog` dùng lại `dialog.tsx` sẵn có (Dialog + Cancel/Confirm button) thay vì thêm primitive shadcn mới; xây `AdminPagination` là component feature-scoped trong `features/admin/components/`, không phải shadcn primitive chung (mirror quyết định "không thêm Sidebar primitive" đã làm ở P0).
+- **Pagination/search KHÔNG áp lên `GET /problems`/`GET /contests` công khai** — 2 endpoint này đang được `ProblemsPage`/`ContestListPage` (trang user thật) tiêu thụ dưới dạng mảng phẳng, đổi response shape sẽ phá các trang đó. Thay vào đó xây **endpoint admin riêng có pagination**: `GET /admin/problems`, `GET /admin/contests` (mới) — đồng thời đây là cơ hội sửa đúng cột "Trạng thái" Problems đã ghi nhận là hạn chế ở P0 (do dùng chung `GET /problems` luôn filter `deletedAt: null`): endpoint admin mới này KHÔNG cần filter đó, trả `deletedAt` thật → cột "Trạng thái" hiển thị đúng Active/Deleted thay vì tĩnh "Hoạt động". `GET /admin/users` (đã có từ P0) chỉ cần bổ sung tham số `page/limit/search/sort` (thay đổi response shape từ mảng → `{data,total,page,limit}` — an toàn vì FE consumer duy nhất là `useAdminUsers()` do chính admin dashboard tự viết, sửa cả 2 phía cùng lúc).
+- **DB migration làm 1 lần cho cả 3 thay đổi schema** (`UserRole` thêm `MODERATOR`, `Contest.deletedAt`, model `AdminActionLog` mới) — áp dụng bằng `npx prisma db push` (đúng tiền lệ prototype model mới gần đây), tránh chạy `db push` nhiều lần rời rạc.
+
+### 🔴 P2a — Schema + BE nền tảng (làm trước, mọi task FE phụ thuộc)
+
+- [ ] **DB: `UserRole.MODERATOR` + `Contest.deletedAt` + model `AdminActionLog`**
+  📍 `server/prisma/schema.prisma`
+  ```prisma
+  enum UserRole {
+    USER
+    ADMIN
+    MODERATOR
+  }
+
+  model Contest {
+    // ...các field hiện có...
+    deletedAt DateTime? // Soft delete — mirror Problem/User
+  }
+
+  model AdminActionLog {
+    id        String   @id @default(uuid())
+    adminId   String
+    action    String   // "CREATE_PROBLEM" | "UPDATE_PROBLEM" | "DELETE_PROBLEM" | "CREATE_CONTEST" | "UPDATE_CONTEST" | "DELETE_CONTEST" | "UPDATE_USER_ROLE" | "DELETE_USER" | "DELETE_DISCUSS_POST"
+    targetType String  // "Problem" | "Contest" | "User" | "DiscussPost"
+    targetId  String
+    metadata  Json?    // vd { before, after } cho update
+    createdAt DateTime @default(now())
+
+    admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+    @@index([adminId])
+    @@index([targetType, targetId])
+    @@map("admin_action_logs")
+  }
+  ```
+  Thêm quan hệ ngược `User.adminActionLogs AdminActionLog[]`. Áp dụng `npx prisma db push` + `npx prisma generate`.
+
+- [ ] **BE: `AdminAuditService` — helper ghi log dùng chung**
+  📍 `server/src/modules/admin/admin-audit.service.ts` (mới) — 1 method `log(adminId, action, targetType, targetId, metadata?)` gọi `prisma.adminActionLog.create()`. Export qua `AdminModule`, import vào `ProblemsModule`/`ContestModule`/`DiscussModule` (hoặc gọi trực tiếp `PrismaService` — cân nhắc lúc code để tránh vòng phụ thuộc module, ưu tiên cách đơn giản nhất không tạo `forwardRef` mới).
+
+- [ ] **BE: `problems` — thêm Update/Delete + sửa `CreateProblemDto`**
+  📍 `problems.controller.ts` — `PATCH /problems/:id` (`UpdateProblemDto = PartialType(CreateProblemDto)`), `DELETE /problems/:id` (soft delete, set `deletedAt`), cả 2 guard `JwtAuthGuard + RolesGuard + @Roles('ADMIN')`, gọi `AdminAuditService.log()`.
+  📍 `create-problem.dto.ts` — thêm `functionName?: string` (fix bug tiềm ẩn đã ghi ở khảo sát).
+  📍 `problems.service.ts` — thêm `update()`/`softDelete()`.
+
+- [ ] **BE: `contest` — thêm Update/Delete**
+  📍 `contest.controller.ts` — `PATCH /contests/:id` (title/description/startTime/endTime/status — KHÔNG đổi problem đã gán), `DELETE /contests/:id` (soft delete qua `deletedAt` mới thêm), guard `ADMIN`, gọi audit log.
+  📍 `contest.service.ts` — thêm `update()`/`softDelete()`; `findAll()`/`findOne()` thêm `where: { deletedAt: null }` (hiện chưa filter vì field chưa tồn tại).
+
+- [ ] **BE: `admin` — `GET /admin/problems`, `GET /admin/contests` (paginated), mở rộng `GET /admin/users`**
+  📍 `admin.service.ts`/`admin.controller.ts` — 3 endpoint dùng chung shape response `{ data, total, page, limit }`:
+  - `GET /admin/problems?page=&limit=&search=&sortBy=&sortDirection=` — KHÔNG filter `deletedAt: null` mặc định (hoặc filter tuỳ query `includeDeleted`), select đủ `deletedAt` để FE hiển thị đúng Trạng thái.
+  - `GET /admin/contests?page=&limit=&search=&sortBy=&sortDirection=`.
+  - `GET /admin/users` mở rộng thêm param, đổi response shape sang `{data,total,page,limit}`.
+
+- [ ] **BE: `admin` — `PATCH /admin/users/:id/role`, `DELETE /admin/users/:id`**
+  📍 Cùng module — đổi role (nhận `role: UserRole` mới, validate qua DTO, chặn `targetId === currentUser.userId`), soft-delete user (set `deletedAt`, chặn tự xoá chính mình). Cả 2 gọi audit log.
+
+- [ ] **BE: `discuss` — `DELETE /discuss/:id` (moderation)**
+  📍 `discuss.controller.ts`/`discuss.service.ts` — soft-delete set `deletedAt`, guard `JwtAuthGuard + RolesGuard + @Roles('ADMIN', 'MODERATOR')`, gọi audit log với `targetType: "DiscussPost"`.
+
+- [ ] **BE: `admin` — `GET /admin/audit-log` (paginated)**
+  📍 Cùng module, `@Roles('ADMIN')` (không cho MODERATOR xem — nhạy cảm). Join `admin{id,name,email}`, trả `{data,total,page,limit}`.
+
+### 🟡 P2b — Frontend: component dùng chung, RBAC, CRUD 3 domain, moderation, audit log page
+
+- [ ] **FE: `ConfirmDialog` + `AdminPagination` component dùng chung**
+  📍 `client/src/features/admin/components/confirm-dialog.tsx` (dựa `dialog.tsx` sẵn có), `client/src/features/admin/components/admin-pagination.tsx` (prev/next + số trang, props `page/totalPages/onPageChange`).
+
+- [ ] **FE: RBAC — `AdminRoute` cho phép `MODERATOR`, chặn trang ngoài Discuss**
+  📍 `admin-route.tsx` — đổi điều kiện thành `role !== "ADMIN" && role !== "MODERATOR"` mới redirect. Thêm guard con mới `admin-only-route.tsx` (`role !== "ADMIN"` → `<Navigate to="/admin/discuss" />`) bọc riêng children Dashboard/Problems/Contests/Users/Store/Career/Quests/Peer-Interview/Audit-log trong `router-instance.tsx`; `discuss` route đứng ngoài, dùng chung `AdminRoute` thôi.
+  📍 `admin-sidebar.tsx` — nhận biết role hiện tại (`useAuthStore`), MODERATOR chỉ thấy Dashboard + Discuss.
+
+- [ ] **FE: `/admin/problems` — Create/Edit dialog + Delete + pagination/search**
+  📍 `admin-problems-page.tsx`/`admin-problems-table.tsx` — đổi sang `useAdminProblems({page,search,sort})` (hook mới, gọi `GET /admin/problems`), thêm ô search + `AdminPagination`, cột Trạng thái đổi sang đọc `deletedAt` thật (Active/Deleted). Nút "Tạo bài tập mới" mở `problem-form-dialog.tsx` (title/difficulty/content/functionName/timeLimitMs/memoryLimitMb/tags input phẩy, initialCode/sampleTestCases/hiddenTestCases dạng textarea JSON có validate parse trước khi submit) — dùng chung cho Create lẫn Edit. Nút Delete mỗi row mở `ConfirmDialog`.
+
+- [ ] **FE: `/admin/contests` — Create/Edit dialog + Delete + pagination/search**
+  📍 Tương tự — `useAdminContests(...)`, `contest-form-dialog.tsx` (title/description/startTime/endTime + `problemCounts.easy/medium/hard`, đúng cơ chế random-pick hiện có, KHÔNG chọn tay problem).
+
+- [ ] **FE: `/admin/users` — role change + Delete + pagination/search**
+  📍 `useAdminUsers({page,search,sort})` (sửa hook cũ theo response shape mới). Cột Role đổi Badge tĩnh thành `Select` đổi role trực tiếp (USER/ADMIN/MODERATOR) — disable ở chính row của admin đang đăng nhập (so `user.id === currentUser.userId`). Nút Delete mỗi row (trừ row chính mình) mở `ConfirmDialog`.
+
+- [ ] **FE: `/admin/discuss` — nút Delete (moderation), hiện cho cả ADMIN và MODERATOR**
+  📍 `admin-discuss-table.tsx` — thêm cột hành động, nút Delete mở `ConfirmDialog`, gọi hook mới `useDeleteDiscussPost()`.
+
+- [ ] **FE: trang mới `/admin/audit-log`**
+  📍 `admin-audit-log-page.tsx` + `admin-audit-log-table.tsx` — `useAdminAuditLog({page})`, cột Admin/Action/Target/Thời gian. Sidebar item mới, chỉ hiện với ADMIN.
+
+- [ ] **i18n**: thêm toàn bộ key mới cho form/dialog/pagination/role-select/audit-log 3 locale, verify parity như các round trước.
 
 ---
 

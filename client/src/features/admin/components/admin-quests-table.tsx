@@ -24,15 +24,15 @@ export function AdminQuestsTable() {
   const { data: quests, isLoading, isError } = useAdminQuests();
 
   return (
-    <div className="rounded-lg overflow-hidden border border-border">
+    <div className="rounded-2xl overflow-hidden border border-border">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b border-border/80">
-            <TableHead className="text-muted-foreground text-xs">{t("quests.columnId")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("quests.columnLanguage")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("quests.columnDifficulty")}</TableHead>
-            <TableHead className="text-center text-muted-foreground text-xs">{t("quests.columnBuggyLine")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("quests.columnStatus")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("quests.columnId")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("quests.columnLanguage")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("quests.columnDifficulty")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("quests.columnBuggyLine")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("quests.columnStatus")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

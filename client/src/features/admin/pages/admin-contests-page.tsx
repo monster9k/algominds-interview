@@ -48,7 +48,7 @@ export function AdminContestsPage() {
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          className="pl-9"
+          className="rounded-full pl-9"
           placeholder={t("common.search")}
           value={search}
           onChange={(e) => {

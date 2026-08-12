@@ -22,6 +22,7 @@ export function AdminPagination({ page, totalPages, onPageChange }: AdminPaginat
         <Button
           variant="outline"
           size="sm"
+          className="rounded-full"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
         >
@@ -31,6 +32,7 @@ export function AdminPagination({ page, totalPages, onPageChange }: AdminPaginat
         <Button
           variant="outline"
           size="sm"
+          className="rounded-full"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
         >

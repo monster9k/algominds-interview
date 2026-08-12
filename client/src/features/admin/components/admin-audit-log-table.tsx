@@ -33,14 +33,14 @@ export function AdminAuditLogTable({ entries, isLoading, isError }: AdminAuditLo
   const { t } = useTranslation("admin");
 
   return (
-    <div className="rounded-lg overflow-hidden border border-border">
+    <div className="rounded-2xl overflow-hidden border border-border">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b border-border/80">
-            <TableHead className="text-muted-foreground text-xs">{t("auditLog.columnAdmin")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("auditLog.columnAction")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("auditLog.columnTarget")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("auditLog.columnCreatedAt")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("auditLog.columnAdmin")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("auditLog.columnAction")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("auditLog.columnTarget")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("auditLog.columnCreatedAt")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

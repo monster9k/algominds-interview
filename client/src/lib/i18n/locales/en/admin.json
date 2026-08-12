@@ -78,7 +78,17 @@
     "statusOngoing": "Ongoing",
     "statusFinished": "Finished",
     "empty": "No contests yet.",
-    "loadError": "Failed to load contests."
+    "loadError": "Failed to load contests.",
+    "createTitle": "Create New Contest",
+    "editTitle": "Edit Contest",
+    "fieldTitle": "Title",
+    "fieldDescription": "Description",
+    "fieldStart": "Start",
+    "fieldEnd": "End",
+    "fieldProblemCounts": "Problem Count by Difficulty",
+    "problemCountsHint": "Problems are randomly picked from the bank by difficulty — manual per-problem selection isn't part of this round.",
+    "deleteConfirmTitle": "Delete this contest?",
+    "deleteConfirmDescription": "The contest will be hidden from the public list (soft delete); submission history is kept."
   },
   "users": {
     "title": "Manage Users",

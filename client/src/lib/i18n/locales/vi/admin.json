@@ -78,7 +78,17 @@
     "statusOngoing": "Đang diễn ra",
     "statusFinished": "Đã kết thúc",
     "empty": "Chưa có cuộc thi nào.",
-    "loadError": "Không tải được danh sách cuộc thi."
+    "loadError": "Không tải được danh sách cuộc thi.",
+    "createTitle": "Tạo cuộc thi mới",
+    "editTitle": "Sửa cuộc thi",
+    "fieldTitle": "Tiêu đề",
+    "fieldDescription": "Mô tả",
+    "fieldStart": "Bắt đầu",
+    "fieldEnd": "Kết thúc",
+    "fieldProblemCounts": "Số lượng bài theo độ khó",
+    "problemCountsHint": "Bài sẽ được chọn ngẫu nhiên từ ngân hàng đề theo độ khó — không chọn tay từng bài ở round này.",
+    "deleteConfirmTitle": "Xoá cuộc thi này?",
+    "deleteConfirmDescription": "Cuộc thi sẽ bị ẩn khỏi danh sách công khai (soft delete), lịch sử nộp bài vẫn được giữ lại."
   },
   "users": {
     "title": "Quản lý Người dùng",

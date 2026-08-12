@@ -9,6 +9,8 @@ import {
   AdminProblemListItem,
   AdminProblemDetail,
   ProblemFormPayload,
+  AdminContestListItem,
+  ContestFormPayload,
 } from "../types";
 
 export const adminApi = {
@@ -56,6 +58,28 @@ export const adminApi = {
 
   deleteProblem: async (id: string) => {
     const response = await api.delete(`/problems/${id}`);
+    return response.data;
+  },
+
+  getContests: async (
+    query: AdminListQuery,
+  ): Promise<PaginatedResponse<AdminContestListItem>> => {
+    const response = await api.get("/admin/contests", { params: query });
+    return response.data;
+  },
+
+  createContest: async (payload: ContestFormPayload) => {
+    const response = await api.post("/contests", payload);
+    return response.data;
+  },
+
+  updateContest: async (id: string, payload: Partial<ContestFormPayload>) => {
+    const response = await api.patch(`/contests/${id}`, payload);
+    return response.data;
+  },
+
+  deleteContest: async (id: string) => {
+    const response = await api.delete(`/contests/${id}`);
     return response.data;
   },
 };

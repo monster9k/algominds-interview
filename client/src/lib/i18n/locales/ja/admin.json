@@ -78,7 +78,17 @@
     "statusOngoing": "開催中",
     "statusFinished": "終了",
     "empty": "コンテストはまだありません。",
-    "loadError": "コンテスト一覧の読み込みに失敗しました。"
+    "loadError": "コンテスト一覧の読み込みに失敗しました。",
+    "createTitle": "新しいコンテストを作成",
+    "editTitle": "コンテストを編集",
+    "fieldTitle": "タイトル",
+    "fieldDescription": "説明",
+    "fieldStart": "開始日時",
+    "fieldEnd": "終了日時",
+    "fieldProblemCounts": "難易度別の問題数",
+    "problemCountsHint": "問題は難易度に応じて問題バンクからランダムに選ばれます — 今回は個別選択に対応していません。",
+    "deleteConfirmTitle": "このコンテストを削除しますか？",
+    "deleteConfirmDescription": "コンテストは公開リストから非表示になります（論理削除）。提出履歴は保持されます。"
   },
   "users": {
     "title": "ユーザー管理",

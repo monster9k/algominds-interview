@@ -123,9 +123,10 @@ Quyết định đã chốt với user trước khi code: **`/admin/career` ch�
 - [x] **FE: trang `/admin/peer-interview` — data table**
   📍 `admin-peer-interview-page.tsx` + `admin-peer-interview-table.tsx` — dùng hook mới `useAdminPeerInterviews()` (`admin-api.ts` thêm `getPeerInterviews()` → `GET /admin/peer-interviews`). Cột: ID, Candidate, Interviewer (hoặc "Đang chờ" nếu null), Bài tập, Trạng thái (`Badge`, theo `PeerSessionStatus`), Bắt đầu lúc.
 
-- [ ] **FE: đăng ký 5 route mới + i18n**
+- [x] **FE: đăng ký 5 route mới**
   📍 `client/src/app/router-instance.tsx` — thêm 5 route con vào children của `/admin` (`store`, `discuss`, `career`, `quests`, `peer-interview`).
-  📍 `client/src/lib/i18n/locales/{vi,en,ja}/admin.json` — thêm namespace con `sidebar.store/discuss/career/quests/peerInterview` + `store{}`/`discuss{}`/`career{}`/`quests{}`/`peerInterview{}` (title, cột, empty, loadError, status label nếu có). Verify lại parity 3 locale bằng script flatten (như đã làm ở P0) trước khi tick.
+
+- [x] **i18n P1**: `sidebar.store/discuss/career/quests/peerInterview` + `store{}`/`discuss{}`/`career{}`/`quests{}`/`peerInterview{}` đã thêm sẵn ở commit sidebar (101 key khớp cả 3 locale) — verify lại lần cuối sau khi toàn bộ trang P1 đã dùng key thật.
 
 ---
 

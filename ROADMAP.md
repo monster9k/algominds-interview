@@ -126,7 +126,7 @@ Quyết định đã chốt với user trước khi code: **`/admin/career` ch�
 - [x] **FE: đăng ký 5 route mới**
   📍 `client/src/app/router-instance.tsx` — thêm 5 route con vào children của `/admin` (`store`, `discuss`, `career`, `quests`, `peer-interview`).
 
-- [x] **i18n P1**: `sidebar.store/discuss/career/quests/peerInterview` + `store{}`/`discuss{}`/`career{}`/`quests{}`/`peerInterview{}` đã thêm sẵn ở commit sidebar (101 key khớp cả 3 locale) — verify lại lần cuối sau khi toàn bộ trang P1 đã dùng key thật.
+- [x] **i18n P1**: `sidebar.store/discuss/career/quests/peerInterview` + `store{}`/`discuss{}`/`career{}`/`quests{}`/`peerInterview{}` đã thêm sẵn ở commit sidebar. Verify cuối cùng sau khi toàn bộ 5 trang đã build xong: 101 key khớp cả 3 locale (script flatten), test end-to-end qua browser thật cho cả 5 trang (`store`/`discuss`/`career`/`quests`/`peer-interview`) — render đúng dữ liệu thật, không lỗi console, empty state hoạt động đúng (`peer-interview` chưa có data trong DB dev).
 
 ---
 

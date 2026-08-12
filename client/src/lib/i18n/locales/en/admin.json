@@ -1,4 +1,18 @@
 {
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {{page}}/{{totalPages}}",
+    "search": "Search...",
+    "save": "Save",
+    "saving": "Saving...",
+    "create": "Create",
+    "creating": "Creating...",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
   "sidebar": {
     "dashboard": "Dashboard",
     "problems": "Problems",

@@ -1,4 +1,18 @@
 {
+  "common": {
+    "cancel": "Huỷ",
+    "confirm": "Xác nhận",
+    "previous": "Trước",
+    "next": "Sau",
+    "pageOf": "Trang {{page}}/{{totalPages}}",
+    "search": "Tìm kiếm...",
+    "save": "Lưu",
+    "saving": "Đang lưu...",
+    "create": "Tạo",
+    "creating": "Đang tạo...",
+    "edit": "Sửa",
+    "delete": "Xoá"
+  },
   "sidebar": {
     "dashboard": "Tổng quan",
     "problems": "Bài tập",

@@ -212,7 +212,7 @@ Quyết định đã chốt với user trước khi code:
 
 ### 🟡 P2b — Frontend: component dùng chung, RBAC, CRUD 3 domain, moderation, audit log page
 
-- [ ] **FE: `ConfirmDialog` + `AdminPagination` component dùng chung**
+- [x] **FE: `ConfirmDialog` + `AdminPagination` component dùng chung**
   📍 `client/src/features/admin/components/confirm-dialog.tsx` (dựa `dialog.tsx` sẵn có), `client/src/features/admin/components/admin-pagination.tsx` (prev/next + số trang, props `page/totalPages/onPageChange`).
 
 - [ ] **FE: RBAC — `AdminRoute` cho phép `MODERATOR`, chặn trang ngoài Discuss**

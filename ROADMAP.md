@@ -68,7 +68,7 @@
   - Recent Activity: tái dùng thẳng `GET /admin/audit-log?limit=5` có sẵn, không cần route mới.
   - Verify: `auth.service.spec.ts` + `judge.service.spec.ts` (24 test) vẫn pass; curl với JWT admin xác nhận cả 4 endpoint mới trả dữ liệu thật đúng shape (`totalSessions:28, completionRate:60.7`, time-series 7 bucket, breakdown 3 status, acceptance 3 difficulty, top 5 company).
 
-- [ ] **FE: `admin-api.ts` + hooks mới cho dashboard**
+- [x] **FE: `admin-api.ts` + hooks mới cho dashboard**
   📍 `client/src/features/admin/api/admin-api.ts` + `hooks/use-admin-sessions-timeseries.ts`, `use-admin-session-status.ts`, `use-admin-acceptance-by-difficulty.ts`, `use-admin-top-companies.ts` (TanStack Query, mirror `use-admin-stats.ts`).
 
 - [ ] **FE: rebuild `admin-dashboard-page.tsx` — KPI cards + charts theo tỉ lệ ảnh mẫu**

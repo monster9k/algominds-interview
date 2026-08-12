@@ -1,7 +1,43 @@
 export interface AdminStats {
   totalUsers: number;
+  totalUsersDeltaPct: number;
   totalProblems: number;
+  totalSessions: number;
+  totalSessionsDeltaPct: number;
   totalSubmissions: number;
+  totalSubmissionsDeltaPct: number;
+  completionRate: number;
+  completionRateDeltaPct: number;
+}
+
+export type SessionsTimeseriesRange = "1W" | "1M" | "3M" | "ALL";
+
+export interface SessionsTimeseriesPoint {
+  date: string;
+  count: number;
+}
+
+export type SessionStatusValue =
+  | "PHASE_1_STRATEGY"
+  | "PHASE_2_IMPLEMENT"
+  | "COMPLETED"
+  | "ABANDONED";
+
+export interface SessionStatusBreakdownItem {
+  status: SessionStatusValue;
+  count: number;
+}
+
+export interface AcceptanceByDifficultyItem {
+  difficulty: ProblemDifficulty;
+  acceptanceRate: number;
+}
+
+export interface TopCompanyItem {
+  id: string;
+  name: string;
+  slug: string;
+  count: number;
 }
 
 export interface PaginatedResponse<T> {

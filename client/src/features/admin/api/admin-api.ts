@@ -12,11 +12,40 @@ import {
   AdminContestListItem,
   ContestFormPayload,
   AdminAuditLogEntry,
+  SessionsTimeseriesRange,
+  SessionsTimeseriesPoint,
+  SessionStatusBreakdownItem,
+  AcceptanceByDifficultyItem,
+  TopCompanyItem,
 } from "../types";
 
 export const adminApi = {
   getStats: async (): Promise<AdminStats> => {
     const response = await api.get("/admin/stats");
+    return response.data;
+  },
+
+  getSessionsTimeseries: async (
+    range: SessionsTimeseriesRange,
+  ): Promise<SessionsTimeseriesPoint[]> => {
+    const response = await api.get("/admin/stats/sessions-timeseries", {
+      params: { range },
+    });
+    return response.data;
+  },
+
+  getSessionStatusBreakdown: async (): Promise<SessionStatusBreakdownItem[]> => {
+    const response = await api.get("/admin/stats/session-status");
+    return response.data;
+  },
+
+  getAcceptanceByDifficulty: async (): Promise<AcceptanceByDifficultyItem[]> => {
+    const response = await api.get("/admin/stats/acceptance-by-difficulty");
+    return response.data;
+  },
+
+  getTopCompanies: async (): Promise<TopCompanyItem[]> => {
+    const response = await api.get("/admin/stats/top-companies");
     return response.data;
   },
 

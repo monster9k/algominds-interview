@@ -1,0 +1,61 @@
+{
+  "title": "Discuss",
+  "loadError": "Could not load discuss data.",
+  "empty": "No posts yet.",
+  "backToList": "Back to discuss",
+  "viewCount": "{{count}} views",
+  "copyLink": "Copy link",
+  "linkCopied": "Post link copied",
+  "filter": {
+    "all": "All"
+  },
+  "sort": {
+    "newest": "Newest",
+    "mostViewed": "Most viewed",
+    "mostUpvoted": "Most upvoted"
+  },
+  "createPost": {
+    "trigger": "Create Post",
+    "title": "Create a new post",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Enter a title...",
+    "contentLabel": "Content",
+    "contentPlaceholder": "Share your question or experience...",
+    "tagsLabel": "Tags (comma-separated)",
+    "tagsPlaceholder": "e.g. Algorithms, C++",
+    "linkedToProblem": "This post will be linked to problem: {{title}}",
+    "problemLabel": "Link to a problem (optional)",
+    "problemPlaceholder": "Pick a problem",
+    "noProblem": "No problem",
+    "submit": "Post"
+  },
+  "sidebar": {
+    "trendingTags": "Trending Topics",
+    "noTags": "No topics yet.",
+    "topContributors": "Top Contributors",
+    "noContributors": "No contributors yet.",
+    "points": "{{count}} pts",
+    "rules": {
+      "title": "COMMUNITY GUIDELINES",
+      "items": [
+        "Be respectful to other members.",
+        "Format code clearly (use markdown).",
+        "Search before asking a new question."
+      ]
+    }
+  },
+  "comments": {
+    "title": "{{count}} comments",
+    "placeholder": "Write your comment...",
+    "submit": "Post comment",
+    "empty": "No comments yet — be the first!"
+  },
+  "time": {
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
+    "monthsAgo": "{{count}}mo ago",
+    "yearsAgo": "{{count}}y ago"
+  }
+}

@@ -24,6 +24,8 @@ import { CareerJourneyPage } from "@/features/career/pages/career-journey-page";
 import { EventLeaderboardPage } from "@/features/career/pages/event-leaderboard-page";
 import { PeerInterviewLobbyPage } from "@/features/peer-interview/pages/peer-interview-lobby-page";
 import { PeerInterviewRoomPage } from "@/features/peer-interview/pages/peer-interview-room-page";
+import { DiscussListPage } from "@/features/discuss/pages/discuss-list-page";
+import { DiscussPostPage } from "@/features/discuss/pages/discuss-post-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { GoogleCallbackPage } from "@/features/auth/pages/google-callback-page";
 
@@ -57,6 +59,8 @@ export const router = createBrowserRouter([
       { path: "career", element: <CareerJourneyPage /> },
       { path: "career/events/:eventId/leaderboard", element: <EventLeaderboardPage /> },
       { path: "peer-interview", element: <PeerInterviewLobbyPage /> },
+      { path: "discuss", element: <DiscussListPage /> },
+      { path: "discuss/:postId", element: <DiscussPostPage /> },
       { path: "profile", element: <ProfilePage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "dashboard", element: <Navigate to="/problems" replace /> },

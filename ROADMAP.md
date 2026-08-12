@@ -1,134 +1,168 @@
-# 🗺️ AlgoMinds — Roadmap: Store (Cửa Hàng — xu & vật phẩm cosmetic)
+# 🗺️ AlgoMinds — Roadmap: Thảo luận (Discuss) — forum kiểu LeetCode
 
-> Bản roadmap trước (Contest v2: nộp bài thật qua Piston, admin tạo contest random, redesign UI) đã hoàn thành 100% ở P0/P1 và merge vào `main` — xem lịch sử git (commit cuối chỉnh sửa: `5fabde5`) nếu cần tham chiếu lại nội dung cũ. P2 của bản đó (Admin Panel UI, chế độ luyện tập FINISHED, roster đăng ký, AI evaluation cho contest) vẫn còn treo nhưng nằm ngoài scope hiện tại — không đụng tới trong roadmap này.
-> Bản này thay thế nó. Lý do: mục "Cửa Hàng" trên nav header đã có sẵn label (`nav.store` trong `common.json`) nhưng `href: "#"` — placeholder chết y hệt kiểu `nav.contest` từng bị trước khi fix. Yêu cầu sản phẩm: mỗi ngày đăng nhập nhận 1 xu, hoàn thành bài tập nhận thêm xu, xu dùng để đổi vật phẩm cosmetic (khung avatar, danh hiệu, màu badge — chưa cần asset ảnh thật). Đây là tính năng from-scratch hoàn toàn: không có model `Item`/`Shop`/`Inventory` nào tồn tại, `UserStats.credits` hiện có là quota chat AI (bị trừ dần khi nhắn tin) — đã có quyết định sản phẩm trước đó (comment ở `schema.prisma:310-312`, trên `UserPersonaUnlock`) là **không đụng vào field này** khi làm tính năng kiểu Store, nên phải thêm field/model mới hoàn toàn.
+> Bản roadmap trước (Store: xu & vật phẩm cosmetic) đã hoàn thành 100% ở P0/P1 và merge vào `main` — xem lịch sử git (commit cuối chỉnh sửa: `1d190a3`) nếu cần tham chiếu lại nội dung cũ. P2 của bản đó (item ảnh thật, streak bonus, leaderboard giàu nhất, Admin UI catalog) vẫn còn treo nhưng nằm ngoài scope hiện tại — không đụng tới trong roadmap này.
+> Bản này thay thế nó. Tính năng hoàn toàn mới, chưa có gì tồn tại (đã grep xác nhận: không có model `Post`/`Comment`/`Vote`/`Discuss` nào trong `schema.prisma`, không có module backend, không có feature folder frontend). Nav header đã có sẵn label `nav.discuss` ("Thảo luận") nhưng `href: "#"` — placeholder chết giống hệt kiểu `nav.store`/`nav.contest` từng bị trước khi được xây (`client/src/components/layout/dashboard-header.tsx:15`).
+>
+> Yêu cầu sản phẩm:
+> 1. **UI trang `/discuss`**: theo đúng mockup user gửi — header "Thảo luận" + nút Lọc/Mới nhất + nút "TẠO BÀI VIẾT MỚI" nổi bật; list bài viết dạng card (avatar, tên, thời gian, tiêu đề, excerpt, tag pill, view/comment/upvote count); sidebar phải: "Chủ đề Nổi Bật" (tag cloud), "Đóng Góp Nổi Bật" (leaderboard), "Quy định cộng đồng". **Giữ nguyên theme màu** — mockup vốn đã dùng đúng tông màu nền tối + accent đỏ/hồng của app hiện tại, chỉ map đúng token màu sẵn có (`primary`, `emerald-500`, `muted`...), không bịa màu mới.
+> 2. **Không chỉ 1 trang riêng** — mỗi bài toán (problem) trong lúc làm bài phải có tab "Thảo luận" riêng, đúng kiểu tab Discuss của LeetCode thật, lọc theo đúng problem đó.
 
 ## Cách đọc file này
-- `🔴 P0` — Lõi bắt buộc: schema DB (xu + vật phẩm), thưởng xu đăng nhập hàng ngày (auth hook), thưởng xu khi giải bài (judge hook, kèm fix farm-bug bắt buộc), module `store` (BE: xem catalog/túi đồ/mua), seed data, FE route + nav + trang Store cơ bản (xem + mua).
-- `🟡 P1` — Hoàn thiện: equip/unequip UI, chip số dư xu ở header, toast thưởng xu, i18n đầy đủ 3 ngôn ngữ, test suite (`auth`, `judge`, `store`).
-- `🟢 P2` — Mở rộng (ngoài scope hiện tại, ghi lại để làm sau): item có ảnh thật thay icon/màu, streak-based bonus xu, leaderboard "giàu nhất", Admin UI quản lý catalog item.
+- `🔴 P0` — Lõi bắt buộc: schema DB (post/comment/vote/tag), module backend `discuss`, seed data, FE route + nav + trang `/discuss` cơ bản (list + tạo bài + vote), tab "Thảo luận" gắn trong problem panel.
+- `🟡 P1` — Hoàn thiện: sidebar widget nối API thật (trending tags/top contributors), view count, i18n đầy đủ 3 ngôn ngữ, test suite (`discuss`).
+- `🟢 P2` — Mở rộng (ngoài scope hiện tại, ghi lại để làm sau): reply lồng nhau + vote comment, report/flag + duyệt admin, sửa/xoá bài, markdown editor có preview, thông báo real-time, dedupe view count.
 - Mỗi task ghi **vị trí code** liên quan để bắt tay vào làm ngay.
-- **Lưu ý thứ tự bắt buộc**: task DB schema (P0, mục đầu tiên) phải xong trước mọi task BE khác. Task "thưởng xu khi giải bài" ở `judge.service.ts` bắt buộc kèm fix farm-bug (check đã từng ACCEPTED bài này chưa) trong cùng 1 commit — không tách riêng, vì nếu thưởng xu mà không fix thì user farm xu vô hạn bằng resubmit.
+- **Lưu ý thứ tự bắt buộc**: task DB schema (P0, mục đầu tiên) phải xong trước mọi task BE khác. Task "tab Discuss trong problem panel" phụ thuộc feature folder `discuss` (hooks/components) đã có từ task FE ngay trước đó trong P0 — làm sau cùng trong P0.
 
 ---
 
-## 🔴 P0 — Xu (coins) + vật phẩm cosmetic + trang Store cơ bản
+## Khảo sát kỹ thuật quan trọng (ảnh hưởng thiết kế)
 
-- [x] **DB: thêm field xu + model vật phẩm**
-  📍 `server/prisma/schema.prisma`.
-  - `UserStats` thêm `coins Int @default(0)` và `lastDailyRewardAt DateTime?` (ngày cuối đã claim xu điểm danh, so theo **ngày UTC**).
-  - Model mới:
-    ```prisma
-    enum ShopItemCategory {
-      AVATAR_FRAME
-      TITLE
-      BADGE_COLOR
-    }
+- **Quy ước Prisma**: `id String @id @default(uuid())`, `@@map snake_case`, many-to-many qua bảng trung gian kiểu `ProblemTag` (`problemId`/`tagId`, `@@id([...])`) — tái dùng y hệt cho tag bài viết. Chưa có tiền lệ vote/upvote nào trong schema — đây sẽ là tính năng đầu tiên, dùng pattern đếm denormalize (`upvoteCount Int @default(0)` như `Problem.submitCount`) + bảng join `@@unique([userId, postId])` kiểu `UserItem` để chống vote 2 lần (dùng 2 bảng vote riêng cho post/comment thay vì 1 bảng union — tránh bẫy NULL không unique của Postgres khi 1 cột FK nullable).
+- **`Tag` model có sẵn** (`schema.prisma:189`) dùng cho Problem — tái sử dụng nguyên model này cho tag bài thảo luận qua bảng trung gian mới `DiscussPostTag`, không tạo model tag riêng.
+- **Guard pattern**: `OptionalJwtAuthGuard` (`server/src/modules/auth/optional-jwt-auth.guard.ts`) cho các API đọc (khách vãng lai cũng xem được list/detail — đúng kiểu LeetCode Discuss công khai), `JwtAuthGuard` cho API ghi (tạo bài/comment/vote). **Quan trọng**: `DashboardLayout` không tự chặn route theo auth — chỉ có axios interceptor tự redirect `/auth/login` khi API trả 401 (`client/src/lib/axios.ts:97`), nên nếu lỡ gắn `JwtAuthGuard` vào endpoint GET list, khách chưa đăng nhập vào `/discuss` sẽ bị văng thẳng ra trang login — **bắt buộc dùng `OptionalJwtAuthGuard` cho mọi GET**.
+- **Leaderboard/groupBy pattern** đã có sẵn ở `quest.service.ts:275-307` (`prisma.questAttempt.groupBy` + `orderBy: { _max: { score: 'desc' } }` + enrich N+1) — tái dùng y hệt cho "Đóng góp nổi bật" (groupBy theo `authorId`, sắp theo tổng upvote nhận được) và "Chủ đề nổi bật" (groupBy theo `tagId` trên `DiscussPostTag`, sắp theo số bài).
+- **Tab bài toán**: `client/src/features/interview/components/problem-panel.tsx` đã có sẵn 2 tab "coming soon" (`editorial`, `solutions`) làm khuôn mẫu y hệt cho việc thêm tab `discuss` mới. `Problem` type dùng ở trang này (`problem-panel/types.ts`) **không có field `id`** — phải lấy problem id qua prop mới `problemId` (nguồn: `session.problemId` đã có sẵn trong `interview-room.tsx`), không sửa `Problem` type.
+- **Thiếu 1 shadcn primitive**: `client/src/components/ui/textarea.tsx` chưa tồn tại — cần thêm (theo đúng style các file `ui/*.tsx` khác) để làm ô nhập nội dung bài viết/comment.
 
-    model ShopItem {
-      id          String           @id @default(uuid())
-      key         String           @unique
-      name        String
-      description String
-      category    ShopItemCategory
-      price       Int
-      iconKey     String           // lucide icon name hoặc mã màu, FE tự map — không lưu ảnh
-      createdAt   DateTime         @default(now())
-      users UserItem[]
-      @@map("shop_items")
-    }
+---
 
-    model UserItem {
-      id          String   @id @default(uuid())
-      userId      String
-      itemId      String
-      purchasedAt DateTime @default(now())
-      equipped    Boolean  @default(false)
-      user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-      item ShopItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
-      @@unique([userId, itemId])
-      @@map("user_items")
-    }
-    ```
-  - Thêm `userItems UserItem[]` vào `User` model.
-  - "Equip theo category" (chỉ 1 item equipped/category) xử lý ở service layer, không ép bằng DB constraint.
-  - Áp dụng bằng `npx prisma db push` (đúng convention prototype repo đang dùng cho model mới, xem tiền lệ `ContestSubmission`), sau đó `npx prisma generate`.
+## 🔴 P0 — Schema, module `discuss` backend, trang `/discuss` cơ bản, tab Discuss trong problem
 
-- [x] **BE: xu điểm danh hàng ngày (daily login)**
-  📍 `server/src/modules/users/users.service.ts` — thêm `recordDailyLogin(userId)`: so `UserStats.lastDailyRewardAt` (phần ngày UTC) với hôm nay; khác/null → `upsert` `coins: { increment: 1 }`, `lastDailyRewardAt: new Date()`, trả `{ awarded, coins }`; cùng ngày → no-op, trả `{ awarded: false }`.
-  📍 `server/src/modules/auth/auth.service.ts` — gọi `usersService.recordDailyLogin(user.id)`:
-  - Trong `login()` (email/password), trước khi return token.
-  - Trong `validateGoogleUser()` nhánh **user đã tồn tại** (hiện chỉ `return user`).
-  - **Không** gọi trong `refreshTokens()` — không phải hành vi "đăng nhập" thật, chạy tự động/lặp lại nhiều lần/ngày.
-  - `auth.service.spec.ts` (test suite sẵn có, phải giữ pass): mock `usersService.recordDailyLogin`, assert gọi đúng 1 lần ở `login()` và nhánh existing-user của Google OAuth.
+- [x] **DB: schema bài viết/comment/vote/tag**
+  📍 `server/prisma/schema.prisma`
+  ```prisma
+  model DiscussPost {
+    id           String    @id @default(uuid())
+    authorId     String
+    problemId    String?   // null = thảo luận chung, có giá trị = gắn 1 bài toán cụ thể
+    title        String
+    content      String    // markdown thô, render ở FE
+    viewCount    Int       @default(0)
+    upvoteCount  Int       @default(0)
+    commentCount Int       @default(0)
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @updatedAt
+    deletedAt    DateTime?
 
-- [x] **BE: xu khi giải bài đúng (kèm fix farm-bug bắt buộc)**
-  📍 `server/src/modules/judge/judge.service.ts`, trong `$transaction` của `submitCode()` (dòng ~110-160).
-  - Trước khi tạo `savedSubmission`: query `tx.submission.findFirst({ where: { status: 'ACCEPTED', session: { userId, problemId: session.problemId } } })` → `hasSolvedBefore`.
-  - Nhánh `finalStatus === ACCEPTED`: luôn cộng `coins: { increment: COINS_BY_DIFFICULTY[session.problem.difficulty] }` (hằng số mới, ví dụ Easy 10 / Medium 20 / Hard 30 — thang riêng, không trùng `POINTS_BY_DIFFICULTY` của contest); chỉ cộng `totalSolved: { increment: 1 }` khi `!hasSolvedBefore` (đây là chỗ tiện fix luôn farm-bug cũ của `totalSolved` — dùng chung 1 query, ghi rõ trong commit message đây là side-effect cần thiết, không phải dọn dẹp ngoài phạm vi).
-  - Trả thêm `coinsAwarded` (0 nếu đã giải trước đó) trong response `submitCode()`.
-  - `judge.service.spec.ts`: thêm test "đã ACCEPTED bài này trước đó → không cộng coins/totalSolved lần 2", "ACCEPTED lần đầu → cộng đúng coins theo difficulty".
+    author   User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    problem  Problem?         @relation(fields: [problemId], references: [id], onDelete: SetNull)
+    tags     DiscussPostTag[]
+    comments DiscussComment[]
+    votes    DiscussPostVote[]
 
-- [x] **BE: module `store` mới (catalog, túi đồ, mua)**
-  📍 `server/src/modules/store/` (`store.module.ts`, `store.controller.ts`, `store.service.ts`, `dto/`), tham khảo `quest` module cho awarding-pattern, `problems` module cho pattern guard.
+    @@map("discuss_posts")
+  }
+
+  model DiscussComment {
+    id        String    @id @default(uuid())
+    postId    String
+    authorId  String
+    content   String
+    createdAt DateTime  @default(now())
+    deletedAt DateTime?
+
+    post   DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+    author User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+    @@map("discuss_comments")
+  }
+
+  model DiscussPostVote {
+    id        String   @id @default(uuid())
+    userId    String
+    postId    String
+    createdAt DateTime @default(now())
+
+    user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    post DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, postId])
+    @@map("discuss_post_votes")
+  }
+
+  model DiscussPostTag {
+    postId String
+    tagId  String
+
+    post DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+    tag  Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+    @@id([postId, tagId])
+    @@map("discuss_post_tags")
+  }
   ```
-  GET  /store/items               OptionalJwtAuthGuard   → catalog + owned/equipped flag nếu có user
-  GET  /store/inventory           JwtAuthGuard           → item đã mua của tôi
-  POST /store/purchase/:itemId    JwtAuthGuard           → mua item
+  Thêm quan hệ ngược: `Tag.discussPosts DiscussPostTag[]`, `Problem.discussPosts DiscussPost[]`, `User.discussPosts/discussComments/discussPostVotes`.
+  P0 **cố tình chưa làm reply lồng nhau / vote comment** (giữ comment phẳng, không vote) — để P2, đúng tinh thần "core trước, polish sau" đã áp dụng ở roadmap Store.
+  Áp dụng bằng `npx prisma db push` (theo đúng tiền lệ prototype các model mới gần đây), sau đó `npx prisma generate`.
+
+- [x] **FE: thêm `Textarea` primitive còn thiếu**
+  📍 `client/src/components/ui/textarea.tsx` — theo đúng style các file `ui/*.tsx` khác (`input.tsx` làm mẫu), cần cho ô nhập nội dung bài viết/comment.
+
+- [x] **BE: module `discuss` mới**
+  📍 `server/src/modules/discuss/` (`discuss.module.ts`, `discuss.controller.ts`, `discuss.service.ts`, `dto/`), tham khảo `store` module (routing đơn giản) + `quest.service.ts` (groupBy leaderboard) + `problems.service.ts` (`findAll` với filter động qua `Prisma.XWhereInput`).
   ```
-  `purchaseItem(userId, itemId)`: `$transaction` — check `UserStats.coins >= item.price`, check chưa sở hữu (`UserItem` unique constraint), `coins: { decrement: price }`, `userItem.create`. `ConflictException` nếu đã sở hữu, `BadRequestException` nếu không đủ xu.
-  Không đổi shape lớn của `GET /users/me` — chỉ thêm `coins` vào `UserStats` select sẵn có.
+  GET  /discuss                    OptionalJwtAuthGuard   → list bài viết, query: problemId?, tag?, sort? (newest|mostViewed|mostUpvoted), search?
+  GET  /discuss/:id                OptionalJwtAuthGuard   → chi tiết bài + comments, tăng viewCount (throttle theo session/IP đơn giản hoặc bỏ qua nếu phức tạp — ghi rõ giới hạn trong code comment)
+  POST /discuss                    JwtAuthGuard           → tạo bài (title, content, tagIds[], problemId?)
+  POST /discuss/:id/comments       JwtAuthGuard           → tạo comment
+  POST /discuss/:id/vote           JwtAuthGuard           → toggle upvote (tạo/xoá row `DiscussPostVote`, `$transaction` cập nhật `upvoteCount`)
+  GET  /discuss/tags/trending      OptionalJwtAuthGuard   → top tag theo số bài (groupBy DiscussPostTag)
+  GET  /discuss/contributors/top   OptionalJwtAuthGuard   → top user theo tổng upvote nhận được (groupBy DiscussPost.authorId, sum upvoteCount)
+  ```
+  `createComment`: `$transaction` tăng `commentCount` trên post. `toggleVote`: `$transaction` tìm/tạo/xoá `DiscussPostVote` + tăng/giảm `upvoteCount` (mirror pattern `store.service.ts purchaseItem` dùng `$transaction`).
 
-- [x] **BE: seed data vật phẩm**
-  📍 `server/seed-shop-items.ts` (root, mirror `seed-badges.ts`) — catalog ~6-8 item cosmetic (2-3 khung avatar, 2-3 danh hiệu, 2-3 màu badge), giá xu khác nhau theo độ hiếm, `upsert` theo `key`. Không wire vào `package.json`, chạy tay `npx ts-node seed-shop-items.ts`.
+- [x] **BE: seed data**
+  📍 `server/seed-discuss.ts` (root, mirror `seed-shop-items.ts`) — vài bài viết mẫu (có bài gắn `problemId`, có bài không), vài tag tái dùng từ `Tag` có sẵn hoặc thêm mới (`Algorithms`, `System Design`, `Career Advice`...), vài comment mẫu.
 
-- [x] **FE: feature folder `store` + route + nav**
-  📍 `client/src/features/store/` mirror cấu trúc `quest/` (`api/hooks/components/pages/types`):
-  - `api/store-api.ts`: `getItems`, `getInventory`, `purchaseItem`.
-  - `hooks/use-store-items.ts`, `use-my-inventory.ts` (pattern `enabled: !isAuthLoading && isAuthenticated` từ `use-user-profile.ts`), `use-purchase-item.ts` (mutation, toast, invalidate `["store-items"]`/`["store-inventory"]`/`["user-profile"]`).
-  - `components/store-item-card.tsx`, `store-category-tabs.tsx`.
-  - `pages/store-page.tsx`: 2 tab "Cửa hàng"/"Túi đồ" (Tabs shadcn).
+- [x] **FE: feature folder `discuss` + route + nav**
+  📍 `client/src/features/discuss/` mirror cấu trúc `store/`/`quest/` (`api/hooks/components/pages/types`):
+  - `api/discuss-api.ts`: `getPosts(filters)`, `getPost(id)`, `createPost(dto)`, `createComment(postId, dto)`, `toggleUpvote(postId)`, `getTrendingTags()`, `getTopContributors()`.
+  - `hooks/`: `use-discuss-posts.ts`, `use-discuss-post.ts`, `use-create-post.ts`, `use-create-comment.ts`, `use-toggle-upvote.ts` (mutation, optimistic hoặc invalidate `["discuss-post", id]`/`["discuss-posts"]`), `use-trending-tags.ts`, `use-top-contributors.ts`.
+  - `components/discuss-post-card.tsx` (list item — avatar/tên/thời gian/tiêu đề/excerpt/tag pill/view-comment-upvote stats, theo đúng bố cục mockup), `discuss-filter-bar.tsx` (nút Lọc = dropdown tag/problem-only, nút sort = dropdown Mới nhất/Nhiều view/Nhiều upvote, dùng shadcn `DropdownMenu` đã có sẵn), `create-post-dialog.tsx` (Dialog: title input, content Textarea, tag multi-select, problem Select optional — mở từ nút "Tạo bài viết mới"), `discuss-trending-tags-card.tsx`, `discuss-top-contributors-card.tsx` (rank badge + avatar + tên + điểm, style giống `contest-leaderboard-table.tsx` phần medal top 3), `discuss-community-rules-card.tsx` (nội dung tĩnh từ i18n, danh sách checkmark).
+  - `pages/discuss-list-page.tsx`: layout `grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6` — cột trái list post card + filter bar, cột phải 3 card sidebar, theo đúng bố cục 2 cột đã dùng ở `quest-hub-page.tsx`.
+  - `pages/discuss-post-page.tsx`: chi tiết bài + list comment + form comment.
   - `types/index.ts`.
-  📍 `client/src/app/router-instance.tsx` — thêm `{ path: "store", element: <StorePage /> }` trong children `DashboardLayout` (cùng tầng `/quest`), không bọc `ProtectedRoute`.
-  📍 `client/src/components/layout/dashboard-header.tsx:16` — đổi `href: "#"` → `href: "/store"`, bỏ `hasDropdown: true`.
+  📍 `client/src/app/router-instance.tsx` — thêm `{ path: "discuss", element: <DiscussListPage /> }`, `{ path: "discuss/:postId", element: <DiscussPostPage /> }` vào children `DashboardLayout` (cùng tầng `contests`/`contests/:id`).
+  📍 `client/src/components/layout/dashboard-header.tsx:15` — đổi `href: "#"` → `href: "/discuss"`.
+  📍 `client/src/components/layout/dashboard-sidebar.tsx` — thêm entry `{ icon: MessageSquare, labelKey: "sidebar.discuss", href: "/discuss" }` (cùng danh sách `Trophy`/`Lock`/`Compass`/`Users` hiện có).
+  📍 i18n: `client/src/lib/i18n/locales/{vi,en,ja}/discuss.json` (namespace mới) — title/subtitle, card labels, filter/sort labels, create-post form labels, sidebar widget titles, community rules text, error/empty states. Thêm `sidebar.discuss` vào `common.json` 3 locale (mirror các `sidebar.*` key có sẵn).
+
+- [x] **FE: tab "Thảo luận" trong problem panel (gắn theo từng bài)**
+  📍 `client/src/features/interview/components/problem-panel.tsx` — thêm `TabsTrigger value="discuss"` (icon `MessageSquare`, theo đúng khuôn `editorial`/`solutions` đã có) + `TabsContent value="discuss"` render `<DiscussTab problemId={problemId} />` (component mới, tái dùng `DiscussPostCard`/hooks từ feature `discuss`, gọi `GET /discuss?problemId=...`, có nút thu gọn "Tạo bài viết mới" mở `create-post-dialog.tsx` với `problemId` prefill).
+  `ProblemPanelProps` thêm `problemId?: string`.
+  📍 `client/src/features/interview/pages/interview-room.tsx` — truyền `problemId={session.problemId}` vào `<ProblemPanel />`.
 
 ---
 
-## 🟡 P1 — Equip UI, hiển thị số dư, toast, i18n, test
+## 🟡 P1 — Sidebar widget thật, view count, i18n đầy đủ, test
 
-- [x] **BE: endpoint equip vật phẩm**
-  📍 `server/src/modules/store/store.controller.ts` + `store.service.ts`.
-  ```
-  POST /store/items/:itemId/equip   JwtAuthGuard   → equip (unequip item cùng category trước)
-  ```
+- [x] **FE: nối "Chủ đề Nổi Bật" và "Đóng Góp Nổi Bật" với API thật**
+  📍 `discuss-trending-tags-card.tsx`/`discuss-top-contributors-card.tsx` dùng `use-trending-tags.ts`/`use-top-contributors.ts` (đã tạo khung ở P0, P1 là lúc nối UI thật + loading/empty state).
+  Đã xong sẵn từ P0 — cả 2 component đã dùng đúng hook thật (không mock) kèm loading skeleton + empty state; xác nhận lại bằng cách đọc code hiện tại trước khi tick, không cần code thêm.
 
-- [x] **FE: UI equip/unequip + hiển thị item đã trang bị**
-  📍 `client/src/features/store/hooks/use-equip-item.ts`, `components/store-item-card.tsx` (nút Trang bị/Đã trang bị).
-  Cân nhắc hiển thị item đã equip trên `profile-info-card.tsx` (khung avatar/danh hiệu).
+- [x] **BE: tăng `viewCount` khi xem chi tiết bài**
+  📍 `discuss.service.ts getPostById()` — tăng đơn giản mỗi lần gọi (chấp nhận có thể bị inflate do refresh nhiều lần, ghi rõ giới hạn trong comment, giống mức độ đơn giản hoá đã chấp nhận ở view/count khác trong repo — không làm dedupe theo session phức tạp ở P1).
+  Đã xong sẵn từ P0 — `findPostById()` gọi `discussPost.update({ data: { viewCount: { increment: 1 } } })` kèm comment ghi rõ giới hạn (chưa dedupe theo session/IP, để P2). Xác nhận lại code hiện tại trước khi tick.
 
-- [x] **FE: chip số dư xu ở header**
-  📍 `client/src/components/layout/dashboard-header.tsx` — icon `Coins` + số, lấy từ `useUserProfile()` sẵn có (`features/users/hooks/use-user-profile.ts`), không tạo hook/API riêng chỉ để lấy số dư.
+- [x] **i18n**: rà lại `discuss.json` 3 locale đầy đủ key đã dùng ở P0 (nếu P0 làm tắt 1 locale để verify nhanh thì P1 hoàn thiện nốt 2 locale còn lại).
+  Đã xong sẵn từ P0 — so sánh key path (dot-flatten) giữa `vi/en/ja/discuss.json` cho kết quả giống hệt nhau, không thiếu key nào ở locale nào.
 
-- [x] **FE: toast thưởng xu**
-  📍 Login thành công + `awarded: true` từ BE → toast "+1 xu điểm danh hôm nay". Sau submit ACCEPTED có `coinsAwarded > 0` (hook `use-judge.ts` hiện có) → toast "+X xu".
-
-- [x] **i18n: `store.json` cho 3 ngôn ngữ**
-  📍 `client/src/lib/i18n/locales/{en,vi,ja}/store.json` — title, tabs, item card (price/owned/equip/equipped/buy/insufficientCoins), toast messages. Key `nav.store` đã có sẵn trong `common.json`, không cần thêm.
-
-- [x] **BE: test suite `store.service.spec.ts`**
-  📍 `server/src/modules/store/store.service.spec.ts`, style mock giống `judge.service.spec.ts`. Case: not-found item, không đủ xu, đã sở hữu, mua thành công trừ đúng xu, equip unequip đúng category.
+- [x] **BE: test suite `discuss.service.spec.ts`**
+  📍 `server/src/modules/discuss/discuss.service.spec.ts`, style mock giống `judge.service.spec.ts`/`store.service.spec.ts`. Case: tạo bài thành công, vote toggle đúng (vote rồi unvote không lệch count), tạo comment tăng đúng `commentCount`, filter theo `problemId` đúng, guest (không JWT) vẫn GET được list/detail.
+  12 test case, cover đủ các case liệt kê trên (`createPost`, `toggleVote` cả 2 chiều, `createComment`, `findPosts` filter `problemId`, `findPosts`/`findPostById` không cần userId vẫn chạy được). `npm run test` (server) 5 suite/61 test pass, `npm run lint` (server) sạch.
 
 ---
 
 ## 🟢 P2 — Mở rộng (ngoài scope hiện tại)
 
-- [ ] **Item có ảnh thật**: thay icon/màu bằng asset hình ảnh thật cho khung avatar/trang phục.
-- [ ] **Streak-based bonus xu**: gắn `UserStats.streakDays` (hiện là field chết) vào thưởng xu tăng dần theo chuỗi ngày đăng nhập liên tiếp.
-- [ ] **Leaderboard "giàu nhất"**: bảng xếp hạng theo `UserStats.coins`, tham khảo pattern `getLeaderboard()` của `quest.service.ts`.
-- [ ] **Admin UI quản lý catalog item**: form tạo/sửa/xoá `ShopItem` thay vì chỉ seed script.
+- [ ] **Reply lồng nhau cho comment** (`DiscussComment.parentId` tự tham chiếu) + vote comment (`DiscussCommentVote`).
+- [ ] **Report/flag bài viết vi phạm** + màn hình duyệt cho admin (`RolesGuard` + `@Roles('ADMIN')`, chưa có tiền lệ nào trong repo — thiết kế mới hoàn toàn).
+- [ ] **Sửa/xoá bài viết của chính mình**, markdown editor có preview thay vì textarea thô.
+- [ ] **Thông báo real-time** khi có người trả lời bài/comment của mình (Socket.io, tái dùng pattern `career.gateway`/`chat.gateway` đã có).
+- [ ] **Dedupe view count** theo session/IP thay vì tăng vô điều kiện.
 
 ---
 
 ## Ghi chú thứ tự ưu tiên
-
-DB đi trước BE, BE đi trước FE — FE cần contract API thật để gọi. Trong P0, task "thưởng xu khi giải bài" ở `judge.service.ts` bắt buộc làm chung với fix farm-bug `totalSolved`, không tách thành 2 commit. Task seed data nên làm sau khi module `store` đã có API GET, để verify luôn bằng cách gọi thử thay vì chỉ chạy script rồi để đó.
+DB đi trước BE, BE đi trước FE. Trong P0, task "tab Discuss trong problem panel" phụ thuộc feature folder `discuss` (hooks/components) đã có từ task FE ngay trước đó — làm sau cùng trong P0. Seed data nên chạy sau khi module `discuss` đã có API GET để verify bằng cách gọi thử, không chỉ chạy script rồi để đó (đúng bài học đã ghi ở roadmap Store).

@@ -8,6 +8,7 @@ import {
   Plus,
   Lock,
   Trophy,
+  MessageSquare,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ const sidebarItems = [
   { icon: Lock, labelKey: "sidebar.store", href: "/store" },
   { icon: Compass, labelKey: "sidebar.career", href: "/career" },
   { icon: Users, labelKey: "sidebar.peerInterview", href: "/peer-interview" },
+  { icon: MessageSquare, labelKey: "sidebar.discuss", href: "/discuss" },
 ];
 
 const itemClasses = (isActive: boolean) =>

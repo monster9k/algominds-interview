@@ -1,0 +1,61 @@
+{
+  "title": "Thảo luận",
+  "loadError": "Không tải được dữ liệu thảo luận.",
+  "empty": "Chưa có bài viết nào.",
+  "backToList": "Về danh sách thảo luận",
+  "viewCount": "{{count}} lượt xem",
+  "copyLink": "Sao chép liên kết",
+  "linkCopied": "Đã sao chép liên kết bài viết",
+  "filter": {
+    "all": "Tất cả"
+  },
+  "sort": {
+    "newest": "Mới nhất",
+    "mostViewed": "Nhiều lượt xem",
+    "mostUpvoted": "Nhiều upvote"
+  },
+  "createPost": {
+    "trigger": "Tạo bài viết mới",
+    "title": "Tạo bài viết mới",
+    "titleLabel": "Tiêu đề",
+    "titlePlaceholder": "Nhập tiêu đề bài viết...",
+    "contentLabel": "Nội dung",
+    "contentPlaceholder": "Chia sẻ câu hỏi hoặc kinh nghiệm của bạn...",
+    "tagsLabel": "Tag (cách nhau bởi dấu phẩy)",
+    "tagsPlaceholder": "vd: Algorithms, C++",
+    "linkedToProblem": "Bài viết sẽ gắn với bài toán: {{title}}",
+    "problemLabel": "Gắn với bài toán (không bắt buộc)",
+    "problemPlaceholder": "Chọn 1 bài toán",
+    "noProblem": "Không gắn bài toán",
+    "submit": "Đăng bài"
+  },
+  "sidebar": {
+    "trendingTags": "Chủ Đề Nổi Bật",
+    "noTags": "Chưa có chủ đề nào.",
+    "topContributors": "Đóng Góp Nổi Bật",
+    "noContributors": "Chưa có đóng góp nào.",
+    "points": "{{count}} pts",
+    "rules": {
+      "title": "QUY ĐỊNH CỘNG ĐỒNG",
+      "items": [
+        "Tôn trọng các thành viên khác.",
+        "Trình bày code rõ ràng (dùng markdown).",
+        "Tìm kiếm trước khi đặt câu hỏi mới."
+      ]
+    }
+  },
+  "comments": {
+    "title": "{{count}} bình luận",
+    "placeholder": "Viết bình luận của bạn...",
+    "submit": "Gửi bình luận",
+    "empty": "Chưa có bình luận nào — hãy là người đầu tiên!"
+  },
+  "time": {
+    "justNow": "vừa xong",
+    "minutesAgo": "{{count}} phút trước",
+    "hoursAgo": "{{count}} giờ trước",
+    "daysAgo": "{{count}} ngày trước",
+    "monthsAgo": "{{count}} tháng trước",
+    "yearsAgo": "{{count}} năm trước"
+  }
+}

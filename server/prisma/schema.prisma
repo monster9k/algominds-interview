@@ -93,6 +93,9 @@ model User {
   personaUnlocks     UserPersonaUnlock[]
   contestSubmissions ContestSubmission[]
   userItems          UserItem[]
+  discussPosts       DiscussPost[]
+  discussComments    DiscussComment[]
+  discussPostVotes   DiscussPostVote[]
 
   candidateInPeerSessions       PeerInterviewSession[] @relation("PeerInterviewCandidate")
   peerInterviewerInPeerSessions PeerInterviewSession[] @relation("PeerInterviewInterviewer")
@@ -182,6 +185,7 @@ model Problem {
   peerInterviewSessions PeerInterviewSession[]
   contestProblems       ContestProblem[]
   contestSubmissions    ContestSubmission[]
+  discussPosts          DiscussPost[]
 
   @@map("problems")
 }
@@ -192,7 +196,8 @@ model Tag {
   slug String @unique
 
   // Relations
-  problems ProblemTag[]
+  problems     ProblemTag[]
+  discussPosts DiscussPostTag[]
 
   @@map("tags")
 }
@@ -797,4 +802,79 @@ model UserItem {
 
   @@unique([userId, itemId])
   @@map("user_items")
+}
+
+// --- DISCUSS MODULE ---
+// Forum kiểu LeetCode Discuss — vừa là trang riêng /discuss, vừa gắn theo
+// từng bài toán (problemId nullable: null = thảo luận chung, có giá trị =
+// gắn 1 Problem cụ thể, hiện trong tab "Thảo luận" của problem đó).
+// P0 cố tình giữ comment phẳng (không reply lồng nhau) và chỉ vote ở cấp
+// post (không vote comment) — xem ROADMAP.md mục P2 cho phần mở rộng sau.
+
+model DiscussPost {
+  id           String    @id @default(uuid())
+  authorId     String
+  problemId    String?
+  title        String
+  content      String // markdown thô, render ở FE
+  viewCount    Int       @default(0)
+  upvoteCount  Int       @default(0)
+  commentCount Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  author   User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  problem  Problem?          @relation(fields: [problemId], references: [id], onDelete: SetNull)
+  tags     DiscussPostTag[]
+  comments DiscussComment[]
+  votes    DiscussPostVote[]
+
+  @@index([problemId])
+  @@index([createdAt])
+  @@map("discuss_posts")
+}
+
+model DiscussComment {
+  id        String    @id @default(uuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  post   DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@map("discuss_comments")
+}
+
+// Chống vote 2 lần trên cùng 1 bài — toggle bằng cách tạo/xoá row này (xem
+// DiscussService.toggleVote), KHÔNG dùng bảng vote union post/comment chung
+// vì cột FK nullable sẽ không unique đúng trên Postgres (NULL != NULL).
+model DiscussPostVote {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("discuss_post_votes")
+}
+
+// Bảng trung gian Many-to-Many giữa DiscussPost và Tag (tái dùng model Tag
+// đã có cho Problem thay vì tạo tag riêng cho discuss).
+model DiscussPostTag {
+  postId String
+  tagId  String
+
+  post DiscussPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("discuss_post_tags")
 }

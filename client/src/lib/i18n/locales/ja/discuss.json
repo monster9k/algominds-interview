@@ -1,0 +1,61 @@
+{
+  "title": "ディスカッション",
+  "loadError": "ディスカッションデータを読み込めませんでした。",
+  "empty": "投稿はまだありません。",
+  "backToList": "ディスカッション一覧に戻る",
+  "viewCount": "{{count}} 閲覧",
+  "copyLink": "リンクをコピー",
+  "linkCopied": "投稿のリンクをコピーしました",
+  "filter": {
+    "all": "すべて"
+  },
+  "sort": {
+    "newest": "新着順",
+    "mostViewed": "閲覧数順",
+    "mostUpvoted": "評価順"
+  },
+  "createPost": {
+    "trigger": "新規投稿",
+    "title": "新しい投稿を作成",
+    "titleLabel": "タイトル",
+    "titlePlaceholder": "タイトルを入力...",
+    "contentLabel": "内容",
+    "contentPlaceholder": "質問や経験を共有してください...",
+    "tagsLabel": "タグ（カンマ区切り）",
+    "tagsPlaceholder": "例: Algorithms, C++",
+    "linkedToProblem": "この投稿は次の問題に紐づきます: {{title}}",
+    "problemLabel": "問題に紐づける（任意）",
+    "problemPlaceholder": "問題を選択",
+    "noProblem": "紐づけない",
+    "submit": "投稿する"
+  },
+  "sidebar": {
+    "trendingTags": "人気のトピック",
+    "noTags": "トピックはまだありません。",
+    "topContributors": "トップ貢献者",
+    "noContributors": "貢献者はまだいません。",
+    "points": "{{count}} pts",
+    "rules": {
+      "title": "コミュニティガイドライン",
+      "items": [
+        "他のメンバーを尊重しましょう。",
+        "コードは分かりやすく整形しましょう（markdown使用）。",
+        "新しい質問をする前に検索しましょう。"
+      ]
+    }
+  },
+  "comments": {
+    "title": "{{count}} 件のコメント",
+    "placeholder": "コメントを入力...",
+    "submit": "コメントを送信",
+    "empty": "コメントはまだありません — 最初のコメントを投稿しましょう！"
+  },
+  "time": {
+    "justNow": "たった今",
+    "minutesAgo": "{{count}}分前",
+    "hoursAgo": "{{count}}時間前",
+    "daysAgo": "{{count}}日前",
+    "monthsAgo": "{{count}}ヶ月前",
+    "yearsAgo": "{{count}}年前"
+  }
+}

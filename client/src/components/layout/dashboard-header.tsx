@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "@/components/ui/logo";
 import { useUserProfile } from "@/features/users/hooks/use-user-profile";
+import { useAuthStore } from "@/stores/use-auth-store";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { UserNavMenu } from "./user-nav-menu";
 
@@ -20,7 +21,13 @@ export function DashboardHeader() {
   const location = useLocation();
   const { t } = useTranslation("common");
   const { data: profile } = useUserProfile();
+  const role = useAuthStore((state) => state.user?.role);
   const coins = profile?.stats?.coins;
+
+  const visibleNavLinks =
+    role === "ADMIN"
+      ? [...navLinks, { labelKey: "nav.admin", href: "/admin" }]
+      : navLinks;
 
   return (
     <header className="sticky top-0 z-40 h-14 shrink-0 bg-background/80 backdrop-blur-md border-b border-border flex items-stretch px-4 md:px-6">
@@ -47,7 +54,7 @@ export function DashboardHeader() {
         </div>
 
         <nav className="flex items-stretch gap-6">
-          {navLinks.map((link) => {
+          {visibleNavLinks.map((link) => {
             const isActive =
               link.href !== "#" && location.pathname.startsWith(link.href);
             return (

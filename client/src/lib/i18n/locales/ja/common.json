@@ -3,7 +3,8 @@
     "problems": "問題",
     "contest": "コンテスト",
     "discuss": "ディスカッション",
-    "interview": "面接"
+    "interview": "面接",
+    "admin": "管理者"
   },
   "sidebar": {
     "library": "ライブラリ",

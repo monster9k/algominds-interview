@@ -3,7 +3,8 @@
     "problems": "Problems",
     "contest": "Contest",
     "discuss": "Discuss",
-    "interview": "Interview"
+    "interview": "Interview",
+    "admin": "Admin"
   },
   "sidebar": {
     "library": "Library",

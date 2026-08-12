@@ -49,7 +49,7 @@
 - [x] **FE: `icon-sidebar.tsx` — sidebar mới dùng chung admin/user**
   📍 `client/src/components/layout/icon-sidebar.tsx` (mới) — props `{ items }`: Logo (`components/ui/logo.tsx`) + nút collapse (state lưu ở `client/src/stores/use-sidebar.ts`, repurpose store hiện có, không tạo mới) → profile row (avatar+tên/email+chevron, trigger cho dropdown đã tách ở task trên) → nav items (render `items` qua `itemClasses()` dùng chung) → footer ghim đáy: Settings (`/settings`) + Help Center (`/help`). Collapsed mode: icon-only + `Tooltip`. Mobile (<lg): ẩn mặc định, mở qua `Sheet` có sẵn (`components/ui/sheet.tsx`).
 
-- [ ] **FE: `top-bar.tsx` — top bar tối giản dùng chung admin/user**
+- [x] **FE: `top-bar.tsx` — top bar tối giản dùng chung admin/user**
   📍 `client/src/components/layout/top-bar.tsx` (mới) — hamburger (mobile, mở `IconSidebar` trong `Sheet`) + tên trang hiện tại (tra theo route active trong `items` truyền vào). Giữ chuông thông báo + coin-balance pill (tính năng thật đang chạy) ở góc phải cho biến thể user; biến thể admin không cần.
 
 - [ ] **FE: `app-shell.tsx` — compose `IconSidebar`+`TopBar`+`Outlet`**

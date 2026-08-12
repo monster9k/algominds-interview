@@ -21,4 +21,16 @@ export class AdminController {
   getUsers() {
     return this.adminService.getUsers();
   }
+
+  // GET /admin/quests
+  @Get('quests')
+  getQuests() {
+    return this.adminService.getQuests();
+  }
+
+  // GET /admin/peer-interviews
+  @Get('peer-interviews')
+  getPeerInterviews() {
+    return this.adminService.getPeerInterviews();
+  }
 }

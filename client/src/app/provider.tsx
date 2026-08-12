@@ -11,6 +11,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { queryClient } from "@/lib/query-client";
 import { Toaster } from "sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { env } from "@/config/env";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { User } from "@/features/auth/types";
@@ -48,7 +49,7 @@ export function Providers({ children }: ProvidersProps) {
         disableTransitionOnChange
       >
         <AuthHydrator />
-        {children}
+        <TooltipProvider delayDuration={300}>{children}</TooltipProvider>
         <Toaster position="top-right" richColors />
       </ThemeProvider>
     </QueryClientProvider>

@@ -46,7 +46,7 @@
 - [x] **FE: trang Help Center mới + route `/help`**
   📍 `client/src/features/settings/pages/help-center-page.tsx` (mới, tái dùng layout/style các trang Settings hiện có) — nội dung tối giản (FAQ ngắn + kênh liên hệ). Đăng ký route `/help` trong `client/src/app/router-instance.tsx`, cùng nhóm `DashboardLayout`.
 
-- [ ] **FE: `icon-sidebar.tsx` — sidebar mới dùng chung admin/user**
+- [x] **FE: `icon-sidebar.tsx` — sidebar mới dùng chung admin/user**
   📍 `client/src/components/layout/icon-sidebar.tsx` (mới) — props `{ items }`: Logo (`components/ui/logo.tsx`) + nút collapse (state lưu ở `client/src/stores/use-sidebar.ts`, repurpose store hiện có, không tạo mới) → profile row (avatar+tên/email+chevron, trigger cho dropdown đã tách ở task trên) → nav items (render `items` qua `itemClasses()` dùng chung) → footer ghim đáy: Settings (`/settings`) + Help Center (`/help`). Collapsed mode: icon-only + `Tooltip`. Mobile (<lg): ẩn mặc định, mở qua `Sheet` có sẵn (`components/ui/sheet.tsx`).
 
 - [ ] **FE: `top-bar.tsx` — top bar tối giản dùng chung admin/user**

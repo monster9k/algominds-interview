@@ -114,7 +114,7 @@ Quyết định đã chốt với user trước khi code: **`/admin/career` ch�
 - [x] **FE: trang `/admin/discuss` — data table**
   📍 `admin-discuss-page.tsx` + `admin-discuss-table.tsx` — tái dùng `useDiscussPosts()` (`client/src/features/discuss/hooks/use-discuss-posts.ts`, gọi `GET /discuss`). Cột: ID, Tiêu đề, Tác giả, View/Upvote/Comment count, Ngày tạo.
 
-- [ ] **FE: trang `/admin/career` — data table (Tracks only)**
+- [x] **FE: trang `/admin/career` — data table (Tracks only)**
   📍 `admin-career-page.tsx` + `admin-career-table.tsx` — tái dùng `useCareerTracks()` (`client/src/features/career/hooks/use-career-tracks.ts`, gọi `GET /career/tracks`). Cột: ID, Tên track, Công ty (`track.company?.name` hoặc "Generic"), Trạng thái (`Badge`, theo `isActive`).
 
 - [ ] **FE: trang `/admin/quests` — data table**

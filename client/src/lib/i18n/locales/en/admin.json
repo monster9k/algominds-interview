@@ -43,6 +43,7 @@
   },
   "problems": {
     "title": "Manage Problems",
+    "subtitle": "{{count}} problems in the bank",
     "createNew": "New Problem",
     "columnId": "ID",
     "columnTitle": "Title",

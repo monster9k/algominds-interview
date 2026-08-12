@@ -23,6 +23,14 @@ const DIFFICULTY_BADGE_CLASS: Record<AdminProblemListItem["difficulty"], string>
   HARD: "bg-red-500/10 text-red-500 border-red-500/20",
 };
 
+// Đường viền trái xuất hiện lúc hover — tô lại đúng màu độ khó của row đó
+// (không phải màu mới), 1 tín hiệu tinh tế thay cho highlight nền phẳng chung chung.
+const DIFFICULTY_ROW_ACCENT: Record<AdminProblemListItem["difficulty"], string> = {
+  EASY: "group-hover:border-l-teal-500",
+  MEDIUM: "group-hover:border-l-yellow-500",
+  HARD: "group-hover:border-l-red-500",
+};
+
 interface AdminProblemsTableProps {
   problems?: AdminProblemListItem[];
   isLoading: boolean;
@@ -37,22 +45,32 @@ export function AdminProblemsTable({ problems, isLoading, isError, onEdit }: Adm
 
   return (
     <div className="rounded-lg overflow-hidden border border-border">
-      <Table>
+      <Table className="table-fixed">
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b border-border/80">
-            <TableHead className="text-muted-foreground text-xs">{t("problems.columnId")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("problems.columnTitle")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("problems.columnDifficulty")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("problems.columnStatus")}</TableHead>
-            <TableHead className="text-right text-muted-foreground text-xs">{t("problems.columnActions")}</TableHead>
+            <TableHead className="w-16 h-10 py-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("problems.columnId")}
+            </TableHead>
+            <TableHead className="h-10 py-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("problems.columnTitle")}
+            </TableHead>
+            <TableHead className="w-32 h-10 py-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("problems.columnDifficulty")}
+            </TableHead>
+            <TableHead className="w-28 h-10 py-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("problems.columnStatus")}
+            </TableHead>
+            <TableHead className="w-24 h-10 py-2 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("problems.columnActions")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <TableRow key={i} className="border-0">
-                <TableCell colSpan={5}>
-                  <Skeleton className="h-6 w-full" />
+            Array.from({ length: 8 }).map((_, i) => (
+              <TableRow key={i} className="border-b border-border/60">
+                <TableCell colSpan={5} className="py-2.5">
+                  <Skeleton className="h-5 w-full" />
                 </TableCell>
               </TableRow>
             ))
@@ -70,31 +88,43 @@ export function AdminProblemsTable({ problems, isLoading, isError, onEdit }: Adm
             </TableRow>
           ) : (
             problems?.map((problem) => (
-              <TableRow key={problem.id} className="border-0 hover:bg-muted/50 transition-colors">
-                <TableCell className="text-muted-foreground text-xs">{problem.displayId}</TableCell>
-                <TableCell className="font-medium text-foreground">{problem.title}</TableCell>
-                <TableCell>
+              <TableRow
+                key={problem.id}
+                className="group border-b border-border/60 hover:bg-muted/40 transition-colors"
+              >
+                <TableCell
+                  className={cn(
+                    "py-2.5 border-l-2 border-l-transparent transition-colors font-mono text-xs text-muted-foreground",
+                    DIFFICULTY_ROW_ACCENT[problem.difficulty],
+                  )}
+                >
+                  {problem.displayId}
+                </TableCell>
+                <TableCell className="py-2.5 font-medium text-foreground truncate">
+                  {problem.title}
+                </TableCell>
+                <TableCell className="py-2.5">
                   <Badge className={cn("shrink-0", DIFFICULTY_BADGE_CLASS[problem.difficulty])}>
                     {t(`difficulty.${problem.difficulty.toLowerCase()}`)}
                   </Badge>
                 </TableCell>
-                <TableCell>
-                  <Badge variant={problem.deletedAt ? "destructive" : "outline"}>
+                <TableCell className="py-2.5">
+                  <Badge variant={problem.deletedAt ? "destructive" : "secondary"}>
                     {problem.deletedAt ? t("problems.statusDeleted") : t("problems.statusActive")}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" onClick={() => onEdit(problem.id)}>
-                    <Pencil className="h-4 w-4" />
+                <TableCell className="py-2.5 text-right">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(problem.id)}>
+                    <Pencil className="h-3.5 w-3.5" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-destructive hover:text-destructive"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
                     onClick={() => setDeletingId(problem.id)}
                     disabled={!!problem.deletedAt}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </TableCell>
               </TableRow>

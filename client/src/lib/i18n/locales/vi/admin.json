@@ -43,6 +43,7 @@
   },
   "problems": {
     "title": "Quản lý Bài tập",
+    "subtitle": "{{count}} bài tập trong ngân hàng đề",
     "createNew": "Tạo bài tập mới",
     "columnId": "ID",
     "columnTitle": "Tiêu đề",

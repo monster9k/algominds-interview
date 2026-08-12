@@ -43,6 +43,7 @@
   },
   "problems": {
     "title": "問題管理",
+    "subtitle": "問題バンクに {{count}} 件",
     "createNew": "新しい問題を作成",
     "columnId": "ID",
     "columnTitle": "タイトル",

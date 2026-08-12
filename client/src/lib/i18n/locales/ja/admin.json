@@ -124,7 +124,9 @@
     "columnComments": "コメント数",
     "columnCreatedAt": "投稿日",
     "empty": "投稿はまだありません。",
-    "loadError": "投稿一覧の読み込みに失敗しました。"
+    "loadError": "投稿一覧の読み込みに失敗しました。",
+    "deleteConfirmTitle": "この投稿を削除しますか？",
+    "deleteConfirmDescription": "投稿は公開リストから非表示になります（論理削除）。必要に応じて後で復元できます。"
   },
   "career": {
     "title": "キャリアトラック管理",

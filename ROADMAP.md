@@ -230,8 +230,8 @@ Quyết định đã chốt với user trước khi code:
 - [x] **FE: `/admin/users` — role change + Delete + pagination/search**
   📍 `useAdminUsers({page,search})` sửa lại theo response shape `{data,total,page,limit}` mới (trước đó tạm broken sau task BE mở rộng `GET /admin/users`, đúng như đã ghi chú lúc đó). Cột Role đổi Badge tĩnh thành `Select` đổi role trực tiếp (USER/MODERATOR/ADMIN) — disable ở chính row của admin đang đăng nhập (`user.id === currentUser.userId`). Nút Delete mỗi row (trừ row chính mình, trừ row đã xoá) mở `ConfirmDialog`. Verify qua browser thật: đổi role QA Reviewer → MODERATOR → trả về USER, xác nhận row của chính admin bị disable, tạo + xoá 1 user throwaway qua UI thành công (không chỉ qua curl).
 
-- [ ] **FE: `/admin/discuss` — nút Delete (moderation), hiện cho cả ADMIN và MODERATOR**
-  📍 `admin-discuss-table.tsx` — thêm cột hành động, nút Delete mở `ConfirmDialog`, gọi hook mới `useDeleteDiscussPost()`.
+- [x] **FE: `/admin/discuss` — nút Delete (moderation), hiện cho cả ADMIN và MODERATOR**
+  📍 `admin-discuss-table.tsx` — thêm cột hành động (`t("problems.columnActions")`, tái dùng key có sẵn thay vì thêm `discuss.columnActions` mới, đúng pattern đã dùng ở `admin-users-table.tsx`), nút Delete mở `ConfirmDialog`, gọi hook `useDeleteDiscussPost()` (đã viết sẵn từ trước, chỉ còn thiếu phần UI nối vào bảng). Không cần check role trong component — route `/admin/discuss` đã được cả ADMIN và MODERATOR truy cập qua `AdminRoute`/`admin-only-route.tsx` nên nút Delete tự động hiện đúng cho cả 2 role. Thêm `discuss.deleteConfirmTitle`/`discuss.deleteConfirmDescription` vào `admin.json` 3 locale (parity 143 key khớp cả 3, verify bằng script flatten). Verify end-to-end qua browser thật (login `admin@algominds.dev`): xoá bài throwaway "Test post từ browser verify" → biến mất khỏi bảng ngay, toast "Đã xoá bài viết" hiện đúng, không lỗi console.
 
 - [ ] **FE: trang mới `/admin/audit-log`**
   📍 `admin-audit-log-page.tsx` + `admin-audit-log-table.tsx` — `useAdminAuditLog({page})`, cột Admin/Action/Target/Thời gian. Sidebar item mới, chỉ hiện với ADMIN.

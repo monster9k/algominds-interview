@@ -124,7 +124,9 @@
     "columnComments": "Comment",
     "columnCreatedAt": "Ngày tạo",
     "empty": "Chưa có bài thảo luận nào.",
-    "loadError": "Không tải được danh sách bài thảo luận."
+    "loadError": "Không tải được danh sách bài thảo luận.",
+    "deleteConfirmTitle": "Xoá bài thảo luận này?",
+    "deleteConfirmDescription": "Bài viết sẽ bị ẩn khỏi danh sách công khai (soft delete), có thể khôi phục sau nếu cần."
   },
   "career": {
     "title": "Quản lý Career Track",

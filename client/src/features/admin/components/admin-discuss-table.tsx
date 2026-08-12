@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -8,11 +10,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useDiscussPosts } from "@/features/discuss/hooks/use-discuss-posts";
+import { useDeleteDiscussPost } from "@/features/discuss/hooks/use-delete-discuss-post";
+import { ConfirmDialog } from "./confirm-dialog";
 
 export function AdminDiscussTable() {
   const { t } = useTranslation("admin");
   const { data: posts, isLoading, isError } = useDiscussPosts();
+  const deletePost = useDeleteDiscussPost();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   return (
     <div className="rounded-lg overflow-hidden border border-border">
@@ -26,26 +33,27 @@ export function AdminDiscussTable() {
             <TableHead className="text-center text-muted-foreground text-xs">{t("discuss.columnUpvotes")}</TableHead>
             <TableHead className="text-center text-muted-foreground text-xs">{t("discuss.columnComments")}</TableHead>
             <TableHead className="text-muted-foreground text-xs">{t("discuss.columnCreatedAt")}</TableHead>
+            <TableHead className="text-right text-muted-foreground text-xs">{t("problems.columnActions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i} className="border-0">
-                <TableCell colSpan={7}>
+                <TableCell colSpan={8}>
                   <Skeleton className="h-6 w-full" />
                 </TableCell>
               </TableRow>
             ))
           ) : isError ? (
             <TableRow className="border-0">
-              <TableCell colSpan={7} className="h-32 text-center text-destructive">
+              <TableCell colSpan={8} className="h-32 text-center text-destructive">
                 {t("discuss.loadError")}
               </TableCell>
             </TableRow>
           ) : posts?.length === 0 ? (
             <TableRow className="border-0">
-              <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+              <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
                 {t("discuss.empty")}
               </TableCell>
             </TableRow>
@@ -65,11 +73,33 @@ export function AdminDiscussTable() {
                 <TableCell className="text-muted-foreground text-xs">
                   {new Date(post.createdAt).toLocaleDateString()}
                 </TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => setDeletingId(post.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))
           )}
         </TableBody>
       </Table>
+
+      <ConfirmDialog
+        open={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        title={t("discuss.deleteConfirmTitle")}
+        description={t("discuss.deleteConfirmDescription")}
+        isLoading={deletePost.isPending}
+        onConfirm={() => {
+          if (!deletingId) return;
+          deletePost.mutate(deletingId, { onSuccess: () => setDeletingId(null) });
+        }}
+      />
     </div>
   );
 }

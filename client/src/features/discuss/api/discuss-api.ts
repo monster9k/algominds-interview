@@ -53,4 +53,10 @@ export const discussApi = {
     const response = await api.get("/discuss/contributors/top");
     return response.data;
   },
+
+  // Moderation — ADMIN + MODERATOR (xem RolesGuard ở discuss.controller.ts).
+  deletePost: async (id: string): Promise<{ id: string }> => {
+    const response = await api.delete(`/discuss/${id}`);
+    return response.data;
+  },
 };

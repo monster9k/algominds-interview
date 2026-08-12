@@ -124,7 +124,9 @@
     "columnComments": "Comments",
     "columnCreatedAt": "Created At",
     "empty": "No posts yet.",
-    "loadError": "Failed to load posts."
+    "loadError": "Failed to load posts.",
+    "deleteConfirmTitle": "Delete this post?",
+    "deleteConfirmDescription": "The post will be hidden from the public list (soft delete), recoverable later if needed."
   },
   "career": {
     "title": "Manage Career Tracks",

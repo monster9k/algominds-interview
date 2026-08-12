@@ -43,7 +43,7 @@
 - [x] **FE: tách content dropdown của `UserNavMenu` + thêm item "Admin Panel"**
   📍 `client/src/components/layout/user-nav-menu.tsx` — giữ nguyên toàn bộ nội dung dropdown hiện có (header avatar+tên → `/profile`, grid 4 shortcut, list Settings/Orders/..., Sign out), refactor để trigger nhận từ ngoài truyền vào (dùng lại từ `icon-sidebar.tsx` bên dưới thay vì avatar góc phải header cũ). Thêm 1 item đầu `listItems`: "Admin Panel" → `navigate("/admin")`, hiện khi `useAuthStore().user?.role === "ADMIN"`.
 
-- [ ] **FE: trang Help Center mới + route `/help`**
+- [x] **FE: trang Help Center mới + route `/help`**
   📍 `client/src/features/settings/pages/help-center-page.tsx` (mới, tái dùng layout/style các trang Settings hiện có) — nội dung tối giản (FAQ ngắn + kênh liên hệ). Đăng ký route `/help` trong `client/src/app/router-instance.tsx`, cùng nhóm `DashboardLayout`.
 
 - [ ] **FE: `icon-sidebar.tsx` — sidebar mới dùng chung admin/user**

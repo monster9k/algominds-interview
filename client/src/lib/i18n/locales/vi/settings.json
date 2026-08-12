@@ -41,5 +41,31 @@
   "danger": {
     "title": "Vùng nguy hiểm",
     "deleteAccount": "Xóa tài khoản"
+  },
+  "helpCenter": {
+    "title": "Trung tâm trợ giúp",
+    "description": "Giải đáp nhanh các câu hỏi thường gặp về cách AlgoMinds hoạt động.",
+    "faq": {
+      "thinkFirst": {
+        "question": "\"Think-First\" nghĩa là gì?",
+        "answer": "Trước khi được viết code, bạn cần trình bày chiến lược giải bài với AI phỏng vấn viên ở khung chat. Khi chiến lược được duyệt, trình soạn code sẽ mở khoá cho Giai đoạn 2."
+      },
+      "credits": {
+        "question": "Credit là gì và làm sao để có thêm?",
+        "answer": "Credit dùng để xin thêm phản hồi từ AI trong 1 phiên phỏng vấn. Bạn có thêm credit khi giải bài, giữ streak hàng ngày, và hoàn thành nhiệm vụ (Quest)."
+      },
+      "quest": {
+        "question": "Quest (Bug Whacker) là gì?",
+        "answer": "Quest là minigame tính giờ, bạn cần tìm ra dòng code bị lỗi trước khi hết thời gian. Xem tab Quest để theo dõi bảng xếp hạng và huy hiệu."
+      },
+      "contests": {
+        "question": "Cuộc thi hoạt động như thế nào?",
+        "answer": "Cuộc thi là sự kiện tính giờ với bộ đề được chọn theo độ khó. Nộp bài trước khi cuộc thi kết thúc để xuất hiện trên bảng xếp hạng."
+      },
+      "peerInterview": {
+        "question": "Phỏng vấn chéo (Peer Interview) là gì?",
+        "answer": "Phỏng vấn chéo ghép bạn với 1 người dùng khác để luyện phỏng vấn thử — 1 người đóng vai phỏng vấn viên, người còn lại là ứng viên."
+      }
+    }
   }
 }

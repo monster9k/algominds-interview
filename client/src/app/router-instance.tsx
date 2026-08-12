@@ -13,6 +13,7 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProblemsPage } from "@/features/problems/pages/problems-page";
 import { ProfilePage } from "@/features/users/pages/profile-page";
 import { SettingsPage } from "@/features/settings/pages/settings-page";
+import { HelpCenterPage } from "@/features/settings/pages/help-center-page";
 import { InterviewRoom } from "@/features/interview/pages/interview-room";
 import { SessionReplayPage } from "@/features/interview/pages/session-replay-page";
 import { QuestHubPage } from "@/features/quest/pages/quest-hub-page";
@@ -76,6 +77,7 @@ export const router = createBrowserRouter([
       { path: "discuss/:postId", element: <DiscussPostPage /> },
       { path: "profile", element: <ProfilePage /> },
       { path: "settings", element: <SettingsPage /> },
+      { path: "help", element: <HelpCenterPage /> },
       { path: "dashboard", element: <Navigate to="/problems" replace /> },
     ],
   },

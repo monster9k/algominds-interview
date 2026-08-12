@@ -12,6 +12,13 @@
     "ongoing": "開催中",
     "finished": "終了"
   },
+  "table": {
+    "columnName": "コンテスト",
+    "columnStatus": "状態",
+    "columnStart": "開始",
+    "columnProblems": "問題数",
+    "columnCountdown": "時間"
+  },
   "status": {
     "upcoming": "開催予定",
     "ongoing": "開催中",

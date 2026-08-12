@@ -2,6 +2,10 @@
   "title": "キャリアジャーニー",
   "subtitle": "キャリアトラックを選び、電話面接・技術面接・オンサイトループを進みましょう。各ステージは異なるAI面接官が担当します。",
   "stageCount": "{{count}} ステージ",
+  "stats": {
+    "currentStage": "現在のステージ",
+    "stagesPassed": "合格ステージ"
+  },
   "startTrack": "トラックを開始",
   "noTracks": "利用可能なキャリアトラックはまだありません。",
   "enterStage": "ステージへ進む",

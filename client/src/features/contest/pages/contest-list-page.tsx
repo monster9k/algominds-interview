@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Trophy } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useContests } from "../hooks/use-contests";
-import { ContestCard } from "../components/contest-card";
+import { ContestTable } from "../components/contest-table";
 import { ContestStatus } from "../types";
 
 type TabValue = "all" | ContestStatus;
@@ -54,25 +53,7 @@ export function ContestListPage() {
         </TabsList>
       </Tabs>
 
-      {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-36 w-full" />
-          ))}
-        </div>
-      ) : isError ? (
-        <p className="text-sm text-destructive">{t("loadError")}</p>
-      ) : !contests || contests.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("empty")}</p>
-      ) : filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("empty")}</p>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((contest) => (
-            <ContestCard key={contest.id} contest={contest} />
-          ))}
-        </div>
-      )}
+      <ContestTable contests={filtered} isLoading={isLoading} isError={isError} />
     </div>
   );
 }

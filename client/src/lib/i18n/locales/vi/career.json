@@ -2,6 +2,10 @@
   "title": "Hành trình sự nghiệp",
   "subtitle": "Chọn 1 track sự nghiệp và trải qua Phone Screen, Technical Rounds, Onsite Loop — mỗi vòng do 1 AI interviewer với tính cách khác nhau đảm nhiệm.",
   "stageCount": "{{count}} vòng",
+  "stats": {
+    "currentStage": "Vòng hiện tại",
+    "stagesPassed": "Đã hoàn thành"
+  },
   "startTrack": "Bắt đầu track",
   "noTracks": "Chưa có career track nào.",
   "enterStage": "Vào làm",

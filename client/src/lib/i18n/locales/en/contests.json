@@ -12,6 +12,13 @@
     "ongoing": "Ongoing",
     "finished": "Finished"
   },
+  "table": {
+    "columnName": "Contest",
+    "columnStatus": "Status",
+    "columnStart": "Starts",
+    "columnProblems": "Problems",
+    "columnCountdown": "Time"
+  },
   "status": {
     "upcoming": "Upcoming",
     "ongoing": "Ongoing",

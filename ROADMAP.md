@@ -186,7 +186,7 @@ Quyết định đã chốt với user trước khi code:
 - [x] **BE: `AdminAuditService` — helper ghi log dùng chung**
   📍 `server/src/modules/admin/admin-audit.service.ts` (mới) — 1 method `log(adminId, action, targetType, targetId, metadata?)` gọi `prisma.adminActionLog.create()`. Export qua `AdminModule`, import vào `ProblemsModule`/`ContestModule`/`DiscussModule` (hoặc gọi trực tiếp `PrismaService` — cân nhắc lúc code để tránh vòng phụ thuộc module, ưu tiên cách đơn giản nhất không tạo `forwardRef` mới).
 
-- [ ] **BE: `problems` — thêm Update/Delete + sửa `CreateProblemDto`**
+- [x] **BE: `problems` — thêm Update/Delete + sửa `CreateProblemDto`** (verify thực tế: curl create→update→delete→confirm biến mất khỏi `GET /problems` công khai + audit log ghi đủ 3 dòng đúng `adminId`/`action`/`metadata`)
   📍 `problems.controller.ts` — `PATCH /problems/:id` (`UpdateProblemDto = PartialType(CreateProblemDto)`), `DELETE /problems/:id` (soft delete, set `deletedAt`), cả 2 guard `JwtAuthGuard + RolesGuard + @Roles('ADMIN')`, gọi `AdminAuditService.log()`.
   📍 `create-problem.dto.ts` — thêm `functionName?: string` (fix bug tiềm ẩn đã ghi ở khảo sát).
   📍 `problems.service.ts` — thêm `update()`/`softDelete()`.

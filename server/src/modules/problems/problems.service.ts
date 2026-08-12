@@ -1,7 +1,12 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Difficulty, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProblemDto } from './dto/create-problem.dto';
+import { UpdateProblemDto } from './dto/update-problem.dto';
 import slugify from 'slugify';
 
 export type ProblemStatus = 'Solved' | 'Attempted' | 'Todo';
@@ -144,6 +149,63 @@ export class ProblemsService {
 
     return enriched;
   }
+  // Cập nhật bài tập (Admin) — title đổi thì slug cũng đổi theo, giữ đúng
+  // convention slug-tự-sinh-từ-title như create().
+  async update(id: string, updateProblemDto: UpdateProblemDto) {
+    const { tags, title, ...problemData } = updateProblemDto;
+
+    const existing = await this.prisma.problem.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException('Không tìm thấy bài tập');
+    }
+
+    const tagUpdate =
+      tags !== undefined
+        ? {
+            tags: {
+              deleteMany: {},
+              create: tags.map((tagName) => ({
+                tag: {
+                  connectOrCreate: {
+                    where: { name: tagName },
+                    create: {
+                      name: tagName,
+                      slug: slugify(tagName, { lower: true, strict: true }),
+                    },
+                  },
+                },
+              })),
+            },
+          }
+        : {};
+
+    return this.prisma.problem.update({
+      where: { id },
+      data: {
+        ...problemData,
+        ...(title !== undefined && {
+          title,
+          slug: slugify(title, { lower: true, strict: true }),
+        }),
+        ...tagUpdate,
+      },
+      include: { tags: { include: { tag: true } } },
+    });
+  }
+
+  // Soft delete — mirror pattern deletedAt của User/Contest.
+  async softDelete(id: string) {
+    const existing = await this.prisma.problem.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException('Không tìm thấy bài tập');
+    }
+
+    return this.prisma.problem.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
+
   // LẤY CHI TIẾT 1 BÀI (Theo Slug)
   async findOne(slug: string) {
     const problem = await this.prisma.problem.findUnique({

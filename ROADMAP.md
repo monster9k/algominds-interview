@@ -81,7 +81,7 @@
   }
   ```
 
-- [ ] **FE: trang `/admin` — stat card**
+- [x] **FE: trang `/admin` — stat card**
   📍 `client/src/features/admin/pages/admin-dashboard-page.tsx` — 3 `Card` (shadcn) hiển thị Tổng số Users/Bài tập/Submissions từ `useAdminStats()`, loading skeleton khi đang fetch.
 
 - [ ] **FE: trang `/admin/problems` — data table**

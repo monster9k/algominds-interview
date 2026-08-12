@@ -40,6 +40,7 @@ import { AdminDiscussPage } from "@/features/admin/pages/admin-discuss-page";
 import { AdminCareerPage } from "@/features/admin/pages/admin-career-page";
 import { AdminQuestsPage } from "@/features/admin/pages/admin-quests-page";
 import { AdminPeerInterviewPage } from "@/features/admin/pages/admin-peer-interview-page";
+import { AdminAuditLogPage } from "@/features/admin/pages/admin-audit-log-page";
 
 export const router = createBrowserRouter([
   {
@@ -127,6 +128,7 @@ export const router = createBrowserRouter([
               { path: "career", element: <AdminCareerPage /> },
               { path: "quests", element: <AdminQuestsPage /> },
               { path: "peer-interview", element: <AdminPeerInterviewPage /> },
+              { path: "audit-log", element: <AdminAuditLogPage /> },
             ],
           },
         ],

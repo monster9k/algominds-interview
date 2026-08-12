@@ -11,6 +11,7 @@ import {
   ProblemFormPayload,
   AdminContestListItem,
   ContestFormPayload,
+  AdminAuditLogEntry,
 } from "../types";
 
 export const adminApi = {
@@ -92,6 +93,13 @@ export const adminApi = {
 
   deleteContest: async (id: string) => {
     const response = await api.delete(`/contests/${id}`);
+    return response.data;
+  },
+
+  getAuditLog: async (
+    query: Pick<AdminListQuery, "page" | "limit">,
+  ): Promise<PaginatedResponse<AdminAuditLogEntry>> => {
+    const response = await api.get("/admin/audit-log", { params: query });
     return response.data;
   },
 };

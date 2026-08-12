@@ -22,7 +22,8 @@
     "discuss": "Discuss",
     "career": "Career",
     "quests": "Quests",
-    "peerInterview": "Peer Interview"
+    "peerInterview": "Peer Interview",
+    "auditLog": "Audit Log"
   },
   "header": {
     "title": "Admin",
@@ -167,5 +168,14 @@
     "statusAbandoned": "Abandoned",
     "empty": "No peer interview sessions yet.",
     "loadError": "Failed to load peer interview sessions."
+  },
+  "auditLog": {
+    "title": "Admin Audit Log",
+    "columnAdmin": "Admin",
+    "columnAction": "Action",
+    "columnTarget": "Target",
+    "columnCreatedAt": "Time",
+    "empty": "No actions recorded yet.",
+    "loadError": "Failed to load audit log."
   }
 }

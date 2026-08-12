@@ -22,7 +22,8 @@
     "discuss": "Thảo luận",
     "career": "Career",
     "quests": "Quest",
-    "peerInterview": "Phỏng vấn chéo"
+    "peerInterview": "Phỏng vấn chéo",
+    "auditLog": "Nhật ký hành động"
   },
   "header": {
     "title": "Quản trị",
@@ -167,5 +168,14 @@
     "statusAbandoned": "Đã huỷ",
     "empty": "Chưa có phiên phỏng vấn chéo nào.",
     "loadError": "Không tải được danh sách phiên phỏng vấn chéo."
+  },
+  "auditLog": {
+    "title": "Nhật ký hành động Admin",
+    "columnAdmin": "Admin",
+    "columnAction": "Hành động",
+    "columnTarget": "Đối tượng",
+    "columnCreatedAt": "Thời gian",
+    "empty": "Chưa có hành động nào được ghi lại.",
+    "loadError": "Không tải được nhật ký hành động."
   }
 }

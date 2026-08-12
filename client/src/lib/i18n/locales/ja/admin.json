@@ -22,7 +22,8 @@
     "discuss": "ディスカッション",
     "career": "キャリア",
     "quests": "クエスト",
-    "peerInterview": "ピア面接"
+    "peerInterview": "ピア面接",
+    "auditLog": "操作履歴"
   },
   "header": {
     "title": "管理者",
@@ -167,5 +168,14 @@
     "statusAbandoned": "中止",
     "empty": "ピア面接セッションはまだありません。",
     "loadError": "ピア面接セッション一覧の読み込みに失敗しました。"
+  },
+  "auditLog": {
+    "title": "管理者操作履歴",
+    "columnAdmin": "管理者",
+    "columnAction": "操作",
+    "columnTarget": "対象",
+    "columnCreatedAt": "日時",
+    "empty": "記録された操作はまだありません。",
+    "loadError": "操作履歴の読み込みに失敗しました。"
   }
 }

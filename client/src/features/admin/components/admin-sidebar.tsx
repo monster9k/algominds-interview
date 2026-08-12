@@ -9,6 +9,7 @@ import {
   Compass,
   Swords,
   Handshake,
+  History,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ const sidebarItems = [
   { icon: Compass, labelKey: "sidebar.career", href: "/admin/career", adminOnly: true },
   { icon: Swords, labelKey: "sidebar.quests", href: "/admin/quests", adminOnly: true },
   { icon: Handshake, labelKey: "sidebar.peerInterview", href: "/admin/peer-interview", adminOnly: true },
+  { icon: History, labelKey: "sidebar.auditLog", href: "/admin/audit-log", adminOnly: true },
 ];
 
 const itemClasses = (isActive: boolean) =>

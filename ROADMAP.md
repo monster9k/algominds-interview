@@ -233,10 +233,11 @@ Quyết định đã chốt với user trước khi code:
 - [x] **FE: `/admin/discuss` — nút Delete (moderation), hiện cho cả ADMIN và MODERATOR**
   📍 `admin-discuss-table.tsx` — thêm cột hành động (`t("problems.columnActions")`, tái dùng key có sẵn thay vì thêm `discuss.columnActions` mới, đúng pattern đã dùng ở `admin-users-table.tsx`), nút Delete mở `ConfirmDialog`, gọi hook `useDeleteDiscussPost()` (đã viết sẵn từ trước, chỉ còn thiếu phần UI nối vào bảng). Không cần check role trong component — route `/admin/discuss` đã được cả ADMIN và MODERATOR truy cập qua `AdminRoute`/`admin-only-route.tsx` nên nút Delete tự động hiện đúng cho cả 2 role. Thêm `discuss.deleteConfirmTitle`/`discuss.deleteConfirmDescription` vào `admin.json` 3 locale (parity 143 key khớp cả 3, verify bằng script flatten). Verify end-to-end qua browser thật (login `admin@algominds.dev`): xoá bài throwaway "Test post từ browser verify" → biến mất khỏi bảng ngay, toast "Đã xoá bài viết" hiện đúng, không lỗi console.
 
-- [ ] **FE: trang mới `/admin/audit-log`**
-  📍 `admin-audit-log-page.tsx` + `admin-audit-log-table.tsx` — `useAdminAuditLog({page})`, cột Admin/Action/Target/Thời gian. Sidebar item mới, chỉ hiện với ADMIN.
+- [x] **FE: trang mới `/admin/audit-log`**
+  📍 `admin-audit-log-page.tsx` + `admin-audit-log-table.tsx` — `useAdminAuditLog({page, limit})` (hook mới, `adminApi.getAuditLog()` gọi `GET /admin/audit-log?page=&limit=`, không có `search` vì BE không hỗ trợ tham số này). Cột Admin (tên + email), Action (`Badge` màu theo tiền tố `CREATE_`/`UPDATE_`/`DELETE_` của action string — teal/yellow/red, cùng bảng màu `DIFFICULTY_BADGE_CLASS` đã dùng ở `admin-problems-table.tsx`), Target (`targetType · targetId.slice(0,8)`), Thời gian (`toLocaleString()` — cần cả giờ, khác các bảng khác chỉ cần `toLocaleDateString()`). Tái dùng `AdminPagination` sẵn có. Sidebar item mới (icon `History`) đặt `adminOnly: true` — route đăng ký trong cùng nhánh `AdminOnlyRoute` đã chặn MODERATOR ở các trang khác, không cần cơ chế mới.
+  Verify end-to-end qua browser thật (login `admin@algominds.dev`): trang render đúng dữ liệu thật (thấy cả action `DELETE_DISCUSS_POST` từ lần xoá throwaway post ở task trước), màu badge đúng theo loại action, phân trang "Page 1/2" → "Page 2/2" hoạt động đúng (Next tự disable ở trang cuối), không lỗi console.
 
-- [ ] **i18n**: thêm toàn bộ key mới cho form/dialog/pagination/role-select/audit-log 3 locale, verify parity như các round trước.
+- [x] **i18n**: thêm `sidebar.auditLog` + `auditLog{title,columnAdmin,columnAction,columnTarget,columnCreatedAt,empty,loadError}` vào `admin.json` 3 locale — verify parity 151 key khớp cả 3 (script flatten). Các key form/dialog/pagination/role-select còn lại của P2b đã được thêm dần cùng từng task trước đó (không còn key nào thiếu tính đến lúc này).
 
 ---
 

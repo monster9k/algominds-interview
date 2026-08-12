@@ -1,5 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Library, Trophy, Users } from "lucide-react";
+import {
+  LayoutDashboard,
+  Library,
+  Trophy,
+  Users,
+  Lock,
+  MessageSquare,
+  Compass,
+  Swords,
+  Handshake,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
@@ -8,6 +18,11 @@ const sidebarItems = [
   { icon: Library, labelKey: "sidebar.problems", href: "/admin/problems" },
   { icon: Trophy, labelKey: "sidebar.contests", href: "/admin/contests" },
   { icon: Users, labelKey: "sidebar.users", href: "/admin/users" },
+  { icon: Lock, labelKey: "sidebar.store", href: "/admin/store" },
+  { icon: MessageSquare, labelKey: "sidebar.discuss", href: "/admin/discuss" },
+  { icon: Compass, labelKey: "sidebar.career", href: "/admin/career" },
+  { icon: Swords, labelKey: "sidebar.quests", href: "/admin/quests" },
+  { icon: Handshake, labelKey: "sidebar.peerInterview", href: "/admin/peer-interview" },
 ];
 
 const itemClasses = (isActive: boolean) =>

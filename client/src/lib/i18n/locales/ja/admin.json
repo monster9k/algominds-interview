@@ -3,7 +3,12 @@
     "dashboard": "ダッシュボード",
     "problems": "問題",
     "contests": "コンテスト",
-    "users": "ユーザー"
+    "users": "ユーザー",
+    "store": "ストア",
+    "discuss": "ディスカッション",
+    "career": "キャリア",
+    "quests": "クエスト",
+    "peerInterview": "ピア面接"
   },
   "header": {
     "title": "管理者",
@@ -54,5 +59,69 @@
     "columnCreatedAt": "登録日",
     "empty": "ユーザーはまだいません。",
     "loadError": "ユーザー一覧の読み込みに失敗しました。"
+  },
+  "store": {
+    "title": "ストア管理",
+    "columnId": "ID",
+    "columnName": "名前",
+    "columnCategory": "カテゴリー",
+    "columnPrice": "価格",
+    "categoryAvatarFrame": "アバターフレーム",
+    "categoryTitle": "称号",
+    "categoryBadgeColor": "バッジカラー",
+    "empty": "アイテムはまだありません。",
+    "loadError": "アイテム一覧の読み込みに失敗しました。"
+  },
+  "discuss": {
+    "title": "ディスカッション管理",
+    "columnId": "ID",
+    "columnTitle": "タイトル",
+    "columnAuthor": "投稿者",
+    "columnViews": "閲覧数",
+    "columnUpvotes": "評価数",
+    "columnComments": "コメント数",
+    "columnCreatedAt": "投稿日",
+    "empty": "投稿はまだありません。",
+    "loadError": "投稿一覧の読み込みに失敗しました。"
+  },
+  "career": {
+    "title": "キャリアトラック管理",
+    "columnId": "ID",
+    "columnName": "トラック名",
+    "columnCompany": "企業",
+    "columnStatus": "状態",
+    "companyGeneric": "汎用",
+    "statusActive": "有効",
+    "statusInactive": "無効",
+    "empty": "キャリアトラックはまだありません。",
+    "loadError": "キャリアトラック一覧の読み込みに失敗しました。"
+  },
+  "quests": {
+    "title": "クエスト管理",
+    "columnId": "ID",
+    "columnLanguage": "言語",
+    "columnDifficulty": "難易度",
+    "columnBuggyLine": "バグ行",
+    "columnStatus": "状態",
+    "statusActive": "有効",
+    "statusInactive": "無効",
+    "empty": "クエストはまだありません。",
+    "loadError": "クエスト一覧の読み込みに失敗しました。"
+  },
+  "peerInterview": {
+    "title": "ピア面接管理",
+    "columnId": "ID",
+    "columnCandidate": "候補者",
+    "columnInterviewer": "面接官",
+    "columnProblem": "問題",
+    "columnStatus": "状態",
+    "columnStartedAt": "開始日時",
+    "waiting": "待機中",
+    "statusWaitingForPeer": "相手待ち",
+    "statusActive": "進行中",
+    "statusCompleted": "完了",
+    "statusAbandoned": "中止",
+    "empty": "ピア面接セッションはまだありません。",
+    "loadError": "ピア面接セッション一覧の読み込みに失敗しました。"
   }
 }

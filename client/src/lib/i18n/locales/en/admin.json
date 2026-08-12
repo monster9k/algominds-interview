@@ -3,7 +3,12 @@
     "dashboard": "Dashboard",
     "problems": "Problems",
     "contests": "Contests",
-    "users": "Users"
+    "users": "Users",
+    "store": "Store",
+    "discuss": "Discuss",
+    "career": "Career",
+    "quests": "Quests",
+    "peerInterview": "Peer Interview"
   },
   "header": {
     "title": "Admin",
@@ -54,5 +59,69 @@
     "columnCreatedAt": "Created At",
     "empty": "No users yet.",
     "loadError": "Failed to load users."
+  },
+  "store": {
+    "title": "Manage Store",
+    "columnId": "ID",
+    "columnName": "Name",
+    "columnCategory": "Category",
+    "columnPrice": "Price",
+    "categoryAvatarFrame": "Avatar Frame",
+    "categoryTitle": "Title",
+    "categoryBadgeColor": "Badge Color",
+    "empty": "No items yet.",
+    "loadError": "Failed to load items."
+  },
+  "discuss": {
+    "title": "Manage Discuss",
+    "columnId": "ID",
+    "columnTitle": "Title",
+    "columnAuthor": "Author",
+    "columnViews": "Views",
+    "columnUpvotes": "Upvotes",
+    "columnComments": "Comments",
+    "columnCreatedAt": "Created At",
+    "empty": "No posts yet.",
+    "loadError": "Failed to load posts."
+  },
+  "career": {
+    "title": "Manage Career Tracks",
+    "columnId": "ID",
+    "columnName": "Track Name",
+    "columnCompany": "Company",
+    "columnStatus": "Status",
+    "companyGeneric": "Generic",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "empty": "No career tracks yet.",
+    "loadError": "Failed to load career tracks."
+  },
+  "quests": {
+    "title": "Manage Quests",
+    "columnId": "ID",
+    "columnLanguage": "Language",
+    "columnDifficulty": "Difficulty",
+    "columnBuggyLine": "Buggy Line",
+    "columnStatus": "Status",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "empty": "No quests yet.",
+    "loadError": "Failed to load quests."
+  },
+  "peerInterview": {
+    "title": "Manage Peer Interviews",
+    "columnId": "ID",
+    "columnCandidate": "Candidate",
+    "columnInterviewer": "Interviewer",
+    "columnProblem": "Problem",
+    "columnStatus": "Status",
+    "columnStartedAt": "Started At",
+    "waiting": "Waiting",
+    "statusWaitingForPeer": "Waiting for Peer",
+    "statusActive": "Active",
+    "statusCompleted": "Completed",
+    "statusAbandoned": "Abandoned",
+    "empty": "No peer interview sessions yet.",
+    "loadError": "Failed to load peer interview sessions."
   }
 }

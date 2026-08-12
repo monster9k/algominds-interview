@@ -3,7 +3,12 @@
     "dashboard": "Tổng quan",
     "problems": "Bài tập",
     "contests": "Cuộc thi",
-    "users": "Người dùng"
+    "users": "Người dùng",
+    "store": "Cửa hàng",
+    "discuss": "Thảo luận",
+    "career": "Career",
+    "quests": "Quest",
+    "peerInterview": "Phỏng vấn chéo"
   },
   "header": {
     "title": "Quản trị",
@@ -54,5 +59,69 @@
     "columnCreatedAt": "Ngày tạo",
     "empty": "Chưa có người dùng nào.",
     "loadError": "Không tải được danh sách người dùng."
+  },
+  "store": {
+    "title": "Quản lý Cửa hàng",
+    "columnId": "ID",
+    "columnName": "Tên",
+    "columnCategory": "Danh mục",
+    "columnPrice": "Giá",
+    "categoryAvatarFrame": "Khung Avatar",
+    "categoryTitle": "Danh hiệu",
+    "categoryBadgeColor": "Màu Badge",
+    "empty": "Chưa có vật phẩm nào.",
+    "loadError": "Không tải được danh sách vật phẩm."
+  },
+  "discuss": {
+    "title": "Quản lý Thảo luận",
+    "columnId": "ID",
+    "columnTitle": "Tiêu đề",
+    "columnAuthor": "Tác giả",
+    "columnViews": "Lượt xem",
+    "columnUpvotes": "Upvote",
+    "columnComments": "Comment",
+    "columnCreatedAt": "Ngày tạo",
+    "empty": "Chưa có bài thảo luận nào.",
+    "loadError": "Không tải được danh sách bài thảo luận."
+  },
+  "career": {
+    "title": "Quản lý Career Track",
+    "columnId": "ID",
+    "columnName": "Tên track",
+    "columnCompany": "Công ty",
+    "columnStatus": "Trạng thái",
+    "companyGeneric": "Chung",
+    "statusActive": "Hoạt động",
+    "statusInactive": "Ngừng hoạt động",
+    "empty": "Chưa có career track nào.",
+    "loadError": "Không tải được danh sách career track."
+  },
+  "quests": {
+    "title": "Quản lý Quest",
+    "columnId": "ID",
+    "columnLanguage": "Ngôn ngữ",
+    "columnDifficulty": "Độ khó",
+    "columnBuggyLine": "Dòng lỗi",
+    "columnStatus": "Trạng thái",
+    "statusActive": "Hoạt động",
+    "statusInactive": "Ngừng hoạt động",
+    "empty": "Chưa có quest nào.",
+    "loadError": "Không tải được danh sách quest."
+  },
+  "peerInterview": {
+    "title": "Quản lý Phỏng vấn chéo",
+    "columnId": "ID",
+    "columnCandidate": "Candidate",
+    "columnInterviewer": "Interviewer",
+    "columnProblem": "Bài tập",
+    "columnStatus": "Trạng thái",
+    "columnStartedAt": "Bắt đầu lúc",
+    "waiting": "Đang chờ",
+    "statusWaitingForPeer": "Chờ người tham gia",
+    "statusActive": "Đang diễn ra",
+    "statusCompleted": "Hoàn thành",
+    "statusAbandoned": "Đã huỷ",
+    "empty": "Chưa có phiên phỏng vấn chéo nào.",
+    "loadError": "Không tải được danh sách phiên phỏng vấn chéo."
   }
 }

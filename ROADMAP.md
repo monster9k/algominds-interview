@@ -191,7 +191,7 @@ Quyết định đã chốt với user trước khi code:
   📍 `create-problem.dto.ts` — thêm `functionName?: string` (fix bug tiềm ẩn đã ghi ở khảo sát).
   📍 `problems.service.ts` — thêm `update()`/`softDelete()`.
 
-- [ ] **BE: `contest` — thêm Update/Delete**
+- [x] **BE: `contest` — thêm Update/Delete** (verify thực tế: 17 test `contest.service.spec.ts` vẫn pass, curl update trên contest seed thật rồi revert lại title gốc, tạo/xoá 1 contest throwaway để test Delete không đụng dữ liệu demo, xác nhận biến mất khỏi `GET /contests` công khai)
   📍 `contest.controller.ts` — `PATCH /contests/:id` (title/description/startTime/endTime/status — KHÔNG đổi problem đã gán), `DELETE /contests/:id` (soft delete qua `deletedAt` mới thêm), guard `ADMIN`, gọi audit log.
   📍 `contest.service.ts` — thêm `update()`/`softDelete()`; `findAll()`/`findOne()` thêm `where: { deletedAt: null }` (hiện chưa filter vì field chưa tồn tại).
 

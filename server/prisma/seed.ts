@@ -1,14 +1,8 @@
-import {
-  PrismaClient,
-  Difficulty,
-  PersonaTone,
-  UserRole,
-} from '@prisma/client';
+import { PrismaClient, Difficulty, PersonaTone } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
 import slugify from 'slugify';
-import * as bcrypt from 'bcrypt';
 
 dotenv.config();
 
@@ -20,28 +14,6 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Start seeding...');
-
-  // ===============================
-  // TÀI KHOẢN ADMIN (dev)
-  // ===============================
-  console.log('👑 Seeding admin account...');
-
-  const ADMIN_EMAIL = 'admin@algominds.dev';
-  const ADMIN_PASSWORD = 'Admin@123';
-
-  await prisma.user.upsert({
-    where: { email: ADMIN_EMAIL },
-    update: { role: UserRole.ADMIN },
-    create: {
-      email: ADMIN_EMAIL,
-      name: 'Admin',
-      password: await bcrypt.hash(ADMIN_PASSWORD, 10),
-      role: UserRole.ADMIN,
-      provider: 'email',
-    },
-  });
-
-  console.log(`   → ${ADMIN_EMAIL} / ${ADMIN_PASSWORD} (dev only)`);
 
   // ===============================
   // BÀI 1: TWO SUM

@@ -32,10 +32,11 @@
 
 ## 🔴 P0 — Phân quyền, layout admin, data table Bài tập/Cuộc thi/Users (Read-only)
 
-- [ ] **BE: seed tài khoản admin**
-  📍 `server/prisma/seed.ts` — thêm `prisma.user.upsert({ where: { email: 'admin@algominds.dev' }, update: { role: UserRole.ADMIN }, create: { email: 'admin@algominds.dev', name: 'Admin', password: await bcrypt.hash('Admin@123', 10), role: UserRole.ADMIN, provider: 'email' } })`, import thêm `UserRole` từ `@prisma/client` và `* as bcrypt from 'bcrypt'`. Chạy `npx prisma db seed` để verify, in log email/password mẫu ra console để dễ test đăng nhập (không lưu secret thật vào seed, đây chỉ là tài khoản dev).
+- [x] **BE: seed tài khoản admin**
+  📍 Đã có sẵn — `server/prisma/seed-contests.ts:20-40` (`npm run seed:contests`) đã upsert đúng 1 tài khoản `admin@algominds.dev` / `Admin@12345` với `role: ADMIN`, verify thực tế bằng `POST /auth/login` → nhận JWT `role: "ADMIN"` thành công. Ban đầu định thêm 1 block seed admin mới vào `seed.ts` nhưng phát hiện trùng lặp với script này (khác password → gây nhầm login fail lúc test), đã revert phần thêm đó, không tạo 2 nguồn seed admin song song.
+  Bonus: tài khoản thật của user (`monster722006@gmail.com`) qua `GET /admin/users` xác nhận **đã có sẵn `role: "ADMIN"`** — không cần thao tác gì thêm cho ý "hoặc update tài khoản hiện tại thành ADMIN".
 
-- [ ] **BE: module `admin` mới — `GET /admin/stats`, `GET /admin/users`**
+- [x] **BE: module `admin` mới — `GET /admin/stats`, `GET /admin/users`**
   📍 `server/src/modules/admin/` (`admin.module.ts`, `admin.controller.ts`, `admin.service.ts`), đăng ký vào `AppModule`.
   ```
   GET /admin/stats   JwtAuthGuard + RolesGuard + @Roles('ADMIN')

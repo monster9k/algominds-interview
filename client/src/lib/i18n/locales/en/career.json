@@ -3,6 +3,10 @@
   "subtitle": "Pick a career track and go through Phone Screen, Technical Rounds, and the Onsite Loop with a different AI interviewer persona at each stage.",
   "stageCount": "{{count}} stage",
   "stageCount_other": "{{count}} stages",
+  "stats": {
+    "currentStage": "Current stage",
+    "stagesPassed": "Stages passed"
+  },
   "startTrack": "Start track",
   "noTracks": "No career tracks available yet.",
   "enterStage": "Enter stage",

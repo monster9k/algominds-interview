@@ -5,10 +5,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
   Building2,
+  Code2,
   Compass,
+  Gamepad2,
   ListChecks,
+  Lock,
   Trophy,
   Users,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +36,12 @@ import { StageDigest } from "../components/stage-digest";
 import { HiringEventsList } from "../components/hiring-events-list";
 import { PersonaUnlockButton } from "../components/persona-unlock-button";
 import { ReadinessReportCard } from "../components/readiness-report-card";
-import type { CareerTrackStage, CareerTrackCompany, StageStatus } from "../types";
+import type {
+  CareerTrackStage,
+  CareerTrackCompany,
+  StageKind,
+  StageStatus,
+} from "../types";
 
 function CompanyBadge({ company }: { company: CareerTrackCompany }) {
   return (
@@ -61,12 +70,42 @@ const STATUS_BADGE_VARIANT: Record<
   PENDING: "outline",
 };
 
-const STATUS_DOT_CLASS: Record<StageStatus, string> = {
-  ACTIVE: "bg-primary",
-  PASSED: "bg-emerald-500",
-  FAILED: "bg-destructive",
-  PENDING: "bg-muted-foreground/40",
+const STATUS_NODE_CLASS: Record<StageStatus, string> = {
+  ACTIVE: "bg-primary text-primary-foreground",
+  PASSED: "bg-emerald-500 text-white",
+  FAILED: "bg-destructive text-destructive-foreground",
+  PENDING: "bg-muted text-muted-foreground",
 };
+
+const STAGE_ICON: Record<StageKind, LucideIcon> = {
+  PROBLEM: Code2,
+  QUEST: Gamepad2,
+  PEER_INTERVIEW: Users,
+};
+
+function JourneyStatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-bold leading-none text-foreground">
+          {value}
+        </p>
+        <p className="mt-1 truncate text-xs text-muted-foreground">{label}</p>
+      </div>
+    </div>
+  );
+}
 
 export function CareerJourneyPage() {
   const { t } = useTranslation("career");
@@ -208,14 +247,22 @@ export function CareerJourneyPage() {
   // Chưa có journey IN_PROGRESS -> hiển thị danh sách track để chọn.
   if (!journey) {
     return (
-      <div className="w-full pb-10 max-w-3xl mx-auto">
-        <div className="flex items-center gap-2 mb-2">
-          <Compass className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-semibold text-foreground">
-            {t("title")}
-          </h1>
+      <div className="w-full pb-10 max-w-3xl mx-auto space-y-6">
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6">
+          <Compass
+            className="absolute -right-8 -bottom-8 h-44 w-44 text-primary/5 rotate-12 pointer-events-none"
+            aria-hidden
+          />
+          <div className="relative flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+              <Compass className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
+            </div>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground mb-6">{t("subtitle")}</p>
 
         {lastJourneyId && <ReadinessReportCard journeyId={lastJourneyId} />}
 
@@ -229,7 +276,10 @@ export function CareerJourneyPage() {
         ) : tracks && tracks.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2">
             {tracks.map((track) => (
-              <Card key={track.id}>
+              <Card
+                key={track.id}
+                className="transition-colors hover:border-primary/40"
+              >
                 <CardHeader>
                   <CardTitle className="text-lg">{track.name}</CardTitle>
                 </CardHeader>
@@ -263,50 +313,90 @@ export function CareerJourneyPage() {
   const progressByStageId = new Map(
     (journey.progress ?? []).map((p) => [p.stageId, p]),
   );
+  const passedCount = stages.filter(
+    (stage) => progressByStageId.get(stage.id)?.status === "PASSED",
+  ).length;
 
   return (
-    <div className="w-full pb-10 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2">
-          <Compass className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-semibold text-foreground">
-            {journey.track?.name ?? t("title")}
-          </h1>
+    <div className="w-full pb-10 max-w-2xl mx-auto space-y-6">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6">
+        <Compass
+          className="absolute -right-8 -bottom-8 h-44 w-44 text-primary/5 rotate-12 pointer-events-none"
+          aria-hidden
+        />
+        <div className="relative flex items-start justify-between gap-2">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+              <Compass className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                {journey.track?.name ?? t("title")}
+              </h1>
+              {journey.track?.company && (
+                <div className="mt-1">
+                  <CompanyBadge company={journey.track.company} />
+                </div>
+              )}
+              <p className="mt-2 text-sm text-muted-foreground">
+                {journey.track?.description}
+              </p>
+            </div>
+          </div>
+          {journey.eventId && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="shrink-0"
+              onClick={() => navigate(`/career/events/${journey.eventId}/leaderboard`)}
+            >
+              <Trophy className="mr-1.5 h-3.5 w-3.5" />
+              {t("events.viewLeaderboard")}
+            </Button>
+          )}
         </div>
-        {journey.eventId && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => navigate(`/career/events/${journey.eventId}/leaderboard`)}
-          >
-            <Trophy className="mr-1.5 h-3.5 w-3.5" />
-            {t("events.viewLeaderboard")}
-          </Button>
-        )}
       </div>
-      {journey.track?.company && (
-        <div className="mb-2">
-          <CompanyBadge company={journey.track.company} />
-        </div>
-      )}
-      <p className="text-sm text-muted-foreground mb-8">
-        {journey.track?.description}
-      </p>
 
-      <div className="relative space-y-6 border-l border-border pl-6">
+      <div className="grid grid-cols-2 gap-3">
+        <JourneyStatCard
+          icon={Compass}
+          label={t("stats.currentStage")}
+          value={activeProgress?.stage.label ?? "—"}
+        />
+        <JourneyStatCard
+          icon={Trophy}
+          label={t("stats.stagesPassed")}
+          value={`${passedCount}/${stages.length}`}
+        />
+      </div>
+
+      <div className="relative space-y-6">
+        <div className="absolute left-5 top-5 bottom-5 w-px bg-border" aria-hidden />
         {stages.map((stage) => {
           const progress = progressByStageId.get(stage.id);
           const status: StageStatus = progress?.status ?? "PENDING";
+          const StageIcon = STAGE_ICON[stage.kind];
 
           return (
-            <div key={stage.id} className="relative">
-              <span
+            <div key={stage.id} className="relative pl-14">
+              <div
                 className={cn(
-                  "absolute -left-[29px] top-5 h-3 w-3 rounded-full border-2 border-background",
-                  STATUS_DOT_CLASS[status],
+                  "absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-full border-2 border-background",
+                  STATUS_NODE_CLASS[status],
                 )}
-              />
-              <Card className={cn(status === "ACTIVE" && "border-primary")}>
+              >
+                {status === "PENDING" ? (
+                  <Lock className="h-4 w-4" />
+                ) : (
+                  <StageIcon className="h-4 w-4" />
+                )}
+              </div>
+              <Card
+                className={cn(
+                  status === "ACTIVE" && "border-primary bg-primary/5",
+                  status === "PENDING" && "opacity-60",
+                )}
+              >
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="font-semibold text-foreground">

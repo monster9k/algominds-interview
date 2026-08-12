@@ -12,6 +12,13 @@
     "ongoing": "Đang diễn ra",
     "finished": "Đã kết thúc"
   },
+  "table": {
+    "columnName": "Cuộc thi",
+    "columnStatus": "Trạng thái",
+    "columnStart": "Bắt đầu",
+    "columnProblems": "Số bài",
+    "columnCountdown": "Thời gian"
+  },
   "status": {
     "upcoming": "Sắp diễn ra",
     "ongoing": "Đang diễn ra",

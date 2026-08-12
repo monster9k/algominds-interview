@@ -183,7 +183,7 @@ Quyết định đã chốt với user trước khi code:
   ```
   Thêm quan hệ ngược `User.adminActionLogs AdminActionLog[]`. Áp dụng `npx prisma db push` + `npx prisma generate`.
 
-- [ ] **BE: `AdminAuditService` — helper ghi log dùng chung**
+- [x] **BE: `AdminAuditService` — helper ghi log dùng chung**
   📍 `server/src/modules/admin/admin-audit.service.ts` (mới) — 1 method `log(adminId, action, targetType, targetId, metadata?)` gọi `prisma.adminActionLog.create()`. Export qua `AdminModule`, import vào `ProblemsModule`/`ContestModule`/`DiscussModule` (hoặc gọi trực tiếp `PrismaService` — cân nhắc lúc code để tránh vòng phụ thuộc module, ưu tiên cách đơn giản nhất không tạo `forwardRef` mới).
 
 - [ ] **BE: `problems` — thêm Update/Delete + sửa `CreateProblemDto`**

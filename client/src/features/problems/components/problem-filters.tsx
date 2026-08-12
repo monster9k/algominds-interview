@@ -88,14 +88,14 @@ export function ProblemFilters({
             placeholder={t("filters.searchPlaceholder")}
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 h-10 bg-card border-border focus:border-ring text-foreground rounded-md"
+            className="pl-9 h-9 bg-card border-border focus:border-ring text-foreground rounded-md"
           />
         </div>
 
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 text-muted-foreground hover:bg-muted rounded-md shrink-0"
+          className="h-9 w-9 text-muted-foreground hover:bg-muted rounded-md shrink-0"
           title={
             sortDirection === "asc"
               ? t("filters.sortAscending")
@@ -114,7 +114,7 @@ export function ProblemFilters({
             )
           }
         >
-          <SelectTrigger className="w-[120px] h-10 bg-card border-border text-muted-foreground rounded-md">
+          <SelectTrigger className="w-[120px] h-9 bg-card border-border text-muted-foreground rounded-md">
             <SelectValue placeholder={t("filters.difficultyPlaceholder")} />
           </SelectTrigger>
           <SelectContent className="bg-popover border-border">
@@ -143,7 +143,7 @@ export function ProblemFilters({
           }
         >
           <SelectTrigger
-            className="w-[120px] h-10 bg-card border-border text-muted-foreground rounded-md disabled:opacity-50"
+            className="w-[120px] h-9 bg-card border-border text-muted-foreground rounded-md disabled:opacity-50"
             title={
               isAuthenticated ? undefined : t("filters.loginToFilterStatus")
             }
@@ -163,7 +163,7 @@ export function ProblemFilters({
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 text-muted-foreground hover:bg-muted rounded-md"
+          className="h-9 w-9 text-muted-foreground hover:bg-muted rounded-md"
         >
           <Tags className="h-4 w-4" />
         </Button>

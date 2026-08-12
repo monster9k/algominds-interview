@@ -188,6 +188,7 @@ export class AdminService {
         select: {
           id: true,
           title: true,
+          description: true,
           startTime: true,
           endTime: true,
           deletedAt: true,

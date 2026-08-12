@@ -90,7 +90,7 @@
 - [x] **FE: trang `/admin/contests` — data table**
   📍 `client/src/features/admin/pages/admin-contests-page.tsx` + `client/src/features/admin/components/admin-contests-table.tsx` — cột ID, Tiêu đề, Trạng thái (`Badge`, tái dùng `STATUS_BADGE_CLASS` từ `contest-table.tsx:18-23`), Thời gian bắt đầu. Dữ liệu từ `contestApi.getContests()` có sẵn. Nút "Tạo cuộc thi mới" stub console.log.
 
-- [ ] **FE: trang `/admin/users` — data table**
+- [x] **FE: trang `/admin/users` — data table**
   📍 `client/src/features/admin/pages/admin-users-page.tsx` + `client/src/features/admin/components/admin-users-table.tsx` — cột ID, Email, Tên, Role (`Badge`), Ngày tạo. Dữ liệu từ `useAdminUsers()`.
 
 - [ ] **i18n: `admin.json` 3 locale**

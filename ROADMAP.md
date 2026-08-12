@@ -50,7 +50,7 @@
 - [x] **FE: `AdminRoute` guard component**
   📍 `client/src/features/auth/components/admin-route.tsx` — mirror `protected-route.tsx`, thêm check `user?.role === "ADMIN"` sau khi đã xác nhận `isAuthenticated`; không phải ADMIN → `<Navigate to="/problems" replace />`.
 
-- [ ] **FE: feature folder `admin` — api + hooks**
+- [x] **FE: feature folder `admin` — api + hooks**
   📍 `client/src/features/admin/`:
   - `api/admin-api.ts`: `getStats()` → `GET /admin/stats`, `getUsers()` → `GET /admin/users`.
   - `hooks/use-admin-stats.ts`, `hooks/use-admin-users.ts` (TanStack Query, mirror `use-user-profile.ts`).

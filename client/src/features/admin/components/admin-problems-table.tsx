@@ -97,7 +97,7 @@ export function AdminProblemsTable({
   const someSelected = selectableProblems.some((p) => selectedIds.has(p.id));
 
   return (
-    <div className="rounded-xl overflow-hidden border border-border">
+    <div className="rounded-2xl overflow-hidden border border-border">
       <Table className="table-fixed">
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b border-border">

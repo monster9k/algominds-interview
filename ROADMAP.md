@@ -55,7 +55,7 @@
 - [x] **FE: `app-shell.tsx` — compose `IconSidebar`+`TopBar`+`Outlet`**
   📍 `client/src/components/layout/app-shell.tsx` (mới) — nhận `items` khác nhau cho admin/user, đây là shell dùng chung duy nhất.
 
-- [ ] **FE: `admin-layout.tsx` đổi sang dùng `AppShell`**
+- [x] **FE: `admin-layout.tsx` đổi sang dùng `AppShell`**
   📍 `client/src/features/admin/layout/admin-layout.tsx` — thay nội dung hiện tại (`AdminSidebar`+`AdminHeader` riêng) bằng `<AppShell items={adminSidebarItems} />`, dùng lại đúng mảng `sidebarItems` hiện có ở `admin-sidebar.tsx` (không đổi route/label/icon).
 
 - [ ] **BE: mở rộng `admin.service.ts`/`admin.controller.ts` — stats mở rộng + 4 endpoint mới**

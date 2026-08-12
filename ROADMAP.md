@@ -195,7 +195,7 @@ Quyết định đã chốt với user trước khi code:
   📍 `contest.controller.ts` — `PATCH /contests/:id` (title/description/startTime/endTime/status — KHÔNG đổi problem đã gán), `DELETE /contests/:id` (soft delete qua `deletedAt` mới thêm), guard `ADMIN`, gọi audit log.
   📍 `contest.service.ts` — thêm `update()`/`softDelete()`; `findAll()`/`findOne()` thêm `where: { deletedAt: null }` (hiện chưa filter vì field chưa tồn tại).
 
-- [ ] **BE: `admin` — `GET /admin/problems`, `GET /admin/contests` (paginated), mở rộng `GET /admin/users`**
+- [x] **BE: `admin` — `GET /admin/problems`, `GET /admin/contests` (paginated), mở rộng `GET /admin/users`** (verify curl: search/pagination hoạt động đúng, contest đã xoá ở task trước hiển thị đúng `deletedAt` trong list admin — khác `GET /contests` công khai. LƯU Ý: response shape `GET /admin/users` đổi từ mảng sang `{data,total,page,limit}` — `useAdminUsers()` FE tạm thời broken cho tới khi sửa ở task FE users, chấp nhận được vì cùng 1 người kiểm soát cả nhánh, không phải API đang được consume rộng rãi.)
   📍 `admin.service.ts`/`admin.controller.ts` — 3 endpoint dùng chung shape response `{ data, total, page, limit }`:
   - `GET /admin/problems?page=&limit=&search=&sortBy=&sortDirection=` — KHÔNG filter `deletedAt: null` mặc định (hoặc filter tuỳ query `includeDeleted`), select đủ `deletedAt` để FE hiển thị đúng Trạng thái.
   - `GET /admin/contests?page=&limit=&search=&sortBy=&sortDirection=`.

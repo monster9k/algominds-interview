@@ -1,5 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { deriveContestStatus } from '../contest/contest.service';
+
+export interface PaginationQuery {
+  page?: string;
+  limit?: string;
+  search?: string;
+  sortBy?: string;
+  sortDirection?: string;
+}
+
+function parsePagination(query: PaginationQuery) {
+  const page = Math.max(1, Number(query.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
+  return { page, limit, skip: (page - 1) * limit };
+}
 
 @Injectable()
 export class AdminService {
@@ -15,18 +31,118 @@ export class AdminService {
     return { totalUsers, totalProblems, totalSubmissions };
   }
 
-  getUsers() {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isPro: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  async getUsers(query: PaginationQuery) {
+    const { page, limit, skip } = parsePagination(query);
+
+    const where: Prisma.UserWhereInput = query.search
+      ? {
+          OR: [
+            { name: { contains: query.search, mode: 'insensitive' } },
+            { email: { contains: query.search, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    const sortable = ['name', 'email', 'role', 'createdAt'];
+    const sortBy = sortable.includes(query.sortBy ?? '')
+      ? query.sortBy!
+      : 'createdAt';
+    const sortDirection = query.sortDirection === 'asc' ? 'asc' : 'desc';
+
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          isPro: true,
+          createdAt: true,
+          deletedAt: true,
+        },
+        orderBy: { [sortBy]: sortDirection },
+        skip,
+        take: limit,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
+  }
+
+  async getProblems(query: PaginationQuery) {
+    const { page, limit, skip } = parsePagination(query);
+
+    const where: Prisma.ProblemWhereInput = query.search
+      ? { title: { contains: query.search, mode: 'insensitive' } }
+      : {};
+
+    const sortable = ['title', 'difficulty', 'createdAt', 'displayId'];
+    const sortBy = sortable.includes(query.sortBy ?? '')
+      ? query.sortBy!
+      : 'displayId';
+    const sortDirection = query.sortDirection === 'desc' ? 'desc' : 'asc';
+
+    // KHÔNG filter deletedAt: null (khác GET /problems công khai) — admin
+    // cần thấy cả problem đã xoá để cột Trạng thái hiển thị đúng thực tế.
+    const [data, total] = await Promise.all([
+      this.prisma.problem.findMany({
+        where,
+        select: {
+          id: true,
+          displayId: true,
+          title: true,
+          difficulty: true,
+          deletedAt: true,
+          createdAt: true,
+        },
+        orderBy: { [sortBy]: sortDirection },
+        skip,
+        take: limit,
+      }),
+      this.prisma.problem.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
+  }
+
+  async getContests(query: PaginationQuery) {
+    const { page, limit, skip } = parsePagination(query);
+
+    const where: Prisma.ContestWhereInput = query.search
+      ? { title: { contains: query.search, mode: 'insensitive' } }
+      : {};
+
+    const sortable = ['title', 'startTime', 'createdAt'];
+    const sortBy = sortable.includes(query.sortBy ?? '')
+      ? query.sortBy!
+      : 'startTime';
+    const sortDirection = query.sortDirection === 'asc' ? 'asc' : 'desc';
+
+    const [rows, total] = await Promise.all([
+      this.prisma.contest.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          startTime: true,
+          endTime: true,
+          deletedAt: true,
+        },
+        orderBy: { [sortBy]: sortDirection },
+        skip,
+        take: limit,
+      }),
+      this.prisma.contest.count({ where }),
+    ]);
+
+    const data = rows.map((c) => ({
+      ...c,
+      status: deriveContestStatus(c.startTime, c.endTime),
+    }));
+
+    return { data, total, page, limit };
   }
 
   // Khác GET /quest/snippets — endpoint đó cố tình strip buggyLine/explanation

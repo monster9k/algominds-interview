@@ -97,11 +97,17 @@ KPI row (4 card đầu) không thuộc phân tầng trên — dải "top-line me
 
 ## 🔴 P0 — Prototype ngôn ngữ thiết kế trên `dashboard-kpi-card.tsx` — CỔNG DUYỆT BẮT BUỘC
 
-- [x] **Recompose `dashboard-kpi-card.tsx`**
-  📍 `client/src/features/admin/components/dashboard-kpi-card.tsx` — gộp `CardHeader`+`CardContent` (2 hộp `p-6` chồng nhau) thành 1 khối `CardContent p-4` duy nhất. Label+icon trên 1 hàng `items-center justify-between`; value+delta `items-baseline`; giữ `text-2xl` cho value nhưng đổi `font-bold`→`font-semibold`; compare-label `mt-0.5` thay vì `mt-1`. Bỏ import `CardHeader`/`CardTitle` không dùng nữa.
-- [x] **Verify**: `tsc -b` sạch; `npm run lint` 0 error (13 warning có sẵn không liên quan, không xuất hiện ở file vừa sửa).
-- [x] **QA Chrome tool**: `/admin` dashboard — dark theme + light theme đều hiển thị đúng (card gọn, canh chỉnh baseline rõ, badge delta màu đúng), console sạch (0 error). Viewport hẹp: `resize_window` báo thành công nhưng `window.innerWidth` không đổi thực tế (giới hạn tool đã ghi nhận từ đợt redesign admin trước) — không verify trực tiếp được, nhưng thay đổi chỉ động padding/typography nội bộ card đã nằm trong grid responsive có sẵn (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`), không đụng class breakpoint nên rủi ro thấp.
-- [x] **Commit riêng cho P0**, tick checkbox này trong cùng commit.
+> **Lần 1 bị user từ chối** ("vẫn giống bản gốc thu nhỏ đều, chưa đủ premium/MacBook-native"). Đã rework lại lần 2 theo hướng thay đổi ngôn ngữ thị giác thực sự, không chỉ nén padding — xem chi tiết bên dưới.
+
+- [x] **Recompose `dashboard-kpi-card.tsx` (rework lần 2)**
+  📍 `client/src/features/admin/components/dashboard-kpi-card.tsx` — thiết kế lại 3 tầng rõ rệt thay vì bố cục cũ:
+  - **Metadata row** (nhẹ nhất): icon `h-3.5 w-3.5 text-muted-foreground/70` + label đổi hẳn sang ngôn ngữ caption `text-[11px] font-medium uppercase tracking-wide text-muted-foreground` (trước là `text-sm` thường), gộp icon+label thành 1 nhóm liền `gap-1.5` (trước icon bị đẩy sang góc phải riêng biệt bằng `justify-between`).
+  - **Metric** (nổi bật nhất — tăng, không giảm): `text-3xl` (trước `text-2xl`) `font-semibold leading-none tracking-tight tabular-nums`, đứng riêng 1 dòng (trước value+delta-badge chung 1 hàng cạnh tranh nhau).
+  - **Caption row** (nhẹ, gộp lại): delta + compare-label giờ nằm chung 1 dòng nhỏ `text-xs` — delta chỉ còn text màu + icon mũi tên (bỏ hẳn khung `border`+`bg` badge cũ, giảm "nặng nề" thị giác), compare-label muted đứng cạnh cùng dòng (trước tách thành dòng riêng bên dưới).
+  - **Card chrome**: border nhẹ hơn `border-border/60` (trước border mặc định đậm hơn), `shadow-none` (bỏ hẳn `shadow-sm` mặc định — bám đúng nguyên tắc "phẳng dựa border" của `design.md`), radius `rounded-xl` (trước `rounded-lg` mặc định) — tinh chỉnh riêng cho nhóm KPI card, không đụng `rounded-2xl` đã khoá của các container bảng/chart.
+- [x] **Verify**: `tsc -b` sạch; `npm run lint` 0 error (13 warning có sẵn không liên quan).
+- [x] **QA Chrome tool**: `/admin` dashboard — dark + light theme đều hiển thị rõ, số liệu nổi bật, caption gọn, border/radius mềm hơn rõ rệt so với các card khác (Sessions Over Time, Recent Activity...) chưa đổi trên cùng màn hình — tạo đối chiếu trực quan trước/sau. Console sạch cả 2 theme. Viewport hẹp vẫn không verify trực tiếp được do giới hạn `resize_window` tool đã ghi nhận trước đó — rủi ro thấp vì không đụng class breakpoint của grid.
+- [x] **Commit riêng cho bản rework**, tick checkbox này trong cùng commit.
 - [ ] **DỪNG LẠI — trình bày kết quả render thật cho user, chờ xác nhận rõ ràng trước khi làm P1.** Không tự động rollout.
 
 ---

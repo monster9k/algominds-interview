@@ -23,28 +23,28 @@ export function DashboardKpiCard({
   const isPositive = (deltaPct ?? 0) >= 0;
 
   return (
-    <Card>
+    <Card className="rounded-xl border-border/60 shadow-none">
       <CardContent className="p-4">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+          <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             {label}
           </span>
-          <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
         </div>
         {isLoading ? (
-          <Skeleton className="mt-2.5 h-7 w-20" />
+          <Skeleton className="mt-2 h-8 w-24" />
         ) : (
-          <div className="mt-2.5 flex items-baseline gap-2">
-            <span className="text-2xl font-semibold text-foreground">
-              {value}
-            </span>
+          <div className="mt-1.5 text-3xl font-semibold leading-none tracking-tight text-foreground tabular-nums">
+            {value}
+          </div>
+        )}
+        {!isLoading && (
+          <div className="mt-2 flex items-center gap-1.5 text-xs">
             {deltaPct !== undefined && (
               <span
                 className={cn(
-                  "flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-xs font-medium",
-                  isPositive
-                    ? "bg-teal-500/10 text-teal-500 border-teal-500/20"
-                    : "bg-red-500/10 text-red-500 border-red-500/20",
+                  "inline-flex items-center gap-0.5 font-medium",
+                  isPositive ? "text-teal-500" : "text-red-500",
                 )}
               >
                 {isPositive ? (
@@ -55,12 +55,8 @@ export function DashboardKpiCard({
                 {Math.abs(deltaPct)}%
               </span>
             )}
+            <span className="text-muted-foreground">{compareLabel}</span>
           </div>
-        )}
-        {!isLoading && (
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {compareLabel}
-          </p>
         )}
       </CardContent>
     </Card>

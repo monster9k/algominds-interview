@@ -14,14 +14,18 @@ export type AdminAction =
   | 'DELETE_DISCUSS_POST'
   | 'CREATE_SHOP_ITEM'
   | 'UPDATE_SHOP_ITEM'
-  | 'DELETE_SHOP_ITEM';
+  | 'DELETE_SHOP_ITEM'
+  | 'CREATE_BUG_SNIPPET'
+  | 'UPDATE_BUG_SNIPPET'
+  | 'DELETE_BUG_SNIPPET';
 
 export type AdminActionTargetType =
   | 'Problem'
   | 'Contest'
   | 'User'
   | 'DiscussPost'
-  | 'ShopItem';
+  | 'ShopItem'
+  | 'BugSnippet';
 
 @Injectable()
 export class AdminAuditService {

@@ -4,7 +4,7 @@
 >
 > Bản này **thay thế hoàn toàn** — chủ đề khác hẳn (backend, không phải redesign UI). Mục tiêu: lên kế hoạch cho các endpoint backend còn thiếu để bảng admin Store/Career/Quests/Peer Interview có đủ chức năng **thêm/sửa/xoá** (hiện tại 4 bảng này chỉ có GET, hoàn toàn read-only), và riêng **Discuss** cần thêm khả năng **"ban" 1 comment cụ thể** (khác với xoá cả bài viết — endpoint xoá post đã có sẵn).
 >
-> **Trạng thái: 🔴 P0 (Store) đã xong** — CRUD `ShopItem` đầy đủ, verify build/lint/test + tay qua curl, commit riêng. Tiếp theo: 🟡 P1 (Career).
+> **Trạng thái: 🔴 P0 (Store) và 🟡 P2 (Quest) đã xong** — CRUD `ShopItem` và `BugSnippet` đầy đủ, verify build/lint/test + tay qua curl, commit riêng. P1 (Career) bị bỏ qua theo yêu cầu của user (làm P2 trước P1) — vẫn còn `[ ]`, làm sau nếu được yêu cầu. Tiếp theo: 🟡 P3 (Discuss ban comment) hoặc quay lại 🟡 P1 (Career).
 
 ## Cách đọc file này
 - Mỗi mục ghi rõ **model Prisma liên quan**, **rủi ro FK/data-integrity** (nếu có), và **vị trí code** (`📍`) cần đụng khi thực thi.
@@ -82,13 +82,15 @@
 - [ ] `getActiveTracks()` hiện tại filter `isActive: true` (đúng cho phía user) — thêm 1 method/endpoint admin riêng trả TẤT CẢ track (kể cả inactive).
 - ⚠️ Form Create/Edit chỉ gồm 4 field cơ bản (`key/name/description/companyId`) — **không** động vào `CareerTrackStage` (cấu trúc pipeline nhiều bước, ngoài phạm vi CRUD đơn giản này; track mới tạo sẽ chưa có stage nào cho tới khi có tính năng quản lý stage riêng).
 
-### 🟡 P2 — Quest: CRUD `BugSnippet` (không cần migration)
-- [ ] `dto/create-bug-snippet.dto.ts`: `language, difficulty(enum), code, buggyLine(int)`, `explanation?` — `isActive` mặc định `true`.
-- [ ] `dto/update-bug-snippet.dto.ts`: mọi field optional + `isActive`.
-- [ ] `POST /quest/snippets`, `PATCH /quest/snippets/:id`, `DELETE /quest/snippets/:id` (set `isActive=false`) — (ADMIN).
+### 🟡 P2 — Quest: CRUD `BugSnippet` (không cần migration) — ✅ ĐÃ XONG
+- [x] `dto/create-bug-snippet.dto.ts`: `language, difficulty(enum), code, buggyLine(int)`, `explanation?` — `isActive` mặc định `true` (do Prisma `@default(true)`, DTO không cần field này).
+- [x] `dto/update-bug-snippet.dto.ts`: mọi field optional + `isActive`.
+- [x] `POST /quest/snippets`, `PATCH /quest/snippets/:id`, `DELETE /quest/snippets/:id` (set `isActive=false`) — (ADMIN, `@UseGuards(RolesGuard) @Roles('ADMIN')` áp riêng lên 3 route mới, class-level chỉ có `JwtAuthGuard` vì các route công khai khác trong cùng controller không cần role check).
   📍 `server/src/modules/quest/quest.controller.ts`, `quest.service.ts`.
-- [ ] Audit log: `CREATE_BUG_SNIPPET` / `UPDATE_BUG_SNIPPET` / `DELETE_BUG_SNIPPET`.
-- [ ] `admin.service.ts#getQuests()` đã trả đủ field (không strip `buggyLine` như `GET /quest/snippets` công khai) — giữ nguyên, dùng luôn cho list admin sau CRUD.
+- [x] Audit log: `CREATE_BUG_SNIPPET` / `UPDATE_BUG_SNIPPET` / `DELETE_BUG_SNIPPET`.
+  📍 `server/src/modules/admin/admin-audit.service.ts` (mở rộng `AdminAction`/`AdminActionTargetType` thêm `BugSnippet`), `QuestModule` import `AdminModule` để inject `AdminAuditService` (đúng pattern `StoreModule` ở P0).
+- [x] `admin.service.ts#getQuests()` đã trả đủ field (không strip `buggyLine` như `GET /quest/snippets` công khai) — giữ nguyên, dùng luôn cho list admin sau CRUD, không cần sửa gì thêm.
+- [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 pass (không có test riêng cho quest, nhưng không phá vỡ 5 suite hiện có). Test tay end-to-end qua curl với JWT admin thật: create → xuất hiện trong `GET /quest/snippets` công khai → update explanation → `GET /admin/quests` phản ánh đúng → soft-delete → `GET /admin/quests` vẫn thấy (kèm `isActive:false`) → `GET /quest/snippets` công khai không còn hiện (verify bằng cách quét `count=30` cùng `language`) → delete lần 2 → 404 → update id không tồn tại → 404 → tạo không token → 401 → audit log ghi đủ 3 hành động đúng thứ tự. Snippet test đã xoá thẳng khỏi DB sau khi verify (chưa từng có `QuestAttempt` nào tham chiếu vì bảng này không có FK tới `BugSnippet`).
 
 ### 🟡 P3 — Discuss: ban 1 comment cụ thể (không cần migration)
 - [ ] `DELETE /discuss/:postId/comments/:commentId` (ADMIN + MODERATOR — cùng quyền với xoá post hiện có) — set `DiscussComment.deletedAt`, đồng thời `DiscussPost.commentCount` decrement trong 1 transaction (đối xứng `createComment`).

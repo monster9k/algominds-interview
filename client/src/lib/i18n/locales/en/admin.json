@@ -139,15 +139,32 @@
   },
   "store": {
     "title": "Manage Store",
+    "createNew": "New Item",
     "columnId": "ID",
     "columnName": "Name",
     "columnCategory": "Category",
     "columnPrice": "Price",
+    "columnStatus": "Status",
     "categoryAvatarFrame": "Avatar Frame",
     "categoryTitle": "Title",
     "categoryBadgeColor": "Badge Color",
+    "statusActive": "Active",
+    "statusDeleted": "Deleted",
     "empty": "No items yet.",
-    "loadError": "Failed to load items."
+    "loadError": "Failed to load items.",
+    "createTitle": "Create New Item",
+    "editTitle": "Edit Item",
+    "fieldKey": "Key (unique identifier)",
+    "fieldName": "Name",
+    "fieldDescription": "Description",
+    "fieldCategory": "Category",
+    "fieldPrice": "Price (coins)",
+    "fieldIconKey": "Icon Key",
+    "iconKeyHintTitle": "lucide-react icon name (e.g. \"crown\", \"star\")",
+    "iconKeyHintColor": "Hex color code (e.g. \"#e11d48\")",
+    "keyLockedHint": "Key cannot be changed after creation.",
+    "deleteConfirmTitle": "Delete this item?",
+    "deleteConfirmDescription": "The item will be permanently hidden from the store (not recoverable) — users who already own it keep it."
   },
   "discuss": {
     "title": "Manage Discuss",
@@ -161,10 +178,19 @@
     "empty": "No posts yet.",
     "loadError": "Failed to load posts.",
     "deleteConfirmTitle": "Delete this post?",
-    "deleteConfirmDescription": "The post will be hidden from the public list (soft delete), recoverable later if needed."
+    "deleteConfirmDescription": "The post will be hidden from the public list (soft delete), recoverable later if needed.",
+    "viewComments": "View comments",
+    "commentsDialogTitle": "Post comments",
+    "commentsLoadError": "Failed to load comments.",
+    "commentsEmpty": "This post has no comments yet.",
+    "bannedLabel": "Hidden",
+    "banAction": "Hide comment",
+    "banConfirmTitle": "Hide this comment?",
+    "banConfirmDescription": "The comment will be hidden from the post (cannot be undone), and the post's comment count will decrease accordingly."
   },
   "career": {
     "title": "Manage Career Tracks",
+    "createNew": "New Track",
     "columnId": "ID",
     "columnName": "Track Name",
     "columnCompany": "Company",
@@ -173,10 +199,21 @@
     "statusActive": "Active",
     "statusInactive": "Inactive",
     "empty": "No career tracks yet.",
-    "loadError": "Failed to load career tracks."
+    "loadError": "Failed to load career tracks.",
+    "createTitle": "Create New Career Track",
+    "editTitle": "Edit Career Track",
+    "fieldKey": "Key (unique identifier)",
+    "fieldName": "Track Name",
+    "fieldDescription": "Description",
+    "fieldCompany": "Company",
+    "fieldIsActive": "Active",
+    "companyNone": "— Generic (no company) —",
+    "deleteConfirmTitle": "Deactivate this career track?",
+    "deleteConfirmDescription": "The track will be hidden from the public list (isActive=false), can be re-enabled later via Edit."
   },
   "quests": {
     "title": "Manage Quests",
+    "createNew": "New Snippet",
     "columnId": "ID",
     "columnLanguage": "Language",
     "columnDifficulty": "Difficulty",
@@ -185,7 +222,17 @@
     "statusActive": "Active",
     "statusInactive": "Inactive",
     "empty": "No quests yet.",
-    "loadError": "Failed to load quests."
+    "loadError": "Failed to load quests.",
+    "createTitle": "Create New Bug Snippet",
+    "editTitle": "Edit Bug Snippet",
+    "fieldLanguage": "Language",
+    "fieldDifficulty": "Difficulty",
+    "fieldCode": "Code",
+    "fieldBuggyLine": "Buggy Line (0-indexed)",
+    "fieldExplanation": "Explanation (optional)",
+    "fieldIsActive": "Active",
+    "deleteConfirmTitle": "Deactivate this bug snippet?",
+    "deleteConfirmDescription": "The snippet will be hidden from Quest (isActive=false), can be re-enabled later via Edit."
   },
   "peerInterview": {
     "title": "Manage Peer Interviews",
@@ -201,7 +248,10 @@
     "statusCompleted": "Completed",
     "statusAbandoned": "Abandoned",
     "empty": "No peer interview sessions yet.",
-    "loadError": "Failed to load peer interview sessions."
+    "loadError": "Failed to load peer interview sessions.",
+    "forceAbandonAction": "Force abandon",
+    "forceAbandonConfirmTitle": "Force abandon this session?",
+    "forceAbandonConfirmDescription": "Use this when a session is stuck (one side disconnected and never returned). The session will move to Abandoned — this cannot be undone."
   },
   "auditLog": {
     "title": "Admin Audit Log",

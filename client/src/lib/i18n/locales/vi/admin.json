@@ -139,15 +139,32 @@
   },
   "store": {
     "title": "Quản lý Cửa hàng",
+    "createNew": "Tạo vật phẩm mới",
     "columnId": "ID",
     "columnName": "Tên",
     "columnCategory": "Danh mục",
     "columnPrice": "Giá",
+    "columnStatus": "Trạng thái",
     "categoryAvatarFrame": "Khung Avatar",
     "categoryTitle": "Danh hiệu",
     "categoryBadgeColor": "Màu Badge",
+    "statusActive": "Hoạt động",
+    "statusDeleted": "Đã xoá",
     "empty": "Chưa có vật phẩm nào.",
-    "loadError": "Không tải được danh sách vật phẩm."
+    "loadError": "Không tải được danh sách vật phẩm.",
+    "createTitle": "Tạo vật phẩm mới",
+    "editTitle": "Sửa vật phẩm",
+    "fieldKey": "Key (định danh duy nhất)",
+    "fieldName": "Tên",
+    "fieldDescription": "Mô tả",
+    "fieldCategory": "Danh mục",
+    "fieldPrice": "Giá (xu)",
+    "fieldIconKey": "Icon Key",
+    "iconKeyHintTitle": "Tên icon lucide-react (vd: \"crown\", \"star\")",
+    "iconKeyHintColor": "Mã màu hex (vd: \"#e11d48\")",
+    "keyLockedHint": "Không thể đổi key sau khi tạo.",
+    "deleteConfirmTitle": "Xoá vật phẩm này?",
+    "deleteConfirmDescription": "Vật phẩm sẽ bị ẩn khỏi cửa hàng vĩnh viễn (không thể khôi phục) — user đã sở hữu vẫn giữ được vật phẩm."
   },
   "discuss": {
     "title": "Quản lý Thảo luận",
@@ -161,10 +178,19 @@
     "empty": "Chưa có bài thảo luận nào.",
     "loadError": "Không tải được danh sách bài thảo luận.",
     "deleteConfirmTitle": "Xoá bài thảo luận này?",
-    "deleteConfirmDescription": "Bài viết sẽ bị ẩn khỏi danh sách công khai (soft delete), có thể khôi phục sau nếu cần."
+    "deleteConfirmDescription": "Bài viết sẽ bị ẩn khỏi danh sách công khai (soft delete), có thể khôi phục sau nếu cần.",
+    "viewComments": "Xem comment",
+    "commentsDialogTitle": "Comment của bài viết",
+    "commentsLoadError": "Không tải được danh sách comment.",
+    "commentsEmpty": "Bài viết này chưa có comment nào.",
+    "bannedLabel": "Đã ẩn",
+    "banAction": "Ẩn comment",
+    "banConfirmTitle": "Ẩn comment này?",
+    "banConfirmDescription": "Comment sẽ bị ẩn khỏi bài viết (không thể hoàn tác), số lượt comment trên bài sẽ giảm tương ứng."
   },
   "career": {
     "title": "Quản lý Career Track",
+    "createNew": "Tạo track mới",
     "columnId": "ID",
     "columnName": "Tên track",
     "columnCompany": "Công ty",
@@ -173,10 +199,21 @@
     "statusActive": "Hoạt động",
     "statusInactive": "Ngừng hoạt động",
     "empty": "Chưa có career track nào.",
-    "loadError": "Không tải được danh sách career track."
+    "loadError": "Không tải được danh sách career track.",
+    "createTitle": "Tạo career track mới",
+    "editTitle": "Sửa career track",
+    "fieldKey": "Key (định danh duy nhất)",
+    "fieldName": "Tên track",
+    "fieldDescription": "Mô tả",
+    "fieldCompany": "Công ty",
+    "fieldIsActive": "Đang hoạt động",
+    "companyNone": "— Chung (không gắn công ty) —",
+    "deleteConfirmTitle": "Tắt career track này?",
+    "deleteConfirmDescription": "Track sẽ bị ẩn khỏi danh sách công khai (isActive=false), có thể bật lại sau qua nút Sửa."
   },
   "quests": {
     "title": "Quản lý Quest",
+    "createNew": "Tạo snippet mới",
     "columnId": "ID",
     "columnLanguage": "Ngôn ngữ",
     "columnDifficulty": "Độ khó",
@@ -185,7 +222,17 @@
     "statusActive": "Hoạt động",
     "statusInactive": "Ngừng hoạt động",
     "empty": "Chưa có quest nào.",
-    "loadError": "Không tải được danh sách quest."
+    "loadError": "Không tải được danh sách quest.",
+    "createTitle": "Tạo bug snippet mới",
+    "editTitle": "Sửa bug snippet",
+    "fieldLanguage": "Ngôn ngữ",
+    "fieldDifficulty": "Độ khó",
+    "fieldCode": "Code",
+    "fieldBuggyLine": "Dòng lỗi (đánh số từ 0)",
+    "fieldExplanation": "Giải thích (tuỳ chọn)",
+    "fieldIsActive": "Đang hoạt động",
+    "deleteConfirmTitle": "Tắt bug snippet này?",
+    "deleteConfirmDescription": "Snippet sẽ bị ẩn khỏi Quest (isActive=false), có thể bật lại sau qua nút Sửa."
   },
   "peerInterview": {
     "title": "Quản lý Phỏng vấn chéo",
@@ -201,7 +248,10 @@
     "statusCompleted": "Hoàn thành",
     "statusAbandoned": "Đã huỷ",
     "empty": "Chưa có phiên phỏng vấn chéo nào.",
-    "loadError": "Không tải được danh sách phiên phỏng vấn chéo."
+    "loadError": "Không tải được danh sách phiên phỏng vấn chéo.",
+    "forceAbandonAction": "Buộc huỷ phiên",
+    "forceAbandonConfirmTitle": "Buộc huỷ phiên này?",
+    "forceAbandonConfirmDescription": "Dùng khi phiên bị kẹt (1 bên rớt mạng, không quay lại). Phiên sẽ chuyển sang trạng thái Đã huỷ, không thể hoàn tác."
   },
   "auditLog": {
     "title": "Nhật ký hành động Admin",

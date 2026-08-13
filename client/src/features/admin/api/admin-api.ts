@@ -17,6 +17,12 @@ import {
   SessionStatusBreakdownItem,
   AcceptanceByDifficultyItem,
   TopCompanyItem,
+  AdminShopItem,
+  ShopItemFormPayload,
+  AdminCareerTrack,
+  CareerTrackFormPayload,
+  BugSnippetFormPayload,
+  AdminDiscussComment,
 } from "../types";
 
 export const adminApi = {
@@ -122,6 +128,78 @@ export const adminApi = {
 
   deleteContest: async (id: string) => {
     const response = await api.delete(`/contests/${id}`);
+    return response.data;
+  },
+
+  getStoreItems: async (): Promise<AdminShopItem[]> => {
+    const response = await api.get("/admin/store/items");
+    return response.data;
+  },
+
+  createShopItem: async (payload: ShopItemFormPayload) => {
+    const response = await api.post("/store/items", payload);
+    return response.data;
+  },
+
+  updateShopItem: async (id: string, payload: Partial<ShopItemFormPayload>) => {
+    const response = await api.patch(`/store/items/${id}`, payload);
+    return response.data;
+  },
+
+  deleteShopItem: async (id: string) => {
+    const response = await api.delete(`/store/items/${id}`);
+    return response.data;
+  },
+
+  getCareerTracks: async (): Promise<AdminCareerTrack[]> => {
+    const response = await api.get("/admin/career/tracks");
+    return response.data;
+  },
+
+  createCareerTrack: async (payload: CareerTrackFormPayload) => {
+    const response = await api.post("/career/tracks", payload);
+    return response.data;
+  },
+
+  updateCareerTrack: async (id: string, payload: Partial<CareerTrackFormPayload>) => {
+    const response = await api.patch(`/career/tracks/${id}`, payload);
+    return response.data;
+  },
+
+  deleteCareerTrack: async (id: string) => {
+    const response = await api.delete(`/career/tracks/${id}`);
+    return response.data;
+  },
+
+  createBugSnippet: async (payload: BugSnippetFormPayload) => {
+    const response = await api.post("/quest/snippets", payload);
+    return response.data;
+  },
+
+  updateBugSnippet: async (id: string, payload: Partial<BugSnippetFormPayload>) => {
+    const response = await api.patch(`/quest/snippets/${id}`, payload);
+    return response.data;
+  },
+
+  deleteBugSnippet: async (id: string) => {
+    const response = await api.delete(`/quest/snippets/${id}`);
+    return response.data;
+  },
+
+  forceAbandonPeerInterview: async (id: string) => {
+    const response = await api.patch(`/peer-interviews/${id}/status`, {
+      status: "ABANDONED",
+    });
+    return response.data;
+  },
+
+  getDiscussComments: async (postId: string): Promise<AdminDiscussComment[]> => {
+    const response = await api.get(`/admin/discuss/${postId}/comments`);
+    return response.data;
+  },
+
+  banDiscussComment: async (postId: string, commentId: string) => {
+    const response = await api.delete(`/discuss/${postId}/comments/${commentId}`);
     return response.data;
   },
 

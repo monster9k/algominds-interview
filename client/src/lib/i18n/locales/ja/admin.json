@@ -139,15 +139,32 @@
   },
   "store": {
     "title": "ストア管理",
+    "createNew": "新規アイテム",
     "columnId": "ID",
     "columnName": "名前",
     "columnCategory": "カテゴリー",
     "columnPrice": "価格",
+    "columnStatus": "ステータス",
     "categoryAvatarFrame": "アバターフレーム",
     "categoryTitle": "称号",
     "categoryBadgeColor": "バッジカラー",
+    "statusActive": "有効",
+    "statusDeleted": "削除済み",
     "empty": "アイテムはまだありません。",
-    "loadError": "アイテム一覧の読み込みに失敗しました。"
+    "loadError": "アイテム一覧の読み込みに失敗しました。",
+    "createTitle": "新規アイテムを作成",
+    "editTitle": "アイテムを編集",
+    "fieldKey": "キー（一意の識別子）",
+    "fieldName": "名前",
+    "fieldDescription": "説明",
+    "fieldCategory": "カテゴリー",
+    "fieldPrice": "価格（コイン）",
+    "fieldIconKey": "アイコンキー",
+    "iconKeyHintTitle": "lucide-react のアイコン名（例: \"crown\", \"star\"）",
+    "iconKeyHintColor": "16進カラーコード（例: \"#e11d48\"）",
+    "keyLockedHint": "作成後はキーを変更できません。",
+    "deleteConfirmTitle": "このアイテムを削除しますか?",
+    "deleteConfirmDescription": "アイテムはストアから完全に非表示になります（復元不可）。既に所有しているユーザーはそのまま保持します。"
   },
   "discuss": {
     "title": "ディスカッション管理",
@@ -161,10 +178,19 @@
     "empty": "投稿はまだありません。",
     "loadError": "投稿一覧の読み込みに失敗しました。",
     "deleteConfirmTitle": "この投稿を削除しますか？",
-    "deleteConfirmDescription": "投稿は公開リストから非表示になります（論理削除）。必要に応じて後で復元できます。"
+    "deleteConfirmDescription": "投稿は公開リストから非表示になります（論理削除）。必要に応じて後で復元できます。",
+    "viewComments": "コメントを見る",
+    "commentsDialogTitle": "投稿のコメント",
+    "commentsLoadError": "コメント一覧の読み込みに失敗しました。",
+    "commentsEmpty": "この投稿にはまだコメントがありません。",
+    "bannedLabel": "非表示",
+    "banAction": "コメントを非表示にする",
+    "banConfirmTitle": "このコメントを非表示にしますか?",
+    "banConfirmDescription": "コメントは投稿から非表示になります（元に戻せません）。投稿のコメント数もそれに応じて減少します。"
   },
   "career": {
     "title": "キャリアトラック管理",
+    "createNew": "新規トラック",
     "columnId": "ID",
     "columnName": "トラック名",
     "columnCompany": "企業",
@@ -173,10 +199,21 @@
     "statusActive": "有効",
     "statusInactive": "無効",
     "empty": "キャリアトラックはまだありません。",
-    "loadError": "キャリアトラック一覧の読み込みに失敗しました。"
+    "loadError": "キャリアトラック一覧の読み込みに失敗しました。",
+    "createTitle": "新規キャリアトラックを作成",
+    "editTitle": "キャリアトラックを編集",
+    "fieldKey": "キー（一意の識別子）",
+    "fieldName": "トラック名",
+    "fieldDescription": "説明",
+    "fieldCompany": "企業",
+    "fieldIsActive": "有効",
+    "companyNone": "— 汎用（企業なし）—",
+    "deleteConfirmTitle": "このキャリアトラックを無効化しますか?",
+    "deleteConfirmDescription": "トラックは公開リストから非表示になります（isActive=false）。編集画面から再度有効化できます。"
   },
   "quests": {
     "title": "クエスト管理",
+    "createNew": "新規スニペット",
     "columnId": "ID",
     "columnLanguage": "言語",
     "columnDifficulty": "難易度",
@@ -185,7 +222,17 @@
     "statusActive": "有効",
     "statusInactive": "無効",
     "empty": "クエストはまだありません。",
-    "loadError": "クエスト一覧の読み込みに失敗しました。"
+    "loadError": "クエスト一覧の読み込みに失敗しました。",
+    "createTitle": "新規バグスニペットを作成",
+    "editTitle": "バグスニペットを編集",
+    "fieldLanguage": "言語",
+    "fieldDifficulty": "難易度",
+    "fieldCode": "コード",
+    "fieldBuggyLine": "バグ行（0始まり）",
+    "fieldExplanation": "説明（任意）",
+    "fieldIsActive": "有効",
+    "deleteConfirmTitle": "このバグスニペットを無効化しますか?",
+    "deleteConfirmDescription": "スニペットはクエストから非表示になります（isActive=false）。編集画面から再度有効化できます。"
   },
   "peerInterview": {
     "title": "ピア面接管理",
@@ -201,7 +248,10 @@
     "statusCompleted": "完了",
     "statusAbandoned": "中止",
     "empty": "ピア面接セッションはまだありません。",
-    "loadError": "ピア面接セッション一覧の読み込みに失敗しました。"
+    "loadError": "ピア面接セッション一覧の読み込みに失敗しました。",
+    "forceAbandonAction": "強制中止",
+    "forceAbandonConfirmTitle": "このセッションを強制中止しますか?",
+    "forceAbandonConfirmDescription": "片方が切断して戻ってこないなど、セッションが停止した場合に使用します。ステータスは「中止」になり、元に戻せません。"
   },
   "auditLog": {
     "title": "管理者操作履歴",

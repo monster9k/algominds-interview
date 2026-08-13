@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Trash2 } from "lucide-react";
+import { MessageSquare, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -14,12 +14,14 @@ import { Button } from "@/components/ui/button";
 import { useDiscussPosts } from "@/features/discuss/hooks/use-discuss-posts";
 import { useDeleteDiscussPost } from "@/features/discuss/hooks/use-delete-discuss-post";
 import { ConfirmDialog } from "./confirm-dialog";
+import { DiscussCommentsDialog } from "./discuss-comments-dialog";
 
 export function AdminDiscussTable() {
   const { t } = useTranslation("admin");
   const { data: posts, isLoading, isError } = useDiscussPosts();
   const deletePost = useDeleteDiscussPost();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [viewingCommentsPostId, setViewingCommentsPostId] = useState<string | null>(null);
 
   return (
     <div className="rounded-xl overflow-hidden border border-border/60 bg-card">
@@ -107,7 +109,16 @@ export function AdminDiscussTable() {
                   {new Date(post.createdAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell className="py-2.5 px-2 align-middle">
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      title={t("discuss.viewComments")}
+                      onClick={() => setViewingCommentsPostId(post.id)}
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -136,6 +147,11 @@ export function AdminDiscussTable() {
             onSuccess: () => setDeletingId(null),
           });
         }}
+      />
+
+      <DiscussCommentsDialog
+        postId={viewingCommentsPostId}
+        onOpenChange={(open) => !open && setViewingCommentsPostId(null)}
       />
     </div>
   );

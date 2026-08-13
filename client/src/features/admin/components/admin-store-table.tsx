@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -8,8 +10,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useStoreItems } from "@/features/store/hooks/use-store-items";
-import { ShopItemCategory } from "@/features/store/types";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useAdminStoreItems } from "../hooks/use-admin-store-items";
+import { useDeleteShopItem } from "../hooks/use-delete-shop-item";
+import { AdminShopItem, ShopItemCategory } from "../types";
+import { ConfirmDialog } from "./confirm-dialog";
 
 const CATEGORY_LABEL_KEY: Record<ShopItemCategory, string> = {
   AVATAR_FRAME: "store.categoryAvatarFrame",
@@ -17,9 +23,15 @@ const CATEGORY_LABEL_KEY: Record<ShopItemCategory, string> = {
   BADGE_COLOR: "store.categoryBadgeColor",
 };
 
-export function AdminStoreTable() {
+interface AdminStoreTableProps {
+  onEdit: (item: AdminShopItem) => void;
+}
+
+export function AdminStoreTable({ onEdit }: AdminStoreTableProps) {
   const { t } = useTranslation("admin");
-  const { data: items, isLoading, isError } = useStoreItems();
+  const { data: items, isLoading, isError } = useAdminStoreItems();
+  const deleteItem = useDeleteShopItem();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   return (
     <div className="rounded-xl overflow-hidden border border-border/60 bg-card">
@@ -38,13 +50,19 @@ export function AdminStoreTable() {
             <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               {t("store.columnPrice")}
             </TableHead>
+            <TableHead className="h-11 py-2.5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("store.columnStatus")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("problems.columnActions")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i} className="border-0">
-                <TableCell colSpan={4} className="py-2.5">
+                <TableCell colSpan={6} className="py-2.5">
                   <Skeleton className="h-6 w-full" />
                 </TableCell>
               </TableRow>
@@ -52,7 +70,7 @@ export function AdminStoreTable() {
           ) : isError ? (
             <TableRow className="border-0">
               <TableCell
-                colSpan={4}
+                colSpan={6}
                 className="h-32 text-center text-destructive"
               >
                 {t("store.loadError")}
@@ -61,7 +79,7 @@ export function AdminStoreTable() {
           ) : items?.length === 0 ? (
             <TableRow className="border-0">
               <TableCell
-                colSpan={4}
+                colSpan={6}
                 className="h-32 text-center text-muted-foreground"
               >
                 {t("store.empty")}
@@ -85,11 +103,65 @@ export function AdminStoreTable() {
                 <TableCell className="py-2.5 text-muted-foreground text-xs align-middle">
                   {item.price}
                 </TableCell>
+                <TableCell className="py-2.5 align-middle">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <span
+                      className={cn(
+                        "h-1.5 w-1.5 shrink-0 rounded-full",
+                        item.deletedAt ? "bg-red-500" : "bg-teal-500",
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        "text-xs font-medium",
+                        item.deletedAt ? "text-red-500" : "text-teal-500",
+                      )}
+                    >
+                      {item.deletedAt ? t("store.statusDeleted") : t("store.statusActive")}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-2.5 px-2 align-middle">
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      onClick={() => onEdit(item)}
+                      disabled={!!item.deletedAt}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => setDeletingId(item.id)}
+                      disabled={!!item.deletedAt}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
             ))
           )}
         </TableBody>
       </Table>
+
+      <ConfirmDialog
+        open={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        title={t("store.deleteConfirmTitle")}
+        description={t("store.deleteConfirmDescription")}
+        isLoading={deleteItem.isPending}
+        onConfirm={() => {
+          if (!deletingId) return;
+          deleteItem.mutate(deletingId, {
+            onSuccess: () => setDeletingId(null),
+          });
+        }}
+      />
     </div>
   );
 }

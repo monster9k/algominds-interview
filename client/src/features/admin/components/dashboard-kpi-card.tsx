@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, type LucideIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -24,18 +24,20 @@ export function DashboardKpiCard({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {label}
-        </CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-medium text-muted-foreground">
+            {label}
+          </span>
+          <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </div>
         {isLoading ? (
-          <Skeleton className="h-8 w-20" />
+          <Skeleton className="mt-2.5 h-7 w-20" />
         ) : (
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-foreground">{value}</span>
+          <div className="mt-2.5 flex items-baseline gap-2">
+            <span className="text-2xl font-semibold text-foreground">
+              {value}
+            </span>
             {deltaPct !== undefined && (
               <span
                 className={cn(
@@ -56,7 +58,9 @@ export function DashboardKpiCard({
           </div>
         )}
         {!isLoading && (
-          <p className="mt-1 text-xs text-muted-foreground">{compareLabel}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {compareLabel}
+          </p>
         )}
       </CardContent>
     </Card>

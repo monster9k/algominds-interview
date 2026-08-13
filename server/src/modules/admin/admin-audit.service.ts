@@ -17,7 +17,10 @@ export type AdminAction =
   | 'DELETE_SHOP_ITEM'
   | 'CREATE_BUG_SNIPPET'
   | 'UPDATE_BUG_SNIPPET'
-  | 'DELETE_BUG_SNIPPET';
+  | 'DELETE_BUG_SNIPPET'
+  | 'CREATE_CAREER_TRACK'
+  | 'UPDATE_CAREER_TRACK'
+  | 'DELETE_CAREER_TRACK';
 
 export type AdminActionTargetType =
   | 'Problem'
@@ -25,7 +28,8 @@ export type AdminActionTargetType =
   | 'User'
   | 'DiscussPost'
   | 'ShopItem'
-  | 'BugSnippet';
+  | 'BugSnippet'
+  | 'CareerTrack';
 
 @Injectable()
 export class AdminAuditService {

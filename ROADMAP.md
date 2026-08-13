@@ -4,7 +4,7 @@
 >
 > Bản này **thay thế hoàn toàn** — chủ đề khác hẳn (backend, không phải redesign UI). Mục tiêu: lên kế hoạch cho các endpoint backend còn thiếu để bảng admin Store/Career/Quests/Peer Interview có đủ chức năng **thêm/sửa/xoá** (hiện tại 4 bảng này chỉ có GET, hoàn toàn read-only), và riêng **Discuss** cần thêm khả năng **"ban" 1 comment cụ thể** (khác với xoá cả bài viết — endpoint xoá post đã có sẵn).
 >
-> **Trạng thái: 🔴 P0 (Store) và 🟡 P2 (Quest) đã xong** — CRUD `ShopItem` và `BugSnippet` đầy đủ, verify build/lint/test + tay qua curl, commit riêng. P1 (Career) bị bỏ qua theo yêu cầu của user (làm P2 trước P1) — vẫn còn `[ ]`, làm sau nếu được yêu cầu. Tiếp theo: 🟡 P3 (Discuss ban comment) hoặc quay lại 🟡 P1 (Career).
+> **Trạng thái: 🔴 P0 (Store), 🟡 P1 (Career), 🟡 P2 (Quest) đã xong** — CRUD `ShopItem`/`CareerTrack`/`BugSnippet` đầy đủ, verify build/lint/test + tay qua curl, mỗi phase 1 commit riêng. Tiếp theo: 🟡 P3 (Discuss ban comment).
 
 ## Cách đọc file này
 - Mỗi mục ghi rõ **model Prisma liên quan**, **rủi ro FK/data-integrity** (nếu có), và **vị trí code** (`📍`) cần đụng khi thực thi.
@@ -73,14 +73,16 @@
   📍 `GET /admin/store/items` — `admin.service.ts#getStoreItems()` + route trong `admin.controller.ts`.
 - [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 test pass (kể cả `store.service.spec.ts` có sẵn, không bị phá bởi filter `deletedAt` mới thêm). Test tay end-to-end qua curl với JWT admin thật: create → 409 khi trùng key → update → `GET /admin/store/items` thấy item mới → create không token → 401 → delete → catalog công khai không còn hiện item đã xoá → `GET /admin/store/items` vẫn thấy item (kèm `deletedAt`) → audit log ghi đủ `CREATE_SHOP_ITEM`/`UPDATE_SHOP_ITEM`/`DELETE_SHOP_ITEM` theo đúng thứ tự. Item test đã dọn khỏi DB sau khi verify xong (chưa từng được mua, hard-delete trực tiếp an toàn).
 
-### 🟡 P1 — Career: CRUD `CareerTrack` (không cần migration)
-- [ ] `dto/create-career-track.dto.ts`: `key, name, description, companyId?` — `isActive` mặc định `true`.
-- [ ] `dto/update-career-track.dto.ts`: mọi field optional, gồm cả `isActive` (cho phép bật lại track đã tắt).
-- [ ] `POST /career/tracks`, `PATCH /career/tracks/:id`, `DELETE /career/tracks/:id` (set `isActive=false`, KHÔNG hard-delete) — (ADMIN).
+### 🟡 P1 — Career: CRUD `CareerTrack` (không cần migration) — ✅ ĐÃ XONG
+- [x] `dto/create-career-track.dto.ts`: `key, name, description, companyId?` — `isActive` mặc định `true` (Prisma `@default(true)`, DTO không cần field này).
+- [x] `dto/update-career-track.dto.ts`: mọi field optional, gồm cả `isActive` (cho phép bật lại track đã tắt).
+- [x] `POST /career/tracks`, `PATCH /career/tracks/:id`, `DELETE /career/tracks/:id` (set `isActive=false`, KHÔNG hard-delete) — (ADMIN, `@UseGuards(RolesGuard) @Roles('ADMIN')` áp riêng lên 3 route mới, class-level chỉ có `JwtAuthGuard` vì mọi route công khai khác trong `career.controller.ts` không cần role check).
   📍 `server/src/modules/career/career.controller.ts`, `career.service.ts`.
-- [ ] Audit log: `CREATE_CAREER_TRACK` / `UPDATE_CAREER_TRACK` / `DELETE_CAREER_TRACK`.
-- [ ] `getActiveTracks()` hiện tại filter `isActive: true` (đúng cho phía user) — thêm 1 method/endpoint admin riêng trả TẤT CẢ track (kể cả inactive).
+- [x] Audit log: `CREATE_CAREER_TRACK` / `UPDATE_CAREER_TRACK` / `DELETE_CAREER_TRACK`.
+  📍 `server/src/modules/admin/admin-audit.service.ts` (mở rộng `AdminAction`/`AdminActionTargetType` thêm `CareerTrack`), `CareerModule` import `AdminModule` để inject `AdminAuditService` (đúng pattern StoreModule/QuestModule ở P0/P2, không tạo cycle vì `AdminModule` không import gì ngược lại).
+- [x] `getActiveTracks()` hiện tại filter `isActive: true` (đúng cho phía user) — đã thêm `admin.service.ts#getCareerTracks()` + `GET /admin/career/tracks` trả TẤT CẢ track (kể cả inactive, kèm `company`) — endpoint mới, frontend admin table hiện tại (`use-career-tracks.ts`) vẫn đang gọi `GET /career/tracks` công khai (bị filter `isActive`) nên **chưa** thấy track inactive; nối dây frontend sang endpoint admin mới là việc của phase hook/dialog riêng (ngoài phạm vi backend-only lần này).
 - ⚠️ Form Create/Edit chỉ gồm 4 field cơ bản (`key/name/description/companyId`) — **không** động vào `CareerTrackStage` (cấu trúc pipeline nhiều bước, ngoài phạm vi CRUD đơn giản này; track mới tạo sẽ chưa có stage nào cho tới khi có tính năng quản lý stage riêng).
+- [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 pass. Test tay end-to-end qua curl với JWT admin thật: create không token → 401 → create → 201 → trùng key → 409 → xuất hiện ở `GET /career/tracks` công khai (isActive=true) → update description → `GET /admin/career/tracks` phản ánh đúng → soft-delete → biến mất khỏi `GET /career/tracks` công khai nhưng vẫn thấy ở `GET /admin/career/tracks` (kèm `isActive:false`) → delete lần 2 → 404 → update id không tồn tại → 404 → audit log ghi đủ 3 hành động đúng thứ tự. Track test đã xoá thẳng khỏi DB sau khi verify (chưa có `CareerJourney` nào tham chiếu vì vừa tạo, hard-delete trực tiếp an toàn).
 
 ### 🟡 P2 — Quest: CRUD `BugSnippet` (không cần migration) — ✅ ĐÃ XONG
 - [x] `dto/create-bug-snippet.dto.ts`: `language, difficulty(enum), code, buggyLine(int)`, `explanation?` — `isActive` mặc định `true` (do Prisma `@default(true)`, DTO không cần field này).

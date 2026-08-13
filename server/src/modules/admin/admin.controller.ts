@@ -107,6 +107,12 @@ export class AdminController {
     return this.adminService.getStoreItems();
   }
 
+  // GET /admin/career/tracks
+  @Get('career/tracks')
+  getCareerTracks() {
+    return this.adminService.getCareerTracks();
+  }
+
   // PATCH /admin/users/:id/role
   @Patch('users/:id/role')
   async updateUserRole(

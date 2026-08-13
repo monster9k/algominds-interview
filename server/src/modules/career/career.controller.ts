@@ -1,21 +1,90 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { RequestUser } from '../../common/types/request-user.type';
 import { CareerService } from './career.service';
 import { AdvanceJourneyDto } from './dto/advance-journey.dto';
+import { CreateCareerTrackDto } from './dto/create-career-track.dto';
+import { UpdateCareerTrackDto } from './dto/update-career-track.dto';
+import { AdminAuditService } from '../admin/admin-audit.service';
 
 @ApiTags('Career')
 @ApiBearerAuth()
 @Controller('career')
 @UseGuards(JwtAuthGuard)
 export class CareerController {
-  constructor(private readonly careerService: CareerService) {}
+  constructor(
+    private readonly careerService: CareerService,
+    private readonly adminAuditService: AdminAuditService,
+  ) {}
 
   @Get('tracks')
   getTracks() {
     return this.careerService.getActiveTracks();
+  }
+
+  // POST /career/tracks (ADMIN)
+  @Post('tracks')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async createTrack(
+    @CurrentUser() user: RequestUser,
+    @Body() dto: CreateCareerTrackDto,
+  ) {
+    const track = await this.careerService.createTrack(dto);
+    await this.adminAuditService.log(
+      user.userId,
+      'CREATE_CAREER_TRACK',
+      'CareerTrack',
+      track.id,
+    );
+    return track;
+  }
+
+  // PATCH /career/tracks/:id (ADMIN)
+  @Patch('tracks/:id')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async updateTrack(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateCareerTrackDto,
+  ) {
+    const track = await this.careerService.updateTrack(id, dto);
+    await this.adminAuditService.log(
+      user.userId,
+      'UPDATE_CAREER_TRACK',
+      'CareerTrack',
+      track.id,
+    );
+    return track;
+  }
+
+  // DELETE /career/tracks/:id (ADMIN) — soft delete (isActive=false)
+  @Delete('tracks/:id')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async removeTrack(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    const track = await this.careerService.softDeleteTrack(id);
+    await this.adminAuditService.log(
+      user.userId,
+      'DELETE_CAREER_TRACK',
+      'CareerTrack',
+      track.id,
+    );
+    return track;
   }
 
   @Post('tracks/:id/start')

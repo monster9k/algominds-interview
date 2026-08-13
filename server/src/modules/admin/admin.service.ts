@@ -447,6 +447,16 @@ export class AdminService {
     });
   }
 
+  // GET /admin/career/tracks — KHÔNG filter isActive (khác GET /career/tracks
+  // công khai ở career.service.ts#getActiveTracks()), để cột trạng thái ở
+  // bảng admin phản ánh đúng cả track đã bị soft-delete (isActive=false).
+  getCareerTracks() {
+    return this.prisma.careerTrack.findMany({
+      orderBy: { createdAt: 'asc' },
+      include: { company: true },
+    });
+  }
+
   // peer-interview.controller.ts hiện chỉ có GET :id (1 session) — đây là
   // endpoint list đầu tiên cho domain này.
   getPeerInterviews() {

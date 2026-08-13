@@ -148,6 +148,75 @@ export interface AdminQuestSnippet {
   createdAt: string;
 }
 
+// ShopItemCategory trùng với features/store/types nhưng khai báo lại ở đây
+// (thay vì import chéo feature) — đúng ranh giới feature-folder: admin/types
+// không phụ thuộc vào types của feature khác.
+export type ShopItemCategory = "AVATAR_FRAME" | "TITLE" | "BADGE_COLOR";
+
+// GET /admin/store/items — KHÔNG filter deletedAt (khác GET /store/items
+// công khai), để cột trạng thái phản ánh đúng cả item đã soft-delete.
+export interface AdminShopItem {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  category: ShopItemCategory;
+  price: number;
+  iconKey: string;
+  createdAt: string;
+  deletedAt: string | null;
+}
+
+export interface ShopItemFormPayload {
+  key: string;
+  name: string;
+  description: string;
+  category: ShopItemCategory;
+  price: number;
+  iconKey: string;
+}
+
+// GET /admin/career/tracks — KHÔNG filter isActive (khác GET /career/tracks
+// công khai), để cột trạng thái phản ánh đúng cả track đã tắt.
+export interface AdminCareerTrack {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  companyId: string | null;
+  company: { id: string; name: string } | null;
+  createdAt: string;
+}
+
+export interface CareerTrackFormPayload {
+  key: string;
+  name: string;
+  description: string;
+  companyId?: string;
+  isActive?: boolean;
+}
+
+export interface BugSnippetFormPayload {
+  language: string;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
+  code: string;
+  buggyLine: number;
+  explanation?: string;
+  isActive?: boolean;
+}
+
+// GET /admin/discuss/:postId/comments — KHÔNG filter deletedAt, để admin
+// thấy cả comment đã bị ban khi kiểm duyệt 1 bài viết.
+export interface AdminDiscussComment {
+  id: string;
+  postId: string;
+  content: string;
+  createdAt: string;
+  deletedAt: string | null;
+  author: { id: string; name: string; avatarUrl: string | null };
+}
+
 export type AdminPeerInterviewStatus =
   | "WAITING_FOR_PEER"
   | "ACTIVE"

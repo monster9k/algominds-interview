@@ -17,6 +17,8 @@ import {
   SessionStatusBreakdownItem,
   AcceptanceByDifficultyItem,
   TopCompanyItem,
+  AdminShopItem,
+  ShopItemFormPayload,
 } from "../types";
 
 export const adminApi = {
@@ -122,6 +124,26 @@ export const adminApi = {
 
   deleteContest: async (id: string) => {
     const response = await api.delete(`/contests/${id}`);
+    return response.data;
+  },
+
+  getStoreItems: async (): Promise<AdminShopItem[]> => {
+    const response = await api.get("/admin/store/items");
+    return response.data;
+  },
+
+  createShopItem: async (payload: ShopItemFormPayload) => {
+    const response = await api.post("/store/items", payload);
+    return response.data;
+  },
+
+  updateShopItem: async (id: string, payload: Partial<ShopItemFormPayload>) => {
+    const response = await api.patch(`/store/items/${id}`, payload);
+    return response.data;
+  },
+
+  deleteShopItem: async (id: string) => {
+    const response = await api.delete(`/store/items/${id}`);
     return response.data;
   },
 

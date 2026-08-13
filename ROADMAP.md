@@ -1,148 +1,98 @@
-# 🗺️ AlgoMinds — Roadmap: UI + API wiring cho Admin CRUD (Store/Career/Quest/Discuss/Peer Interview)
+# 🗺️ AlgoMinds — Roadmap: Liên kết tài khoản Email ⇄ Google (account linking)
 
-> Bản roadmap trước ("Admin CRUD endpoints (Store/Career/Quest/Peer Interview) + Discuss comment moderation") đã hoàn thành 100% P0→P4 — CRUD `ShopItem` (`956726a`), `CareerTrack` (`6af6ad9`), `BugSnippet` (`9d69f2f`), ban comment `DiscussComment` (`0610870`), force-abandon `PeerInterviewSession` (`b9f0dae`) — kèm 1 commit UI redesign không liên quan chủ đề (`e3da2cf`). Toàn bộ đã merge vào `main` qua PR #25 (`64caecb`). Backend cho cả 5 domain đã đầy đủ endpoint mutation + audit log, verify bằng curl thủ công, nhưng **frontend admin vẫn hoàn toàn read-only** cho 5 bảng này (đúng ghi chú "ngoài phạm vi" để lại ở mỗi phase P0-P4 cũ).
+> Bản roadmap trước ("UI + API wiring cho Admin CRUD Store/Career/Quest/Discuss/Peer Interview") đã hoàn thành 100% P0→P4 — 5 commit (`5f669e6`, `cdecd96`, `cd5be07`, `704a25d`, `665bab7`), verify tsc/lint + QA Chrome cho từng phase. Xem lại nội dung ở các commit đó nếu cần tham chiếu.
 >
-> Bản này **thay thế hoàn toàn** — chủ đề khác hẳn (frontend, không phải backend). Mục tiêu: nối dây UI (dialog form, nút Action, confirm dialog) + hook TanStack Query gọi đúng các endpoint đã có sẵn, để admin thao tác được CRUD thật trên 5 bảng: Store, Career, Quest, Discuss (ban comment), Peer Interview (force-abandon).
+> Bản này **thay thế hoàn toàn** — chủ đề khác hẳn (auth/bảo mật, không phải admin UI). Bối cảnh: nút "Connect Google" ở `SocialAccountsSection` hiện là **UI trang trí, không có `onClick`, không gọi API nào** — chưa từng có tính năng liên kết tài khoản. Người dùng đăng ký bằng email/password và người dùng đăng ký bằng Google hiện là 2 "thế giới" tách biệt hoàn toàn, không có đường nối.
 >
-> **Trạng thái: ✅ 100% HOÀN THÀNH (P0→P4)** — CRUD UI đầy đủ cho Store/Career/Quest + comment moderation UI cho Discuss + force-abandon UI cho Peer Interview, mỗi phase 1 commit riêng, verify tsc/lint + QA tay qua Chrome cho từng phase.
+> **Trạng thái: 🔵 CHỈ LÊN KẾ HOẠCH — chưa viết code.** Việc này đụng trực tiếp vào auth/bảo mật, đã thảo luận kỹ 2 chiều liên kết với user trước khi ghi vào đây — dừng lại để user review, chỉ code khi được yêu cầu rõ.
 
-## Cách đọc file này
-- Thứ tự ưu tiên bám đúng thứ tự domain đã hoàn thành ở backend (P0 Store → P4 Peer Interview) để dễ đối chiếu.
-- Mỗi phase liệt kê: **file cần thêm/sửa** (`📍`), **field/API cụ thể**, **hành vi UI kỳ vọng**, và **điểm cần lưu ý** (rủi ro state, endpoint nào có/không có "restore").
-- `🔴 P0`/`🟡 P1`/`🟡 P2`/`🟡 P3`/`🟢 P4` — mức độ ưu tiên gợi ý, không phải rủi ro kỹ thuật (khác ý nghĩa `🔴` ở bản roadmap backend cũ — lần này không có migration nên không phase nào thực sự "rủi ro cao").
+## Đã xác nhận với user trước khi lên kế hoạch
+- **Phạm vi đợt này CHỈ làm chiều "liên kết" (link)** — KHÔNG làm "gỡ liên kết" (unlink Google / xoá mật khẩu). Unlink để đợt sau, vì cần thêm rule chặn "gỡ khiến tài khoản còn 0 phương thức đăng nhập" — phức tạp hơn, làm khi được yêu cầu rõ.
+- **Bắt buộc xác thực lại (step-up) trước khi liên kết ở cả 2 chiều** — nhưng cơ chế xác thực lại ở 2 chiều KHÁC NHAU (xem giải thích dưới), không dùng chung 1 cách.
+- Hành vi chặn hiện tại (đăng ký email trước → cố đăng nhập Google cùng email → bị chặn với message rõ ràng, redirect `/auth/login?error=google_account_conflict`, KHÔNG tạo tài khoản trùng/không merge ngầm) **giữ nguyên, không đổi** — chỉ đổi điều kiện gate từ so `provider` (field đơn, dễ sai khi 1 user có cả 2 phương thức) sang so `providerId` (đã link hay chưa).
+
+## Vì sao 2 chiều không đối xứng — điểm mấu chốt của toàn bộ thiết kế
+
+Schema hiện tại (`server/prisma/schema.prisma` model `User`) đã có sẵn 2 field **độc lập, đều nullable**: `password` và `providerId`. Đây là điều kiện đủ để 1 user có CẢ HAI phương thức đăng nhập cùng lúc — không cần thêm cột mới, chỉ cần sửa logic gate:
+- `login()` (email/password, `auth.service.ts:93`) **chỉ check `user.password` có tồn tại** — không đụng `provider`. Nghĩa là: chiều Google-first thêm password xong, `login()` tự động hoạt động ngay, **không cần sửa gì thêm ở hàm này**.
+- `validateGoogleUser()` (`auth.service.ts:113`) hiện check `user.provider !== 'google'` — **phải đổi** sang check `!user.providerId` (Google đã từng được link hay chưa), vì `provider` là field đơn/loại trừ lẫn nhau, không đại diện đúng cho trạng thái "có cả 2 phương thức".
+
+### Chiều A — Email/password trước → Connect Google (re-auth = nhập lại mật khẩu)
+1. User đang login bằng session email/password (có `password`, `providerId = null`).
+2. Bấm "Connect Google" ở Settings → dialog yêu cầu nhập lại mật khẩu hiện tại.
+3. `POST /auth/verify-password` (JwtAuthGuard, body `{password}`) — bcrypt compare với `user.password`. Đúng → sinh **"link ticket"**: 1 JWT ký riêng (KHÁC access/refresh token), payload `{sub: userId, purpose: 'link_google'}`, hết hạn 5 phút. Trả về ticket cho FE.
+   - **Vì sao cần ticket thay vì chỉ dựa JWT session hiện có**: bước tiếp theo là **browser điều hướng cả trang** sang Google (`window.location.href = ...`), không phải `fetch()` — trình duyệt KHÔNG đính kèm được header `Authorization` khi điều hướng toàn trang. Route `GET /auth/google/link` vì vậy **không thể** bọc bằng `JwtAuthGuard` thông thường — ticket (truyền qua query string) là cách duy nhất mang được "bằng chứng đã xác thực" qua vòng redirect Google.
+4. FE điều hướng `GET /auth/google/link?ticket=<ticket>` (route public, không `JwtAuthGuard`) → route xác minh chữ ký + hạn + `purpose` của ticket hợp lệ mới cho redirect tiếp sang Google, ticket được nhét vào tham số `state` của OAuth request (Google giữ nguyên `state` khi redirect callback về).
+5. Google redirect về `GET /auth/google/callback?state=<ticket>&code=...` (route có sẵn) — controller đọc `req.query.state`: nếu là 1 link-ticket hợp lệ → gọi `authService.linkGoogleAccount()` thay vì `validateGoogleUser()`.
+6. `linkGoogleAccount(userId, googleProfile)`:
+   - Load user theo `userId` giải mã từ ticket (không phải theo email Google — tránh 1 kẻ tấn công tự tạo ticket giả cho email khác, dù ticket đã ký nên khó giả, đây là lớp phòng thủ kép).
+   - **Bắt buộc `googleProfile.email === user.email` tuyệt đối** — khác thì từ chối, redirect `?error=google_email_mismatch` (không cho link Google account khác email vào tài khoản đang có).
+   - Kiểm tra `providerId` đó **chưa** được user khác chiếm (unique constraint ở DB + check tường minh) — trùng thì từ chối, redirect `?error=google_already_linked`.
+   - Update `user.providerId` (+ `avatarUrl` nếu user chưa có sẵn). **KHÔNG đụng `password`.**
+   - Redirect `${FRONTEND_URL}/settings?linked=google` (khác hẳn đường login — user vốn đã đăng nhập, không cần cấp lại token).
+
+### Chiều B — Google trước → Đặt mật khẩu (re-auth = xác thực lại qua Google, KHÔNG phải nhập mật khẩu vì chưa có)
+1. User đang login bằng session Google (`password = null`, `providerId` đã set).
+2. Bấm "Đặt mật khẩu" ở Settings → **không có mật khẩu cũ để nhập lại** (khác hẳn chiều A) → thay vào đó, điều hướng lại qua **đúng luồng đăng nhập Google có sẵn** (`GET /auth/google` → `GET /auth/google/callback` → `validateGoogleUser()` như bình thường, không cần route/logic mới) — việc đăng nhập lại thành công CHÍNH LÀ bước re-auth (chứng minh vẫn kiểm soát tài khoản Google đó), không phải chỉ dựa vào JWT session cũ (có thể đã tồn tại nhiều phút, rủi ro session bị đánh cắp).
+3. Sau khi Google callback thành công, FE nhận **access token mới tinh** (vừa issue) → hiện dialog "Đặt mật khẩu" ngay.
+4. `POST /auth/set-password` (JwtAuthGuard, body `{password}`) — **thêm điều kiện phụ**: decode JWT hiện tại, so `iat` (issued-at) phải nằm trong **≤ 2 phút gần nhất** — nếu access token đã cũ hơn (vd user quay lại trang Settings sau 10 phút mới bấm) → từ chối `401` "Vui lòng xác thực lại qua Google trước khi đặt mật khẩu", bắt họ lặp lại bước 2. Đây là "step-up" tương đương chiều A, chỉ khác cơ chế mang bằng chứng (JWT `iat` mới thay vì ticket riêng, vì ở đây không cần vượt qua vòng redirect Google nữa — request này là `fetch()` bình thường, giữ được header `Authorization`).
+5. Backend hash password (bcrypt, cùng rule `MinLength(6)` như `CreateUserDto`), set `user.password`. **KHÔNG đụng `providerId`/`provider`.**
+6. `login()` tự động hoạt động ngay cho user này từ sau bước 5 — không cần sửa gì thêm (đã giải thích ở trên).
 
 ---
 
-## Nguyên tắc chung (áp dụng mọi phase)
+## Kế hoạch theo thứ tự ưu tiên
 
-1. **Vị trí code**: mọi hook/API mới sống trong `client/src/features/admin/{api,hooks,components,types}` — **không** đặt trong `features/store`, `features/career`, `features/quest` dù data cùng domain, đúng tiền lệ đã có (`use-admin-quests.ts`, `use-admin-peer-interviews.ts` đã ở `admin/hooks`, không phải `quest/hooks`/`career/hooks`). Lý do: đây là dữ liệu/queryKey riêng cho mục đích quản trị (không filter `deletedAt`/`isActive`), khác hẳn hook công khai cùng feature.
-2. **1 file API function** gộp chung vào `admin-api.ts` hiện có (không tách file riêng theo domain) — đúng cấu trúc hiện tại của file này.
-3. **1 hook = 1 file**, đúng convention `use-create-contest.ts`/`use-update-contest.ts`/`use-delete-contest.ts` đã có — mutation hook nào cũng: gọi `adminApi.xxx`, `invalidateQueries` đúng queryKey list tương ứng, `toast.success`/`toast.error` (dùng `getApiErrorMessage`).
-4. **Dialog form**: tái dùng `Dialog`/`Input`/`Label`/`Textarea`/`Button` từ shadcn (đã import sẵn khắp app) — copy khung `contest-form-dialog.tsx` (state `form`, `useEffect` reset khi `open`/entity đổi, `isPending` gộp từ create+update, disable Save khi field bắt buộc rỗng). Category/Difficulty/Company chọn qua `Select` (`@/components/ui/select`, đã có sẵn trong repo, chưa từng dùng ở admin form nào — sẽ là component `Select` đầu tiên trong `admin/components`). Trường boolean (`isActive`) dùng `Checkbox` (`@/components/ui/checkbox`).
-5. **Confirm dialog** cho hành động phá huỷ/không hoàn tác được (Delete, Ban comment, Force-abandon) — tái dùng `ConfirmDialog` có sẵn (`admin/components/confirm-dialog.tsx`), không tạo dialog confirm riêng mỗi bảng.
-6. **Badge/status**: giữ đúng công thức dot+text đã thiết lập (`bg-{color}-500`/`text-{color}-500`), bám theo `DIFFICULTY_DOT_CLASS`/`STATUS_DOT_CLASS` mẫu đã có ở `admin-quests-table.tsx`/`admin-contests-table.tsx` — không bịa màu mới.
-7. **i18n**: mọi text mới thêm vào `client/src/lib/i18n/locales/{en,vi,ja}/admin.json`, đúng nhánh key đã có (`store.*`, `career.*`, `quests.*`, `discuss.*`, `peerInterview.*`) — thêm ở cả 3 locale trong cùng 1 commit, không để thiếu locale nào.
-8. **Nút Actions**: cột cuối bảng, dùng lại label cột `t("problems.columnActions")` (đã được các bảng khác tái dùng chéo, đúng tiền lệ `admin-contests-table.tsx`/`admin-discuss-table.tsx`) — không tạo key `columnActions` riêng theo từng domain.
-9. **QA bắt buộc**: sau khi code xong 1 phase, dùng Chrome tool test golden path (create → xuất hiện trong bảng → edit → cập nhật đúng → delete/ban/abandon → cập nhật trạng thái đúng) + edge case liên quan (field rỗng, trùng `key` → toast lỗi đọc từ 409 backend, xoá 1 entity đã xoá → nút bị disable sẵn nên không test được qua UI, nhưng phải xác nhận nút thực sự disable đúng lúc).
+### 🔴 P0 — Nền tảng: sửa gate + migration (bắt buộc làm trước, cả 2 chiều đều phụ thuộc) — ✅ ĐÃ XONG
+- [x] Migration: giữ nguyên `@@index([provider, providerId])`, thêm `@@unique([providerId])`.
+  📍 `server/prisma/schema.prisma`.
+  ⚠️ `npx prisma migrate dev` vẫn đòi reset toàn bộ DB do drift đã ghi chú từ P0 Store cũ — **đã KHÔNG làm theo**, dùng `npx prisma db push` (đã verify trước không có `providerId` trùng nhau trong DB, nên constraint áp được an toàn, 0 data loss — xác nhận lại `SELECT COUNT(*) FROM users` = 13, không đổi).
+- [x] `validateGoogleUser()`: đổi gate `user.provider !== 'google'` → `!user.providerId`.
+  📍 `server/src/modules/auth/auth.service.ts`.
+- [x] `usersService.findOne()`: thêm `hasPassword: !!password` vào response.
+  📍 `server/src/modules/users/users.service.ts`.
+- [x] **Verify**: `auth.service.spec.ts` — thêm 1 test case mới xác nhận đúng lỗ hổng đã tránh được ("Google login vẫn pass dù `provider` gốc còn là 'email', miễn `providerId` đã set" — test này sẽ FAIL nếu ai đó lỡ revert gate về check `provider`), cập nhật fixture `googleLinkedUser` thêm `providerId` (thiếu field này khiến test cũ sẽ fail dưới gate mới). `npm run test` (server) — 62/62 pass. `npm run build` + `npm run lint` sạch. Verify tay `GET /users/me` qua curl với JWT admin thật → `hasPassword: true` đúng.
 
----
+### 🟡 P1 — Chiều A: Email/password → Connect Google
+- [ ] `dto/verify-password.dto.ts`: `{ password: string }` (`@IsNotEmpty`).
+  📍 `server/src/modules/auth/dto/verify-password.dto.ts`.
+- [ ] `POST /auth/verify-password` (JwtAuthGuard) — bcrypt compare, sai → `401`. Đúng → ký link-ticket (JWT riêng, `purpose: 'link_google'`, exp 5 phút, secret CÓ THỂ dùng chung `JWT_SECRET` nhưng payload phải có `purpose` để không lẫn với access/refresh token nếu bị dùng sai chỗ).
+  📍 `server/src/modules/auth/auth.controller.ts`, `auth.service.ts#issueLinkTicket()`.
+- [ ] `GET /auth/google/link?ticket=` (public, verify ticket hợp lệ trước khi redirect) — set `state=ticket` khi khởi tạo OAuth request. Cần override `GoogleAuthGuard`/tự viết guard con để inject `state` động (Passport mặc định không cho set `state` linh hoạt qua decorator thường).
+  📍 `server/src/modules/auth/google-auth.guard.ts` (hoặc guard mới `google-link-auth.guard.ts`), `auth.controller.ts`.
+- [ ] `GET /auth/google/callback`: đọc `req.query.state` — nếu decode ra link-ticket hợp lệ (`purpose === 'link_google'`, chưa hết hạn) → gọi `authService.linkGoogleAccount(ticketUserId, googleProfile)` thay vì `validateGoogleUser()`; lỗi (email không khớp / providerId đã bị chiếm) → redirect `${FRONTEND_URL}/settings?error=<code>`; thành công → redirect `${FRONTEND_URL}/settings?linked=google` (KHÔNG issue token mới — user vốn đã có session hợp lệ).
+  📍 `server/src/modules/auth/auth.controller.ts#googleAuthRedirect()`.
+- [ ] `authService.linkGoogleAccount(userId, googleProfile)`: load user theo `userId` từ ticket, check email khớp tuyệt đối, check `providerId` chưa bị chiếm (bắt lỗi unique constraint P2002 từ DB làm lớp chặn cuối), update `providerId`(+`avatarUrl` nếu thiếu).
+  📍 `server/src/modules/auth/auth.service.ts`.
+- [ ] Frontend: `VerifyPasswordDialog` (Input password + submit → `useVerifyPassword()` → nhận ticket → `window.location.href = `${API_URL}/auth/google/link?ticket=${ticket}`); sửa `SocialAccountsSection` — nút "Connect" của Google mở dialog này (Github/Apple/LinkedIn giữ nguyên trạng thái decorative, ngoài phạm vi); Settings page đọc query param `linked`/`error` lúc mount để hiện toast kết quả (giống pattern `google-callback-page.tsx` đọc `searchParams`).
+  📍 `client/src/features/settings/components/social-accounts-section.tsx`, `client/src/features/settings/components/verify-password-dialog.tsx` (mới), `client/src/features/auth/api/auth-api.ts` (thêm `verifyPassword()`), `client/src/features/settings/pages/settings-page.tsx`.
+- [ ] i18n: thêm key `settings.social.*` (dialog title/field/error messages) cả 3 locale.
+- [ ] **Verify**: `npm run test`/`build`/`lint` (server + client). QA tay end-to-end thật (KHÔNG mock) qua curl + trình duyệt thật với Google account thật của bạn: đăng ký email test → verify-password sai → 401 → đúng → nhận ticket → gọi `/auth/google/link` với ticket giả/hết hạn → bị từ chối → dùng ticket thật, hoàn tất OAuth thật với Google account có email KHÁC → bị chặn `google_email_mismatch` → thử lại với Google account đúng email → `providerId` được set → sau đó login lại bằng Google thành công. Dọn dữ liệu test sau khi xong.
 
-## Khảo sát trạng thái hiện tại từng bảng (trước khi sửa)
-
-| Domain | Bảng hiện tại đọc từ | Vấn đề | Sau khi sửa đọc từ |
-|---|---|---|---|
-| Store | `useStoreItems()` (`features/store/hooks`, `GET /store/items` công khai) | Không thấy item đã xoá (`deletedAt` bị filter), không có cột Actions | `useAdminStoreItems()` mới (`admin/hooks`, `GET /admin/store/items`) |
-| Career | `useCareerTracks()` (`features/career/hooks`, `GET /career/tracks` công khai) | Không thấy track `isActive=false`, không có cột Actions | `useAdminCareerTracks()` mới (`admin/hooks`, `GET /admin/career/tracks`) |
-| Quest | `useAdminQuests()` (đã đúng, `GET /admin/quests`) | Có đủ data, chỉ thiếu cột Actions + dialog | Giữ nguyên hook đọc, chỉ thêm mutation |
-| Discuss | `useDiscussPosts()` (đã đúng ở cấp bài viết) | Chưa có cách xem/ban **comment** trong 1 bài | Thêm dialog riêng gọi `GET /admin/discuss/:postId/comments` |
-| Peer Interview | `useAdminPeerInterviews()` (đã đúng) | Có đủ data, chỉ thiếu nút force-abandon | Giữ nguyên hook đọc, chỉ thêm mutation |
-
----
-
-## 🔴 P0 — Store: CRUD UI cho `ShopItem` — ✅ ĐÃ XONG
-
-**Restore**: **không có** — `DELETE /store/items/:id` set `deletedAt`, không có endpoint nào set lại `null`. Item đã xoá coi như vĩnh viễn read-only ở UI (giống Contest).
-
-- [x] `types/index.ts`: thêm `AdminShopItem`, `ShopItemFormPayload`, `ShopItemCategory` (khai báo riêng trong `admin/types`, không import chéo từ `features/store/types` — đúng ranh giới feature-folder).
-  📍 `client/src/features/admin/types/index.ts`.
-- [x] `admin-api.ts`: thêm `getStoreItems()`, `createShopItem(payload)`, `updateShopItem(id, payload)`, `deleteShopItem(id)`.
-  📍 `client/src/features/admin/api/admin-api.ts`.
-- [x] Hooks: `use-admin-store-items.ts` (queryKey `["admin-store-items"]`), `use-create-shop-item.ts`, `use-update-shop-item.ts`, `use-delete-shop-item.ts`.
-  📍 `client/src/features/admin/hooks/`.
-- [x] `shop-item-form-dialog.tsx`: field `key` (disable khi edit, hint "Không thể đổi key sau khi tạo"), `name`, `description`, `category` (Select), `price`, `iconKey` (hint đổi theo category).
-  📍 `client/src/features/admin/components/shop-item-form-dialog.tsx`.
-- [x] `admin-store-table.tsx`: đổi `useStoreItems()` (public) → `useAdminStoreItems()` (admin); thêm cột Status (dot đỏ/teal) + Actions (Edit/Delete, `disabled={!!item.deletedAt}`).
-  📍 `client/src/features/admin/components/admin-store-table.tsx`.
-- [x] `admin-store-page.tsx`: thêm nút "New Item", state `formOpen`/`editingItem`.
-  📍 `client/src/features/admin/pages/admin-store-page.tsx`.
-- [x] i18n (`store.*`, cả 3 locale: en/vi/ja) — đủ key `createNew/createTitle/editTitle/fieldKey/fieldName/fieldDescription/fieldCategory/fieldPrice/fieldIconKey/iconKeyHintTitle/iconKeyHintColor/keyLockedHint/columnStatus/statusActive/statusDeleted/deleteConfirmTitle/deleteConfirmDescription`.
-- [x] **Verify**: `npx tsc -b` + `npm run lint` (client) sạch — chỉ 1 warning `react-hooks/set-state-in-effect` giống hệt pattern có sẵn ở `contest-form-dialog.tsx` (không phải lỗi mới). QA qua Chrome (đăng nhập `admin@algominds.dev`): tạo item mới → toast "Đã tạo vật phẩm", xuất hiện đúng trong bảng → edit `price` → toast "Đã cập nhật vật phẩm", giá trị đổi đúng → xoá → toast "Đã xoá vật phẩm", dot chuyển đỏ "Deleted", nút Edit/Delete disable → tạo lại với `key` trùng (đã xoá) → toast lỗi đúng "Mã vật phẩm (key) đã tồn tại" (409 từ backend). Không có lỗi console (chỉ warning React DialogDescription có sẵn từ trước, không phải regression). **Lưu ý**: không verify được responsive ~390px qua `resize_window` trong phiên này (giới hạn tool, screenshot không phản ánh đúng kích thước đã resize) — dialog dùng `max-w-lg` giống hệt `ContestFormDialog` đã ship nên rủi ro thấp, nhưng chưa xác nhận trực quan. Item test đã xoá thẳng khỏi DB sau khi verify (chưa có `UserItem` nào tham chiếu).
-
-## 🟡 P1 — Career: CRUD UI cho `CareerTrack` — ✅ ĐÃ XONG
-
-**Restore**: **có** — `PATCH /career/tracks/:id` nhận `isActive: true` để bật lại track đã tắt. Khác Store — Edit vẫn phải mở được kể cả khi track đang inactive.
-
-- [x] `types/index.ts`: `AdminCareerTrack`, `CareerTrackFormPayload` (thêm cùng đợt với P0).
-  📍 `client/src/features/admin/types/index.ts`.
-- [x] `admin-api.ts`: `getCareerTracks()`, `createCareerTrack(payload)`, `updateCareerTrack(id, payload)`, `deleteCareerTrack(id)`.
-  📍 `client/src/features/admin/api/admin-api.ts`.
-- [x] Hooks: `use-admin-career-tracks.ts`, `use-create-career-track.ts`, `use-update-career-track.ts`, `use-delete-career-track.ts`.
-  📍 `client/src/features/admin/hooks/`.
-- [x] `career-track-form-dialog.tsx`: `key`, `name`, `description`, `companyId` (Select dùng `useCompanies()` có sẵn, option đầu "Chung"), `isActive` (Checkbox, chỉ hiện khi edit).
-  📍 `client/src/features/admin/components/career-track-form-dialog.tsx`.
-- [x] `admin-career-table.tsx`: đổi sang `useAdminCareerTracks()`; cột Actions (Edit luôn enable, Delete `disabled={!track.isActive}`).
-  📍 `client/src/features/admin/components/admin-career-table.tsx`.
-- [x] `admin-career-page.tsx`: nút "New Track" + state dialog.
-  📍 `client/src/features/admin/pages/admin-career-page.tsx`.
-- [x] i18n (`career.*`, 3 locale) đủ key.
-- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (chỉ warning giống pattern có sẵn). QA qua Chrome: tạo track với company "Apple" (dropdown load đúng từ `useCompanies()`) → xuất hiện đúng tên công ty → xoá (soft) → toast "Đã tắt career track", status → "Inactive", nút Delete disable (click không mở dialog), **Edit vẫn mở được** → tick lại checkbox `isActive` → Save → status quay lại "Active" (restore hoạt động đúng). Không có lỗi console. Track test đã xoá thẳng khỏi DB sau khi verify (chưa có `CareerJourney` nào tham chiếu).
-
-## 🟡 P2 — Quest: CRUD UI cho `BugSnippet` — ✅ ĐÃ XONG
-
-**Restore**: **có**, cùng cơ chế Career (`PATCH .../isActive`). Áp dụng y hệt logic Edit-luôn-enable / Delete-disable-khi-đã-inactive ở P1.
-
-- [x] `types/index.ts`: `BugSnippetFormPayload` (thêm cùng đợt với P0). `buggyLine` xác nhận **0-indexed** — khớp `code.split("\n").map((line, index) => ...)` ở `bug-whacker-board.tsx` phía user, không cần đọc thêm `quest.service.ts` vì logic so sánh chỉ là `selectedLine === snippet.buggyLine`, không có arithmetic index nào khác.
-  📍 `client/src/features/admin/types/index.ts`.
-- [x] `admin-api.ts`: `createBugSnippet(payload)`, `updateBugSnippet(id, payload)`, `deleteBugSnippet(id)`.
-  📍 `client/src/features/admin/api/admin-api.ts`.
-- [x] Hooks: `use-create-bug-snippet.ts`, `use-update-bug-snippet.ts`, `use-delete-bug-snippet.ts` (invalidate `["admin-quests"]`).
-  📍 `client/src/features/admin/hooks/`.
-- [x] `bug-snippet-form-dialog.tsx`: `language` (Input, placeholder "javascript"), `difficulty` (Select), `code` (Textarea `font-mono`), `buggyLine` (Input number, label ghi rõ "0-indexed"), `explanation` (Textarea optional), `isActive` (Checkbox, chỉ hiện khi edit).
-  📍 `client/src/features/admin/components/bug-snippet-form-dialog.tsx`.
-- [x] `admin-quests-table.tsx`: cột Actions (Edit luôn enable, Delete `disabled={!quest.isActive}`).
-  📍 `client/src/features/admin/components/admin-quests-table.tsx`.
-- [x] `admin-quests-page.tsx`: nút "New Snippet" + state dialog.
-  📍 `client/src/features/admin/pages/admin-quests-page.tsx`.
-- [x] i18n (`quests.*`, 3 locale) đủ key.
-- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (0 error, warning giống pattern có sẵn). QA qua Chrome: tạo snippet (difficulty Easy, buggyLine 0) → xuất hiện đúng dot teal; edit đổi difficulty → Medium → dot vàng cập nhật đúng; xoá (soft) → toast "Đã tắt bug snippet", status "Inactive", Delete disable, Edit vẫn mở được. Không lỗi console. Snippet test đã xoá thẳng khỏi DB sau khi verify (`QuestAttempt` không có FK tới `BugSnippet`, an toàn hard-delete). **Lưu ý QA**: gõ code nhiều dòng qua tool test bằng ký tự `\n` khiến nút Save tạm thời trông "kẹt" (không gửi request) — xác nhận đây là hạn chế của cách tool gõ phím vào Textarea trong môi trường test, không phải bug trong `isValid`/`handleSubmit`; test lại với code 1 dòng xác nhận flow hoạt động đúng.
-
-## 🟡 P3 — Discuss: UI ban comment — ✅ ĐÃ XONG
-
-**Restore**: **không có** — `DELETE /discuss/:postId/comments/:commentId` chỉ set `deletedAt`, không có endpoint gỡ ban. 1 chiều, giống Store.
-
-- [x] `types/index.ts`: `AdminDiscussComment` (thêm cùng đợt với P0).
-  📍 `client/src/features/admin/types/index.ts`.
-- [x] `admin-api.ts`: `getDiscussComments(postId)`, `banDiscussComment(postId, commentId)`.
-  📍 `client/src/features/admin/api/admin-api.ts`.
-- [x] Hooks: `use-admin-discuss-comments.ts` (queryKey `["admin-discuss-comments", postId]`, `enabled: !!postId`), `use-ban-discuss-comment.ts` (invalidate cả `["admin-discuss-comments", postId]` lẫn `["discuss-posts"]` — xác nhận queryKey thật của `useDiscussPosts()` là `["discuss-posts", filters]`, TanStack Query invalidate theo prefix nên `["discuss-posts"]` khớp đúng).
-  📍 `client/src/features/admin/hooks/`.
-- [x] `discuss-comments-dialog.tsx`: Dialog `max-w-2xl`, nhận `postId | null`. List comment avatar+tên+nội dung (`whitespace-pre-wrap`)+thời gian, badge "Hidden" (dot đỏ) nếu `deletedAt`, nút Ban (icon `Ban`) `disabled={!!comment.deletedAt}`.
-  📍 `client/src/features/admin/components/discuss-comments-dialog.tsx`.
-- [x] `admin-discuss-table.tsx`: nút icon `MessageSquare` cạnh `Trash2`, state `viewingCommentsPostId`.
-  📍 `client/src/features/admin/components/admin-discuss-table.tsx`.
-- [x] i18n (`discuss.*`, 3 locale) đủ key.
-- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (0 error). QA qua Chrome: mở dialog 1 bài có sẵn 2 comment thật trong DB dev → hiện đúng danh sách kèm avatar/tên/nội dung → ban 1 comment (đã là dữ liệu test cũ, an toàn) → toast "Đã ẩn comment", badge "Hidden" hiện, nút Ban disable → đóng dialog → cột "Comments" ở bảng ngoài giảm đúng 2→1 (xác nhận invalidate cache `discuss-posts` hoạt động). Không lỗi console. **Phát hiện phụ ngoài phạm vi**: 1 user thật có tên hiển thị lỗi "Nguyễn Viết Minh Khoa undefined" (có vẻ bug cũ ở registration/OAuth ghép tên) — đã báo lại, không sửa vì ngoài phạm vi P3.
-
-## 🟢 P4 — Peer Interview: UI force-abandon — ✅ ĐÃ XONG
-
-**Restore**: n/a — hành động đã là "chuyển về trạng thái cuối", không có khái niệm hoàn tác.
-
-- [x] `admin-api.ts`: `forceAbandonPeerInterview(id)` (`PATCH /peer-interviews/:id/status`, body cố định `{ status: "ABANDONED" }`).
-  📍 `client/src/features/admin/api/admin-api.ts`.
-- [x] Hook: `use-force-abandon-peer-interview.ts` (invalidate `["admin-peer-interviews"]`).
-  📍 `client/src/features/admin/hooks/`.
-- [x] `admin-peer-interview-table.tsx`: cột Actions — nút icon `OctagonX` mở `ConfirmDialog`, `disabled` khi `status` là `COMPLETED`/`ABANDONED`.
-  📍 `client/src/features/admin/components/admin-peer-interview-table.tsx`.
-- [x] i18n (`peerInterview.*`, 3 locale) đủ key.
-- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (0 error). QA qua Chrome: tạo 1 session `WAITING_FOR_PEER` thật qua API (`POST /peer-interviews`) → thấy đúng trong bảng, nút enable → confirm force-abandon → toast "Đã buộc huỷ phiên phỏng vấn chéo", status chuyển "Abandoned" → nút tự disable ngay (click lại không mở dialog). Không lỗi console. Session + user test đã xoá thẳng khỏi DB sau khi verify.
+### 🟢 P2 — Chiều B: Google-only → Đặt mật khẩu
+- [ ] `dto/set-password.dto.ts`: `{ password: string }` (`@IsString @MinLength(6)`, đúng rule `CreateUserDto`).
+  📍 `server/src/modules/auth/dto/set-password.dto.ts`.
+- [ ] `POST /auth/set-password` (JwtAuthGuard) — decode token hiện tại (đã có sẵn trong `req.user` qua `JwtAuthGuard`, cần thêm `iat` vào `RequestUser` type nếu chưa có), check `iat` trong 2 phút gần nhất → quá hạn → `401` "Vui lòng xác thực lại qua Google". Hợp lệ → hash + set `user.password`.
+  📍 `server/src/common/types/request-user.type.ts` (thêm `iat`), `server/src/modules/auth/jwt.strategy.ts` (truyền `iat` vào `RequestUser`), `auth.controller.ts`, `auth.service.ts`.
+- [ ] Frontend: Settings hiện nút "Đặt mật khẩu" (chỉ hiện khi `!user.hasPassword`) → click → redirect thẳng `GET /auth/google` (dùng lại flow login Google có sẵn, KHÔNG cần route/param mới) → sau khi quay lại thành công (`google-callback-page.tsx` xử lý xong, có access token mới) → tự mở dialog "Đặt mật khẩu" (cần 1 cách đánh dấu "vừa quay lại để đặt mật khẩu", vd query param `?intent=set_password` giữ nguyên qua suốt vòng redirect Google — Google KHÔNG tự bảo toàn query param lạ trên `redirect_uri`, nên phải nhét vào `state` giống ticket ở P1, dù ở đây không cần ký/verify gì thêm vì không mang quyền — chỉ là cờ UI) → `SetPasswordDialog` gọi `POST /auth/set-password`, lỗi 401 do token cũ → hiện lại nút "Xác thực lại qua Google".
+  📍 `client/src/features/settings/components/set-password-dialog.tsx` (mới), `client/src/features/auth/pages/google-callback-page.tsx` (đọc thêm `state`/`intent`), `client/src/features/settings/components/social-accounts-section.tsx` hoặc section riêng cho phần password.
+- [ ] i18n: key `settings.password.*` cả 3 locale.
+- [ ] **Verify**: `npm run test`/`build`/`lint`. QA tay thật: user Google-only bấm "Đặt mật khẩu" → redirect Google → quay lại → đặt password → login lại bằng email/password (KHÔNG qua Google) → thành công. Test riêng case token cũ (đợi >2 phút, hoặc giả lập bằng cách gọi thẳng `POST /auth/set-password` với JWT cũ qua curl) → đúng 401. Dọn dữ liệu test sau khi xong.
 
 ---
 
 ## File cần đụng khi thực thi (tổng hợp, không phải lượt này)
-- `client/src/features/admin/types/index.ts` — thêm `AdminShopItem`, `ShopItemFormPayload`, `AdminCareerTrack`, `CareerTrackFormPayload`, `BugSnippetFormPayload`, `AdminDiscussComment`.
-- `client/src/features/admin/api/admin-api.ts` — thêm 11 hàm (`getStoreItems`, `createShopItem`, `updateShopItem`, `deleteShopItem`, `getCareerTracks`, `createCareerTrack`, `updateCareerTrack`, `deleteCareerTrack`, `createBugSnippet`, `updateBugSnippet`, `deleteBugSnippet`, `getDiscussComments`, `banDiscussComment`, `forceAbandonPeerInterview` — 14 thực ra, đếm lại lúc code).
-- `client/src/features/admin/hooks/` — 13 file hook mới (3 store + 3 career + 3 quest + 2 discuss + 1 peer-interview, cộng 1 list hook mới cho store/career).
-- `client/src/features/admin/components/` — 4 dialog mới (`shop-item-form-dialog.tsx`, `career-track-form-dialog.tsx`, `bug-snippet-form-dialog.tsx`, `discuss-comments-dialog.tsx`) + sửa 5 table hiện có.
-- `client/src/features/admin/pages/` — sửa `admin-store-page.tsx`, `admin-career-page.tsx`, `admin-quests-page.tsx` (thêm nút Create + state dialog); `admin-discuss-page.tsx`/`admin-peer-interview-page.tsx` không cần sửa (logic dialog nằm trong table).
-- `client/src/lib/i18n/locales/{en,vi,ja}/admin.json` — thêm key cho cả 5 domain, 3 locale.
-- **Không đụng**: `features/store`, `features/career`, `features/quest`, `features/discuss` (hook/type công khai giữ nguyên, chỉ admin đọc qua endpoint riêng); backend (đã xong, ngoài phạm vi lần này).
+- Schema: `server/prisma/schema.prisma` (`@@unique([providerId])`).
+- Backend: `auth.service.ts`, `auth.controller.ts`, `google-auth.guard.ts` (hoặc guard mới), `jwt.strategy.ts`, `request-user.type.ts`, `users.service.ts`, 2 DTO mới (`verify-password.dto.ts`, `set-password.dto.ts`).
+- Frontend: `social-accounts-section.tsx`, `google-callback-page.tsx`, `settings-page.tsx`, `auth-api.ts`, 2 dialog mới, i18n 3 locale (`settings` namespace).
+- **Không đụng**: chiều "gỡ liên kết" (unlink) — ngoài phạm vi đã xác nhận. Github/Apple/LinkedIn ở `SocialAccountsSection` — vẫn là UI trang trí, không nằm trong yêu cầu lần này.
 
 ## Việc cần làm ngay lượt này
-Chỉ ghi kế hoạch trên vào `ROADMAP.md` — **không viết code**. Sau khi user review xong, chỉ thực thi khi được yêu cầu rõ (vd "làm P0", "tiếp tục", "thực hiện roadmap").
+Chỉ ghi kế hoạch trên vào `ROADMAP.md` — **không viết code**. Đây là tính năng đụng auth/bảo mật, cần user duyệt kỹ thiết kế 2 chiều trước khi thực thi. Chỉ code khi được yêu cầu rõ (vd "làm P0", "tiến hành roadmap").
 
 ## Verification (áp dụng khi thực thi, không phải lượt này)
-- `npx tsc -b` (client, qua `npm run build` hoặc chạy `tsc -b` trực tiếp) + `npm run lint` (client) sạch sau mỗi phase.
-- QA qua Chrome tool bắt buộc theo `design.md` — golden path + edge case + responsive ~390px cho dialog mới.
-- 1 task (checkbox) = 1 commit, tick `- [ ]` → `- [x]` ngay khi xong kèm ghi chú nếu phát hiện lệch so với kế hoạch (vd buggyLine 0-indexed hay 1-indexed, tên queryKey thực tế của `useDiscussPosts()`).
+- `npm run test` (server) — mở rộng `auth.service.spec.ts` cho gate mới + `linkGoogleAccount`/`set-password` (module nhạy cảm nhất trong toàn repo theo `CLAUDE.md`, cẩn thận gấp đôi bình thường).
+- QA tay thật với Google OAuth thật (không mock được — Passport Google strategy cần code thật từ Google) — dùng đúng Google account cá nhân của bạn, dọn dữ liệu test khỏi DB sau mỗi phase.
+- 1 task = 1 commit, tick `- [ ]` → `- [x]` ngay khi xong.
 - Không tự ý `git push`/mở PR nếu chưa được yêu cầu rõ.
-- Thứ tự P0→P4 không bắt buộc tuần tự cứng — 5 domain độc lập nhau hoàn toàn (khác Store P0 ở bản backend từng là điều kiện tiên quyết vì cần migration) — có thể làm theo thứ tự user chỉ định.
+- P0 phải xong (đặc biệt migration + gate mới) trước khi đụng P1/P2 — 2 chiều đều phụ thuộc nền tảng này.

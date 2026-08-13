@@ -142,7 +142,11 @@ describe('AuthService', () => {
     });
 
     it('returns the existing user when the account was already linked to Google', async () => {
-      const googleLinkedUser = { ...activeUser, provider: 'google' };
+      const googleLinkedUser = {
+        ...activeUser,
+        provider: 'google',
+        providerId: 'google-123',
+      };
       usersService.findByEmail.mockResolvedValue(googleLinkedUser);
 
       const result = await service.validateGoogleUser(googleUser);
@@ -153,6 +157,23 @@ describe('AuthService', () => {
         googleLinkedUser.id,
       );
       expect(result.dailyReward).toEqual({ awarded: false });
+    });
+
+    it('allows Google login for a linked account even when `provider` still says "email" (gate must check providerId, not provider)', async () => {
+      // Kết quả của flow link (P1 account-linking roadmap): user gốc đăng ký
+      // bằng password (provider: 'email') rồi link Google sau — providerId
+      // được set nhưng field `provider` KHÔNG bị đổi lại.
+      const linkedButStillEmailProvider = {
+        ...activeUser,
+        provider: 'email',
+        providerId: 'google-123',
+      };
+      usersService.findByEmail.mockResolvedValue(linkedButStillEmailProvider);
+
+      const result = await service.validateGoogleUser(googleUser);
+
+      expect(result.user).toBe(linkedButStillEmailProvider);
+      expect(usersService.create).not.toHaveBeenCalled();
     });
 
     it('creates a new google-provider user when no account exists for the email', async () => {

@@ -104,6 +104,10 @@ model User {
 
   // Indexes
   @@index([provider, providerId])
+  // Chặn 1 tài khoản Google (providerId) bị 2 user chiếm cùng lúc — vd flow
+  // link (P1 account-linking roadmap). Postgres cho phép nhiều NULL cùng lúc
+  // trong unique index nên user local (providerId: null) không bị ảnh hưởng.
+  @@unique([providerId])
   @@map("users") // Đổi tên bảng trong DB thành số nhiều (optional, chuẩn REST)
 }
 

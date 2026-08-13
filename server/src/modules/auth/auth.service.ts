@@ -117,10 +117,13 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (user) {
-      // Chặn account takeover: 1 email đã đăng ký bằng email/password (provider
-      // "email") không được phép đăng nhập thẳng qua Google mà không có bước
-      // liên kết tường minh trước.
-      if (user.provider !== 'google') {
+      // Chặn account takeover: 1 email đã tồn tại nhưng CHƯA từng liên kết
+      // Google (providerId null) không được phép đăng nhập thẳng qua Google
+      // mà không có bước liên kết tường minh trước (xem AuthService#linkGoogleAccount).
+      // Check theo providerId — KHÔNG check field `provider` (field đơn, sai
+      // với user đã link cả 2 phương thức: provider gốc có thể vẫn là "email"
+      // dù providerId đã được set qua flow link).
+      if (!user.providerId) {
         throw new UnauthorizedException(
           'Email này đã được đăng ký bằng mật khẩu. Vui lòng đăng nhập bằng email/mật khẩu.',
         );

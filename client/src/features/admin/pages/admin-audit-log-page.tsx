@@ -9,17 +9,32 @@ const PAGE_SIZE = 20;
 export function AdminAuditLogPage() {
   const { t } = useTranslation("admin");
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError } = useAdminAuditLog({ page, limit: PAGE_SIZE });
+  const { data, isLoading, isError } = useAdminAuditLog({
+    page,
+    limit: PAGE_SIZE,
+  });
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.limit)) : 1;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-foreground">{t("auditLog.title")}</h1>
+      <div className="rounded-2xl border border-border/50 bg-muted/40 p-9 space-y-5">
+        <h1 className="text-xl font-semibold text-foreground tracking-tight">
+          {t("auditLog.title")}
+        </h1>
 
-      <AdminAuditLogTable entries={data?.data} isLoading={isLoading} isError={isError} />
+        <AdminAuditLogTable
+          entries={data?.data}
+          isLoading={isLoading}
+          isError={isError}
+        />
 
-      <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        <AdminPagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
+      </div>
     </div>
   );
 }

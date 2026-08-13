@@ -7,17 +7,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useAdminPeerInterviews } from "../hooks/use-admin-peer-interviews";
 import { AdminPeerInterviewStatus } from "../types";
 
-const STATUS_BADGE_CLASS: Record<AdminPeerInterviewStatus, string> = {
-  WAITING_FOR_PEER: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  ACTIVE: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  COMPLETED: "bg-muted text-muted-foreground border-border",
-  ABANDONED: "bg-red-500/10 text-red-500 border-red-500/20",
+const STATUS_DOT_CLASS: Record<AdminPeerInterviewStatus, string> = {
+  WAITING_FOR_PEER: "bg-blue-500",
+  ACTIVE: "bg-emerald-500",
+  COMPLETED: "bg-muted-foreground/50",
+  ABANDONED: "bg-red-500",
+};
+
+const STATUS_TEXT_CLASS: Record<AdminPeerInterviewStatus, string> = {
+  WAITING_FOR_PEER: "text-blue-500",
+  ACTIVE: "text-emerald-500",
+  COMPLETED: "text-muted-foreground",
+  ABANDONED: "text-red-500",
 };
 
 const STATUS_LABEL_KEY: Record<AdminPeerInterviewStatus, string> = {
@@ -32,56 +38,94 @@ export function AdminPeerInterviewTable() {
   const { data: sessions, isLoading, isError } = useAdminPeerInterviews();
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-border">
+    <div className="rounded-xl overflow-hidden border border-border/60 bg-card">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b border-border/80">
-            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("peerInterview.columnId")}</TableHead>
-            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("peerInterview.columnCandidate")}</TableHead>
-            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("peerInterview.columnInterviewer")}</TableHead>
-            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("peerInterview.columnProblem")}</TableHead>
-            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("peerInterview.columnStatus")}</TableHead>
-            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("peerInterview.columnStartedAt")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("peerInterview.columnId")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("peerInterview.columnCandidate")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("peerInterview.columnInterviewer")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("peerInterview.columnProblem")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("peerInterview.columnStatus")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("peerInterview.columnStartedAt")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i} className="border-0">
-                <TableCell colSpan={6}>
+                <TableCell colSpan={6} className="py-2.5">
                   <Skeleton className="h-6 w-full" />
                 </TableCell>
               </TableRow>
             ))
           ) : isError ? (
             <TableRow className="border-0">
-              <TableCell colSpan={6} className="h-32 text-center text-destructive">
+              <TableCell
+                colSpan={6}
+                className="h-32 text-center text-destructive"
+              >
                 {t("peerInterview.loadError")}
               </TableCell>
             </TableRow>
           ) : sessions?.length === 0 ? (
             <TableRow className="border-0">
-              <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+              <TableCell
+                colSpan={6}
+                className="h-32 text-center text-muted-foreground"
+              >
                 {t("peerInterview.empty")}
               </TableCell>
             </TableRow>
           ) : (
             sessions?.map((session) => (
-              <TableRow key={session.id} className="border-0 hover:bg-muted/50 transition-colors">
-                <TableCell className="text-muted-foreground text-xs font-mono">
+              <TableRow
+                key={session.id}
+                className="border-0 hover:bg-muted/50 transition-colors"
+              >
+                <TableCell className="py-2.5 text-muted-foreground text-xs font-mono align-middle">
                   {session.id.slice(0, 8)}
                 </TableCell>
-                <TableCell className="text-foreground">{session.candidate.name}</TableCell>
-                <TableCell className="text-muted-foreground text-xs">
+                <TableCell className="py-2.5 text-foreground align-middle">
+                  {session.candidate.name}
+                </TableCell>
+                <TableCell className="py-2.5 text-muted-foreground text-xs align-middle">
                   {session.peerInterviewer?.name ?? t("peerInterview.waiting")}
                 </TableCell>
-                <TableCell className="text-muted-foreground text-xs">{session.problem.title}</TableCell>
-                <TableCell>
-                  <Badge className={cn("shrink-0", STATUS_BADGE_CLASS[session.status])}>
-                    {t(STATUS_LABEL_KEY[session.status])}
-                  </Badge>
+                <TableCell className="py-2.5 text-muted-foreground text-xs align-middle">
+                  {session.problem.title}
                 </TableCell>
-                <TableCell className="text-muted-foreground text-xs">
+                <TableCell className="py-2.5 align-middle">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <span
+                      className={cn(
+                        "h-1.5 w-1.5 shrink-0 rounded-full",
+                        STATUS_DOT_CLASS[session.status],
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        "text-xs font-medium",
+                        STATUS_TEXT_CLASS[session.status],
+                      )}
+                    >
+                      {t(STATUS_LABEL_KEY[session.status])}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-2.5 text-muted-foreground text-xs align-middle">
                   {new Date(session.startedAt).toLocaleString()}
                 </TableCell>
               </TableRow>

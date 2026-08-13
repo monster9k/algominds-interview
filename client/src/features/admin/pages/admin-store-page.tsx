@@ -6,8 +6,12 @@ export function AdminStorePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-foreground">{t("store.title")}</h1>
-      <AdminStoreTable />
+      <div className="rounded-2xl border border-border/50 bg-muted/40 p-9 space-y-5">
+        <h1 className="text-xl font-semibold text-foreground tracking-tight">
+          {t("store.title")}
+        </h1>
+        <AdminStoreTable />
+      </div>
     </div>
   );
 }

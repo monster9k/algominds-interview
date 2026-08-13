@@ -22,7 +22,9 @@ export function AdminContestsPage() {
   });
 
   const [formOpen, setFormOpen] = useState(false);
-  const [editingContest, setEditingContest] = useState<AdminContestListItem | undefined>(undefined);
+  const [editingContest, setEditingContest] = useState<
+    AdminContestListItem | undefined
+  >(undefined);
 
   const openCreate = () => {
     setEditingContest(undefined);
@@ -37,37 +39,49 @@ export function AdminContestsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-foreground">{t("contests.title")}</h1>
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4" />
-          {t("contests.createNew")}
-        </Button>
-      </div>
+      <div className="rounded-2xl border border-border/50 bg-muted/40 p-9 space-y-5">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-foreground tracking-tight">
+            {t("contests.title")}
+          </h1>
+          <Button className="h-9 rounded-full" onClick={openCreate}>
+            <Plus className="h-4 w-4" />
+            {t("contests.createNew")}
+          </Button>
+        </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          className="rounded-full pl-9"
-          placeholder={t("common.search")}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="h-9 rounded-full pl-9"
+            placeholder={t("common.search")}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+
+        <AdminContestsTable
+          contests={data?.data}
+          isLoading={isLoading}
+          isError={isError}
+          onEdit={openEdit}
+        />
+
+        <AdminPagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
         />
       </div>
 
-      <AdminContestsTable
-        contests={data?.data}
-        isLoading={isLoading}
-        isError={isError}
-        onEdit={openEdit}
+      <ContestFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        contest={editingContest}
       />
-
-      <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
-
-      <ContestFormDialog open={formOpen} onOpenChange={setFormOpen} contest={editingContest} />
     </div>
   );
 }

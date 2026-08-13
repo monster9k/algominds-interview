@@ -6,7 +6,7 @@
 >
 > **Nguyên tắc cốt lõi khác biệt với bản trước**: compact **không phải** scale-down đồng loạt (không nhân mọi giá trị với 1 hệ số nhỏ hơn). Density phải đến từ bố cục có chủ đích, spacing nội bộ chặt hơn, tỉ lệ component tương xứng vai trò, và canh chỉnh (alignment) tốt hơn — xem chi tiết nguyên tắc ở phần "Design principles" bên dưới.
 >
-> **Trạng thái: 🔴 P0 đang thực hiện — CỔNG DUYỆT BẮT BUỘC, không tự động rollout sang P1 khi chưa có xác nhận rõ ràng của user qua kết quả render thật.**
+> **Trạng thái: 🔴 P0 + 🟡 P1 hoàn thành (Admin Dashboard). Tiếp theo: 🟡 P2 (Admin Problems density pass) — chưa bắt đầu.**
 
 ## Cách đọc file này
 - `🔴 P0` — Prototype ngôn ngữ thiết kế trên **1 component** (`dashboard-kpi-card.tsx`), **bắt buộc dừng lại và chờ user duyệt kết quả render thật** trước khi làm bất kỳ task nào của P1/P2.
@@ -116,15 +116,15 @@ KPI row (4 card đầu) không thuộc phân tầng trên — dải "top-line me
 
 - [x] **Bỏ viền (`border-0`) trên 5 widget còn lại** — yêu cầu riêng của user sau khi duyệt P0, làm trước phần padding/typography tier bên dưới.
   📍 `dashboard-sessions-chart.tsx`, `dashboard-recent-activity.tsx`, `dashboard-session-funnel.tsx`, `dashboard-top-companies.tsx`, `dashboard-acceptance-chart.tsx` — thêm `border-0` vào `Card`, giữ nguyên `shadow-sm` mặc định (không đụng, user chỉ yêu cầu bỏ viền) và toàn bộ nội dung/logic. QA Chrome tool: dark+light theme đều hiển thị đúng, card giờ chỉ phân định bằng độ tương phản `bg-card`/`bg-background` (không viền), console sạch. KPI card (đã rework riêng) giữ nguyên viền mềm `border-border/60` — không nằm trong yêu cầu bỏ viền lần này.
-- [ ] **`dashboard-sessions-chart.tsx` (Primary)**
-  📍 padding `p-5`, `CardTitle` giữ `text-base font-semibold`, chart height `256`→`240`, `Tabs`/logic range 1W/1M/3M/ALL giữ nguyên hoàn toàn.
-- [ ] **`dashboard-recent-activity.tsx` (Secondary)**
-  📍 padding `p-4`, `CardTitle`→`text-sm font-semibold`, row gap `space-y-2`.
-- [ ] **`dashboard-session-funnel.tsx`, `dashboard-top-companies.tsx`, `dashboard-acceptance-chart.tsx` (Tertiary)**
-  📍 padding `p-3.5`, `CardTitle`→`text-xs font-medium uppercase tracking-wide text-muted-foreground`, row gap `space-y-1.5`. Giữ nguyên toàn bộ badge/màu/logic tính %.
-- [ ] **`admin-dashboard-page.tsx`**
-  📍 page title `text-2xl`→`text-xl`, `space-y-6`→`space-y-5`, KPI grid `gap-4`→`gap-3`, hàng tertiary `gap-4`→`gap-3`, hàng primary+secondary giữ `gap-4`.
-- [ ] **QA Chrome tool**: từng widget, không lệch/tràn ở viewport hẹp, 3 tầng hierarchy phân biệt rõ bằng mắt thường.
+- [x] **`dashboard-sessions-chart.tsx` (Primary)**
+  📍 `CardHeader`/`CardContent` → `p-5` (header `pb-3`, content `pt-0`), `CardTitle` → `text-base font-semibold`, chart height `256`→`240` (đồng bộ skeleton/error/empty `h-64`→`h-60`), `Tabs`/logic range 1W/1M/3M/ALL giữ nguyên hoàn toàn.
+- [x] **`dashboard-recent-activity.tsx` (Secondary)**
+  📍 `CardHeader`/`CardContent` → `p-4` (header `pb-2.5`, content `pt-0`), `CardTitle`→`text-sm font-semibold`, row gap `space-y-3`→`space-y-2`.
+- [x] **`dashboard-session-funnel.tsx`, `dashboard-top-companies.tsx`, `dashboard-acceptance-chart.tsx` (Tertiary)**
+  📍 `CardHeader`/`CardContent` → `p-3.5` (header `pb-2`, content `pt-0`), `CardTitle`→`text-xs font-medium uppercase tracking-wide text-muted-foreground`, row gap → `space-y-1.5`. Giữ nguyên toàn bộ badge/màu/logic tính %.
+- [x] **`admin-dashboard-page.tsx`**
+  📍 page title `text-2xl`→`text-xl font-semibold tracking-tight` (cả nhánh `isError` lẫn nhánh chính), `space-y-6`→`space-y-5`, KPI grid `gap-4`→`gap-3`, hàng tertiary (3-cột) `gap-4`→`gap-3`, hàng primary+secondary (`flex lg:flex-row`) giữ nguyên `gap-4`.
+- [x] **QA Chrome tool**: `tsc -b`+`npm run lint` sạch (0 error, 13 warning cũ không liên quan). Dark+light theme đều hiển thị đúng: 3 tầng hierarchy phân biệt rõ bằng mắt thường (Sessions Over Time nổi bật nhất, Recent Activity vừa, 3 widget đáy hạ xuống ngôn ngữ label viết hoa nhỏ), không lệch/tràn, "Acceptance Rate by Difficulty" không bị wrap dù đổi caps. Console sạch cả 2 theme.
 
 ---
 

@@ -23,10 +23,12 @@ export function DashboardRecentActivity() {
 
   return (
     <Card className="w-full lg:w-80 shrink-0 border-0">
-      <CardHeader>
-        <CardTitle className="text-base">{t("dashboard.recentActivity.title")}</CardTitle>
+      <CardHeader className="p-4 pb-2.5">
+        <CardTitle className="text-sm font-semibold">
+          {t("dashboard.recentActivity.title")}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2 p-4 pt-0">
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)
         ) : isError ? (

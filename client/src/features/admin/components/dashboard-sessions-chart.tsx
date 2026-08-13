@@ -36,8 +36,8 @@ export function DashboardSessionsChart() {
 
   return (
     <Card className="flex-1 min-w-0 border-0">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-5 pb-3">
+        <CardTitle className="text-base font-semibold">
           {t("dashboard.sessionsChart.title")}
         </CardTitle>
         <Tabs value={range} onValueChange={(v) => setRange(v as SessionsTimeseriesRange)}>
@@ -50,19 +50,19 @@ export function DashboardSessionsChart() {
           </TabsList>
         </Tabs>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5 pt-0">
         {isLoading ? (
-          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-60 w-full" />
         ) : isError ? (
-          <p className="flex h-64 items-center justify-center text-sm text-destructive">
+          <p className="flex h-60 items-center justify-center text-sm text-destructive">
             {t("dashboard.loadError")}
           </p>
         ) : chartData.length === 0 ? (
-          <p className="flex h-64 items-center justify-center text-sm text-muted-foreground">
+          <p className="flex h-60 items-center justify-center text-sm text-muted-foreground">
             {t("dashboard.sessionsChart.empty")}
           </p>
         ) : (
-          <ResponsiveContainer width="100%" height={256}>
+          <ResponsiveContainer width="100%" height={240}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
               <XAxis

@@ -9,10 +9,12 @@ export function DashboardTopCompanies() {
 
   return (
     <Card className="border-0">
-      <CardHeader>
-        <CardTitle className="text-base">{t("dashboard.topCompanies.title")}</CardTitle>
+      <CardHeader className="p-3.5 pb-2">
+        <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {t("dashboard.topCompanies.title")}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2.5">
+      <CardContent className="space-y-1.5 p-3.5 pt-0">
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-7 w-full" />)
         ) : isError ? (

@@ -49,6 +49,22 @@
     "linkErrorEmailMismatch": "The Google account's email must match your account's email.",
     "linkErrorGeneric": "Couldn't connect the Google account. Please try again."
   },
+  "password": {
+    "title": "Password",
+    "description": "Your account currently only signs in via Google. Set a password to also sign in with your email.",
+    "noPasswordLabel": "No password set",
+    "setAction": "Set a password",
+    "setDialogTitle": "Set a password",
+    "setDialogDescription": "Set a password so you can sign in with your email, without going through Google.",
+    "newPasswordLabel": "New password",
+    "confirmPasswordLabel": "Confirm new password",
+    "mismatchError": "Passwords don't match.",
+    "setting": "Saving...",
+    "setSuccess": "Password set successfully",
+    "setErrorGeneric": "Couldn't set the password. Please try again.",
+    "staleSession": "Your session is too old. Please re-authenticate via Google before setting a password.",
+    "reauthGoogle": "Re-authenticate via Google"
+  },
   "danger": {
     "title": "Danger Zone",
     "deleteAccount": "Delete Account"

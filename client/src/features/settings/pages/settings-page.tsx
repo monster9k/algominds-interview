@@ -8,6 +8,7 @@ import { GeneralSection } from "../components/general-section";
 import { AppearanceSection } from "../components/appearance-section";
 import { LanguageSection } from "../components/language-section";
 import { SocialAccountsSection } from "../components/social-accounts-section";
+import { PasswordSection } from "../components/password-section";
 import { DangerZoneSection } from "../components/danger-zone-section";
 
 // Map lỗi từ auth.controller.ts#googleAuthRedirect() (flow link Google) —
@@ -49,6 +50,7 @@ export function SettingsPage() {
         <AppearanceSection />
         <LanguageSection />
         <SocialAccountsSection />
+        <PasswordSection />
         <DangerZoneSection />
       </div>
     </div>

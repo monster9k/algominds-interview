@@ -49,6 +49,22 @@
     "linkErrorEmailMismatch": "Googleアカウントのメールアドレスがあなたのアカウントのメールアドレスと一致している必要があります。",
     "linkErrorGeneric": "Googleアカウントを連携できませんでした。もう一度お試しください。"
   },
+  "password": {
+    "title": "パスワード",
+    "description": "現在このアカウントはGoogleでのみサインインできます。パスワードを設定するとメールでもサインインできるようになります。",
+    "noPasswordLabel": "パスワード未設定",
+    "setAction": "パスワードを設定",
+    "setDialogTitle": "パスワードを設定",
+    "setDialogDescription": "パスワードを設定すると、Googleを使わずメールでサインインできるようになります。",
+    "newPasswordLabel": "新しいパスワード",
+    "confirmPasswordLabel": "新しいパスワード（確認）",
+    "mismatchError": "パスワードが一致しません。",
+    "setting": "保存中...",
+    "setSuccess": "パスワードを設定しました",
+    "setErrorGeneric": "パスワードを設定できませんでした。もう一度お試しください。",
+    "staleSession": "セッションが古くなっています。パスワードを設定する前にGoogleで再認証してください。",
+    "reauthGoogle": "Googleで再認証"
+  },
   "danger": {
     "title": "危険な操作",
     "deleteAccount": "アカウントを削除"

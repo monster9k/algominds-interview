@@ -49,6 +49,22 @@
     "linkErrorEmailMismatch": "Email Google phải trùng với email tài khoản của bạn.",
     "linkErrorGeneric": "Không thể liên kết tài khoản Google. Vui lòng thử lại."
   },
+  "password": {
+    "title": "Mật khẩu",
+    "description": "Tài khoản của bạn hiện chỉ đăng nhập được bằng Google. Đặt mật khẩu để có thêm cách đăng nhập bằng email.",
+    "noPasswordLabel": "Chưa đặt mật khẩu",
+    "setAction": "Đặt mật khẩu",
+    "setDialogTitle": "Đặt mật khẩu",
+    "setDialogDescription": "Đặt mật khẩu để đăng nhập được bằng email, không cần qua Google.",
+    "newPasswordLabel": "Mật khẩu mới",
+    "confirmPasswordLabel": "Nhập lại mật khẩu mới",
+    "mismatchError": "Mật khẩu nhập lại không khớp.",
+    "setting": "Đang lưu...",
+    "setSuccess": "Đã đặt mật khẩu thành công",
+    "setErrorGeneric": "Không thể đặt mật khẩu. Vui lòng thử lại.",
+    "staleSession": "Phiên đăng nhập đã cũ. Vui lòng xác thực lại qua Google trước khi đặt mật khẩu.",
+    "reauthGoogle": "Xác thực lại qua Google"
+  },
   "danger": {
     "title": "Vùng nguy hiểm",
     "deleteAccount": "Xóa tài khoản"

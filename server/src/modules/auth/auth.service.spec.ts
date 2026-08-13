@@ -331,6 +331,36 @@ describe('AuthService', () => {
     });
   });
 
+  describe('setPassword', () => {
+    it('rejects when the user does not exist', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.setPassword('user-1', 'NewPassword123'),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('hashes and sets the password without touching providerId/provider', async () => {
+      const googleOnlyUser = {
+        ...activeUser,
+        password: null,
+        provider: 'google',
+        providerId: 'google-123',
+      };
+      prisma.user.findUnique.mockResolvedValue(googleOnlyUser);
+      prisma.user.update.mockResolvedValue(googleOnlyUser);
+
+      await service.setPassword('user-1', 'NewPassword123');
+
+      expect(bcrypt.hash).toHaveBeenCalledWith('NewPassword123', 10);
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: googleOnlyUser.id },
+        data: { password: 'hashed-token' },
+      });
+    });
+  });
+
   describe('refreshTokens', () => {
     const jti = 'jti-1';
     const validPayload = { sub: activeUser.id, jti, type: 'refresh' };

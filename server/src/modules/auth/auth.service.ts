@@ -232,6 +232,27 @@ export class AuthService {
     });
   }
 
+  // Chiều B "Đặt mật khẩu" (Google-first) — freshness check (JWT iat trong
+  // vài phút gần nhất, tương đương re-auth vừa qua Google) do controller lo,
+  // hàm này chỉ lo phần domain: hash + set password. Không đụng
+  // providerId/provider — user vẫn giữ nguyên khả năng đăng nhập Google sau
+  // khi có thêm password (login() chỉ check user.password tồn tại, không
+  // check provider — xem comment ở validateGoogleUser()).
+  async setPassword(userId: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId, deletedAt: null },
+    });
+    if (!user) {
+      throw new BadRequestException('Tài khoản không tồn tại');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    return this.prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+  }
+
   async refreshTokens(refreshToken: string) {
     const payload = await this.jwtService.verifyAsync<JwtPayload>(
       refreshToken,

@@ -6,6 +6,13 @@ import {
   User,
 } from "../types";
 
+// Chiều B "Đặt mật khẩu" (Settings, Google-first) — đánh dấu ý định trước
+// khi điều hướng qua GET /auth/google (dùng lại flow login thường làm bước
+// re-auth), để google-callback-page.tsx biết đường quay lại /settings mở
+// SetPasswordDialog thay vì /dashboard như login bình thường. sessionStorage
+// (không phải state OAuth) vì đây chỉ là gợi ý UI thuần, không mang quyền.
+export const SET_PASSWORD_INTENT_KEY = "algominds-post-google-intent";
+
 export const authApi = {
   login: async (data: LoginCredentials): Promise<AuthResponse> => {
     const response = await api.post("/auth/login", data);
@@ -44,5 +51,18 @@ export const authApi = {
   // vì đây là 1 OAuth redirect flow thật).
   linkGoogle: (ticket: string) => {
     window.location.href = `${import.meta.env.VITE_API_URL}/auth/google/link?ticket=${encodeURIComponent(ticket)}`;
+  },
+
+  // Chiều B "Đặt mật khẩu" — bước re-auth: đăng nhập lại qua Google (dùng
+  // đúng route login thường /auth/google, không cần route/param mới), đánh
+  // dấu ý định để callback biết quay lại /settings mở SetPasswordDialog.
+  reauthGoogleForSetPassword: () => {
+    sessionStorage.setItem(SET_PASSWORD_INTENT_KEY, "1");
+    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+  },
+
+  setPassword: async (password: string): Promise<{ message: string }> => {
+    const response = await api.post("/auth/set-password", { password });
+    return response.data;
   },
 };

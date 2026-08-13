@@ -2,6 +2,7 @@ import {
   Body,
   ConflictException,
   Controller,
+  ForbiddenException,
   Get,
   Post,
   Query,
@@ -15,6 +16,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyPasswordDto } from './dto/verify-password.dto';
+import { SetPasswordDto } from './dto/set-password.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GoogleAuthGuard } from './google-auth.guard';
 import { JwtService } from '@nestjs/jwt';
@@ -30,6 +32,12 @@ import { Throttle } from '@nestjs/throttler';
 // Route nhạy cảm brute-force (login/register/refresh) — chặt hơn nhiều so
 // với default 60/60s dùng cho các route đọc thông thường.
 const AUTH_THROTTLE = { default: { limit: 5, ttl: 60000 } };
+
+// Chiều B "Đặt mật khẩu" (Google-first, xem account-linking roadmap) — chỉ
+// cho set password nếu access token vừa được cấp trong khoảng thời gian này
+// (tương đương vừa re-auth qua Google), không dựa vào session cũ có thể đã
+// tồn tại nhiều phút.
+const SET_PASSWORD_FRESHNESS_SECONDS = 2 * 60;
 
 @Controller('auth')
 export class AuthController {
@@ -99,6 +107,37 @@ export class AuthController {
       dto.password,
     );
     return { ticket };
+  }
+
+  // Chiều B "Đặt mật khẩu" (Settings, chiều Google-first) — FE bắt user đi
+  // qua lại GET /auth/google (re-auth) ngay trước khi gọi route này. Access
+  // token dùng ở đây phải vừa được cấp — không có mật khẩu cũ để xác thực
+  // lại như chiều A, nên "vừa đăng nhập lại qua Google thành công" chính là
+  // bằng chứng thay thế.
+  @Throttle(AUTH_THROTTLE)
+  @Post('set-password')
+  @UseGuards(JwtAuthGuard)
+  async setPassword(
+    @CurrentUser() user: RequestUser,
+    @Body() dto: SetPasswordDto,
+  ) {
+    // ForbiddenException (403), TUYỆT ĐỐI KHÔNG dùng 401 — đây chính là bẫy
+    // đã gặp ở verifyPasswordAndIssueLinkTicket() (xem comment ở đó), nhưng
+    // NGHIÊM TRỌNG HƠN ở route này: nếu trả 401, interceptor axios phía FE
+    // sẽ tự động gọi /auth/refresh rồi RETRY request set-password gốc với
+    // access token MỚI — token mới đó có `iat` vừa cấp (rất "fresh"), khiến
+    // check bên dưới PASS dù user chưa hề đăng nhập lại qua Google thật. Vô
+    // hiệu hoá hoàn toàn mục đích của freshness check này. 403 không kích
+    // hoạt interceptor refresh-retry nên không có lỗ hổng này.
+    const tokenAgeSeconds = Math.floor(Date.now() / 1000) - user.iat;
+    if (tokenAgeSeconds > SET_PASSWORD_FRESHNESS_SECONDS) {
+      throw new ForbiddenException(
+        'Phiên đăng nhập đã cũ. Vui lòng xác thực lại qua Google trước khi đặt mật khẩu.',
+      );
+    }
+
+    await this.authService.setPassword(user.userId, dto.password);
+    return { message: 'Đã đặt mật khẩu thành công' };
   }
 
   // --- GOOGLE OAUTH ---

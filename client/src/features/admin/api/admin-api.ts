@@ -22,6 +22,7 @@ import {
   AdminCareerTrack,
   CareerTrackFormPayload,
   BugSnippetFormPayload,
+  AdminDiscussComment,
 } from "../types";
 
 export const adminApi = {
@@ -182,6 +183,16 @@ export const adminApi = {
 
   deleteBugSnippet: async (id: string) => {
     const response = await api.delete(`/quest/snippets/${id}`);
+    return response.data;
+  },
+
+  getDiscussComments: async (postId: string): Promise<AdminDiscussComment[]> => {
+    const response = await api.get(`/admin/discuss/${postId}/comments`);
+    return response.data;
+  },
+
+  banDiscussComment: async (postId: string, commentId: string) => {
+    const response = await api.delete(`/discuss/${postId}/comments/${commentId}`);
     return response.data;
   },
 

@@ -96,22 +96,22 @@
 - [x] i18n (`quests.*`, 3 locale) đủ key.
 - [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (0 error, warning giống pattern có sẵn). QA qua Chrome: tạo snippet (difficulty Easy, buggyLine 0) → xuất hiện đúng dot teal; edit đổi difficulty → Medium → dot vàng cập nhật đúng; xoá (soft) → toast "Đã tắt bug snippet", status "Inactive", Delete disable, Edit vẫn mở được. Không lỗi console. Snippet test đã xoá thẳng khỏi DB sau khi verify (`QuestAttempt` không có FK tới `BugSnippet`, an toàn hard-delete). **Lưu ý QA**: gõ code nhiều dòng qua tool test bằng ký tự `\n` khiến nút Save tạm thời trông "kẹt" (không gửi request) — xác nhận đây là hạn chế của cách tool gõ phím vào Textarea trong môi trường test, không phải bug trong `isValid`/`handleSubmit`; test lại với code 1 dòng xác nhận flow hoạt động đúng.
 
-## 🟡 P3 — Discuss: UI ban comment
+## 🟡 P3 — Discuss: UI ban comment — ✅ ĐÃ XONG
 
 **Restore**: **không có** — `DELETE /discuss/:postId/comments/:commentId` chỉ set `deletedAt`, không có endpoint gỡ ban. 1 chiều, giống Store.
 
-- [ ] `types/index.ts`: thêm `AdminDiscussComment` (`id, postId, content, createdAt, deletedAt: string | null, author: { id, name, avatarUrl: string | null }`).
+- [x] `types/index.ts`: `AdminDiscussComment` (thêm cùng đợt với P0).
   📍 `client/src/features/admin/types/index.ts`.
-- [ ] `admin-api.ts`: thêm `getDiscussComments(postId)` (`GET /admin/discuss/:postId/comments`), `banDiscussComment(postId, commentId)` (`DELETE /discuss/:postId/comments/:commentId`).
+- [x] `admin-api.ts`: `getDiscussComments(postId)`, `banDiscussComment(postId, commentId)`.
   📍 `client/src/features/admin/api/admin-api.ts`.
-- [ ] Hooks: `use-admin-discuss-comments.ts` (queryKey `["admin-discuss-comments", postId]`, `enabled: !!postId` — chỉ fetch khi dialog mở), `use-ban-discuss-comment.ts` (invalidate theo `postId` đang mở, **và** `["discuss-posts"]`/queryKey list bài viết hiện có — vì ban comment làm giảm `commentCount` hiển thị ở bảng ngoài, cần xác nhận đúng tên queryKey của `useDiscussPosts()` lúc code).
+- [x] Hooks: `use-admin-discuss-comments.ts` (queryKey `["admin-discuss-comments", postId]`, `enabled: !!postId`), `use-ban-discuss-comment.ts` (invalidate cả `["admin-discuss-comments", postId]` lẫn `["discuss-posts"]` — xác nhận queryKey thật của `useDiscussPosts()` là `["discuss-posts", filters]`, TanStack Query invalidate theo prefix nên `["discuss-posts"]` khớp đúng).
   📍 `client/src/features/admin/hooks/`.
-- [ ] `discuss-comments-dialog.tsx`: Dialog lớn hơn (`max-w-2xl`), nhận `postId` (hoặc `null` = đóng). List comment: avatar+tên tác giả, nội dung (giữ nguyên xuống dòng, không truncate — khác cột `title` ngoài bảng), thời gian tạo, badge "Đã ẩn" (dot đỏ) nếu `deletedAt`, nút Ban (icon `Ban`/`ShieldOff` từ lucide, không phải `Trash2` — phân biệt hành động "ẩn comment" khác "xoá post") `disabled={!!comment.deletedAt}`. Empty state nếu bài chưa có comment nào.
+- [x] `discuss-comments-dialog.tsx`: Dialog `max-w-2xl`, nhận `postId | null`. List comment avatar+tên+nội dung (`whitespace-pre-wrap`)+thời gian, badge "Hidden" (dot đỏ) nếu `deletedAt`, nút Ban (icon `Ban`) `disabled={!!comment.deletedAt}`.
   📍 `client/src/features/admin/components/discuss-comments-dialog.tsx`.
-- [ ] `admin-discuss-table.tsx`: thêm nút icon (`MessageSquare`, cạnh nút `Trash2` xoá post hiện có) mở `DiscussCommentsDialog` với `postId` tương ứng; thêm state `viewingCommentsPostId`.
+- [x] `admin-discuss-table.tsx`: nút icon `MessageSquare` cạnh `Trash2`, state `viewingCommentsPostId`.
   📍 `client/src/features/admin/components/admin-discuss-table.tsx`.
-- [ ] i18n (`discuss.*`): `viewComments` (tooltip/label nút), `commentsDialogTitle`, `columnAuthor`/`columnCreatedAt` (có sẵn, tái dùng), `commentContent` (nếu cần label), `noComments`, `banConfirmTitle`, `banConfirmDescription`, `bannedLabel`, `banAction`.
-- [ ] **Verify**: tsc/lint sạch. QA qua Chrome: mở 1 bài có comment thật (cần tạo comment test qua UI người dùng thường trước, hoặc seed) → thấy đúng danh sách → ban 1 comment → badge "Đã ẩn" hiện ra, nút Ban disable → đóng dialog → cột "Comment" ở bảng ngoài giảm đúng 1 (xác nhận invalidate đúng cache post list).
+- [x] i18n (`discuss.*`, 3 locale) đủ key.
+- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (0 error). QA qua Chrome: mở dialog 1 bài có sẵn 2 comment thật trong DB dev → hiện đúng danh sách kèm avatar/tên/nội dung → ban 1 comment (đã là dữ liệu test cũ, an toàn) → toast "Đã ẩn comment", badge "Hidden" hiện, nút Ban disable → đóng dialog → cột "Comments" ở bảng ngoài giảm đúng 2→1 (xác nhận invalidate cache `discuss-posts` hoạt động). Không lỗi console. **Phát hiện phụ ngoài phạm vi**: 1 user thật có tên hiển thị lỗi "Nguyễn Viết Minh Khoa undefined" (có vẻ bug cũ ở registration/OAuth ghép tên) — đã báo lại, không sửa vì ngoài phạm vi P3.
 
 ## 🟢 P4 — Peer Interview: UI force-abandon
 

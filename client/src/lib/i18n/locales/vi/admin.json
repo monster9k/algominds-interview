@@ -178,7 +178,15 @@
     "empty": "Chưa có bài thảo luận nào.",
     "loadError": "Không tải được danh sách bài thảo luận.",
     "deleteConfirmTitle": "Xoá bài thảo luận này?",
-    "deleteConfirmDescription": "Bài viết sẽ bị ẩn khỏi danh sách công khai (soft delete), có thể khôi phục sau nếu cần."
+    "deleteConfirmDescription": "Bài viết sẽ bị ẩn khỏi danh sách công khai (soft delete), có thể khôi phục sau nếu cần.",
+    "viewComments": "Xem comment",
+    "commentsDialogTitle": "Comment của bài viết",
+    "commentsLoadError": "Không tải được danh sách comment.",
+    "commentsEmpty": "Bài viết này chưa có comment nào.",
+    "bannedLabel": "Đã ẩn",
+    "banAction": "Ẩn comment",
+    "banConfirmTitle": "Ẩn comment này?",
+    "banConfirmDescription": "Comment sẽ bị ẩn khỏi bài viết (không thể hoàn tác), số lượt comment trên bài sẽ giảm tương ứng."
   },
   "career": {
     "title": "Quản lý Career Track",

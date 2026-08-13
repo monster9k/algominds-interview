@@ -178,7 +178,15 @@
     "empty": "投稿はまだありません。",
     "loadError": "投稿一覧の読み込みに失敗しました。",
     "deleteConfirmTitle": "この投稿を削除しますか？",
-    "deleteConfirmDescription": "投稿は公開リストから非表示になります（論理削除）。必要に応じて後で復元できます。"
+    "deleteConfirmDescription": "投稿は公開リストから非表示になります（論理削除）。必要に応じて後で復元できます。",
+    "viewComments": "コメントを見る",
+    "commentsDialogTitle": "投稿のコメント",
+    "commentsLoadError": "コメント一覧の読み込みに失敗しました。",
+    "commentsEmpty": "この投稿にはまだコメントがありません。",
+    "bannedLabel": "非表示",
+    "banAction": "コメントを非表示にする",
+    "banConfirmTitle": "このコメントを非表示にしますか?",
+    "banConfirmDescription": "コメントは投稿から非表示になります（元に戻せません）。投稿のコメント数もそれに応じて減少します。"
   },
   "career": {
     "title": "キャリアトラック管理",

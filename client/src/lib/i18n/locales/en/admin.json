@@ -178,7 +178,15 @@
     "empty": "No posts yet.",
     "loadError": "Failed to load posts.",
     "deleteConfirmTitle": "Delete this post?",
-    "deleteConfirmDescription": "The post will be hidden from the public list (soft delete), recoverable later if needed."
+    "deleteConfirmDescription": "The post will be hidden from the public list (soft delete), recoverable later if needed.",
+    "viewComments": "View comments",
+    "commentsDialogTitle": "Post comments",
+    "commentsLoadError": "Failed to load comments.",
+    "commentsEmpty": "This post has no comments yet.",
+    "bannedLabel": "Hidden",
+    "banAction": "Hide comment",
+    "banConfirmTitle": "Hide this comment?",
+    "banConfirmDescription": "The comment will be hidden from the post (cannot be undone), and the post's comment count will decrease accordingly."
   },
   "career": {
     "title": "Manage Career Tracks",

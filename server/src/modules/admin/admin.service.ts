@@ -457,6 +457,19 @@ export class AdminService {
     });
   }
 
+  // GET /admin/discuss/:postId/comments — KHÔNG filter deletedAt (khác
+  // discuss.service.ts#findPostById() chỉ trả comment còn sống cho phía
+  // user), để admin thấy cả comment đã bị ban khi kiểm duyệt 1 bài viết.
+  getDiscussComments(postId: string) {
+    return this.prisma.discussComment.findMany({
+      where: { postId },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        author: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    });
+  }
+
   // peer-interview.controller.ts hiện chỉ có GET :id (1 session) — đây là
   // endpoint list đầu tiên cho domain này.
   getPeerInterviews() {

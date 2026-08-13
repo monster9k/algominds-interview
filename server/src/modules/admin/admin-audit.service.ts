@@ -20,7 +20,8 @@ export type AdminAction =
   | 'DELETE_BUG_SNIPPET'
   | 'CREATE_CAREER_TRACK'
   | 'UPDATE_CAREER_TRACK'
-  | 'DELETE_CAREER_TRACK';
+  | 'DELETE_CAREER_TRACK'
+  | 'BAN_DISCUSS_COMMENT';
 
 export type AdminActionTargetType =
   | 'Problem'
@@ -29,7 +30,8 @@ export type AdminActionTargetType =
   | 'DiscussPost'
   | 'ShopItem'
   | 'BugSnippet'
-  | 'CareerTrack';
+  | 'CareerTrack'
+  | 'DiscussComment';
 
 @Injectable()
 export class AdminAuditService {

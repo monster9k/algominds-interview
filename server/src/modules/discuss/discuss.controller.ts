@@ -93,6 +93,29 @@ export class DiscussController {
     return this.discussService.toggleVote(id, user.userId);
   }
 
+  // DELETE /discuss/:postId/comments/:commentId — "ban" 1 comment cụ thể,
+  // cùng quyền với xoá post (ADMIN + MODERATOR). Khai báo TRƯỚC "DELETE :id"
+  // cùng lý do các route "/tags/trending"/"/contributors/top" ở trên — path
+  // cụ thể hơn nên đứng trước path 1-param, dù NestJS match theo số segment
+  // nên thứ tự không thực sự ảnh hưởng ở đây.
+  @Delete(':postId/comments/:commentId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'MODERATOR')
+  async banComment(
+    @CurrentUser() user: RequestUser,
+    @Param('postId') postId: string,
+    @Param('commentId') commentId: string,
+  ) {
+    const comment = await this.discussService.banComment(postId, commentId);
+    await this.adminAuditService.log(
+      user.userId,
+      'BAN_DISCUSS_COMMENT',
+      'DiscussComment',
+      comment.id,
+    );
+    return comment;
+  }
+
   // DELETE /discuss/:id — moderation, cả ADMIN và MODERATOR đều xoá được
   // (MODERATOR chỉ có quyền này trong toàn bộ Admin Dashboard).
   @Delete(':id')

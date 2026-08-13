@@ -113,6 +113,12 @@ export class AdminController {
     return this.adminService.getCareerTracks();
   }
 
+  // GET /admin/discuss/:postId/comments
+  @Get('discuss/:postId/comments')
+  getDiscussComments(@Param('postId') postId: string) {
+    return this.adminService.getDiscussComments(postId);
+  }
+
   // PATCH /admin/users/:id/role
   @Patch('users/:id/role')
   async updateUserRole(

@@ -4,7 +4,7 @@
 >
 > Bản này **thay thế hoàn toàn** — chủ đề khác hẳn (backend, không phải redesign UI). Mục tiêu: lên kế hoạch cho các endpoint backend còn thiếu để bảng admin Store/Career/Quests/Peer Interview có đủ chức năng **thêm/sửa/xoá** (hiện tại 4 bảng này chỉ có GET, hoàn toàn read-only), và riêng **Discuss** cần thêm khả năng **"ban" 1 comment cụ thể** (khác với xoá cả bài viết — endpoint xoá post đã có sẵn).
 >
-> **Trạng thái: 🔴 P0 (Store), 🟡 P1 (Career), 🟡 P2 (Quest) đã xong** — CRUD `ShopItem`/`CareerTrack`/`BugSnippet` đầy đủ, verify build/lint/test + tay qua curl, mỗi phase 1 commit riêng. Tiếp theo: 🟡 P3 (Discuss ban comment).
+> **Trạng thái: 🔴 P0 (Store), 🟡 P1 (Career), 🟡 P2 (Quest), 🟡 P3 (Discuss ban comment) đã xong** — CRUD `ShopItem`/`CareerTrack`/`BugSnippet` + ban comment `DiscussComment` đầy đủ, verify build/lint/test + tay qua curl, mỗi phase 1 commit riêng. Tiếp theo: 🟢 P4 (Peer Interview) — **cần xác nhận phạm vi trước khi làm** (xem ghi chú P4 bên dưới).
 
 ## Cách đọc file này
 - Mỗi mục ghi rõ **model Prisma liên quan**, **rủi ro FK/data-integrity** (nếu có), và **vị trí code** (`📍`) cần đụng khi thực thi.
@@ -94,11 +94,14 @@
 - [x] `admin.service.ts#getQuests()` đã trả đủ field (không strip `buggyLine` như `GET /quest/snippets` công khai) — giữ nguyên, dùng luôn cho list admin sau CRUD, không cần sửa gì thêm.
 - [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 pass (không có test riêng cho quest, nhưng không phá vỡ 5 suite hiện có). Test tay end-to-end qua curl với JWT admin thật: create → xuất hiện trong `GET /quest/snippets` công khai → update explanation → `GET /admin/quests` phản ánh đúng → soft-delete → `GET /admin/quests` vẫn thấy (kèm `isActive:false`) → `GET /quest/snippets` công khai không còn hiện (verify bằng cách quét `count=30` cùng `language`) → delete lần 2 → 404 → update id không tồn tại → 404 → tạo không token → 401 → audit log ghi đủ 3 hành động đúng thứ tự. Snippet test đã xoá thẳng khỏi DB sau khi verify (chưa từng có `QuestAttempt` nào tham chiếu vì bảng này không có FK tới `BugSnippet`).
 
-### 🟡 P3 — Discuss: ban 1 comment cụ thể (không cần migration)
-- [ ] `DELETE /discuss/:postId/comments/:commentId` (ADMIN + MODERATOR — cùng quyền với xoá post hiện có) — set `DiscussComment.deletedAt`, đồng thời `DiscussPost.commentCount` decrement trong 1 transaction (đối xứng `createComment`).
-  📍 `server/src/modules/discuss/discuss.controller.ts`, `discuss.service.ts`.
-- [ ] Audit log: `BAN_DISCUSS_COMMENT` (đặt tên "BAN" khớp ngôn ngữ sản phẩm, bản chất kỹ thuật vẫn là soft-delete).
-- [ ] Cần thêm endpoint đọc để admin thấy list comment theo post (hiện `admin.service.ts` không có gì ở cấp comment) — đề xuất `GET /admin/discuss/:postId/comments` (trả cả comment đã bị ban để phân biệt trạng thái). Quyết định UI (trang riêng vs. mở rộng trong bảng Discuss hiện có) thuộc phase frontend sau — backend chỉ cần đảm bảo endpoint đọc tồn tại.
+### 🟡 P3 — Discuss: ban 1 comment cụ thể (không cần migration) — ✅ ĐÃ XONG
+- [x] `DELETE /discuss/:postId/comments/:commentId` (ADMIN + MODERATOR — cùng quyền với xoá post hiện có) — set `DiscussComment.deletedAt`, đồng thời `DiscussPost.commentCount` decrement trong 1 transaction (đối xứng `createComment`). Validate `comment.postId === postId` trước khi ban, tránh ban nhầm comment thuộc bài khác nếu FE gửi sai `postId`.
+  📍 `server/src/modules/discuss/discuss.controller.ts` (route khai báo TRƯỚC `DELETE :id` cho nhất quán với các route cụ thể khác trong file, dù NestJS match theo số segment nên thứ tự không thực sự ảnh hưởng), `discuss.service.ts#banComment()`.
+- [x] Audit log: `BAN_DISCUSS_COMMENT` (đặt tên "BAN" khớp ngôn ngữ sản phẩm, bản chất kỹ thuật vẫn là soft-delete).
+  📍 `server/src/modules/admin/admin-audit.service.ts` (mở rộng `AdminAction`/`AdminActionTargetType` thêm `DiscussComment`) — không cần sửa `discuss.module.ts` vì đã import sẵn `AdminModule` từ P0 (xoá post).
+- [x] Endpoint đọc cho admin: `GET /admin/discuss/:postId/comments` (trả CẢ comment đã bị ban, kèm `deletedAt` để phân biệt trạng thái) — theo đúng convention "list/read admin sống trong `admin.service.ts`/`admin.controller.ts`, không delegate qua feature service".
+  📍 `server/src/modules/admin/admin.service.ts#getDiscussComments()`, `admin.controller.ts`. Quyết định UI (trang riêng vs. mở rộng trong bảng Discuss hiện có) thuộc phase frontend sau — backend chỉ đảm bảo endpoint đọc tồn tại.
+- [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 pass. Test tay end-to-end qua curl với JWT admin thật: tạo post test → tạo comment test (`commentCount`→1) → ban không token → 401 → `GET /admin/discuss/:postId/comments` thấy comment `deletedAt:null` → ban comment → 200, `deletedAt` được set → `commentCount` trên post giảm về 0, comment biến mất khỏi response chi tiết bài (phía user) → `GET /admin/discuss/:postId/comments` vẫn thấy comment kèm `deletedAt` → ban lại lần 2 → 404 → ban với `postId` sai (comment không thuộc post đó) → 404 → audit log ghi đúng `BAN_DISCUSS_COMMENT`/`DiscussComment`. Post + comment test đã xoá thẳng khỏi DB sau khi verify.
 
 ### 🟢 P4 — (Cần xác nhận phạm vi trước khi làm) Peer Interview: force-update status
 - [ ] `PATCH /peer-interviews/:id/status` (ADMIN) — body `{ status: 'ABANDONED' }`, **chỉ** cho set về `ABANDONED` (không cho set `WAITING_FOR_PEER`/`ACTIVE`/`COMPLETED` thủ công — tránh phá logic tự chấm ở `career.service.ts#handlePeerInterviewGraded()`).

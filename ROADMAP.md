@@ -4,7 +4,7 @@
 >
 > Bản này **thay thế hoàn toàn** — chủ đề khác hẳn (frontend, không phải backend). Mục tiêu: nối dây UI (dialog form, nút Action, confirm dialog) + hook TanStack Query gọi đúng các endpoint đã có sẵn, để admin thao tác được CRUD thật trên 5 bảng: Store, Career, Quest, Discuss (ban comment), Peer Interview (force-abandon).
 >
-> **Trạng thái: 🔵 CHỈ LÊN KẾ HOẠCH — chưa viết code.** Theo yêu cầu, dừng lại ở đây để user review, chỉ code khi được yêu cầu rõ (vd "làm P0", "thực hiện roadmap").
+> **Trạng thái: ✅ 100% HOÀN THÀNH (P0→P4)** — CRUD UI đầy đủ cho Store/Career/Quest + comment moderation UI cho Discuss + force-abandon UI cho Peer Interview, mỗi phase 1 commit riêng, verify tsc/lint + QA tay qua Chrome cho từng phase.
 
 ## Cách đọc file này
 - Thứ tự ưu tiên bám đúng thứ tự domain đã hoàn thành ở backend (P0 Store → P4 Peer Interview) để dễ đối chiếu.
@@ -113,18 +113,18 @@
 - [x] i18n (`discuss.*`, 3 locale) đủ key.
 - [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (0 error). QA qua Chrome: mở dialog 1 bài có sẵn 2 comment thật trong DB dev → hiện đúng danh sách kèm avatar/tên/nội dung → ban 1 comment (đã là dữ liệu test cũ, an toàn) → toast "Đã ẩn comment", badge "Hidden" hiện, nút Ban disable → đóng dialog → cột "Comments" ở bảng ngoài giảm đúng 2→1 (xác nhận invalidate cache `discuss-posts` hoạt động). Không lỗi console. **Phát hiện phụ ngoài phạm vi**: 1 user thật có tên hiển thị lỗi "Nguyễn Viết Minh Khoa undefined" (có vẻ bug cũ ở registration/OAuth ghép tên) — đã báo lại, không sửa vì ngoài phạm vi P3.
 
-## 🟢 P4 — Peer Interview: UI force-abandon
+## 🟢 P4 — Peer Interview: UI force-abandon — ✅ ĐÃ XONG
 
 **Restore**: n/a — hành động đã là "chuyển về trạng thái cuối", không có khái niệm hoàn tác.
 
-- [ ] `admin-api.ts`: thêm `forceAbandonPeerInterview(id)` (`PATCH /peer-interviews/:id/status`, body cố định `{ status: "ABANDONED" }`).
+- [x] `admin-api.ts`: `forceAbandonPeerInterview(id)` (`PATCH /peer-interviews/:id/status`, body cố định `{ status: "ABANDONED" }`).
   📍 `client/src/features/admin/api/admin-api.ts`.
-- [ ] Hook: `use-force-abandon-peer-interview.ts` (invalidate `["admin-peer-interviews"]`).
+- [x] Hook: `use-force-abandon-peer-interview.ts` (invalidate `["admin-peer-interviews"]`).
   📍 `client/src/features/admin/hooks/`.
-- [ ] `admin-peer-interview-table.tsx`: thêm cột **Actions** — 1 nút icon (`OctagonX` hoặc tương tự từ lucide) mở `ConfirmDialog`, `disabled` khi `status` là `COMPLETED` hoặc `ABANDONED` (khớp đúng điều kiện chặn 400 ở `peer-interview.service.ts#forceAbandon()`, tránh gọi API chắc chắn lỗi).
+- [x] `admin-peer-interview-table.tsx`: cột Actions — nút icon `OctagonX` mở `ConfirmDialog`, `disabled` khi `status` là `COMPLETED`/`ABANDONED`.
   📍 `client/src/features/admin/components/admin-peer-interview-table.tsx`.
-- [ ] i18n (`peerInterview.*`): `forceAbandonAction` (tooltip nút), `forceAbandonConfirmTitle`, `forceAbandonConfirmDescription`.
-- [ ] **Verify**: tsc/lint sạch. QA qua Chrome: cần 1 session ở trạng thái `WAITING_FOR_PEER`/`ACTIVE` thật để test (tạo qua flow invite-code bằng 2 tài khoản test, hoặc chấp nhận chỉ verify bằng ảnh chụp nút disable đúng nếu không có session sống) → bấm nút → confirm → status chuyển "Đã huỷ", nút tự disable sau khi cập nhật.
+- [x] i18n (`peerInterview.*`, 3 locale) đủ key.
+- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (0 error). QA qua Chrome: tạo 1 session `WAITING_FOR_PEER` thật qua API (`POST /peer-interviews`) → thấy đúng trong bảng, nút enable → confirm force-abandon → toast "Đã buộc huỷ phiên phỏng vấn chéo", status chuyển "Abandoned" → nút tự disable ngay (click lại không mở dialog). Không lỗi console. Session + user test đã xoá thẳng khỏi DB sau khi verify.
 
 ---
 

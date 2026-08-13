@@ -248,7 +248,10 @@
     "statusCompleted": "Hoàn thành",
     "statusAbandoned": "Đã huỷ",
     "empty": "Chưa có phiên phỏng vấn chéo nào.",
-    "loadError": "Không tải được danh sách phiên phỏng vấn chéo."
+    "loadError": "Không tải được danh sách phiên phỏng vấn chéo.",
+    "forceAbandonAction": "Buộc huỷ phiên",
+    "forceAbandonConfirmTitle": "Buộc huỷ phiên này?",
+    "forceAbandonConfirmDescription": "Dùng khi phiên bị kẹt (1 bên rớt mạng, không quay lại). Phiên sẽ chuyển sang trạng thái Đã huỷ, không thể hoàn tác."
   },
   "auditLog": {
     "title": "Nhật ký hành động Admin",

@@ -186,6 +186,13 @@ export const adminApi = {
     return response.data;
   },
 
+  forceAbandonPeerInterview: async (id: string) => {
+    const response = await api.patch(`/peer-interviews/${id}/status`, {
+      status: "ABANDONED",
+    });
+    return response.data;
+  },
+
   getDiscussComments: async (postId: string): Promise<AdminDiscussComment[]> => {
     const response = await api.get(`/admin/discuss/${postId}/comments`);
     return response.data;

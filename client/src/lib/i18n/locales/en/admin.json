@@ -248,7 +248,10 @@
     "statusCompleted": "Completed",
     "statusAbandoned": "Abandoned",
     "empty": "No peer interview sessions yet.",
-    "loadError": "Failed to load peer interview sessions."
+    "loadError": "Failed to load peer interview sessions.",
+    "forceAbandonAction": "Force abandon",
+    "forceAbandonConfirmTitle": "Force abandon this session?",
+    "forceAbandonConfirmDescription": "Use this when a session is stuck (one side disconnected and never returned). The session will move to Abandoned — this cannot be undone."
   },
   "auditLog": {
     "title": "Admin Audit Log",

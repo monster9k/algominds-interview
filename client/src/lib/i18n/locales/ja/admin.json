@@ -248,7 +248,10 @@
     "statusCompleted": "完了",
     "statusAbandoned": "中止",
     "empty": "ピア面接セッションはまだありません。",
-    "loadError": "ピア面接セッション一覧の読み込みに失敗しました。"
+    "loadError": "ピア面接セッション一覧の読み込みに失敗しました。",
+    "forceAbandonAction": "強制中止",
+    "forceAbandonConfirmTitle": "このセッションを強制中止しますか?",
+    "forceAbandonConfirmDescription": "片方が切断して戻ってこないなど、セッションが停止した場合に使用します。ステータスは「中止」になり、元に戻せません。"
   },
   "auditLog": {
     "title": "管理者操作履歴",

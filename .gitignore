@@ -12,6 +12,7 @@ build/
 # .env.* ở trên chặn luôn cả .env.example, khiến file mẫu không bao giờ vào
 # được git.
 !.env.example
+!.env.prod.example
 
 # IDE & System
 .vscode/

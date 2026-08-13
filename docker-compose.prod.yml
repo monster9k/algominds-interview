@@ -1,0 +1,142 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: algominds_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [algominds-net]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: algominds_redis
+    volumes:
+      - redis_data:/data
+    networks: [algominds-net]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # No --requirepass here — server/src/common/queue/queue.module.ts doesn't
+    # read a Redis password today, so enabling AUTH here would break BullMQ
+    # without a matching code change. v1 relies on `algominds-net` being
+    # internal-only (no published host port) instead. See ROADMAP/plan notes
+    # for the fast-follow to add Redis AUTH.
+
+  piston:
+    image: ghcr.io/engineer-man/piston
+    container_name: algominds_piston
+    privileged: true
+    tty: true
+    stdin_open: true
+    volumes:
+      - piston_data:/piston
+    networks: [algominds-net]
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"require('http').get('http://localhost:2000/api/v2/runtimes',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))\"",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  server:
+    build:
+      context: ./server
+      target: runtime
+    container_name: algominds_server
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PISTON_API_URL: http://piston:2000
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      piston: { condition: service_healthy }
+    networks: [algominds-net]
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"require('net').createConnection(3001,'localhost').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))\"",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # One-off migration runner, built from the `build` stage (has the Prisma
+  # CLI + devDeps that the slim `runtime` image intentionally excludes).
+  # Gated behind the "tools" profile so it never starts on a plain `up -d` —
+  # invoke it explicitly, see deploy.sh: `--profile tools run --rm migrate`.
+  migrate:
+    build:
+      context: ./server
+      target: build
+    container_name: algominds_migrate
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    command: ["npx", "prisma", "migrate", "deploy"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    networks: [algominds-net]
+    profiles: ["tools"]
+
+  client:
+    build:
+      context: ./client
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_SOCKET_URL: ${VITE_SOCKET_URL}
+        VITE_NODE_ENV: production
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+    container_name: algominds_client
+    networks: [algominds-net]
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: algominds_caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      CADDY_ACME_EMAIL: ${CADDY_ACME_EMAIL}
+      CLIENT_DOMAINS: ${CLIENT_DOMAINS}
+      API_DOMAIN: ${API_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [client, server]
+    networks: [algominds-net]
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  piston_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  algominds-net:

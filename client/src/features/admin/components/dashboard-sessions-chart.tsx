@@ -35,7 +35,7 @@ export function DashboardSessionsChart() {
   }));
 
   return (
-    <Card className="flex-1 min-w-0">
+    <Card className="flex-1 min-w-0 border-0">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">
           {t("dashboard.sessionsChart.title")}

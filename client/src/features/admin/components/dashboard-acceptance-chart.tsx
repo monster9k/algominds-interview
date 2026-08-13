@@ -25,7 +25,7 @@ export function DashboardAcceptanceChart() {
   const rates = new Map((data ?? []).map((row) => [row.difficulty, row.acceptanceRate]));
 
   return (
-    <Card>
+    <Card className="border-0">
       <CardHeader>
         <CardTitle className="text-base">{t("dashboard.acceptanceChart.title")}</CardTitle>
       </CardHeader>

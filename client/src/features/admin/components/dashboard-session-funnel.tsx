@@ -26,7 +26,7 @@ export function DashboardSessionFunnel() {
   const maxCount = Math.max(1, ...Array.from(counts.values()));
 
   return (
-    <Card>
+    <Card className="border-0">
       <CardHeader>
         <CardTitle className="text-base">{t("dashboard.sessionFunnel.title")}</CardTitle>
       </CardHeader>

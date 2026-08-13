@@ -108,12 +108,14 @@ KPI row (4 card đầu) không thuộc phân tầng trên — dải "top-line me
 - [x] **Verify**: `tsc -b` sạch; `npm run lint` 0 error (13 warning có sẵn không liên quan).
 - [x] **QA Chrome tool**: `/admin` dashboard — dark + light theme đều hiển thị rõ, số liệu nổi bật, caption gọn, border/radius mềm hơn rõ rệt so với các card khác (Sessions Over Time, Recent Activity...) chưa đổi trên cùng màn hình — tạo đối chiếu trực quan trước/sau. Console sạch cả 2 theme. Viewport hẹp vẫn không verify trực tiếp được do giới hạn `resize_window` tool đã ghi nhận trước đó — rủi ro thấp vì không đụng class breakpoint của grid.
 - [x] **Commit riêng cho bản rework**, tick checkbox này trong cùng commit.
-- [ ] **DỪNG LẠI — trình bày kết quả render thật cho user, chờ xác nhận rõ ràng trước khi làm P1.** Không tự động rollout.
+- [x] **DỪNG LẠI — trình bày kết quả render thật cho user, chờ xác nhận rõ ràng trước khi làm P1.** User xác nhận đồng ý hướng thiết kế ("Được") kèm 1 yêu cầu nhỏ tiếp theo (bỏ viền 5 widget còn lại — xem task border-removal ở đầu P1 bên dưới) trước khi giao toàn bộ P1.
 
 ---
 
 ## 🟡 P1 — Rollout Dashboard: 5 widget còn lại + page shell (chỉ làm sau khi P0 được approve)
 
+- [x] **Bỏ viền (`border-0`) trên 5 widget còn lại** — yêu cầu riêng của user sau khi duyệt P0, làm trước phần padding/typography tier bên dưới.
+  📍 `dashboard-sessions-chart.tsx`, `dashboard-recent-activity.tsx`, `dashboard-session-funnel.tsx`, `dashboard-top-companies.tsx`, `dashboard-acceptance-chart.tsx` — thêm `border-0` vào `Card`, giữ nguyên `shadow-sm` mặc định (không đụng, user chỉ yêu cầu bỏ viền) và toàn bộ nội dung/logic. QA Chrome tool: dark+light theme đều hiển thị đúng, card giờ chỉ phân định bằng độ tương phản `bg-card`/`bg-background` (không viền), console sạch. KPI card (đã rework riêng) giữ nguyên viền mềm `border-border/60` — không nằm trong yêu cầu bỏ viền lần này.
 - [ ] **`dashboard-sessions-chart.tsx` (Primary)**
   📍 padding `p-5`, `CardTitle` giữ `text-base font-semibold`, chart height `256`→`240`, `Tabs`/logic range 1W/1M/3M/ALL giữ nguyên hoàn toàn.
 - [ ] **`dashboard-recent-activity.tsx` (Secondary)**

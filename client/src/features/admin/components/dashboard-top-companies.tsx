@@ -8,7 +8,7 @@ export function DashboardTopCompanies() {
   const { data, isLoading, isError } = useAdminTopCompanies();
 
   return (
-    <Card>
+    <Card className="border-0">
       <CardHeader>
         <CardTitle className="text-base">{t("dashboard.topCompanies.title")}</CardTitle>
       </CardHeader>

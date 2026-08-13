@@ -22,7 +22,7 @@ export function DashboardRecentActivity() {
   const entries = data?.data;
 
   return (
-    <Card className="w-full lg:w-80 shrink-0">
+    <Card className="w-full lg:w-80 shrink-0 border-0">
       <CardHeader>
         <CardTitle className="text-base">{t("dashboard.recentActivity.title")}</CardTitle>
       </CardHeader>

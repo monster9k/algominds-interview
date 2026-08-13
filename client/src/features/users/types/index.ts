@@ -24,6 +24,10 @@ export interface UserProfileResponse {
   isPro: boolean;
   stats: UserStats | null;
   rank: number | null;
+  // Dùng để Settings quyết định hiện "Connect Google" hay "Đặt mật khẩu" —
+  // xem account-linking roadmap. password thật KHÔNG được trả về.
+  hasPassword: boolean;
+  providerId: string | null;
 }
 
 export interface DifficultyStat {

@@ -35,8 +35,19 @@
   },
   "social": {
     "title": "Tài khoản mạng xã hội",
-    "description": "Liên kết tài khoản mạng xã hội để đăng nhập vào LeetCode.",
-    "connect": "Liên kết"
+    "description": "Liên kết tài khoản mạng xã hội để đăng nhập vào AlgoMinds.",
+    "connect": "Liên kết",
+    "connected": "Đã liên kết",
+    "verifyDialogTitle": "Xác thực để liên kết Google",
+    "verifyDialogDescription": "Nhập lại mật khẩu hiện tại để xác nhận bạn là chủ tài khoản trước khi liên kết Google.",
+    "passwordLabel": "Mật khẩu hiện tại",
+    "verifyAndContinue": "Xác thực & tiếp tục",
+    "verifying": "Đang xác thực...",
+    "linkedSuccess": "Đã liên kết tài khoản Google thành công",
+    "linkErrorInvalidTicket": "Phiên liên kết đã hết hạn hoặc không hợp lệ. Vui lòng thử lại.",
+    "linkErrorAlreadyLinked": "Tài khoản Google này đã được liên kết với 1 tài khoản khác.",
+    "linkErrorEmailMismatch": "Email Google phải trùng với email tài khoản của bạn.",
+    "linkErrorGeneric": "Không thể liên kết tài khoản Google. Vui lòng thử lại."
   },
   "danger": {
     "title": "Vùng nguy hiểm",

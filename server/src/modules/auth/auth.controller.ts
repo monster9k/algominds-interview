@@ -1,8 +1,10 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Get,
   Post,
+  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -12,8 +14,11 @@ import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
+import { VerifyPasswordDto } from './dto/verify-password.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GoogleAuthGuard } from './google-auth.guard';
+import { JwtService } from '@nestjs/jwt';
+import { LinkGoogleTicketPayload } from '../../common/types/link-google-ticket-payload.type';
 
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -31,6 +36,7 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private configService: ConfigService,
+    private jwtService: JwtService,
   ) {}
 
   private getRefreshCookieOptions() {
@@ -78,6 +84,23 @@ export class AuthController {
     };
   }
 
+  // Bước 1 của flow "Connect Google" (Settings, chiều email-first) — xác
+  // thực lại mật khẩu hiện tại (step-up auth) trước khi cho phép liên kết,
+  // trả về link ticket ngắn hạn để FE tiếp tục sang GET /auth/google/link.
+  @Throttle(AUTH_THROTTLE)
+  @Post('verify-password')
+  @UseGuards(JwtAuthGuard)
+  async verifyPassword(
+    @CurrentUser() user: RequestUser,
+    @Body() dto: VerifyPasswordDto,
+  ) {
+    const ticket = await this.authService.verifyPasswordAndIssueLinkTicket(
+      user.userId,
+      dto.password,
+    );
+    return { ticket };
+  }
+
   // --- GOOGLE OAUTH ---
 
   @Get('google')
@@ -86,10 +109,57 @@ export class AuthController {
     // Guard tự chuyển hướng, không cần code
   }
 
+  // Bước 2 của flow "Connect Google" — cùng route handler với /auth/google
+  // (GoogleAuthGuard tự đọc ?ticket= và gắn vào `state` OAuth), tách route
+  // riêng chỉ để rõ ý nghĩa phía FE/API docs.
+  @Get('google/link')
+  @UseGuards(GoogleAuthGuard)
+  googleAuthLink() {
+    // Guard tự chuyển hướng, không cần code
+  }
+
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
+  async googleAuthRedirect(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query('state') state?: string,
+  ) {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+    // This route is guarded by AuthGuard('google'), so req.user is always
+    // the GoogleValidatedUser shape GoogleStrategy.validate() set — not
+    // the JWT RequestUser shape most other guarded routes see.
+    const googleUser = req.user as GoogleValidatedUser;
+
+    // `state` được Google echo lại y nguyên từ request ban đầu —
+    // GoogleAuthGuard chỉ gắn state khi request có ?ticket= hợp lệ (flow
+    // "Connect Google" từ Settings). Có state hợp lệ -> đây là link, không
+    // phải login — route sang linkGoogleAccount() thay vì validateGoogleUser().
+    if (state) {
+      let ticketPayload: LinkGoogleTicketPayload;
+      try {
+        ticketPayload =
+          await this.jwtService.verifyAsync<LinkGoogleTicketPayload>(state, {
+            secret: process.env.JWT_SECRET,
+          });
+      } catch {
+        return res.redirect(`${frontendUrl}/settings?error=invalid_ticket`);
+      }
+
+      try {
+        await this.authService.linkGoogleAccount(ticketPayload.sub, googleUser);
+      } catch (err) {
+        const errorCode =
+          err instanceof ConflictException
+            ? 'google_already_linked'
+            : 'google_email_mismatch';
+        return res.redirect(`${frontendUrl}/settings?error=${errorCode}`);
+      }
+
+      // User vốn đã đăng nhập từ trước (đây là redirect trong lúc đang ở
+      // Settings) — không cần cấp lại token, chỉ báo thành công cho FE.
+      return res.redirect(`${frontendUrl}/settings?linked=google`);
+    }
 
     // Đây là 1 browser redirect flow, không phải JSON API — nếu throw thẳng
     // exception thì user sẽ thấy trang lỗi 401 thô thay vì quay lại app.
@@ -97,12 +167,7 @@ export class AuthController {
       ReturnType<typeof this.authService.validateGoogleUser>
     >;
     try {
-      // This route is guarded by AuthGuard('google'), so req.user is always
-      // the GoogleValidatedUser shape GoogleStrategy.validate() set — not
-      // the JWT RequestUser shape most other guarded routes see.
-      validated = await this.authService.validateGoogleUser(
-        req.user as GoogleValidatedUser,
-      );
+      validated = await this.authService.validateGoogleUser(googleUser);
     } catch {
       return res.redirect(
         `${frontendUrl}/auth/login?error=google_account_conflict`,

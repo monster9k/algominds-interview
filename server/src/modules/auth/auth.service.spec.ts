@@ -1,7 +1,12 @@
 // jest's `expect.objectContaining` types as `any`, which trips
 // no-unsafe-assignment on every nested matcher object below.
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { UnauthorizedException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
@@ -11,7 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 jest.mock('bcrypt');
 
 interface PrismaMock {
-  user: { findUnique: jest.Mock };
+  user: { findUnique: jest.Mock; update: jest.Mock };
   refreshToken: {
     create: jest.Mock;
     findUnique: jest.Mock;
@@ -49,7 +54,7 @@ describe('AuthService', () => {
       verifyAsync: jest.fn(),
     };
     prisma = {
-      user: { findUnique: jest.fn() },
+      user: { findUnique: jest.fn(), update: jest.fn() },
       refreshToken: {
         create: jest.fn(),
         findUnique: jest.fn(),
@@ -190,6 +195,139 @@ describe('AuthService', () => {
       );
       expect(usersService.recordDailyLogin).toHaveBeenCalledWith('user-2');
       expect(result.user).toEqual({ id: 'user-2', ...googleUser });
+    });
+  });
+
+  describe('verifyPasswordAndIssueLinkTicket', () => {
+    // ForbiddenException (403), KHÔNG phải UnauthorizedException (401) — xem
+    // comment ở auth.service.ts#verifyPasswordAndIssueLinkTicket(). User gọi
+    // route này luôn có access token hợp lệ; 401 ở đây sẽ bị interceptor axios
+    // phía FE hiểu nhầm thành "token hết hạn" và tự ý refresh+retry.
+    it('rejects when the user does not exist', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.verifyPasswordAndIssueLinkTicket('user-1', 'x'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('rejects a Google-only account (no password to verify against)', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        ...activeUser,
+        password: null,
+      });
+
+      await expect(
+        service.verifyPasswordAndIssueLinkTicket('user-1', 'x'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('rejects a wrong password', async () => {
+      prisma.user.findUnique.mockResolvedValue(activeUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      await expect(
+        service.verifyPasswordAndIssueLinkTicket('user-1', 'wrong'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('issues a short-lived link_google ticket on a correct password', async () => {
+      prisma.user.findUnique.mockResolvedValue(activeUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      const ticket = await service.verifyPasswordAndIssueLinkTicket(
+        'user-1',
+        'correct',
+      );
+
+      expect(jwtService.signAsync).toHaveBeenCalledWith(
+        { sub: activeUser.id, purpose: 'link_google' },
+        { expiresIn: '5m' },
+      );
+      expect(ticket).toBe('signed-token');
+    });
+  });
+
+  describe('linkGoogleAccount', () => {
+    const googleProfile = {
+      email: activeUser.email,
+      name: 'User',
+      avatarUrl: 'http://new-avatar',
+      providerId: 'google-999',
+      provider: 'google' as const,
+    };
+
+    it('rejects when the target user does not exist', async () => {
+      prisma.user.findUnique.mockResolvedValueOnce(null); // load user theo ticket.sub
+
+      await expect(
+        service.linkGoogleAccount('user-1', googleProfile),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it("rejects when the Google account's email does not match the user's email", async () => {
+      prisma.user.findUnique.mockResolvedValueOnce(activeUser);
+
+      await expect(
+        service.linkGoogleAccount('user-1', {
+          ...googleProfile,
+          email: 'someone-else@example.com',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('rejects when the Google account is already linked to a different user', async () => {
+      prisma.user.findUnique
+        .mockResolvedValueOnce(activeUser) // load user theo ticket.sub
+        .mockResolvedValueOnce({
+          id: 'other-user',
+          providerId: googleProfile.providerId,
+        }); // check providerId đã bị chiếm
+
+      await expect(
+        service.linkGoogleAccount('user-1', googleProfile),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('links successfully when email matches and providerId is free', async () => {
+      prisma.user.findUnique
+        .mockResolvedValueOnce({ ...activeUser, avatarUrl: null })
+        .mockResolvedValueOnce(null); // providerId chưa ai chiếm
+      prisma.user.update.mockResolvedValue({
+        ...activeUser,
+        providerId: googleProfile.providerId,
+      });
+
+      await service.linkGoogleAccount('user-1', googleProfile);
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: activeUser.id },
+        data: {
+          providerId: googleProfile.providerId,
+          avatarUrl: googleProfile.avatarUrl,
+        },
+      });
+    });
+
+    it('keeps the existing avatarUrl instead of overwriting it with the Google one', async () => {
+      prisma.user.findUnique
+        .mockResolvedValueOnce({
+          ...activeUser,
+          avatarUrl: 'http://existing-avatar',
+        })
+        .mockResolvedValueOnce(null);
+      prisma.user.update.mockResolvedValue(activeUser);
+
+      await service.linkGoogleAccount('user-1', googleProfile);
+
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            avatarUrl: 'http://existing-avatar',
+          }),
+        }),
+      );
     });
   });
 

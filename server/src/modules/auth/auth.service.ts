@@ -1,4 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -8,6 +14,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { randomUUID } from 'crypto';
 import { GoogleValidatedUser } from '../../common/types/google-validated-user.type';
 import { JwtPayload } from '../../common/types/jwt-payload.type';
+import { LinkGoogleTicketPayload } from '../../common/types/link-google-ticket-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -152,6 +159,77 @@ export class AuthService {
     const dailyReward = await this.usersService.recordDailyLogin(newUser.id);
 
     return { user: newUser, dailyReward };
+  }
+
+  // Bước 1 của flow "Connect Google" (chiều email-first) — xác thực lại mật
+  // khẩu hiện tại (step-up auth), cấp "link ticket" ngắn hạn (5 phút) mang
+  // qua tham số `state` của vòng OAuth redirect kế tiếp vì browser điều
+  // hướng cả trang không đính kèm được header Authorization.
+  async verifyPasswordAndIssueLinkTicket(userId: string, password: string) {
+    // Dùng ForbiddenException (403), KHÔNG phải UnauthorizedException (401) —
+    // interceptor axios phía FE (client/src/lib/axios.ts) coi MỌI lỗi 401
+    // (trừ vài route auth cố định) là "access token hết hạn", tự động gọi
+    // /auth/refresh rồi retry request gốc. User gọi route này LUÔN đang có
+    // access token hợp lệ (JwtAuthGuard đã pass) — 401 ở đây sẽ bị hiểu nhầm
+    // thành hết hạn, kích hoạt vòng refresh+retry vô ích trước khi lỗi thật
+    // (sai mật khẩu) mới propagate lên UI. 403 = "đã xác thực nhưng không đủ
+    // quyền cho hành động này" đúng ngữ nghĩa hơn và né được interceptor đó.
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId, deletedAt: null },
+    });
+    if (!user || !user.password) {
+      throw new ForbiddenException('Tài khoản này chưa đặt mật khẩu');
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      throw new ForbiddenException('Sai mật khẩu');
+    }
+
+    const ticket: LinkGoogleTicketPayload = {
+      sub: user.id,
+      purpose: 'link_google',
+    };
+    return this.jwtService.signAsync(ticket, { expiresIn: '5m' });
+  }
+
+  // Bước 2 — chạy sau khi Google callback xác thực xong (auth.controller.ts
+  // đọc `state` ra link ticket hợp lệ rồi gọi hàm này thay vì validateGoogleUser()).
+  async linkGoogleAccount(userId: string, googleUser: GoogleValidatedUser) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId, deletedAt: null },
+    });
+    if (!user) {
+      throw new BadRequestException('Tài khoản không tồn tại');
+    }
+
+    // Bắt buộc email Google khớp tuyệt đối với email tài khoản đang link —
+    // không cho gắn 1 Google account bất kỳ (khác email) vào tài khoản này.
+    if (googleUser.email !== user.email) {
+      throw new BadRequestException(
+        'Email Google phải trùng với email tài khoản đang đăng nhập',
+      );
+    }
+
+    // Google account này đã được link cho 1 user KHÁC rồi (unique constraint
+    // ở DB là lớp chặn cuối, check tường minh ở đây để trả lỗi rõ ràng hơn
+    // thay vì lộ nguyên P2002 ra ngoài).
+    const claimedBy = await this.prisma.user.findUnique({
+      where: { providerId: googleUser.providerId },
+    });
+    if (claimedBy && claimedBy.id !== user.id) {
+      throw new ConflictException(
+        'Tài khoản Google này đã được liên kết với 1 tài khoản khác',
+      );
+    }
+
+    return this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        providerId: googleUser.providerId,
+        avatarUrl: user.avatarUrl ?? googleUser.avatarUrl,
+      },
+    });
   }
 
   async refreshTokens(refreshToken: string) {

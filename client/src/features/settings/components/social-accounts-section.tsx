@@ -1,7 +1,10 @@
-import { Github, Apple, Linkedin } from "lucide-react";
+import { useState } from "react";
+import { Github, Apple, Linkedin, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useUserProfile } from "@/features/users/hooks/use-user-profile";
+import { VerifyPasswordDialog } from "./verify-password-dialog";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -26,8 +29,10 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-const socialAccounts = [
-  { icon: GoogleIcon, label: "Google" },
+// Github/Apple/LinkedIn không có backend đứng sau — chỉ Google mới thật sự
+// nối dây (xem account-linking roadmap P1). Giữ nguyên các dòng còn lại ở
+// trạng thái decorative, không nằm trong phạm vi.
+const decorativeAccounts = [
   { icon: Github, label: "Github" },
   { icon: Apple, label: "Apple" },
   { icon: Linkedin, label: "LinkedIn" },
@@ -35,6 +40,10 @@ const socialAccounts = [
 
 export function SocialAccountsSection() {
   const { t } = useTranslation("settings");
+  const { data: profile } = useUserProfile();
+  const [verifyOpen, setVerifyOpen] = useState(false);
+
+  const isGoogleLinked = !!profile?.providerId;
 
   return (
     <section className="mt-8">
@@ -46,20 +55,36 @@ export function SocialAccountsSection() {
       </p>
 
       <div className="rounded-lg border border-border bg-card overflow-hidden">
-        {socialAccounts.map((account, index) => (
+        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border">
+          <GoogleIcon className="h-4 w-4 shrink-0" />
+          <span className="text-sm font-medium text-foreground">Google</span>
+          {isGoogleLinked ? (
+            <span className="ml-auto flex items-center gap-1.5 text-sm text-teal-500">
+              <Check className="h-4 w-4" />
+              {t("social.connected")}
+            </span>
+          ) : (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="ml-auto"
+              disabled={!profile?.hasPassword}
+              onClick={() => setVerifyOpen(true)}
+            >
+              {t("social.connect")}
+            </Button>
+          )}
+        </div>
+
+        {decorativeAccounts.map((account, index) => (
           <div
             key={account.label}
             className={cn(
               "flex items-center gap-3 px-4 py-3.5 transition-colors duration-150 hover:bg-muted/30",
-              index < socialAccounts.length - 1 && "border-b border-border",
+              index < decorativeAccounts.length - 1 && "border-b border-border",
             )}
           >
-            <account.icon
-              className={cn(
-                "h-4 w-4 shrink-0",
-                account.label !== "Google" && "text-muted-foreground",
-              )}
-            />
+            <account.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">
               {account.label}
             </span>
@@ -69,6 +94,8 @@ export function SocialAccountsSection() {
           </div>
         ))}
       </div>
+
+      <VerifyPasswordDialog open={verifyOpen} onOpenChange={setVerifyOpen} />
     </section>
   );
 }

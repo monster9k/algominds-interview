@@ -21,7 +21,8 @@ export type AdminAction =
   | 'CREATE_CAREER_TRACK'
   | 'UPDATE_CAREER_TRACK'
   | 'DELETE_CAREER_TRACK'
-  | 'BAN_DISCUSS_COMMENT';
+  | 'BAN_DISCUSS_COMMENT'
+  | 'FORCE_ABANDON_PEER_INTERVIEW';
 
 export type AdminActionTargetType =
   | 'Problem'
@@ -31,7 +32,8 @@ export type AdminActionTargetType =
   | 'ShopItem'
   | 'BugSnippet'
   | 'CareerTrack'
-  | 'DiscussComment';
+  | 'DiscussComment'
+  | 'PeerInterviewSession';
 
 @Injectable()
 export class AdminAuditService {

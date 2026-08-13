@@ -103,11 +103,13 @@
   📍 `server/src/modules/admin/admin.service.ts#getDiscussComments()`, `admin.controller.ts`. Quyết định UI (trang riêng vs. mở rộng trong bảng Discuss hiện có) thuộc phase frontend sau — backend chỉ đảm bảo endpoint đọc tồn tại.
 - [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 pass. Test tay end-to-end qua curl với JWT admin thật: tạo post test → tạo comment test (`commentCount`→1) → ban không token → 401 → `GET /admin/discuss/:postId/comments` thấy comment `deletedAt:null` → ban comment → 200, `deletedAt` được set → `commentCount` trên post giảm về 0, comment biến mất khỏi response chi tiết bài (phía user) → `GET /admin/discuss/:postId/comments` vẫn thấy comment kèm `deletedAt` → ban lại lần 2 → 404 → ban với `postId` sai (comment không thuộc post đó) → 404 → audit log ghi đúng `BAN_DISCUSS_COMMENT`/`DiscussComment`. Post + comment test đã xoá thẳng khỏi DB sau khi verify.
 
-### 🟢 P4 — (Cần xác nhận phạm vi trước khi làm) Peer Interview: force-update status
-- [ ] `PATCH /peer-interviews/:id/status` (ADMIN) — body `{ status: 'ABANDONED' }`, **chỉ** cho set về `ABANDONED` (không cho set `WAITING_FOR_PEER`/`ACTIVE`/`COMPLETED` thủ công — tránh phá logic tự chấm ở `career.service.ts#handlePeerInterviewGraded()`).
-  📍 `server/src/modules/peer-interview/peer-interview.controller.ts`, `peer-interview.service.ts`.
-- [ ] Audit log: `FORCE_ABANDON_PEER_INTERVIEW`.
-- [ ] **Không** làm Create (không hợp lý sản phẩm). **Không** làm Delete thật (cascade xoá message/evaluation/journey-progress) trừ khi bạn xác nhận muốn đánh đổi mất lịch sử — nếu chỉ cần "ẩn khỏi danh sách admin mà vẫn giữ dữ liệu", cần thêm cột riêng (ngoài phạm vi P4, hỏi lại nếu cần).
+### 🟢 P4 — Peer Interview: force-update status — ✅ ĐÃ XONG
+- [x] `PATCH /peer-interviews/:id/status` (ADMIN) — body `{ status: 'ABANDONED' }`, **chỉ** cho set về `ABANDONED` (validate qua `@IsIn(['ABANDONED'])` ở `ForceAbandonPeerInterviewDto` — không cho set `WAITING_FOR_PEER`/`ACTIVE`/`COMPLETED` thủ công, tránh phá logic tự chấm ở `career.service.ts#handlePeerInterviewGraded()`). Service từ chối 400 nếu phiên đã `ABANDONED`/`COMPLETED`, 404 nếu không tồn tại.
+  📍 `server/src/modules/peer-interview/peer-interview.controller.ts`, `peer-interview.service.ts#forceAbandon()`, `dto/force-abandon-peer-interview.dto.ts`.
+- [x] Audit log: `FORCE_ABANDON_PEER_INTERVIEW` (kèm metadata `requestedStatus`).
+  📍 `server/src/modules/admin/admin-audit.service.ts` (mở rộng `AdminAction`/`AdminActionTargetType` thêm `PeerInterviewSession`), `PeerInterviewModule` import `AdminModule` để inject `AdminAuditService` (đúng pattern Store/Career/Quest).
+- [x] **Không** làm Create (không hợp lý sản phẩm). **Không** làm Delete thật (cascade xoá message/evaluation/journey-progress) — đúng phạm vi đã xác nhận, không thêm cột "ẩn khỏi danh sách" (ngoài phạm vi P4).
+- [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 pass. Test tay end-to-end qua curl với JWT admin thật + user thường: tạo session test (`WAITING_FOR_PEER`) → PATCH không token → 401 → PATCH với token user thường (không phải ADMIN) → 403 → PATCH admin với status khác `ABANDONED` (vd `ACTIVE`) → 400 (validation DTO) → PATCH admin hợp lệ → 200, status chuyển `ABANDONED` → PATCH lại lần 2 → 400 "đã ở trạng thái ABANDONED" → PATCH id không tồn tại → 404 → audit log ghi đúng `FORCE_ABANDON_PEER_INTERVIEW`/`PeerInterviewSession` kèm metadata. Session + user test đã xoá thẳng khỏi DB sau khi verify (audit log giữ nguyên, append-only).
 
 ---
 

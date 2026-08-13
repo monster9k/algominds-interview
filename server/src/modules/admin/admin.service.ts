@@ -438,6 +438,38 @@ export class AdminService {
     });
   }
 
+  // GET /admin/store/items — KHÔNG filter deletedAt (khác GET /store/items
+  // công khai ở store.service.ts#getItems()), để cột trạng thái ở bảng admin
+  // phản ánh đúng cả item đã bị soft-delete.
+  getStoreItems() {
+    return this.prisma.shopItem.findMany({
+      orderBy: [{ category: 'asc' }, { price: 'asc' }],
+    });
+  }
+
+  // GET /admin/career/tracks — KHÔNG filter isActive (khác GET /career/tracks
+  // công khai ở career.service.ts#getActiveTracks()), để cột trạng thái ở
+  // bảng admin phản ánh đúng cả track đã bị soft-delete (isActive=false).
+  getCareerTracks() {
+    return this.prisma.careerTrack.findMany({
+      orderBy: { createdAt: 'asc' },
+      include: { company: true },
+    });
+  }
+
+  // GET /admin/discuss/:postId/comments — KHÔNG filter deletedAt (khác
+  // discuss.service.ts#findPostById() chỉ trả comment còn sống cho phía
+  // user), để admin thấy cả comment đã bị ban khi kiểm duyệt 1 bài viết.
+  getDiscussComments(postId: string) {
+    return this.prisma.discussComment.findMany({
+      where: { postId },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        author: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    });
+  }
+
   // peer-interview.controller.ts hiện chỉ có GET :id (1 session) — đây là
   // endpoint list đầu tiên cho domain này.
   getPeerInterviews() {

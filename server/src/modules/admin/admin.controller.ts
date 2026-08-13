@@ -101,6 +101,24 @@ export class AdminController {
     return this.adminService.getPeerInterviews();
   }
 
+  // GET /admin/store/items
+  @Get('store/items')
+  getStoreItems() {
+    return this.adminService.getStoreItems();
+  }
+
+  // GET /admin/career/tracks
+  @Get('career/tracks')
+  getCareerTracks() {
+    return this.adminService.getCareerTracks();
+  }
+
+  // GET /admin/discuss/:postId/comments
+  @Get('discuss/:postId/comments')
+  getDiscussComments(@Param('postId') postId: string) {
+    return this.adminService.getDiscussComments(postId);
+  }
+
   // PATCH /admin/users/:id/role
   @Patch('users/:id/role')
   async updateUserRole(

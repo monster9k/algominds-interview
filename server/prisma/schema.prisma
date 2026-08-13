@@ -785,6 +785,9 @@ model ShopItem {
   price       Int
   iconKey     String // map sang lucide-react icon hoặc mã màu ở FE, không lưu ảnh
   createdAt   DateTime         @default(now())
+  // Soft delete — KHÔNG hard-delete: UserItem.item có onDelete: Cascade, xoá
+  // thật sẽ xoá luôn UserItem của mọi user đã sở hữu vật phẩm này.
+  deletedAt   DateTime?
 
   users UserItem[]
 

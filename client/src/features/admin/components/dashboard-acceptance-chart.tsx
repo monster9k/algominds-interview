@@ -25,11 +25,13 @@ export function DashboardAcceptanceChart() {
   const rates = new Map((data ?? []).map((row) => [row.difficulty, row.acceptanceRate]));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{t("dashboard.acceptanceChart.title")}</CardTitle>
+    <Card className="border-0">
+      <CardHeader className="p-3.5 pb-2">
+        <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {t("dashboard.acceptanceChart.title")}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-1.5 p-3.5 pt-0">
         {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-6 w-full" />)
         ) : isError ? (

@@ -43,39 +43,51 @@ export function AdminDashboardPage() {
   if (isError) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-semibold text-foreground">{t("dashboard.title")}</h1>
-        <p className="text-sm text-destructive">{t("dashboard.loadError")}</p>
+        <div className="rounded-2xl border border-border/50 bg-muted/40 p-9 space-y-5">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+            {t("dashboard.title")}
+          </h1>
+          <p className="text-sm text-destructive">{t("dashboard.loadError")}</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-foreground">{t("dashboard.title")}</h1>
+      <div className="rounded-2xl border border-border/50 bg-muted/40 p-9 space-y-5">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          {t("dashboard.title")}
+        </h1>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((card) => (
-          <DashboardKpiCard
-            key={card.label}
-            icon={card.icon}
-            label={card.label}
-            value={card.value !== undefined ? `${card.value}${card.suffix ?? ""}` : "—"}
-            deltaPct={card.deltaPct}
-            compareLabel={t("dashboard.vsLastWeek")}
-            isLoading={isLoading}
-          />
-        ))}
-      </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {statCards.map((card) => (
+            <DashboardKpiCard
+              key={card.label}
+              icon={card.icon}
+              label={card.label}
+              value={
+                card.value !== undefined
+                  ? `${card.value}${card.suffix ?? ""}`
+                  : "—"
+              }
+              deltaPct={card.deltaPct}
+              compareLabel={t("dashboard.vsLastWeek")}
+              isLoading={isLoading}
+            />
+          ))}
+        </div>
 
-      <div className="flex flex-col gap-4 lg:flex-row">
-        <DashboardSessionsChart />
-        <DashboardRecentActivity />
-      </div>
+        <div className="flex flex-col gap-4 lg:flex-row">
+          <DashboardSessionsChart />
+          <DashboardRecentActivity />
+        </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <DashboardSessionFunnel />
-        <DashboardTopCompanies />
-        <DashboardAcceptanceChart />
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+          <DashboardSessionFunnel />
+          <DashboardTopCompanies />
+          <DashboardAcceptanceChart />
+        </div>
       </div>
     </div>
   );

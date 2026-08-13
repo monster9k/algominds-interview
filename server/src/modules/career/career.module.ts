@@ -6,6 +6,7 @@ import { AiModule } from '../ai/ai.module';
 import { ChatModule } from '../chat/chat.module';
 import { PeerInterviewModule } from '../peer-interview/peer-interview.module';
 import { UsersModule } from '../users/users.module';
+import { AdminModule } from '../admin/admin.module';
 import { CareerController } from './career.controller';
 import { CareerService } from './career.service';
 import { CareerProcessor } from './career.processor';
@@ -27,6 +28,9 @@ import { CareerListener } from './career.listener';
     // UsersModule.exports UsersService — career.processor.ts#generateReadinessReport
     // (P7) tái dùng UsersService.getConfidenceCalibration thay vì viết lại.
     UsersModule,
+    // AdminModule.exports AdminAuditService — career.controller.ts cần ghi
+    // audit log cho CRUD CareerTrack admin, đúng pattern StoreModule/QuestModule.
+    AdminModule,
     BullModule.registerQueue({
       name: 'debrief-queue',
     }),

@@ -22,24 +22,36 @@ export function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-foreground">{t("users.title")}</h1>
+      <div className="rounded-2xl border border-border/50 bg-muted/40 p-9 space-y-5">
+        <h1 className="text-xl font-semibold text-foreground tracking-tight">
+          {t("users.title")}
+        </h1>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder={t("common.search")}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="h-9 rounded-full pl-9"
+            placeholder={t("common.search")}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+
+        <AdminUsersTable
+          users={data?.data}
+          isLoading={isLoading}
+          isError={isError}
+        />
+
+        <AdminPagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
         />
       </div>
-
-      <AdminUsersTable users={data?.data} isLoading={isLoading} isError={isError} />
-
-      <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
 }

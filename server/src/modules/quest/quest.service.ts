@@ -7,6 +7,8 @@ import { Difficulty, StageKind, StageStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CareerService } from '../career/career.service';
 import { CreateAttemptDto } from './dto/create-attempt.dto';
+import { CreateBugSnippetDto } from './dto/create-bug-snippet.dto';
+import { UpdateBugSnippetDto } from './dto/update-bug-snippet.dto';
 
 export interface GetSnippetsFilters {
   difficulty?: string;
@@ -304,6 +306,37 @@ export class QuestService {
     );
 
     return rows.sort((a, b) => b.score - a.score);
+  }
+
+  createSnippet(dto: CreateBugSnippetDto) {
+    return this.prisma.bugSnippet.create({ data: dto });
+  }
+
+  async updateSnippet(id: string, dto: UpdateBugSnippetDto) {
+    const existing = await this.prisma.bugSnippet.findUnique({
+      where: { id },
+    });
+    if (!existing) {
+      throw new NotFoundException('Không tìm thấy câu hỏi này');
+    }
+
+    return this.prisma.bugSnippet.update({ where: { id }, data: dto });
+  }
+
+  // Xoá mềm — set isActive=false, giữ nguyên record để QuestAttempt cũ vẫn
+  // tham chiếu được (xem comment BugSnippet.isActive trong schema.prisma).
+  async softDeleteSnippet(id: string) {
+    const existing = await this.prisma.bugSnippet.findUnique({
+      where: { id },
+    });
+    if (!existing || !existing.isActive) {
+      throw new NotFoundException('Không tìm thấy câu hỏi này');
+    }
+
+    return this.prisma.bugSnippet.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 
   private parseDifficulty(value?: string): Difficulty | undefined {

@@ -11,13 +11,29 @@ export type AdminAction =
   | 'DELETE_CONTEST'
   | 'UPDATE_USER_ROLE'
   | 'DELETE_USER'
-  | 'DELETE_DISCUSS_POST';
+  | 'DELETE_DISCUSS_POST'
+  | 'CREATE_SHOP_ITEM'
+  | 'UPDATE_SHOP_ITEM'
+  | 'DELETE_SHOP_ITEM'
+  | 'CREATE_BUG_SNIPPET'
+  | 'UPDATE_BUG_SNIPPET'
+  | 'DELETE_BUG_SNIPPET'
+  | 'CREATE_CAREER_TRACK'
+  | 'UPDATE_CAREER_TRACK'
+  | 'DELETE_CAREER_TRACK'
+  | 'BAN_DISCUSS_COMMENT'
+  | 'FORCE_ABANDON_PEER_INTERVIEW';
 
 export type AdminActionTargetType =
   | 'Problem'
   | 'Contest'
   | 'User'
-  | 'DiscussPost';
+  | 'DiscussPost'
+  | 'ShopItem'
+  | 'BugSnippet'
+  | 'CareerTrack'
+  | 'DiscussComment'
+  | 'PeerInterviewSession';
 
 @Injectable()
 export class AdminAuditService {

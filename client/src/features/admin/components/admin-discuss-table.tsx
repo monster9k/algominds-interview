@@ -22,66 +22,101 @@ export function AdminDiscussTable() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   return (
-    <div className="rounded-lg overflow-hidden border border-border">
+    <div className="rounded-xl overflow-hidden border border-border/60 bg-card">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-b border-border/80">
-            <TableHead className="text-muted-foreground text-xs">{t("discuss.columnId")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("discuss.columnTitle")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("discuss.columnAuthor")}</TableHead>
-            <TableHead className="text-center text-muted-foreground text-xs">{t("discuss.columnViews")}</TableHead>
-            <TableHead className="text-center text-muted-foreground text-xs">{t("discuss.columnUpvotes")}</TableHead>
-            <TableHead className="text-center text-muted-foreground text-xs">{t("discuss.columnComments")}</TableHead>
-            <TableHead className="text-muted-foreground text-xs">{t("discuss.columnCreatedAt")}</TableHead>
-            <TableHead className="text-right text-muted-foreground text-xs">{t("problems.columnActions")}</TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("discuss.columnId")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("discuss.columnTitle")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("discuss.columnAuthor")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("discuss.columnViews")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("discuss.columnUpvotes")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("discuss.columnComments")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("discuss.columnCreatedAt")}
+            </TableHead>
+            <TableHead className="h-11 py-2.5 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("problems.columnActions")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i} className="border-0">
-                <TableCell colSpan={8}>
+                <TableCell colSpan={8} className="py-2.5">
                   <Skeleton className="h-6 w-full" />
                 </TableCell>
               </TableRow>
             ))
           ) : isError ? (
             <TableRow className="border-0">
-              <TableCell colSpan={8} className="h-32 text-center text-destructive">
+              <TableCell
+                colSpan={8}
+                className="h-32 text-center text-destructive"
+              >
                 {t("discuss.loadError")}
               </TableCell>
             </TableRow>
           ) : posts?.length === 0 ? (
             <TableRow className="border-0">
-              <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+              <TableCell
+                colSpan={8}
+                className="h-32 text-center text-muted-foreground"
+              >
                 {t("discuss.empty")}
               </TableCell>
             </TableRow>
           ) : (
             posts?.map((post) => (
-              <TableRow key={post.id} className="border-0 hover:bg-muted/50 transition-colors">
-                <TableCell className="text-muted-foreground text-xs font-mono">
+              <TableRow
+                key={post.id}
+                className="border-0 hover:bg-muted/50 transition-colors"
+              >
+                <TableCell className="py-2.5 text-muted-foreground text-xs font-mono align-middle">
                   {post.id.slice(0, 8)}
                 </TableCell>
-                <TableCell className="font-medium text-foreground max-w-xs truncate">
+                <TableCell className="py-2.5 font-medium text-foreground max-w-xs truncate align-middle">
                   {post.title}
                 </TableCell>
-                <TableCell className="text-muted-foreground text-xs">{post.author.name}</TableCell>
-                <TableCell className="text-center text-muted-foreground text-xs">{post.viewCount}</TableCell>
-                <TableCell className="text-center text-muted-foreground text-xs">{post.upvoteCount}</TableCell>
-                <TableCell className="text-center text-muted-foreground text-xs">{post.commentCount}</TableCell>
-                <TableCell className="text-muted-foreground text-xs">
+                <TableCell className="py-2.5 text-muted-foreground text-xs align-middle">
+                  {post.author.name}
+                </TableCell>
+                <TableCell className="py-2.5 text-center text-muted-foreground text-xs align-middle">
+                  {post.viewCount}
+                </TableCell>
+                <TableCell className="py-2.5 text-center text-muted-foreground text-xs align-middle">
+                  {post.upvoteCount}
+                </TableCell>
+                <TableCell className="py-2.5 text-center text-muted-foreground text-xs align-middle">
+                  {post.commentCount}
+                </TableCell>
+                <TableCell className="py-2.5 text-muted-foreground text-xs align-middle">
                   {new Date(post.createdAt).toLocaleDateString()}
                 </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => setDeletingId(post.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <TableCell className="py-2.5 px-2 align-middle">
+                  <div className="flex items-center justify-end">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => setDeletingId(post.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))
@@ -97,7 +132,9 @@ export function AdminDiscussTable() {
         isLoading={deletePost.isPending}
         onConfirm={() => {
           if (!deletingId) return;
-          deletePost.mutate(deletingId, { onSuccess: () => setDeletingId(null) });
+          deletePost.mutate(deletingId, {
+            onSuccess: () => setDeletingId(null),
+          });
         }}
       />
     </div>

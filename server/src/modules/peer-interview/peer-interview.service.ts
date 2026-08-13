@@ -94,4 +94,27 @@ export class PeerInterviewService {
 
     return session;
   }
+
+  // Admin force-abandon 1 phiên bị kẹt (vd 1 bên rớt mạng, không bao giờ
+  // join/thoát) — chỉ cho chuyển sang ABANDONED, không cho set các status
+  // khác vì WAITING_FOR_PEER/ACTIVE/COMPLETED do luồng join/chấm điểm tự
+  // quản lý (xem career.service.ts#handlePeerInterviewGraded()).
+  async forceAbandon(id: string) {
+    const session = await this.prisma.peerInterviewSession.findUnique({
+      where: { id },
+    });
+    if (!session) throw new NotFoundException('Phiên không tồn tại');
+    if (session.status === PeerSessionStatus.ABANDONED) {
+      throw new BadRequestException('Phiên này đã ở trạng thái ABANDONED');
+    }
+    if (session.status === PeerSessionStatus.COMPLETED) {
+      throw new BadRequestException('Không thể abandon 1 phiên đã hoàn thành');
+    }
+
+    return this.prisma.peerInterviewSession.update({
+      where: { id },
+      data: { status: PeerSessionStatus.ABANDONED },
+      include: SESSION_WITH_RELATIONS_INCLUDE,
+    });
+  }
 }

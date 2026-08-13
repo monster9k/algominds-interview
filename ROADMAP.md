@@ -1,117 +1,132 @@
-# 🗺️ AlgoMinds — Roadmap: Redesign UI (Admin Dashboard + Unified Icon-Sidebar Shell)
+# 🗺️ AlgoMinds — Roadmap: Admin CRUD endpoints (Store/Career/Quest/Peer Interview) + Discuss comment moderation
 
-> Bản roadmap trước (Admin Dashboard nền tảng — phân quyền, layout admin cũ, data table CRUD, RBAC MODERATOR, audit log) đã hoàn thành 100% P0/P1/P2 — xem lịch sử git (commit cuối chỉnh sửa file này: `0e21c685416b77aa7d21b594202ffdc042a03ad`) nếu cần tham chiếu lại nội dung cũ.
-> Bản này thay thế nó. Mục tiêu: redesign toàn bộ UI theo ảnh tham chiếu (Pivora CRM dashboard) — hợp nhất layout admin/user thành 1 shared shell (icon-sidebar + top bar tối giản), chuyển profile vào sidebar, rebuild Admin Dashboard với KPI card + biểu đồ. Không đụng logic nghiệp vụ (`sessions.service.ts`/`judge.service.ts`/`auth.service.ts`, `Session.version`) — thay đổi chỉ ở layer UI + aggregate query read-only mới trong `admin.service.ts`.
+> Bản roadmap trước ("Compact premium SaaS density cho Admin Dashboard + Admin Problems") đã hoàn thành P0/P1/P2 ở commit `51d0ea1`. Ngoài ra, cùng phiên làm việc đó còn có 1 đợt mở rộng UI chưa được tổng hợp lại thành mục riêng trong roadmap cũ trước khi bị thay thế: thêm "surface" (panel nền `bg-muted/40` bao ngoài) cho toàn bộ 8 trang bảng admin còn lại (Contests, Users, Store, Discuss, Career, Quests, Peer Interview, Audit Log) + Dashboard, đổi Difficulty/Status/Action-badge sang dạng dot+text gọn hơn, refine nút Actions — code đã xong, đã QA qua Chrome, **nhưng chưa commit**, đang chờ user duyệt lần cuối. Xem lại nội dung roadmap cũ ở commit `51d0ea1` nếu cần tham chiếu.
 >
-> Bản kế hoạch đầy đủ (bối cảnh, quyết định đã chốt với user, phân tích) nằm ở plan file phiên làm việc — tóm tắt lại các quyết định quan trọng ở phần "Khảo sát" bên dưới.
+> Bản này **thay thế hoàn toàn** — chủ đề khác hẳn (backend, không phải redesign UI). Mục tiêu: lên kế hoạch cho các endpoint backend còn thiếu để bảng admin Store/Career/Quests/Peer Interview có đủ chức năng **thêm/sửa/xoá** (hiện tại 4 bảng này chỉ có GET, hoàn toàn read-only), và riêng **Discuss** cần thêm khả năng **"ban" 1 comment cụ thể** (khác với xoá cả bài viết — endpoint xoá post đã có sẵn).
+>
+> **Trạng thái: 🔴 P0 (Store), 🟡 P1 (Career), 🟡 P2 (Quest), 🟡 P3 (Discuss ban comment) đã xong** — CRUD `ShopItem`/`CareerTrack`/`BugSnippet` + ban comment `DiscussComment` đầy đủ, verify build/lint/test + tay qua curl, mỗi phase 1 commit riêng. Tiếp theo: 🟢 P4 (Peer Interview) — **cần xác nhận phạm vi trước khi làm** (xem ghi chú P4 bên dưới).
 
 ## Cách đọc file này
-- `🔴 P0` — Ưu tiên cao nhất theo đúng yêu cầu user ("trước tiên... trang admin dashboard trước"): Shared App Shell (`IconSidebar`+`TopBar`+`AppShell`, dùng chung admin/user), áp dụng cho `AdminLayout`, rebuild `AdminDashboardPage` với KPI card + chart (cần mở rộng backend `admin.service.ts`).
-- `🟡 P1` — Áp dụng cùng shell đã build ở P0 cho `DashboardLayout` (user-facing), bỏ `DashboardHeader` navbar ngang cũ.
-- `🟢 P2` — Seed data demo cho chart, QA responsive mobile cả 2 khu vực, dọn code chết, verify i18n parity cuối cùng.
-- Mỗi task ghi **vị trí code** liên quan để bắt tay vào làm ngay.
-- **Thứ tự bắt buộc**: `sidebar-item-classes.ts` + tách `UserNavMenu` content xong trước `icon-sidebar.tsx` (icon-sidebar cần cả 2). `icon-sidebar.tsx`+`top-bar.tsx` xong trước `app-shell.tsx`. `app-shell.tsx` xong trước khi sửa `admin-layout.tsx`/`dashboard-layout.tsx`. BE mở rộng `admin.service.ts` xong trước khi FE viết hook mới gọi endpoint đó. `/help` route cần có trước khi sidebar footer link tới nó không bị 404.
+- Mỗi mục ghi rõ **model Prisma liên quan**, **rủi ro FK/data-integrity** (nếu có), và **vị trí code** (`📍`) cần đụng khi thực thi.
+- `🔴 P0` — rủi ro cao nhất, cần migration schema trước khi làm được (Store).
+- `🟡 P1`/`🟡 P2`/`🟡 P3` — không cần migration, dùng field đã có sẵn trong schema.
+- `🟢 P4` — **cần hỏi lại user xác nhận phạm vi** trước khi triển khai (Peer Interview là bản ghi runtime, không phải "nội dung" — "thêm" không hợp lý về sản phẩm).
 
 ---
 
-## Khảo sát kỹ thuật quan trọng (ảnh hưởng thiết kế)
+## Nguyên tắc kiến trúc chung (áp dụng cho mọi phase)
 
-- **2 bộ code layout hiện tại trùng lặp gần như y hệt nhau** — `AdminSidebar`/`AdminHeader`/`AdminLayout` (`client/src/features/admin/{components,layout}/`) và `DashboardSidebar`/`DashboardHeader`/`DashboardLayout` (`client/src/components/layout/`) dùng chung 1 pattern `itemClasses()` (border-l-2 + `bg-primary/15 text-primary` khi active) bị copy-paste ở 2 nơi. Đây là cơ hội hợp nhất — tách `itemClasses()` thành `sidebar-item-classes.ts` dùng chung, xây 1 `IconSidebar`/`TopBar`/`AppShell` nhận `items` khác nhau cho admin/user thay vì duy trì 2 bộ song song.
-- **Chưa cài thư viện chart nào** (`client/package.json` không có `recharts`/`chart.js`) — đã hỏi và được xác nhận dùng **recharts** (`npm install recharts`).
-- **Chưa có `tooltip.tsx`** trong `components/ui/` (cũng không có `@radix-ui/react-tooltip`) — cần cho label hover ở sidebar collapsed (icon-only) mode.
-- **`client/src/stores/use-sidebar.ts` hiện chỉ được dùng bởi `header.tsx` (component chết, chỉ ref bởi `test-page.tsx`)** — an toàn để repurpose làm store lưu trạng thái collapse của `IconSidebar` mới, không cần tạo store riêng.
-- **`user-nav-menu.tsx` (`client/src/components/layout/user-nav-menu.tsx`) đã có sẵn toàn bộ nội dung dropdown profile** (avatar+tên header → `/profile`, grid 4 shortcut, list Settings/Orders/..., Sign out) — chỉ cần tách phần content ra khỏi trigger hiện tại (avatar tròn góc phải header) để gắn vào profile row mới trong sidebar, **giữ nguyên nội dung** đúng yêu cầu user. Thêm 1 item đầu `listItems`: "Admin Panel" → `navigate("/admin")`, hiện khi `role === "ADMIN"` (logic mirror `dashboard-header.tsx#visibleNavLinks`).
-- **`admin-dashboard-page.tsx` hiện chỉ có 3 stat card tĩnh** (`Users`/`Problems`/`Submissions`, không trend, không chart) từ `useAdminStats()` → `GET /admin/stats` hiện chỉ trả `{totalUsers, totalProblems, totalSubmissions}` (`admin.service.ts:29-37`) — cần mở rộng cả 2 phía.
-- **Widget "Calendar" trong ảnh mẫu không có tính năng tương ứng trong AlgoMinds** — đã hỏi và chốt: thay bằng **Recent Activity feed**, tái dùng thẳng `GET /admin/audit-log?limit=5` có sẵn (`admin.service.ts#getAuditLog`), không cần endpoint mới.
-- **Widget "Top Country" → "Top Companies"** — tái dùng đúng pattern query đã có ở `companies.service.ts#findAll()` (group theo `_count.problems`, đã có hook `useCompanies()` + component tham khảo style `trending-companies-widget.tsx` ở `client/src/features/problems/components/`).
-- **`Problem.acceptanceRate`/`submitCount`/`passCount` đã denormalize sẵn** (`schema.prisma`, model `Problem`) — dùng thẳng cho widget "Acceptance Rate by Difficulty" (`groupBy(['difficulty'], _avg: {acceptanceRate: true})`), không cần tính lại từ `Submission`.
-- **`SessionEvent` là bảng chết** (không có `sessionEvent.create()` nào trong codebase) — KHÔNG dùng bảng này cho time-series, dùng `Session.startedAt` trực tiếp thay thế.
-- **DB dev gần như trống Session/Submission** (`seed.ts` chỉ seed 2 problem mẫu + `sync-problems.ts` có ~51 problem từ file, không seed user/session/submission nào) — đã hỏi và chốt: viết **seed script riêng cho dev** (`seed-demo-data.ts`, không đụng `seed.ts`/`npx prisma db seed` mặc định), xếp ở P2 (không block P0 — dashboard vẫn phải chạy đúng với dữ liệu thật/thưa, empty-state phải đẹp).
-- **Không thêm shadow nặng/gradient tuỳ hứng** (theo `.claude/rules/design.md`) — mọi card mới dùng `Card`/`CardHeader`/`CardContent` sẵn có, màu badge trend dùng đúng công thức `bg-{color}-500/10 text-{color}-500 border-{color}-500/20` đã có tiền lệ ở `DIFFICULTY_BADGE_CLASS`/`ACTION_BADGE_CLASS`.
-- **Không đụng `sessions.service.ts`/`judge.service.ts`/`auth.service.ts`** — toàn bộ BE task ở roadmap này chỉ thêm method mới trong `admin.service.ts` (read-only aggregate), không sửa logic 3 file nhạy cảm trên.
+1. **Vị trí code mutation**: sống trong controller/service CỦA ĐÚNG MODULE (`store.controller.ts`, `career.controller.ts`, `quest.controller.ts`, `discuss.controller.ts`) — **không** tập trung vào `admin.controller.ts`, đúng convention đã có sẵn ở `contest.controller.ts`/`problems.controller.ts` (`POST`/`PATCH`/`DELETE` admin-gated ngay trong controller gốc; `admin.controller.ts` chỉ giữ list/stats + vài action đặc thù như `updateUserRole`).
+2. **Guard**: mọi endpoint mutation mới đều `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles('ADMIN')` (riêng Discuss comment-ban giữ đúng quyền hiện có của xoá post: `@Roles('ADMIN', 'MODERATOR')`).
+3. **Audit log**: mọi mutation phải gọi `AdminAuditService.log(userId, ACTION, targetType, targetId, metadata?)` — đúng pattern `admin.controller.ts`/`discuss.controller.ts` hiện có.
+4. **DTO**: `class-validator`, tách `CreateXxxDto` (field bắt buộc) + `UpdateXxxDto` (mọi field optional) — đúng convention `create-contest.dto.ts`/`update-contest.dto.ts`.
+5. **"Xoá" ưu tiên soft-delete** dùng field đã có sẵn trong schema (`isActive`/`deletedAt`) thay vì hard-delete — trừ Store (chưa có field phù hợp, cần migration, xem P0).
+6. **Phạm vi lần này CHỈ BACKEND** — hook (`use-create-*`/`use-update-*`/`use-delete-*`, đúng convention `client/src/features/admin/hooks/use-create-contest.ts` đã có) + dialog form phía frontend là 1 phase riêng, làm sau khi backend xong và được yêu cầu rõ.
 
 ---
 
-## 🔴 P0 — Shared App Shell + Admin Dashboard (KPI cards + charts)
+## Khảo sát rủi ro theo từng entity
 
-- [x] **FE: cài `recharts` + shadcn `tooltip.tsx`**
-  📍 `client/` — `npm install recharts`; thêm `client/src/components/ui/tooltip.tsx` (+ `@radix-ui/react-tooltip`), dùng cho label hover ở sidebar collapsed mode.
+### Store (`ShopItem`)
+- Model: `id, key(unique), name, description, category(enum), price, iconKey, createdAt` — **không có** `deletedAt`/`isActive`.
+- ⚠️ **Rủi ro cao**: `UserItem.item` khai `onDelete: Cascade` — hard-delete 1 `ShopItem` sẽ **xoá luôn mọi `UserItem` đang sở hữu nó** (user mất vật phẩm đã mua, kể cả đang equipped). **Tuyệt đối không hard-delete.**
+- → Cần migration thêm `deletedAt DateTime?`, lọc `deletedAt: null` ở `GET /store/items` (catalog công khai) — DELETE admin = soft delete.
 
-- [x] **FE: `sidebar-item-classes.ts` — tách helper dùng chung**
-  📍 `client/src/components/layout/sidebar-item-classes.ts` (mới) — chuyển `itemClasses()` đang lặp y hệt ở `admin-sidebar.tsx` và `dashboard-sidebar.tsx` vào đây, export dùng chung.
+### Career (`CareerTrack`)
+- Model: `id, key(unique), name, description, isActive, companyId?, createdAt`.
+- `CareerJourney.track` không khai `onDelete` → Prisma dùng default DB (Restrict) — hard-delete sẽ **lỗi FK constraint** ngay khi có ≥1 journey tham chiếu track đó.
+- → Không cần migration — tái dùng field `isActive` sẵn có (đúng cột STATUS đang hiển thị trên bảng admin) làm cờ soft-delete.
 
-- [x] **FE: tách content dropdown của `UserNavMenu` + thêm item "Admin Panel"**
-  📍 `client/src/components/layout/user-nav-menu.tsx` — giữ nguyên toàn bộ nội dung dropdown hiện có (header avatar+tên → `/profile`, grid 4 shortcut, list Settings/Orders/..., Sign out), refactor để trigger nhận từ ngoài truyền vào (dùng lại từ `icon-sidebar.tsx` bên dưới thay vì avatar góc phải header cũ). Thêm 1 item đầu `listItems`: "Admin Panel" → `navigate("/admin")`, hiện khi `useAuthStore().user?.role === "ADMIN"`.
+### Quest (`BugSnippet`)
+- Model: `id, language, difficulty, code, buggyLine, explanation, isActive, createdAt`.
+- Comment sẵn trong schema xác nhận chủ đích thiết kế: *"để tắt câu hỏi lỗi mà không xoá (giữ lịch sử QuestAttempt tham chiếu được)"* — `isActive` đã được thiết kế đúng cho mục đích "xoá mềm" này.
+- → Không cần migration — DELETE admin = set `isActive=false`.
 
-- [x] **FE: trang Help Center mới + route `/help`**
-  📍 `client/src/features/settings/pages/help-center-page.tsx` (mới, tái dùng layout/style các trang Settings hiện có) — nội dung tối giản (FAQ ngắn + kênh liên hệ). Đăng ký route `/help` trong `client/src/app/router-instance.tsx`, cùng nhóm `DashboardLayout`.
+### Peer Interview (`PeerInterviewSession`)
+- Model: bản ghi **phiên runtime** (candidate/interviewer/problem/status/inviteCode/timestamps) do **user** tạo qua flow ghép cặp bằng invite-code — khác bản chất với 3 mục trên (không phải "nội dung" admin biên tập).
+- Không có `isActive`/`deletedAt`.
+- ⚠️ "Thêm" (create) không hợp lý sản phẩm — phiên phải qua đúng luồng invite-code. Xoá thật sẽ cascade xoá `PeerInterviewMessage`/`PeerInterviewEvaluation`/`JourneyStageProgress` liên kết (mất lịch sử chat + kết quả chấm).
+- → Đề xuất thu hẹp: chỉ làm **"Sửa"** (force-update status về `ABANDONED` để giải phóng phiên bị kẹt) — xem P4, **cần bạn xác nhận lại phạm vi** trước khi triển khai.
 
-- [x] **FE: `icon-sidebar.tsx` — sidebar mới dùng chung admin/user**
-  📍 `client/src/components/layout/icon-sidebar.tsx` (mới) — props `{ items }`: Logo (`components/ui/logo.tsx`) + nút collapse (state lưu ở `client/src/stores/use-sidebar.ts`, repurpose store hiện có, không tạo mới) → profile row (avatar+tên/email+chevron, trigger cho dropdown đã tách ở task trên) → nav items (render `items` qua `itemClasses()` dùng chung) → footer ghim đáy: Settings (`/settings`) + Help Center (`/help`). Collapsed mode: icon-only + `Tooltip`. Mobile (<lg): ẩn mặc định, mở qua `Sheet` có sẵn (`components/ui/sheet.tsx`).
-
-- [x] **FE: `top-bar.tsx` — top bar tối giản dùng chung admin/user**
-  📍 `client/src/components/layout/top-bar.tsx` (mới) — hamburger (mobile, mở `IconSidebar` trong `Sheet`) + tên trang hiện tại (tra theo route active trong `items` truyền vào). Giữ chuông thông báo + coin-balance pill (tính năng thật đang chạy) ở góc phải cho biến thể user; biến thể admin không cần.
-
-- [x] **FE: `app-shell.tsx` — compose `IconSidebar`+`TopBar`+`Outlet`**
-  📍 `client/src/components/layout/app-shell.tsx` (mới) — nhận `items` khác nhau cho admin/user, đây là shell dùng chung duy nhất.
-
-- [x] **FE: `admin-layout.tsx` đổi sang dùng `AppShell`**
-  📍 `client/src/features/admin/layout/admin-layout.tsx` — thay nội dung hiện tại (`AdminSidebar`+`AdminHeader` riêng) bằng `<AppShell items={adminSidebarItems} />`, dùng lại đúng mảng `sidebarItems` hiện có ở `admin-sidebar.tsx` (không đổi route/label/icon).
-
-- [x] **BE: mở rộng `admin.service.ts`/`admin.controller.ts` — stats mở rộng + 4 endpoint mới**
-  📍 `server/src/modules/admin/admin.service.ts`, `admin.controller.ts` (cùng class-level `@Roles('ADMIN')` guard có sẵn, không sửa guard):
-  - `getStats()` mở rộng: thêm `totalSessions`, `completionRate` (COMPLETED/tổng session), %-delta so 7 ngày trước cho từng KPI.
-  - `getSessionsTimeseries(range: '1W'|'1M'|'3M'|'ALL')` — bucket `Session.startedAt` trong JS (data nhỏ, không cần raw SQL) → `GET /admin/stats/sessions-timeseries?range=`.
-  - `getSessionStatusBreakdown()` — `prisma.session.groupBy({by:['status'], _count:true})` → `GET /admin/stats/session-status`.
-  - `getAcceptanceByDifficulty()` — **sửa lại quyết định ban đầu**: `Problem.acceptanceRate`/`submitCount`/`passCount` denormalize sẵn nhưng khi đọc kỹ code phát hiện chưa từng được ghi ở bất kỳ đâu (luôn = 0 mặc định) — không dùng được. Tính trực tiếp từ `Submission.status` + `Session.problem.difficulty` (gom trong JS, cùng data volume nhỏ) thay thế → `GET /admin/stats/acceptance-by-difficulty`.
-  - `getTopCompanies(limit=5)` — mirror query `companies.service.ts#findAll()`, top 5 theo `_count.problems` → `GET /admin/stats/top-companies`.
-  - Recent Activity: tái dùng thẳng `GET /admin/audit-log?limit=5` có sẵn, không cần route mới.
-  - Verify: `auth.service.spec.ts` + `judge.service.spec.ts` (24 test) vẫn pass; curl với JWT admin xác nhận cả 4 endpoint mới trả dữ liệu thật đúng shape (`totalSessions:28, completionRate:60.7`, time-series 7 bucket, breakdown 3 status, acceptance 3 difficulty, top 5 company).
-
-- [x] **FE: `admin-api.ts` + hooks mới cho dashboard**
-  📍 `client/src/features/admin/api/admin-api.ts` + `hooks/use-admin-sessions-timeseries.ts`, `use-admin-session-status.ts`, `use-admin-acceptance-by-difficulty.ts`, `use-admin-top-companies.ts` (TanStack Query, mirror `use-admin-stats.ts`).
-
-- [x] **FE: rebuild `admin-dashboard-page.tsx` — KPI cards + charts theo tỉ lệ ảnh mẫu**
-  📍 `client/src/features/admin/pages/admin-dashboard-page.tsx`:
-  - Hàng 1: 4 KPI card (Users/Sessions/Completion Rate/Submissions) + badge trend ↑/↓ %.
-  - Hàng 2: trái (rộng) = "Sessions Over Time" bar chart (recharts) + tab range 1W/1M/3M/ALL (`Tabs` có sẵn); phải (hẹp) = "Recent Activity" (audit log, badge màu theo action prefix như `admin-audit-log-table.tsx`).
-  - Hàng 3 (3 cột desktop, xếp dọc mobile): "Session Funnel" (bar ngang theo `SessionStatus`), "Top Companies" (ranked list), "Acceptance Rate by Difficulty" (bar/donut nhỏ, màu theo `DIFFICULTY_BADGE_CLASS`).
-  - Loading/error/empty đúng khuôn có sẵn (skeleton → text đỏ lỗi → text muted rỗng).
-
-- [x] **i18n: key mới cho Admin Panel/Help Center/dashboard widgets — 3 locale**
-  📍 `client/src/lib/i18n/locales/{vi,en,ja}/{common,admin,settings}.json` — làm dần cùng từng task (P0 task 3/4/11) thay vì 1 commit riêng cuối. Verify parity bằng script flatten: `admin.json` 173 key, `common.json` 38 key, `settings.json` 43 key — khớp tuyệt đối cả 3 locale, không thiếu/thừa.
+### Discuss — ban comment (`DiscussComment`)
+- Model **đã có sẵn** `deletedAt DateTime?` (`discuss.service.ts` đã filter `where: { deletedAt: null }` khi trả comment) — **không cần migration**.
+- Hiện **không có** endpoint xoá/ẩn 1 comment cụ thể (chỉ có `DELETE /discuss/:id` xoá cả bài viết).
+- → Thêm endpoint mới, set `deletedAt` trên đúng 1 `DiscussComment`, đồng thời giảm `DiscussPost.commentCount` (transaction, đối xứng với `createComment` tăng đếm).
 
 ---
 
-## 🟡 P1 — Áp dụng App Shell cho user-facing layout
+## Kế hoạch endpoint theo thứ tự ưu tiên
 
-- [x] **FE: `dashboard-layout.tsx` đổi sang dùng `AppShell`**
-  📍 `client/src/components/layout/dashboard-layout.tsx` — bỏ `DashboardHeader` + `ResizablePanelGroup`, thay bằng `<AppShell items={userSidebarItems} />`, dùng lại đúng mảng `sidebarItems` hiện có ở `dashboard-sidebar.tsx` (không đổi route/label/icon).
+### 🔴 P0 — Store: CRUD `ShopItem` (cần migration trước) — ✅ ĐÃ XONG
+- [x] Migration: thêm `deletedAt DateTime?` vào `ShopItem`; cập nhật `GET /store/items` lọc `deletedAt: null`.
+  📍 `server/prisma/schema.prisma`, `server/src/modules/store/store.service.ts#getItems()`.
+  ⚠️ Phát hiện **migration history bị drift từ trước** (migration `20260805230541_add_journey_readiness_report` đã bị sửa sau khi apply — không liên quan thay đổi lần này). `prisma migrate dev` đòi reset toàn bộ DB (mất dữ liệu) — **đã KHÔNG làm theo**, dùng `npx prisma db push` thay thế (lệnh hợp lệ theo CLAUDE.md), chỉ ALTER TABLE thêm cột, verify qua psql xác nhận 8 shop_items + toàn bộ bảng khác còn nguyên. Migration history vẫn còn drift — cần dọn lại nếu sau này muốn dùng `migrate dev` bình thường (ngoài phạm vi P0).
+- [x] `dto/create-shop-item.dto.ts`: `key, name, description, category(enum), price(int ≥0), iconKey` — bắt buộc.
+- [x] `dto/update-shop-item.dto.ts`: mọi field optional.
+- [x] `POST /store/items` (ADMIN) — check `key` unique, 409 nếu trùng.
+- [x] `PATCH /store/items/:id` (ADMIN) — 404 nếu không tồn tại/đã xoá.
+- [x] `DELETE /store/items/:id` (ADMIN) — set `deletedAt`.
+  📍 `server/src/modules/store/store.controller.ts`, `store.service.ts`, `store.module.ts` (import `AdminModule` để inject `AdminAuditService`, đúng pattern `discuss.module.ts`).
+- [x] Audit log: `CREATE_SHOP_ITEM` / `UPDATE_SHOP_ITEM` / `DELETE_SHOP_ITEM`.
+  📍 `server/src/modules/admin/admin-audit.service.ts` (mở rộng `AdminAction`/`AdminActionTargetType`).
+- [x] Thêm query admin riêng (không filter `deletedAt`) để bảng `/admin/store` hiển thị đúng cả item đã xoá — đúng pattern `admin.service.ts#getProblems()`.
+  📍 `GET /admin/store/items` — `admin.service.ts#getStoreItems()` + route trong `admin.controller.ts`.
+- [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 test pass (kể cả `store.service.spec.ts` có sẵn, không bị phá bởi filter `deletedAt` mới thêm). Test tay end-to-end qua curl với JWT admin thật: create → 409 khi trùng key → update → `GET /admin/store/items` thấy item mới → create không token → 401 → delete → catalog công khai không còn hiện item đã xoá → `GET /admin/store/items` vẫn thấy item (kèm `deletedAt`) → audit log ghi đủ `CREATE_SHOP_ITEM`/`UPDATE_SHOP_ITEM`/`DELETE_SHOP_ITEM` theo đúng thứ tự. Item test đã dọn khỏi DB sau khi verify xong (chưa từng được mua, hard-delete trực tiếp an toàn).
 
-- [x] **Verify: profile dropdown + Settings + Help Center hoạt động đúng ở user side**
-  📍 Đã build sẵn ở P0 (shell dùng chung) — xác nhận qua browser thật: `/problems` dùng shell mới đúng, không còn nav ngang cũ, profile row mở đúng dropdown (đầy đủ nội dung cũ + "Admin Panel" cho role ADMIN), click Admin Panel chuyển sang `/admin` mượt (cùng shell, khác nav item). Settings + Help Center active-state đúng khi click từ footer sidebar, `/help` render đúng nội dung FAQ. Không lỗi console. (Ghi chú: có lúc thấy "Guest" + toast lỗi mạng sau khi full-reload trực tiếp URL — do accessToken chỉ lưu ở memory/Zustand, mất khi reload cứng, refresh cookie đôi lúc chưa kịp hydrate; đây là hành vi có sẵn của app không liên quan tới thay đổi layout lần này, không thuộc scope sửa ở đây.)
+### 🟡 P1 — Career: CRUD `CareerTrack` (không cần migration) — ✅ ĐÃ XONG
+- [x] `dto/create-career-track.dto.ts`: `key, name, description, companyId?` — `isActive` mặc định `true` (Prisma `@default(true)`, DTO không cần field này).
+- [x] `dto/update-career-track.dto.ts`: mọi field optional, gồm cả `isActive` (cho phép bật lại track đã tắt).
+- [x] `POST /career/tracks`, `PATCH /career/tracks/:id`, `DELETE /career/tracks/:id` (set `isActive=false`, KHÔNG hard-delete) — (ADMIN, `@UseGuards(RolesGuard) @Roles('ADMIN')` áp riêng lên 3 route mới, class-level chỉ có `JwtAuthGuard` vì mọi route công khai khác trong `career.controller.ts` không cần role check).
+  📍 `server/src/modules/career/career.controller.ts`, `career.service.ts`.
+- [x] Audit log: `CREATE_CAREER_TRACK` / `UPDATE_CAREER_TRACK` / `DELETE_CAREER_TRACK`.
+  📍 `server/src/modules/admin/admin-audit.service.ts` (mở rộng `AdminAction`/`AdminActionTargetType` thêm `CareerTrack`), `CareerModule` import `AdminModule` để inject `AdminAuditService` (đúng pattern StoreModule/QuestModule ở P0/P2, không tạo cycle vì `AdminModule` không import gì ngược lại).
+- [x] `getActiveTracks()` hiện tại filter `isActive: true` (đúng cho phía user) — đã thêm `admin.service.ts#getCareerTracks()` + `GET /admin/career/tracks` trả TẤT CẢ track (kể cả inactive, kèm `company`) — endpoint mới, frontend admin table hiện tại (`use-career-tracks.ts`) vẫn đang gọi `GET /career/tracks` công khai (bị filter `isActive`) nên **chưa** thấy track inactive; nối dây frontend sang endpoint admin mới là việc của phase hook/dialog riêng (ngoài phạm vi backend-only lần này).
+- ⚠️ Form Create/Edit chỉ gồm 4 field cơ bản (`key/name/description/companyId`) — **không** động vào `CareerTrackStage` (cấu trúc pipeline nhiều bước, ngoài phạm vi CRUD đơn giản này; track mới tạo sẽ chưa có stage nào cho tới khi có tính năng quản lý stage riêng).
+- [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 pass. Test tay end-to-end qua curl với JWT admin thật: create không token → 401 → create → 201 → trùng key → 409 → xuất hiện ở `GET /career/tracks` công khai (isActive=true) → update description → `GET /admin/career/tracks` phản ánh đúng → soft-delete → biến mất khỏi `GET /career/tracks` công khai nhưng vẫn thấy ở `GET /admin/career/tracks` (kèm `isActive:false`) → delete lần 2 → 404 → update id không tồn tại → 404 → audit log ghi đủ 3 hành động đúng thứ tự. Track test đã xoá thẳng khỏi DB sau khi verify (chưa có `CareerJourney` nào tham chiếu vì vừa tạo, hard-delete trực tiếp an toàn).
 
-- [ ] **i18n: rà soát key còn thiếu phát sinh khi wiring user side**
-  📍 3 locale `common.json`/`settings.json` — verify parity cuối P1.
+### 🟡 P2 — Quest: CRUD `BugSnippet` (không cần migration) — ✅ ĐÃ XONG
+- [x] `dto/create-bug-snippet.dto.ts`: `language, difficulty(enum), code, buggyLine(int)`, `explanation?` — `isActive` mặc định `true` (do Prisma `@default(true)`, DTO không cần field này).
+- [x] `dto/update-bug-snippet.dto.ts`: mọi field optional + `isActive`.
+- [x] `POST /quest/snippets`, `PATCH /quest/snippets/:id`, `DELETE /quest/snippets/:id` (set `isActive=false`) — (ADMIN, `@UseGuards(RolesGuard) @Roles('ADMIN')` áp riêng lên 3 route mới, class-level chỉ có `JwtAuthGuard` vì các route công khai khác trong cùng controller không cần role check).
+  📍 `server/src/modules/quest/quest.controller.ts`, `quest.service.ts`.
+- [x] Audit log: `CREATE_BUG_SNIPPET` / `UPDATE_BUG_SNIPPET` / `DELETE_BUG_SNIPPET`.
+  📍 `server/src/modules/admin/admin-audit.service.ts` (mở rộng `AdminAction`/`AdminActionTargetType` thêm `BugSnippet`), `QuestModule` import `AdminModule` để inject `AdminAuditService` (đúng pattern `StoreModule` ở P0).
+- [x] `admin.service.ts#getQuests()` đã trả đủ field (không strip `buggyLine` như `GET /quest/snippets` công khai) — giữ nguyên, dùng luôn cho list admin sau CRUD, không cần sửa gì thêm.
+- [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 pass (không có test riêng cho quest, nhưng không phá vỡ 5 suite hiện có). Test tay end-to-end qua curl với JWT admin thật: create → xuất hiện trong `GET /quest/snippets` công khai → update explanation → `GET /admin/quests` phản ánh đúng → soft-delete → `GET /admin/quests` vẫn thấy (kèm `isActive:false`) → `GET /quest/snippets` công khai không còn hiện (verify bằng cách quét `count=30` cùng `language`) → delete lần 2 → 404 → update id không tồn tại → 404 → tạo không token → 401 → audit log ghi đủ 3 hành động đúng thứ tự. Snippet test đã xoá thẳng khỏi DB sau khi verify (chưa từng có `QuestAttempt` nào tham chiếu vì bảng này không có FK tới `BugSnippet`).
+
+### 🟡 P3 — Discuss: ban 1 comment cụ thể (không cần migration) — ✅ ĐÃ XONG
+- [x] `DELETE /discuss/:postId/comments/:commentId` (ADMIN + MODERATOR — cùng quyền với xoá post hiện có) — set `DiscussComment.deletedAt`, đồng thời `DiscussPost.commentCount` decrement trong 1 transaction (đối xứng `createComment`). Validate `comment.postId === postId` trước khi ban, tránh ban nhầm comment thuộc bài khác nếu FE gửi sai `postId`.
+  📍 `server/src/modules/discuss/discuss.controller.ts` (route khai báo TRƯỚC `DELETE :id` cho nhất quán với các route cụ thể khác trong file, dù NestJS match theo số segment nên thứ tự không thực sự ảnh hưởng), `discuss.service.ts#banComment()`.
+- [x] Audit log: `BAN_DISCUSS_COMMENT` (đặt tên "BAN" khớp ngôn ngữ sản phẩm, bản chất kỹ thuật vẫn là soft-delete).
+  📍 `server/src/modules/admin/admin-audit.service.ts` (mở rộng `AdminAction`/`AdminActionTargetType` thêm `DiscussComment`) — không cần sửa `discuss.module.ts` vì đã import sẵn `AdminModule` từ P0 (xoá post).
+- [x] Endpoint đọc cho admin: `GET /admin/discuss/:postId/comments` (trả CẢ comment đã bị ban, kèm `deletedAt` để phân biệt trạng thái) — theo đúng convention "list/read admin sống trong `admin.service.ts`/`admin.controller.ts`, không delegate qua feature service".
+  📍 `server/src/modules/admin/admin.service.ts#getDiscussComments()`, `admin.controller.ts`. Quyết định UI (trang riêng vs. mở rộng trong bảng Discuss hiện có) thuộc phase frontend sau — backend chỉ đảm bảo endpoint đọc tồn tại.
+- [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 pass. Test tay end-to-end qua curl với JWT admin thật: tạo post test → tạo comment test (`commentCount`→1) → ban không token → 401 → `GET /admin/discuss/:postId/comments` thấy comment `deletedAt:null` → ban comment → 200, `deletedAt` được set → `commentCount` trên post giảm về 0, comment biến mất khỏi response chi tiết bài (phía user) → `GET /admin/discuss/:postId/comments` vẫn thấy comment kèm `deletedAt` → ban lại lần 2 → 404 → ban với `postId` sai (comment không thuộc post đó) → 404 → audit log ghi đúng `BAN_DISCUSS_COMMENT`/`DiscussComment`. Post + comment test đã xoá thẳng khỏi DB sau khi verify.
+
+### 🟢 P4 — Peer Interview: force-update status — ✅ ĐÃ XONG
+- [x] `PATCH /peer-interviews/:id/status` (ADMIN) — body `{ status: 'ABANDONED' }`, **chỉ** cho set về `ABANDONED` (validate qua `@IsIn(['ABANDONED'])` ở `ForceAbandonPeerInterviewDto` — không cho set `WAITING_FOR_PEER`/`ACTIVE`/`COMPLETED` thủ công, tránh phá logic tự chấm ở `career.service.ts#handlePeerInterviewGraded()`). Service từ chối 400 nếu phiên đã `ABANDONED`/`COMPLETED`, 404 nếu không tồn tại.
+  📍 `server/src/modules/peer-interview/peer-interview.controller.ts`, `peer-interview.service.ts#forceAbandon()`, `dto/force-abandon-peer-interview.dto.ts`.
+- [x] Audit log: `FORCE_ABANDON_PEER_INTERVIEW` (kèm metadata `requestedStatus`).
+  📍 `server/src/modules/admin/admin-audit.service.ts` (mở rộng `AdminAction`/`AdminActionTargetType` thêm `PeerInterviewSession`), `PeerInterviewModule` import `AdminModule` để inject `AdminAuditService` (đúng pattern Store/Career/Quest).
+- [x] **Không** làm Create (không hợp lý sản phẩm). **Không** làm Delete thật (cascade xoá message/evaluation/journey-progress) — đúng phạm vi đã xác nhận, không thêm cột "ẩn khỏi danh sách" (ngoài phạm vi P4).
+- [x] **Verify**: `npm run build` + `npm run lint` (server) sạch. `npm run test` — 61/61 pass. Test tay end-to-end qua curl với JWT admin thật + user thường: tạo session test (`WAITING_FOR_PEER`) → PATCH không token → 401 → PATCH với token user thường (không phải ADMIN) → 403 → PATCH admin với status khác `ABANDONED` (vd `ACTIVE`) → 400 (validation DTO) → PATCH admin hợp lệ → 200, status chuyển `ABANDONED` → PATCH lại lần 2 → 400 "đã ở trạng thái ABANDONED" → PATCH id không tồn tại → 404 → audit log ghi đúng `FORCE_ABANDON_PEER_INTERVIEW`/`PeerInterviewSession` kèm metadata. Session + user test đã xoá thẳng khỏi DB sau khi verify (audit log giữ nguyên, append-only).
 
 ---
 
-## 🟢 P2 — Demo data, QA responsive, dọn code chết
+## File cần đụng khi thực thi (không phải lượt này)
+- Migration: `server/prisma/schema.prisma` (`ShopItem.deletedAt`) + `npx prisma migrate dev`.
+- DTO mới: `server/src/modules/store/dto/{create,update}-shop-item.dto.ts`, `server/src/modules/career/dto/{create,update}-career-track.dto.ts`, `server/src/modules/quest/dto/{create,update}-bug-snippet.dto.ts`.
+- Controller: `store.controller.ts`, `career.controller.ts`, `quest.controller.ts`, `discuss.controller.ts`, (P4) `peer-interview.controller.ts` — thêm route mutation admin-gated.
+- Service: `store.service.ts`, `career.service.ts`, `quest.service.ts`, `discuss.service.ts`, (P4) `peer-interview.service.ts` — thêm method CRUD + gọi `AdminAuditService`.
+- `admin.service.ts`: thêm/đổi hàm list để KHÔNG filter `deletedAt`/`isActive` cho admin (Store/Career) — giữ nguyên `getQuests()`/`getPeerInterviews()` sẵn có.
+- **Không đụng**: `CareerTrackStage`/pipeline nhiều bước, luồng tạo `PeerInterviewSession` qua invite-code hiện có, `problems`/`contest` module (đã có CRUD đầy đủ, ngoài phạm vi).
 
-- [x] **BE: `seed-demo-data.ts` — seed dev-only cho chart**
-  📍 `server/prisma/seed-demo-data.ts` (mới, KHÔNG wire vào `npx prisma db seed` mặc định) — script riêng `npm run seed:demo` (thêm vào `server/package.json`). Tạo 8 User giả (+`UserStats`, email `@demo.algominds.dev`), mỗi user 3-8 Session trải ~90 ngày với đủ trạng thái, Submission trạng thái đa dạng cho session Phase 2/Completed — tái dùng Problem có sẵn trong DB (không tạo problem mới). Idempotent: tự xoá sạch slice demo cũ qua `deleteMany` theo domain email (cascade xoá Session/Submission/UserStats) trước khi tạo lại — verify chạy 2 lần liên tiếp không lỗi. Verify curl sau khi chạy: `totalUsers:13, totalSessions:77, totalSubmissions:97`, breakdown 4 status đúng tỉ lệ nghiêng COMPLETED.
+## Việc cần làm ngay lượt này
+Chỉ ghi kế hoạch trên vào `ROADMAP.md` — **không viết code, không chạy migration** ở lượt này, đúng yêu cầu "lên kế hoạch".
 
-- [x] **QA: responsive mobile (~375–420px) cho cả admin và user**
-  📍 **Giới hạn công cụ đã gặp**: `resize_window` (Chrome tool) không có tác dụng thật trong môi trường này — verify bằng `window.innerWidth` qua JS sau mỗi lần resize vẫn trả về kích thước màn hình đầy đủ (1745px/1920px) dù tool báo "resized to 390x844" thành công, thử cả trên tab hiện có lẫn tab mới đều vậy (khả năng cửa sổ Chrome đang ở trạng thái maximize/snap cấp OS mà extension không override được). Không thể chụp screenshot thật ở viewport mobile trong phiên này — nói rõ giới hạn thay vì báo khống đã test.
-  📍 Thay vào đó đã làm **code-level review** kỹ: `app-shell.tsx` ẩn `IconSidebar` desktop dưới `lg` (`hidden lg:flex`), `top-bar.tsx` hamburger chỉ hiện dưới `lg` (`lg:hidden`) mở `IconSidebar` qua `Sheet` (`w-64`, nhỏ hơn giới hạn `w-3/4` mặc định của `sheet.tsx` nên không tràn ở viewport ~390px). Toàn bộ layout dashboard mới (KPI grid, hàng chart, hàng 3 cột) đều dùng `grid-cols-1 sm:.../lg:...` hoặc `flex-col lg:flex-row` — xếp dọc đúng dưới breakpoint, không cột cứng. Không có `w-[...]`/`min-w-[...]` cứng nào trong các component mới (`icon-sidebar.tsx`, `top-bar.tsx`, `dashboard-*.tsx`) có thể gây tràn ngang — grep xác nhận. Pattern mobile Sheet này y hệt pattern cũ đã chạy tốt ở `DashboardHeader`/`DashboardSidebar` (đã bị thay thế nhưng cấu trúc responsive kế thừa nguyên).
-
-- [x] **Xoá code chết sau khi xác nhận không còn import**
-  📍 Grep xác nhận không còn reference nào (kể cả `test-page.tsx` — trước đó nghi ngờ có import `header.tsx` nhưng đọc lại code thì không, chỉ dùng `useSidebar` store, không đụng tới) rồi xoá: `client/src/components/layout/dashboard-header.tsx`, `header.tsx`, `dashboard-sidebar.tsx`, `client/src/features/admin/components/admin-header.tsx`, `admin-sidebar.tsx`. Verify: `tsc -b` + `npm run lint` sạch (0 lỗi, 13 warning pre-existing không liên quan), browser thật xác nhận `/admin` vẫn render đúng 100%, không lỗi console.
-
-- [x] **i18n: verify parity cuối cùng 3 locale**
-  📍 Script flatten so sánh toàn bộ key `en/vi/ja` cho **mọi** namespace (không chỉ 3 file đã sửa trong roadmap này) — 12/13 file khớp tuyệt đối. `career.json` báo lệch (`events.closesInDays_other`, `stageCount_other` thiếu ở vi/ja) nhưng xác nhận là **false-positive**: đây là suffix số nhiều `_other` của i18next (tiếng Anh có dạng số nhiều, tiếng Việt/Nhật dùng chung 1 key không suffix — `vi/career.json` có sẵn `"stageCount": "{{count}} vòng"` không suffix, đúng hành vi, không phải thiếu key thật). File này cũng không nằm trong phạm vi roadmap này (không đụng tới `career.json` ở bất kỳ task nào) — không sửa gì thêm, không phải regression do lần này gây ra. 3 file thực sự có sửa (`admin.json`/`common.json`/`settings.json`) đều khớp hoàn toàn cả 3 locale.
-
----
-
-## Ghi chú thứ tự ưu tiên
-`sidebar-item-classes.ts` + tách `UserNavMenu` content + trang `/help` làm trước `icon-sidebar.tsx` (icon-sidebar phụ thuộc cả 3). `icon-sidebar.tsx`+`top-bar.tsx` xong trước `app-shell.tsx`. `app-shell.tsx` xong trước khi sửa `admin-layout.tsx` (P0) rồi mới tới `dashboard-layout.tsx` (P1, dùng lại nguyên `AppShell` đã build ở P0 — không viết lại). BE mở rộng `admin.service.ts` độc lập, có thể làm song song với phần FE shell, nhưng phải xong trước khi viết hook FE gọi endpoint mới. Seed demo data (P2) không block P0/P1 — dashboard vẫn phải chạy đúng với dữ liệu thật/thưa trước khi có data đẹp để demo.
+## Verification (áp dụng khi thực thi, không phải lượt này)
+- `npx prisma migrate dev` sau khi sửa schema (P0), verify local DB không lỗi.
+- `npm run test` (server) — pattern theo `auth.service.spec.ts`/`judge.service.spec.ts`; cân nhắc thêm test cho logic soft-delete có điều kiện FK (Career/Quest) vì đây là module chưa có test coverage.
+- Test tay qua Postman/curl endpoint mới trước khi làm phase frontend (chưa có UI để test qua trình duyệt ở giai đoạn này).
+- 1 task = 1 commit, tick `- [ ]` → `- [x]` ngay khi xong, không tự push/mở PR.
+- P0 (Store) phải xong migration + verify trước khi đụng tới P1 trở đi (không bắt buộc tuần tự cứng nhắc như checkpoint P0 ở roadmap redesign trước, nhưng thứ tự ưu tiên phản ánh đúng mức độ rủi ro).

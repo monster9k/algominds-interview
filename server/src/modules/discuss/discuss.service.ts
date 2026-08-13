@@ -170,6 +170,49 @@ export class DiscussService {
     return comment;
   }
 
+  // DELETE /discuss/:postId/comments/:commentId (moderation — ADMIN/MODERATOR)
+  // — "ban" 1 comment cụ thể, khác deletePost() ở chỗ chỉ ẩn 1 comment chứ
+  // không xoá cả bài. Soft delete + giảm DiscussPost.commentCount trong 1
+  // transaction, đối xứng với tăng đếm ở createComment() phía trên.
+  async banComment(postId: string, commentId: string) {
+    const comment = await this.prisma.discussComment.findUnique({
+      where: { id: commentId },
+    });
+    if (!comment || comment.postId !== postId || comment.deletedAt) {
+      throw new NotFoundException('Bình luận không tồn tại');
+    }
+
+    const [bannedComment] = await this.prisma.$transaction([
+      this.prisma.discussComment.update({
+        where: { id: commentId },
+        data: { deletedAt: new Date() },
+      }),
+      this.prisma.discussPost.update({
+        where: { id: postId },
+        data: { commentCount: { decrement: 1 } },
+      }),
+    ]);
+
+    return bannedComment;
+  }
+
+  // GET /admin/discuss/:postId/comments — trả CẢ comment đã bị ban (khác
+  // findPostById() ở trên chỉ trả comment còn sống cho phía user), để admin
+  // phân biệt được trạng thái từng comment khi kiểm duyệt.
+  getPostComments(postId: string) {
+    return this.prisma.discussComment.findMany({
+      where: { postId },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        deletedAt: true,
+        author: AUTHOR_SELECT,
+      },
+    });
+  }
+
   // POST /discuss/:id/vote — toggle: chưa vote -> tạo row + tăng đếm, đã
   // vote -> xoá row + giảm đếm.
   async toggleVote(postId: string, userId: string) {

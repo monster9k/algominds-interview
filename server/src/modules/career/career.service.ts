@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +9,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { SessionsService } from '../sessions/sessions.service';
 import { ChatGateway } from '../chat/chat/chat.gateway';
 import { PeerInterviewService } from '../peer-interview/peer-interview.service';
+import { CreateCareerTrackDto } from './dto/create-career-track.dto';
+import { UpdateCareerTrackDto } from './dto/update-career-track.dto';
 import {
   JourneyStatus,
   PeerSessionStatus,
@@ -80,6 +83,55 @@ export class CareerService {
     }
 
     return this.createJourneyForTrack(userId, track);
+  }
+
+  async createTrack(dto: CreateCareerTrackDto) {
+    const existing = await this.prisma.careerTrack.findUnique({
+      where: { key: dto.key },
+    });
+    if (existing) {
+      throw new ConflictException('Mã track (key) đã tồn tại');
+    }
+
+    return this.prisma.careerTrack.create({ data: dto });
+  }
+
+  async updateTrack(id: string, dto: UpdateCareerTrackDto) {
+    const existing = await this.prisma.careerTrack.findUnique({
+      where: { id },
+    });
+    if (!existing) {
+      throw new NotFoundException('Career track không tồn tại');
+    }
+
+    if (dto.key && dto.key !== existing.key) {
+      const keyTaken = await this.prisma.careerTrack.findUnique({
+        where: { key: dto.key },
+      });
+      if (keyTaken) {
+        throw new ConflictException('Mã track (key) đã tồn tại');
+      }
+    }
+
+    return this.prisma.careerTrack.update({ where: { id }, data: dto });
+  }
+
+  // Xoá mềm — set isActive=false. Hard-delete sẽ lỗi FK constraint ngay khi
+  // có journey nào đã tham chiếu track này (CareerJourney.track không khai
+  // onDelete -> default Restrict), và về sản phẩm cũng không hợp lý xoá hẳn
+  // 1 track user đã/đang đi qua.
+  async softDeleteTrack(id: string) {
+    const existing = await this.prisma.careerTrack.findUnique({
+      where: { id },
+    });
+    if (!existing || !existing.isActive) {
+      throw new NotFoundException('Career track không tồn tại');
+    }
+
+    return this.prisma.careerTrack.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 
   async getOpenEvents() {

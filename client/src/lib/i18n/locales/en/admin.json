@@ -205,6 +205,7 @@
   },
   "quests": {
     "title": "Manage Quests",
+    "createNew": "New Snippet",
     "columnId": "ID",
     "columnLanguage": "Language",
     "columnDifficulty": "Difficulty",
@@ -213,7 +214,17 @@
     "statusActive": "Active",
     "statusInactive": "Inactive",
     "empty": "No quests yet.",
-    "loadError": "Failed to load quests."
+    "loadError": "Failed to load quests.",
+    "createTitle": "Create New Bug Snippet",
+    "editTitle": "Edit Bug Snippet",
+    "fieldLanguage": "Language",
+    "fieldDifficulty": "Difficulty",
+    "fieldCode": "Code",
+    "fieldBuggyLine": "Buggy Line (0-indexed)",
+    "fieldExplanation": "Explanation (optional)",
+    "fieldIsActive": "Active",
+    "deleteConfirmTitle": "Deactivate this bug snippet?",
+    "deleteConfirmDescription": "The snippet will be hidden from Quest (isActive=false), can be re-enabled later via Edit."
   },
   "peerInterview": {
     "title": "Manage Peer Interviews",

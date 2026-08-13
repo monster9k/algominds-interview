@@ -205,6 +205,7 @@
   },
   "quests": {
     "title": "クエスト管理",
+    "createNew": "新規スニペット",
     "columnId": "ID",
     "columnLanguage": "言語",
     "columnDifficulty": "難易度",
@@ -213,7 +214,17 @@
     "statusActive": "有効",
     "statusInactive": "無効",
     "empty": "クエストはまだありません。",
-    "loadError": "クエスト一覧の読み込みに失敗しました。"
+    "loadError": "クエスト一覧の読み込みに失敗しました。",
+    "createTitle": "新規バグスニペットを作成",
+    "editTitle": "バグスニペットを編集",
+    "fieldLanguage": "言語",
+    "fieldDifficulty": "難易度",
+    "fieldCode": "コード",
+    "fieldBuggyLine": "バグ行（0始まり）",
+    "fieldExplanation": "説明（任意）",
+    "fieldIsActive": "有効",
+    "deleteConfirmTitle": "このバグスニペットを無効化しますか?",
+    "deleteConfirmDescription": "スニペットはクエストから非表示になります（isActive=false）。編集画面から再度有効化できます。"
   },
   "peerInterview": {
     "title": "ピア面接管理",

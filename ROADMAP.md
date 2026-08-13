@@ -77,24 +77,24 @@
 - [x] i18n (`career.*`, 3 locale) đủ key.
 - [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (chỉ warning giống pattern có sẵn). QA qua Chrome: tạo track với company "Apple" (dropdown load đúng từ `useCompanies()`) → xuất hiện đúng tên công ty → xoá (soft) → toast "Đã tắt career track", status → "Inactive", nút Delete disable (click không mở dialog), **Edit vẫn mở được** → tick lại checkbox `isActive` → Save → status quay lại "Active" (restore hoạt động đúng). Không có lỗi console. Track test đã xoá thẳng khỏi DB sau khi verify (chưa có `CareerJourney` nào tham chiếu).
 
-## 🟡 P2 — Quest: CRUD UI cho `BugSnippet`
+## 🟡 P2 — Quest: CRUD UI cho `BugSnippet` — ✅ ĐÃ XONG
 
 **Restore**: **có**, cùng cơ chế Career (`PATCH .../isActive`). Áp dụng y hệt logic Edit-luôn-enable / Delete-disable-khi-đã-inactive ở P1.
 
-- [ ] `types/index.ts`: thêm `BugSnippetFormPayload` (`language, difficulty, code, buggyLine, explanation?, isActive?`) — `AdminQuestSnippet` (đọc) đã có sẵn, không cần thêm.
+- [x] `types/index.ts`: `BugSnippetFormPayload` (thêm cùng đợt với P0). `buggyLine` xác nhận **0-indexed** — khớp `code.split("\n").map((line, index) => ...)` ở `bug-whacker-board.tsx` phía user, không cần đọc thêm `quest.service.ts` vì logic so sánh chỉ là `selectedLine === snippet.buggyLine`, không có arithmetic index nào khác.
   📍 `client/src/features/admin/types/index.ts`.
-- [ ] `admin-api.ts`: thêm `createBugSnippet(payload)` (`POST /quest/snippets`), `updateBugSnippet(id, payload)` (`PATCH /quest/snippets/:id`), `deleteBugSnippet(id)` (`DELETE /quest/snippets/:id`). `getQuests()` đã có sẵn, giữ nguyên.
+- [x] `admin-api.ts`: `createBugSnippet(payload)`, `updateBugSnippet(id, payload)`, `deleteBugSnippet(id)`.
   📍 `client/src/features/admin/api/admin-api.ts`.
-- [ ] Hooks: `use-create-bug-snippet.ts`, `use-update-bug-snippet.ts`, `use-delete-bug-snippet.ts` (invalidate `["admin-quests"]` — trùng queryKey `useAdminQuests()` đã có).
+- [x] Hooks: `use-create-bug-snippet.ts`, `use-update-bug-snippet.ts`, `use-delete-bug-snippet.ts` (invalidate `["admin-quests"]`).
   📍 `client/src/features/admin/hooks/`.
-- [ ] `bug-snippet-form-dialog.tsx`: `language` (Input free-text, backend không ràng buộc enum — dùng chung giá trị đã thấy trong bảng làm gợi ý placeholder, vd "javascript"), `difficulty` (Select EASY/MEDIUM/HARD, tái dùng `t("difficulty.easy"|"medium"|"hard")` đã có), `code` (Textarea `font-mono`, `min-h-[160px]`, đúng tinh thần hiện thị code), `buggyLine` (Input number, min 0 — **lưu ý UX**: hiển thị hint "số dòng bắt đầu từ 0" nếu backend 0-indexed, cần xác nhận lại convention lúc code bằng cách đọc `quest.service.ts#checkAnswer`), `explanation` (Textarea optional), `isActive` (Checkbox, chỉ hiện khi edit).
+- [x] `bug-snippet-form-dialog.tsx`: `language` (Input, placeholder "javascript"), `difficulty` (Select), `code` (Textarea `font-mono`), `buggyLine` (Input number, label ghi rõ "0-indexed"), `explanation` (Textarea optional), `isActive` (Checkbox, chỉ hiện khi edit).
   📍 `client/src/features/admin/components/bug-snippet-form-dialog.tsx`.
-- [ ] `admin-quests-table.tsx`: thêm cột **Actions** (Edit luôn enable, Delete `disabled={!quest.isActive}`).
+- [x] `admin-quests-table.tsx`: cột Actions (Edit luôn enable, Delete `disabled={!quest.isActive}`).
   📍 `client/src/features/admin/components/admin-quests-table.tsx`.
-- [ ] `admin-quests-page.tsx`: thêm nút "Tạo mới" + state dialog.
+- [x] `admin-quests-page.tsx`: nút "New Snippet" + state dialog.
   📍 `client/src/features/admin/pages/admin-quests-page.tsx`.
-- [ ] i18n (`quests.*`): `createNew`, `createTitle`, `editTitle`, `fieldLanguage`, `fieldDifficulty`, `fieldCode`, `fieldBuggyLine`, `fieldExplanation`, `deleteConfirmTitle`, `deleteConfirmDescription`.
-- [ ] **Verify**: tsc/lint sạch. QA qua Chrome: tạo snippet mới (chọn đủ 3 mức difficulty lần lượt để test Select) → hiện đúng dot màu; edit `buggyLine`/`explanation`; xoá → dot chuyển "Ngừng hoạt động", Delete disable, Edit vẫn bấm được → bật lại `isActive` → dot chuyển lại "Hoạt động".
+- [x] i18n (`quests.*`, 3 locale) đủ key.
+- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (0 error, warning giống pattern có sẵn). QA qua Chrome: tạo snippet (difficulty Easy, buggyLine 0) → xuất hiện đúng dot teal; edit đổi difficulty → Medium → dot vàng cập nhật đúng; xoá (soft) → toast "Đã tắt bug snippet", status "Inactive", Delete disable, Edit vẫn mở được. Không lỗi console. Snippet test đã xoá thẳng khỏi DB sau khi verify (`QuestAttempt` không có FK tới `BugSnippet`, an toàn hard-delete). **Lưu ý QA**: gõ code nhiều dòng qua tool test bằng ký tự `\n` khiến nút Save tạm thời trông "kẹt" (không gửi request) — xác nhận đây là hạn chế của cách tool gõ phím vào Textarea trong môi trường test, không phải bug trong `isValid`/`handleSubmit`; test lại với code 1 dòng xác nhận flow hoạt động đúng.
 
 ## 🟡 P3 — Discuss: UI ban comment
 

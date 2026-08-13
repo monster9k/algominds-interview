@@ -21,6 +21,7 @@ import {
   ShopItemFormPayload,
   AdminCareerTrack,
   CareerTrackFormPayload,
+  BugSnippetFormPayload,
 } from "../types";
 
 export const adminApi = {
@@ -166,6 +167,21 @@ export const adminApi = {
 
   deleteCareerTrack: async (id: string) => {
     const response = await api.delete(`/career/tracks/${id}`);
+    return response.data;
+  },
+
+  createBugSnippet: async (payload: BugSnippetFormPayload) => {
+    const response = await api.post("/quest/snippets", payload);
+    return response.data;
+  },
+
+  updateBugSnippet: async (id: string, payload: Partial<BugSnippetFormPayload>) => {
+    const response = await api.patch(`/quest/snippets/${id}`, payload);
+    return response.data;
+  },
+
+  deleteBugSnippet: async (id: string) => {
+    const response = await api.delete(`/quest/snippets/${id}`);
     return response.data;
   },
 

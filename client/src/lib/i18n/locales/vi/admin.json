@@ -205,6 +205,7 @@
   },
   "quests": {
     "title": "Quản lý Quest",
+    "createNew": "Tạo snippet mới",
     "columnId": "ID",
     "columnLanguage": "Ngôn ngữ",
     "columnDifficulty": "Độ khó",
@@ -213,7 +214,17 @@
     "statusActive": "Hoạt động",
     "statusInactive": "Ngừng hoạt động",
     "empty": "Chưa có quest nào.",
-    "loadError": "Không tải được danh sách quest."
+    "loadError": "Không tải được danh sách quest.",
+    "createTitle": "Tạo bug snippet mới",
+    "editTitle": "Sửa bug snippet",
+    "fieldLanguage": "Ngôn ngữ",
+    "fieldDifficulty": "Độ khó",
+    "fieldCode": "Code",
+    "fieldBuggyLine": "Dòng lỗi (đánh số từ 0)",
+    "fieldExplanation": "Giải thích (tuỳ chọn)",
+    "fieldIsActive": "Đang hoạt động",
+    "deleteConfirmTitle": "Tắt bug snippet này?",
+    "deleteConfirmDescription": "Snippet sẽ bị ẩn khỏi Quest (isActive=false), có thể bật lại sau qua nút Sửa."
   },
   "peerInterview": {
     "title": "Quản lý Phỏng vấn chéo",

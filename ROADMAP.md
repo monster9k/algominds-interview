@@ -6,7 +6,7 @@
 >
 > **Nguyên tắc cốt lõi khác biệt với bản trước**: compact **không phải** scale-down đồng loạt (không nhân mọi giá trị với 1 hệ số nhỏ hơn). Density phải đến từ bố cục có chủ đích, spacing nội bộ chặt hơn, tỉ lệ component tương xứng vai trò, và canh chỉnh (alignment) tốt hơn — xem chi tiết nguyên tắc ở phần "Design principles" bên dưới.
 >
-> **Trạng thái: 🔴 P0 + 🟡 P1 hoàn thành (Admin Dashboard). Tiếp theo: 🟡 P2 (Admin Problems density pass) — chưa bắt đầu.**
+> **Trạng thái: 🔴 P0 + 🟡 P1 + 🟡 P2 hoàn thành (Admin Dashboard + Admin Problems). Còn lại 🟢 P3 (Sidebar/TopBar) — tùy chọn, cần hỏi lại user trước khi làm vì vượt phạm vi 2 trang đã chốt.**
 
 ## Cách đọc file này
 - `🔴 P0` — Prototype ngôn ngữ thiết kế trên **1 component** (`dashboard-kpi-card.tsx`), **bắt buộc dừng lại và chờ user duyệt kết quả render thật** trước khi làm bất kỳ task nào của P1/P2.
@@ -130,13 +130,13 @@ KPI row (4 card đầu) không thuộc phân tầng trên — dải "top-line me
 
 ## 🟡 P2 — Admin Problems: page + table density pass
 
-- [ ] **`admin-problems-page.tsx`**
-  📍 title `text-2xl`→`text-xl`; đồng bộ chiều cao toolbar (filter trigger, search input, nút "Create New") về `h-9`; bulk-select bar `py-2.5`→`py-2`.
-- [ ] **`admin-problems-table.tsx`**
-  📍 cell `py-3`→`py-2.5`. **Không đụng** `table-fixed`, width cột, `DIFFICULTY_BADGE_CLASS`, logic sort/checkbox/`ConfirmDialog`.
-- [ ] **`admin-table-footer.tsx`**
-  📍 kiểm tra lại chiều cao control sau khi đổi toolbar phía trên, chỉnh nếu lệch — không đổi logic phân trang.
-- [ ] **QA Chrome tool**: cột vẫn thẳng hàng, test loading/error/empty/bulk-select.
+- [x] **`admin-problems-page.tsx`**
+  📍 title `text-2xl`→`text-xl`; toolbar đồng bộ `h-9` (filter trigger icon-button `h-10 w-10`→`h-9 w-9`, search `Input` thêm `h-9`, nút "New Problem" thêm `h-9`); bulk-select bar `py-2.5`→`py-2`.
+- [x] **`admin-problems-table.tsx`**
+  📍 toàn bộ `TableCell` dữ liệu (checkbox/ID/title/difficulty/status/actions) + skeleton row `py-3`→`py-2.5`. Không đụng `table-fixed`, width cột, `DIFFICULTY_BADGE_CLASS`, header, logic sort/checkbox/`ConfirmDialog`.
+- [x] **`admin-table-footer.tsx`**
+  📍 Kiểm tra lại — footer control (`h-8`) nằm tách biệt bên dưới bảng, không đứng cạnh toolbar `h-9` phía trên nên không tạo cảm giác "jump" thị giác qua QA Chrome tool. **Không sửa** — không có lệch cần chỉnh, giữ nguyên logic phân trang.
+- [x] **QA Chrome tool**: dark+light theme đều đúng — cột thẳng hàng, toolbar (filter/search/"New Problem") cùng chiều cao `h-9`, test bulk-select (chọn 1 dòng → thanh "1 selected" hiện đúng padding mới → Cancel bỏ chọn đúng), filter popover mở/đóng bình thường, `tsc -b`+`lint` sạch, console sạch cả 2 theme.
 
 ---
 

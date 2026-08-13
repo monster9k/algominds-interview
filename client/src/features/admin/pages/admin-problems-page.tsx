@@ -100,14 +100,14 @@ export function AdminProblemsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-foreground tracking-tight">{t("problems.title")}</h1>
+          <h1 className="text-xl font-semibold text-foreground tracking-tight">{t("problems.title")}</h1>
           {data && (
             <p className="text-sm text-muted-foreground">
               {t("problems.subtitle", { count: data.total })}
             </p>
           )}
         </div>
-        <Button className="rounded-full" onClick={openCreate}>
+        <Button className="h-9 rounded-full" onClick={openCreate}>
           <Plus className="h-4 w-4" />
           {t("problems.createNew")}
         </Button>
@@ -116,7 +116,7 @@ export function AdminProblemsPage() {
       <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" className="relative h-10 w-10 shrink-0 rounded-full">
+            <Button variant="outline" size="icon" className="relative h-9 w-9 shrink-0 rounded-full">
               <Filter className="h-4 w-4" />
               {difficultyFilter.length > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />
@@ -154,7 +154,7 @@ export function AdminProblemsPage() {
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            className="rounded-full pl-9"
+            className="h-9 rounded-full pl-9"
             placeholder={t("common.search")}
             value={search}
             onChange={(e) => {
@@ -166,7 +166,7 @@ export function AdminProblemsPage() {
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-4 py-2.5">
+        <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-4 py-2">
           <span className="text-sm text-foreground">
             {t("problems.selectedCount", { count: selectedIds.size })}
           </span>

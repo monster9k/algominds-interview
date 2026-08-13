@@ -123,7 +123,7 @@ export function AdminProblemsTable({
           {isLoading ? (
             Array.from({ length: 8 }).map((_, i) => (
               <TableRow key={i} className="border-b border-border/60">
-                <TableCell colSpan={6} className="py-3">
+                <TableCell colSpan={6} className="py-2.5">
                   <Skeleton className="h-5 w-full" />
                 </TableCell>
               </TableRow>
@@ -147,7 +147,7 @@ export function AdminProblemsTable({
                 data-state={selectedIds.has(problem.id) ? "selected" : undefined}
                 className="border-b border-border/60 hover:bg-muted/30 transition-colors data-[state=selected]:bg-primary/5"
               >
-                <TableCell className="py-3">
+                <TableCell className="py-2.5">
                   <Checkbox
                     checked={selectedIds.has(problem.id)}
                     onCheckedChange={() => onToggleSelect(problem.id)}
@@ -155,26 +155,26 @@ export function AdminProblemsTable({
                     aria-label={problem.title}
                   />
                 </TableCell>
-                <TableCell className="py-3 text-xs text-muted-foreground align-top">
+                <TableCell className="py-2.5 text-xs text-muted-foreground align-top">
                   {problem.displayId}
                 </TableCell>
-                <TableCell className="py-3 align-top">
+                <TableCell className="py-2.5 align-top">
                   <div className="font-medium text-foreground">{problem.title}</div>
                   <div className="text-xs text-muted-foreground">
                     {new Date(problem.createdAt).toLocaleDateString()}
                   </div>
                 </TableCell>
-                <TableCell className="py-3 align-top">
+                <TableCell className="py-2.5 align-top">
                   <Badge className={cn("shrink-0", DIFFICULTY_BADGE_CLASS[problem.difficulty])}>
                     {t(`difficulty.${problem.difficulty.toLowerCase()}`)}
                   </Badge>
                 </TableCell>
-                <TableCell className="py-3 align-top">
+                <TableCell className="py-2.5 align-top">
                   <Badge variant={problem.deletedAt ? "destructive" : "secondary"}>
                     {problem.deletedAt ? t("problems.statusDeleted") : t("problems.statusActive")}
                   </Badge>
                 </TableCell>
-                <TableCell className="py-3 text-right align-top">
+                <TableCell className="py-2.5 text-right align-top">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(problem.id)}>
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>

@@ -101,6 +101,12 @@ export class AdminController {
     return this.adminService.getPeerInterviews();
   }
 
+  // GET /admin/store/items
+  @Get('store/items')
+  getStoreItems() {
+    return this.adminService.getStoreItems();
+  }
+
   // PATCH /admin/users/:id/role
   @Patch('users/:id/role')
   async updateUserRole(

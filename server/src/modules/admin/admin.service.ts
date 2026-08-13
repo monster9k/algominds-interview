@@ -438,6 +438,15 @@ export class AdminService {
     });
   }
 
+  // GET /admin/store/items — KHÔNG filter deletedAt (khác GET /store/items
+  // công khai ở store.service.ts#getItems()), để cột trạng thái ở bảng admin
+  // phản ánh đúng cả item đã bị soft-delete.
+  getStoreItems() {
+    return this.prisma.shopItem.findMany({
+      orderBy: [{ category: 'asc' }, { price: 'asc' }],
+    });
+  }
+
   // peer-interview.controller.ts hiện chỉ có GET :id (1 session) — đây là
   // endpoint list đầu tiên cho domain này.
   getPeerInterviews() {

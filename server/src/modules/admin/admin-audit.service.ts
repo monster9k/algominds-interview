@@ -11,13 +11,17 @@ export type AdminAction =
   | 'DELETE_CONTEST'
   | 'UPDATE_USER_ROLE'
   | 'DELETE_USER'
-  | 'DELETE_DISCUSS_POST';
+  | 'DELETE_DISCUSS_POST'
+  | 'CREATE_SHOP_ITEM'
+  | 'UPDATE_SHOP_ITEM'
+  | 'DELETE_SHOP_ITEM';
 
 export type AdminActionTargetType =
   | 'Problem'
   | 'Contest'
   | 'User'
-  | 'DiscussPost';
+  | 'DiscussPost'
+  | 'ShopItem';
 
 @Injectable()
 export class AdminAuditService {

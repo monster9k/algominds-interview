@@ -5,15 +5,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CreateShopItemDto } from './dto/create-shop-item.dto';
+import { UpdateShopItemDto } from './dto/update-shop-item.dto';
 
 @Injectable()
 export class StoreService {
   constructor(private prisma: PrismaService) {}
 
   // Catalog đầy đủ, kèm cờ owned/equipped nếu có user (OptionalJwtAuthGuard
-  // cho phép guest xem catalog nhưng không có owned/equipped).
+  // cho phép guest xem catalog nhưng không có owned/equipped). deletedAt:
+  // null — item admin đã xoá không hiện trong catalog công khai (khác
+  // admin.service.ts#getStoreItems() cố tình không filter, xem comment ở đó).
   async getItems(userId?: string) {
     const items = await this.prisma.shopItem.findMany({
+      where: { deletedAt: null },
       orderBy: [{ category: 'asc' }, { price: 'asc' }],
     });
 
@@ -106,6 +111,49 @@ export class StoreService {
         data: { equipped: true },
         include: { item: true },
       });
+    });
+  }
+
+  async createItem(dto: CreateShopItemDto) {
+    const existing = await this.prisma.shopItem.findUnique({
+      where: { key: dto.key },
+    });
+    if (existing) {
+      throw new ConflictException('Mã vật phẩm (key) đã tồn tại');
+    }
+
+    return this.prisma.shopItem.create({ data: dto });
+  }
+
+  async updateItem(id: string, dto: UpdateShopItemDto) {
+    const existing = await this.prisma.shopItem.findUnique({ where: { id } });
+    if (!existing || existing.deletedAt) {
+      throw new NotFoundException('Vật phẩm không tồn tại');
+    }
+
+    if (dto.key && dto.key !== existing.key) {
+      const keyTaken = await this.prisma.shopItem.findUnique({
+        where: { key: dto.key },
+      });
+      if (keyTaken) {
+        throw new ConflictException('Mã vật phẩm (key) đã tồn tại');
+      }
+    }
+
+    return this.prisma.shopItem.update({ where: { id }, data: dto });
+  }
+
+  // Soft delete — KHÔNG hard-delete (xem comment ShopItem.deletedAt trong
+  // schema.prisma: UserItem.item onDelete Cascade sẽ xoá luôn đồ user đã mua).
+  async softDeleteItem(id: string) {
+    const existing = await this.prisma.shopItem.findUnique({ where: { id } });
+    if (!existing || existing.deletedAt) {
+      throw new NotFoundException('Vật phẩm không tồn tại');
+    }
+
+    return this.prisma.shopItem.update({
+      where: { id },
+      data: { deletedAt: new Date() },
     });
   }
 }

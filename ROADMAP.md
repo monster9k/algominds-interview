@@ -58,24 +58,24 @@
 - [x] i18n (`store.*`, cả 3 locale: en/vi/ja) — đủ key `createNew/createTitle/editTitle/fieldKey/fieldName/fieldDescription/fieldCategory/fieldPrice/fieldIconKey/iconKeyHintTitle/iconKeyHintColor/keyLockedHint/columnStatus/statusActive/statusDeleted/deleteConfirmTitle/deleteConfirmDescription`.
 - [x] **Verify**: `npx tsc -b` + `npm run lint` (client) sạch — chỉ 1 warning `react-hooks/set-state-in-effect` giống hệt pattern có sẵn ở `contest-form-dialog.tsx` (không phải lỗi mới). QA qua Chrome (đăng nhập `admin@algominds.dev`): tạo item mới → toast "Đã tạo vật phẩm", xuất hiện đúng trong bảng → edit `price` → toast "Đã cập nhật vật phẩm", giá trị đổi đúng → xoá → toast "Đã xoá vật phẩm", dot chuyển đỏ "Deleted", nút Edit/Delete disable → tạo lại với `key` trùng (đã xoá) → toast lỗi đúng "Mã vật phẩm (key) đã tồn tại" (409 từ backend). Không có lỗi console (chỉ warning React DialogDescription có sẵn từ trước, không phải regression). **Lưu ý**: không verify được responsive ~390px qua `resize_window` trong phiên này (giới hạn tool, screenshot không phản ánh đúng kích thước đã resize) — dialog dùng `max-w-lg` giống hệt `ContestFormDialog` đã ship nên rủi ro thấp, nhưng chưa xác nhận trực quan. Item test đã xoá thẳng khỏi DB sau khi verify (chưa có `UserItem` nào tham chiếu).
 
-## 🟡 P1 — Career: CRUD UI cho `CareerTrack`
+## 🟡 P1 — Career: CRUD UI cho `CareerTrack` — ✅ ĐÃ XONG
 
 **Restore**: **có** — `PATCH /career/tracks/:id` nhận `isActive: true` để bật lại track đã tắt. Khác Store — Edit vẫn phải mở được kể cả khi track đang inactive.
 
-- [ ] `types/index.ts`: thêm `AdminCareerTrack` (`id, key, name, description, isActive, companyId: string | null, company: { id, name } | null, createdAt`), `CareerTrackFormPayload` (`key, name, description, companyId?, isActive?`).
+- [x] `types/index.ts`: `AdminCareerTrack`, `CareerTrackFormPayload` (thêm cùng đợt với P0).
   📍 `client/src/features/admin/types/index.ts`.
-- [ ] `admin-api.ts`: thêm `getCareerTracks()` (`GET /admin/career/tracks`), `createCareerTrack(payload)` (`POST /career/tracks`), `updateCareerTrack(id, payload)` (`PATCH /career/tracks/:id`), `deleteCareerTrack(id)` (`DELETE /career/tracks/:id`).
+- [x] `admin-api.ts`: `getCareerTracks()`, `createCareerTrack(payload)`, `updateCareerTrack(id, payload)`, `deleteCareerTrack(id)`.
   📍 `client/src/features/admin/api/admin-api.ts`.
-- [ ] Hooks: `use-admin-career-tracks.ts` (queryKey `["admin-career-tracks"]`), `use-create-career-track.ts`, `use-update-career-track.ts`, `use-delete-career-track.ts`.
+- [x] Hooks: `use-admin-career-tracks.ts`, `use-create-career-track.ts`, `use-update-career-track.ts`, `use-delete-career-track.ts`.
   📍 `client/src/features/admin/hooks/`.
-- [ ] `career-track-form-dialog.tsx`: field `key`, `name`, `description` (Textarea), `companyId` (Select — option đầu `"— Chung (không gắn công ty) —"` map về `undefined`, còn lại từ `useCompanies()` đã có sẵn ở `features/problems/hooks/use-companies.ts`, tái dùng thẳng — **không** tạo lại hook lấy company mới), `isActive` (Checkbox, **chỉ hiện khi edit** — create luôn mặc định `true` phía backend, ẩn field này lúc tạo giống cách `problemCounts` chỉ hiện lúc create ở `ContestFormDialog`, nhưng ngược điều kiện).
+- [x] `career-track-form-dialog.tsx`: `key`, `name`, `description`, `companyId` (Select dùng `useCompanies()` có sẵn, option đầu "Chung"), `isActive` (Checkbox, chỉ hiện khi edit).
   📍 `client/src/features/admin/components/career-track-form-dialog.tsx`.
-- [ ] `admin-career-table.tsx`: đổi `useCareerTracks()` (public) → `useAdminCareerTracks()`; thêm cột **Actions** (Edit **luôn enable**; Delete `disabled={!track.isActive}` — vì xoá lần nữa vô nghĩa, nhưng Edit vẫn phải mở được để admin bật lại qua checkbox `isActive`).
+- [x] `admin-career-table.tsx`: đổi sang `useAdminCareerTracks()`; cột Actions (Edit luôn enable, Delete `disabled={!track.isActive}`).
   📍 `client/src/features/admin/components/admin-career-table.tsx`.
-- [ ] `admin-career-page.tsx`: thêm nút "Tạo mới" + state dialog, theo đúng khung Store/Contest.
+- [x] `admin-career-page.tsx`: nút "New Track" + state dialog.
   📍 `client/src/features/admin/pages/admin-career-page.tsx`.
-- [ ] i18n (`career.*`): `createNew`, `createTitle`, `editTitle`, `fieldKey`, `fieldName`, `fieldDescription`, `fieldCompany`, `fieldIsActive`, `companyNone` (option "Chung"), `deleteConfirmTitle`, `deleteConfirmDescription` (nói rõ "có thể bật lại qua Sửa" — khác Store).
-- [ ] **Verify**: tsc/lint sạch. QA qua Chrome: tạo track không company (`companyId` bỏ trống) → xuất hiện "Chung"; tạo track có company → hiện đúng tên; edit đổi `isActive` từ track vừa xoá → status chuyển lại "Hoạt động", nút Delete enable lại; trùng `key` → 409 toast.
+- [x] i18n (`career.*`, 3 locale) đủ key.
+- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (chỉ warning giống pattern có sẵn). QA qua Chrome: tạo track với company "Apple" (dropdown load đúng từ `useCompanies()`) → xuất hiện đúng tên công ty → xoá (soft) → toast "Đã tắt career track", status → "Inactive", nút Delete disable (click không mở dialog), **Edit vẫn mở được** → tick lại checkbox `isActive` → Save → status quay lại "Active" (restore hoạt động đúng). Không có lỗi console. Track test đã xoá thẳng khỏi DB sau khi verify (chưa có `CareerJourney` nào tham chiếu).
 
 ## 🟡 P2 — Quest: CRUD UI cho `BugSnippet`
 

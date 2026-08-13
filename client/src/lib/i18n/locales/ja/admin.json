@@ -182,6 +182,7 @@
   },
   "career": {
     "title": "キャリアトラック管理",
+    "createNew": "新規トラック",
     "columnId": "ID",
     "columnName": "トラック名",
     "columnCompany": "企業",
@@ -190,7 +191,17 @@
     "statusActive": "有効",
     "statusInactive": "無効",
     "empty": "キャリアトラックはまだありません。",
-    "loadError": "キャリアトラック一覧の読み込みに失敗しました。"
+    "loadError": "キャリアトラック一覧の読み込みに失敗しました。",
+    "createTitle": "新規キャリアトラックを作成",
+    "editTitle": "キャリアトラックを編集",
+    "fieldKey": "キー（一意の識別子）",
+    "fieldName": "トラック名",
+    "fieldDescription": "説明",
+    "fieldCompany": "企業",
+    "fieldIsActive": "有効",
+    "companyNone": "— 汎用（企業なし）—",
+    "deleteConfirmTitle": "このキャリアトラックを無効化しますか?",
+    "deleteConfirmDescription": "トラックは公開リストから非表示になります（isActive=false）。編集画面から再度有効化できます。"
   },
   "quests": {
     "title": "クエスト管理",

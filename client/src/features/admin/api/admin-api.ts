@@ -19,6 +19,8 @@ import {
   TopCompanyItem,
   AdminShopItem,
   ShopItemFormPayload,
+  AdminCareerTrack,
+  CareerTrackFormPayload,
 } from "../types";
 
 export const adminApi = {
@@ -144,6 +146,26 @@ export const adminApi = {
 
   deleteShopItem: async (id: string) => {
     const response = await api.delete(`/store/items/${id}`);
+    return response.data;
+  },
+
+  getCareerTracks: async (): Promise<AdminCareerTrack[]> => {
+    const response = await api.get("/admin/career/tracks");
+    return response.data;
+  },
+
+  createCareerTrack: async (payload: CareerTrackFormPayload) => {
+    const response = await api.post("/career/tracks", payload);
+    return response.data;
+  },
+
+  updateCareerTrack: async (id: string, payload: Partial<CareerTrackFormPayload>) => {
+    const response = await api.patch(`/career/tracks/${id}`, payload);
+    return response.data;
+  },
+
+  deleteCareerTrack: async (id: string) => {
+    const response = await api.delete(`/career/tracks/${id}`);
     return response.data;
   },
 

@@ -182,6 +182,7 @@
   },
   "career": {
     "title": "Quản lý Career Track",
+    "createNew": "Tạo track mới",
     "columnId": "ID",
     "columnName": "Tên track",
     "columnCompany": "Công ty",
@@ -190,7 +191,17 @@
     "statusActive": "Hoạt động",
     "statusInactive": "Ngừng hoạt động",
     "empty": "Chưa có career track nào.",
-    "loadError": "Không tải được danh sách career track."
+    "loadError": "Không tải được danh sách career track.",
+    "createTitle": "Tạo career track mới",
+    "editTitle": "Sửa career track",
+    "fieldKey": "Key (định danh duy nhất)",
+    "fieldName": "Tên track",
+    "fieldDescription": "Mô tả",
+    "fieldCompany": "Công ty",
+    "fieldIsActive": "Đang hoạt động",
+    "companyNone": "— Chung (không gắn công ty) —",
+    "deleteConfirmTitle": "Tắt career track này?",
+    "deleteConfirmDescription": "Track sẽ bị ẩn khỏi danh sách công khai (isActive=false), có thể bật lại sau qua nút Sửa."
   },
   "quests": {
     "title": "Quản lý Quest",

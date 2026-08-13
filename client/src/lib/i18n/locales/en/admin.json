@@ -182,6 +182,7 @@
   },
   "career": {
     "title": "Manage Career Tracks",
+    "createNew": "New Track",
     "columnId": "ID",
     "columnName": "Track Name",
     "columnCompany": "Company",
@@ -190,7 +191,17 @@
     "statusActive": "Active",
     "statusInactive": "Inactive",
     "empty": "No career tracks yet.",
-    "loadError": "Failed to load career tracks."
+    "loadError": "Failed to load career tracks.",
+    "createTitle": "Create New Career Track",
+    "editTitle": "Edit Career Track",
+    "fieldKey": "Key (unique identifier)",
+    "fieldName": "Track Name",
+    "fieldDescription": "Description",
+    "fieldCompany": "Company",
+    "fieldIsActive": "Active",
+    "companyNone": "— Generic (no company) —",
+    "deleteConfirmTitle": "Deactivate this career track?",
+    "deleteConfirmDescription": "The track will be hidden from the public list (isActive=false), can be re-enabled later via Edit."
   },
   "quests": {
     "title": "Manage Quests",

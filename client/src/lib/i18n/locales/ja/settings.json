@@ -35,8 +35,35 @@
   },
   "social": {
     "title": "ソーシャルアカウント",
-    "description": "ソーシャルアカウントを連携してLeetCodeにサインインします。",
-    "connect": "連携する"
+    "description": "ソーシャルアカウントを連携してAlgoMindsにサインインします。",
+    "connect": "連携する",
+    "connected": "連携済み",
+    "verifyDialogTitle": "Google連携のため本人確認",
+    "verifyDialogDescription": "Googleを連携する前に、現在のパスワードを再入力してアカウントの所有者であることを確認してください。",
+    "passwordLabel": "現在のパスワード",
+    "verifyAndContinue": "確認して続ける",
+    "verifying": "確認中...",
+    "linkedSuccess": "Googleアカウントの連携が完了しました",
+    "linkErrorInvalidTicket": "連携セッションが期限切れか無効です。もう一度お試しください。",
+    "linkErrorAlreadyLinked": "このGoogleアカウントは既に別のアカウントに連携されています。",
+    "linkErrorEmailMismatch": "Googleアカウントのメールアドレスがあなたのアカウントのメールアドレスと一致している必要があります。",
+    "linkErrorGeneric": "Googleアカウントを連携できませんでした。もう一度お試しください。"
+  },
+  "password": {
+    "title": "パスワード",
+    "description": "現在このアカウントはGoogleでのみサインインできます。パスワードを設定するとメールでもサインインできるようになります。",
+    "noPasswordLabel": "パスワード未設定",
+    "setAction": "パスワードを設定",
+    "setDialogTitle": "パスワードを設定",
+    "setDialogDescription": "パスワードを設定すると、Googleを使わずメールでサインインできるようになります。",
+    "newPasswordLabel": "新しいパスワード",
+    "confirmPasswordLabel": "新しいパスワード（確認）",
+    "mismatchError": "パスワードが一致しません。",
+    "setting": "保存中...",
+    "setSuccess": "パスワードを設定しました",
+    "setErrorGeneric": "パスワードを設定できませんでした。もう一度お試しください。",
+    "staleSession": "セッションが古くなっています。パスワードを設定する前にGoogleで再認証してください。",
+    "reauthGoogle": "Googleで再認証"
   },
   "danger": {
     "title": "危険な操作",

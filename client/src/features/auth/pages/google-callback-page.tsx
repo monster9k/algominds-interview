@@ -1,4 +1,4 @@
-import { authApi } from "@/features/auth/api/auth-api";
+import { authApi, SET_PASSWORD_INTENT_KEY } from "@/features/auth/api/auth-api";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
@@ -28,7 +28,16 @@ export const GoogleCallbackPage = () => {
             description: "Phần thưởng điểm danh hôm nay.",
           });
         }
-        navigate("/dashboard", { replace: true });
+
+        // Chiều B "Đặt mật khẩu" (account-linking roadmap) — nếu lượt đăng
+        // nhập Google này là bước re-auth trước khi đặt mật khẩu, quay lại
+        // /settings để SettingsPage tự mở SetPasswordDialog thay vì
+        // /dashboard như luồng login bình thường.
+        const setPasswordIntent = sessionStorage.getItem(SET_PASSWORD_INTENT_KEY);
+        sessionStorage.removeItem(SET_PASSWORD_INTENT_KEY);
+        navigate(setPasswordIntent ? "/settings?setPassword=1" : "/dashboard", {
+          replace: true,
+        });
       })
       .catch((error) => {
         console.error("Lỗi xác thực Google:", error);

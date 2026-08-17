@@ -17,8 +17,8 @@ const MIN_MS = 60 * 1000;
 const HOUR_MS = 60 * MIN_MS;
 const YEAR_MS = 365 * HOUR_MS * 24;
 
-const ADMIN_EMAIL = 'admin@algominds.dev';
-const ADMIN_PASSWORD = 'Admin@12345';
+const ADMIN_EMAIL = '';
+const ADMIN_PASSWORD = '';
 
 // Bootstrap 1 tài khoản ADMIN thật — KHÔNG phải "fake test data" kiểu
 // leaderboard giả trước đây (đã xoá hoàn toàn), mà là account hợp lệ duy

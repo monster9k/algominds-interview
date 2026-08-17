@@ -35,8 +35,35 @@
   },
   "social": {
     "title": "Social Accounts",
-    "description": "Connect a social account to sign in to LeetCode.",
-    "connect": "Connect"
+    "description": "Connect a social account to sign in to AlgoMinds.",
+    "connect": "Connect",
+    "connected": "Connected",
+    "verifyDialogTitle": "Verify to connect Google",
+    "verifyDialogDescription": "Re-enter your current password to confirm you own this account before connecting Google.",
+    "passwordLabel": "Current password",
+    "verifyAndContinue": "Verify & continue",
+    "verifying": "Verifying...",
+    "linkedSuccess": "Google account connected successfully",
+    "linkErrorInvalidTicket": "The link session expired or is invalid. Please try again.",
+    "linkErrorAlreadyLinked": "This Google account is already connected to a different account.",
+    "linkErrorEmailMismatch": "The Google account's email must match your account's email.",
+    "linkErrorGeneric": "Couldn't connect the Google account. Please try again."
+  },
+  "password": {
+    "title": "Password",
+    "description": "Your account currently only signs in via Google. Set a password to also sign in with your email.",
+    "noPasswordLabel": "No password set",
+    "setAction": "Set a password",
+    "setDialogTitle": "Set a password",
+    "setDialogDescription": "Set a password so you can sign in with your email, without going through Google.",
+    "newPasswordLabel": "New password",
+    "confirmPasswordLabel": "Confirm new password",
+    "mismatchError": "Passwords don't match.",
+    "setting": "Saving...",
+    "setSuccess": "Password set successfully",
+    "setErrorGeneric": "Couldn't set the password. Please try again.",
+    "staleSession": "Your session is too old. Please re-authenticate via Google before setting a password.",
+    "reauthGoogle": "Re-authenticate via Google"
   },
   "danger": {
     "title": "Danger Zone",

@@ -1,0 +1,23 @@
+name: Deploy to VPS
+
+# Chờ workflow "CI" (ci.yml) chạy xong trên `main` rồi mới deploy — tránh đẩy
+# code lỗi lên production. `workflow_run` (không phải `needs:`) vì CI nằm ở
+# 1 file workflow khác.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: SSH deploy
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: /opt/algominds/deploy.sh

@@ -74,8 +74,11 @@ export class UsersService {
     });
     if (!user) return null;
 
-    // Loại bỏ password trước khi trả về
+    // Loại bỏ password trước khi trả về — nhưng vẫn cần cho FE biết CÓ đang
+    // dùng password hay không (Settings dùng để quyết định hiện "Connect
+    // Google" hay "Đặt mật khẩu" — xem account-linking roadmap).
     const { password, ...result } = user;
+    const hasPassword = !!password;
 
     // Rank theo totalSolved — không có bảng leaderboard riêng nên tính trực
     // tiếp: rank = số user có totalSolved cao hơn + 1.
@@ -87,7 +90,7 @@ export class UsersService {
       rank = higherRankedCount + 1;
     }
 
-    return { ...result, rank };
+    return { ...result, rank, hasPassword };
   }
 
   // Confidence Calibration Score — so sánh confidenceSignal (giọng điệu lúc

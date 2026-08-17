@@ -1,148 +1,64 @@
-# 🗺️ AlgoMinds — Roadmap: UI + API wiring cho Admin CRUD (Store/Career/Quest/Discuss/Peer Interview)
+# 🗺️ AlgoMinds — Roadmap: Deploy production lên Oracle Cloud Free Tier (Ampere A1)
 
-> Bản roadmap trước ("Admin CRUD endpoints (Store/Career/Quest/Peer Interview) + Discuss comment moderation") đã hoàn thành 100% P0→P4 — CRUD `ShopItem` (`956726a`), `CareerTrack` (`6af6ad9`), `BugSnippet` (`9d69f2f`), ban comment `DiscussComment` (`0610870`), force-abandon `PeerInterviewSession` (`b9f0dae`) — kèm 1 commit UI redesign không liên quan chủ đề (`e3da2cf`). Toàn bộ đã merge vào `main` qua PR #25 (`64caecb`). Backend cho cả 5 domain đã đầy đủ endpoint mutation + audit log, verify bằng curl thủ công, nhưng **frontend admin vẫn hoàn toàn read-only** cho 5 bảng này (đúng ghi chú "ngoài phạm vi" để lại ở mỗi phase P0-P4 cũ).
+> Bản roadmap trước ("Liên kết tài khoản Email ⇄ Google") đã hoàn thành 100% P0→P2 — commit `2deab1a` (P0: gate `providerId`), `ac1de6a` (P1: Connect Google), `2df59c4` (P2: Set Password). Xem lại nội dung các commit đó nếu cần tham chiếu.
 >
-> Bản này **thay thế hoàn toàn** — chủ đề khác hẳn (frontend, không phải backend). Mục tiêu: nối dây UI (dialog form, nút Action, confirm dialog) + hook TanStack Query gọi đúng các endpoint đã có sẵn, để admin thao tác được CRUD thật trên 5 bảng: Store, Career, Quest, Discuss (ban comment), Peer Interview (force-abandon).
->
-> **Trạng thái: ✅ 100% HOÀN THÀNH (P0→P4)** — CRUD UI đầy đủ cho Store/Career/Quest + comment moderation UI cho Discuss + force-abandon UI cho Peer Interview, mỗi phase 1 commit riêng, verify tsc/lint + QA tay qua Chrome cho từng phase.
+> Bản này **thay thế hoàn toàn** — chủ đề khác hẳn (hạ tầng deploy, không phải auth). Bối cảnh: commit `d3725d8` (`feat(deploy): add production Docker deploy config for VPS`) đã dựng xong `docker-compose.prod.yml` + Dockerfiles + Caddy + `deploy.sh` + GitHub Actions, nhắm tới 1 VPS trả phí ~$4/mo vì Piston cần `privileged: true` (hầu hết PaaS free tier không cho phép). User không có ngân sách cho VPS trả phí và không muốn xin phép tác giả Piston để chạy trên PaaS (khả năng fail cao) → đã khảo sát và chốt hướng đi: **Oracle Cloud Always Free, shape Ampere A1 (ARM, 2 OCPU/12GB kể từ 15/06/2026 — Oracle đã âm thầm cắt từ 4 OCPU/24GB)**.
 
-## Cách đọc file này
-- Thứ tự ưu tiên bám đúng thứ tự domain đã hoàn thành ở backend (P0 Store → P4 Peer Interview) để dễ đối chiếu.
-- Mỗi phase liệt kê: **file cần thêm/sửa** (`📍`), **field/API cụ thể**, **hành vi UI kỳ vọng**, và **điểm cần lưu ý** (rủi ro state, endpoint nào có/không có "restore").
-- `🔴 P0`/`🟡 P1`/`🟡 P2`/`🟡 P3`/`🟢 P4` — mức độ ưu tiên gợi ý, không phải rủi ro kỹ thuật (khác ý nghĩa `🔴` ở bản roadmap backend cũ — lần này không có migration nên không phase nào thực sự "rủi ro cao").
+## Vì sao không dùng thẳng image Piston chính thức trên Oracle A1
 
----
+`docker-compose.prod.yml` hiện trỏ `image: ghcr.io/engineer-man/piston` — image này **không có build arm64 chính chủ**. Ampere A1 là kiến trúc ARM (aarch64). Có 1 bản cộng đồng arm64 (`otakulabz/piston-arm`) nhưng không phải image gốc, độ tin cậy/update không đảm bảo — **không dùng**.
 
-## Nguyên tắc chung (áp dụng mọi phase)
+Giải pháp đã xác nhận: repo đã có sẵn `piston_src/` (vendor clone chính chủ từ `engineer-man/piston`, gitignored, dùng để build/customize image — xem `CLAUDE.md`). `piston_src/api/Dockerfile` build được multi-arch qua `docker buildx --platform linux/arm64`. Tự build + push image arm64 lên registry riêng (GHCR của user) thay vì phụ thuộc image cộng đồng không rõ nguồn gốc.
 
-1. **Vị trí code**: mọi hook/API mới sống trong `client/src/features/admin/{api,hooks,components,types}` — **không** đặt trong `features/store`, `features/career`, `features/quest` dù data cùng domain, đúng tiền lệ đã có (`use-admin-quests.ts`, `use-admin-peer-interviews.ts` đã ở `admin/hooks`, không phải `quest/hooks`/`career/hooks`). Lý do: đây là dữ liệu/queryKey riêng cho mục đích quản trị (không filter `deletedAt`/`isActive`), khác hẳn hook công khai cùng feature.
-2. **1 file API function** gộp chung vào `admin-api.ts` hiện có (không tách file riêng theo domain) — đúng cấu trúc hiện tại của file này.
-3. **1 hook = 1 file**, đúng convention `use-create-contest.ts`/`use-update-contest.ts`/`use-delete-contest.ts` đã có — mutation hook nào cũng: gọi `adminApi.xxx`, `invalidateQueries` đúng queryKey list tương ứng, `toast.success`/`toast.error` (dùng `getApiErrorMessage`).
-4. **Dialog form**: tái dùng `Dialog`/`Input`/`Label`/`Textarea`/`Button` từ shadcn (đã import sẵn khắp app) — copy khung `contest-form-dialog.tsx` (state `form`, `useEffect` reset khi `open`/entity đổi, `isPending` gộp từ create+update, disable Save khi field bắt buộc rỗng). Category/Difficulty/Company chọn qua `Select` (`@/components/ui/select`, đã có sẵn trong repo, chưa từng dùng ở admin form nào — sẽ là component `Select` đầu tiên trong `admin/components`). Trường boolean (`isActive`) dùng `Checkbox` (`@/components/ui/checkbox`).
-5. **Confirm dialog** cho hành động phá huỷ/không hoàn tác được (Delete, Ban comment, Force-abandon) — tái dùng `ConfirmDialog` có sẵn (`admin/components/confirm-dialog.tsx`), không tạo dialog confirm riêng mỗi bảng.
-6. **Badge/status**: giữ đúng công thức dot+text đã thiết lập (`bg-{color}-500`/`text-{color}-500`), bám theo `DIFFICULTY_DOT_CLASS`/`STATUS_DOT_CLASS` mẫu đã có ở `admin-quests-table.tsx`/`admin-contests-table.tsx` — không bịa màu mới.
-7. **i18n**: mọi text mới thêm vào `client/src/lib/i18n/locales/{en,vi,ja}/admin.json`, đúng nhánh key đã có (`store.*`, `career.*`, `quests.*`, `discuss.*`, `peerInterview.*`) — thêm ở cả 3 locale trong cùng 1 commit, không để thiếu locale nào.
-8. **Nút Actions**: cột cuối bảng, dùng lại label cột `t("problems.columnActions")` (đã được các bảng khác tái dùng chéo, đúng tiền lệ `admin-contests-table.tsx`/`admin-discuss-table.tsx`) — không tạo key `columnActions` riêng theo từng domain.
-9. **QA bắt buộc**: sau khi code xong 1 phase, dùng Chrome tool test golden path (create → xuất hiện trong bảng → edit → cập nhật đúng → delete/ban/abandon → cập nhật trạng thái đúng) + edge case liên quan (field rỗng, trùng `key` → toast lỗi đọc từ 409 backend, xoá 1 entity đã xoá → nút bị disable sẵn nên không test được qua UI, nhưng phải xác nhận nút thực sự disable đúng lúc).
+## Rủi ro đã biết, chấp nhận đánh đổi
+
+- **Capacity Ampere A1 hay hết chỗ** ("Out of capacity" khi tạo instance) — cần thử nhiều region/availability domain, có thể mất vài ngày mới xin được.
+- **Oracle từng lặng lẽ đổi chính sách free tier** (vụ cắt RAM tháng 6/2026, không thông báo trước) — rủi ro chính sách tiếp tục đổi trong tương lai, chấp nhận vì đây là lựa chọn duy nhất trong ngân sách hiện tại.
+- **Tự build/maintain Piston image** — nếu upstream `engineer-man/piston` đổi cấu trúc source, phải tự theo dõi cập nhật, không còn "pull image có sẵn" đơn giản như VPS thường.
+- **Phương án dự phòng đã thống nhất**: nếu sau ~1 tuần thử vẫn không xin được capacity A1 → chuyển hướng sang shape x86 `E2.1.Micro` (free, không cần build lại Piston) tách Piston và phần còn lại ra 2 instance 1GB RAM riêng — sẽ mở roadmap mới cho hướng này nếu xảy ra, không lẫn vào bản này.
 
 ---
 
-## Khảo sát trạng thái hiện tại từng bảng (trước khi sửa)
+## Kế hoạch theo thứ tự ưu tiên
 
-| Domain | Bảng hiện tại đọc từ | Vấn đề | Sau khi sửa đọc từ |
-|---|---|---|---|
-| Store | `useStoreItems()` (`features/store/hooks`, `GET /store/items` công khai) | Không thấy item đã xoá (`deletedAt` bị filter), không có cột Actions | `useAdminStoreItems()` mới (`admin/hooks`, `GET /admin/store/items`) |
-| Career | `useCareerTracks()` (`features/career/hooks`, `GET /career/tracks` công khai) | Không thấy track `isActive=false`, không có cột Actions | `useAdminCareerTracks()` mới (`admin/hooks`, `GET /admin/career/tracks`) |
-| Quest | `useAdminQuests()` (đã đúng, `GET /admin/quests`) | Có đủ data, chỉ thiếu cột Actions + dialog | Giữ nguyên hook đọc, chỉ thêm mutation |
-| Discuss | `useDiscussPosts()` (đã đúng ở cấp bài viết) | Chưa có cách xem/ban **comment** trong 1 bài | Thêm dialog riêng gọi `GET /admin/discuss/:postId/comments` |
-| Peer Interview | `useAdminPeerInterviews()` (đã đúng) | Có đủ data, chỉ thiếu nút force-abandon | Giữ nguyên hook đọc, chỉ thêm mutation |
+### 🔴 P0 — Xin capacity Oracle A1 + tự build image Piston arm64
+- [ ] Đăng ký Oracle Cloud, tạo instance `VM.Standard.A1.Flex` (2 OCPU/12GB) — thử nhiều region/availability domain nếu gặp lỗi "Out of capacity"; ghi lại region thành công để tái sử dụng khi cần scale thêm.
+  📍 Oracle Cloud Console (ngoài repo).
+- [ ] Cài Docker Engine + Docker Compose plugin trên instance (Ubuntu ARM image khuyến nghị).
+  📍 Instance Oracle (ngoài repo).
+- [ ] Build multi-arch image Piston từ `piston_src/api/Dockerfile` bằng `docker buildx build --platform linux/arm64`, xác nhận build thành công trên máy dev hoặc CI trước khi push (kiểm tra `piston_src/builder/Dockerfile`, `piston_src/repo/Dockerfile` — build thêm nếu `docker-compose.yaml` gốc của Piston yêu cầu nhiều image phối hợp, không chỉ riêng `api`).
+  📍 `piston_src/api/Dockerfile`, `piston_src/docker-compose.yaml` (đọc lại để biết đủ service cần build).
+- [ ] Push image lên registry riêng (GHCR của user, vd `ghcr.io/monster9k/piston-arm64`), verify `docker pull` + `docker run` thành công trên chính instance Oracle A1 (không chỉ build được — phải chạy được).
+  📍 GHCR (ngoài repo).
 
----
+### 🟡 P1 — Cập nhật `docker-compose.prod.yml` & cài runtime ngôn ngữ
+- [ ] Sửa service `piston` trong `docker-compose.prod.yml`: đổi `image: ghcr.io/engineer-man/piston` → image arm64 tự build ở P0. Giữ nguyên `privileged: true`, healthcheck, volume `piston_data`.
+  📍 `docker-compose.prod.yml`.
+- [ ] Cài runtime ngôn ngữ cần thiết vào Piston (image gốc không có sẵn runtime nào — gap đã ghi trong `README.md`, chưa từng được xử lý dù trên kiến trúc nào). Đối chiếu danh sách ngôn ngữ với `PistonService.getLanguageConfig()` để cài đúng version Piston mong đợi.
+  📍 `server/src/modules/judge/services/piston.service.ts` (đối chiếu ngôn ngữ), Piston CLI/API trên instance Oracle (cài đặt).
+- [ ] Verify `GET /api/v2/runtimes` trên Piston instance trả đúng danh sách runtime đã cài.
+  📍 Instance Oracle (curl thủ công).
 
-## 🔴 P0 — Store: CRUD UI cho `ShopItem` — ✅ ĐÃ XONG
-
-**Restore**: **không có** — `DELETE /store/items/:id` set `deletedAt`, không có endpoint nào set lại `null`. Item đã xoá coi như vĩnh viễn read-only ở UI (giống Contest).
-
-- [x] `types/index.ts`: thêm `AdminShopItem`, `ShopItemFormPayload`, `ShopItemCategory` (khai báo riêng trong `admin/types`, không import chéo từ `features/store/types` — đúng ranh giới feature-folder).
-  📍 `client/src/features/admin/types/index.ts`.
-- [x] `admin-api.ts`: thêm `getStoreItems()`, `createShopItem(payload)`, `updateShopItem(id, payload)`, `deleteShopItem(id)`.
-  📍 `client/src/features/admin/api/admin-api.ts`.
-- [x] Hooks: `use-admin-store-items.ts` (queryKey `["admin-store-items"]`), `use-create-shop-item.ts`, `use-update-shop-item.ts`, `use-delete-shop-item.ts`.
-  📍 `client/src/features/admin/hooks/`.
-- [x] `shop-item-form-dialog.tsx`: field `key` (disable khi edit, hint "Không thể đổi key sau khi tạo"), `name`, `description`, `category` (Select), `price`, `iconKey` (hint đổi theo category).
-  📍 `client/src/features/admin/components/shop-item-form-dialog.tsx`.
-- [x] `admin-store-table.tsx`: đổi `useStoreItems()` (public) → `useAdminStoreItems()` (admin); thêm cột Status (dot đỏ/teal) + Actions (Edit/Delete, `disabled={!!item.deletedAt}`).
-  📍 `client/src/features/admin/components/admin-store-table.tsx`.
-- [x] `admin-store-page.tsx`: thêm nút "New Item", state `formOpen`/`editingItem`.
-  📍 `client/src/features/admin/pages/admin-store-page.tsx`.
-- [x] i18n (`store.*`, cả 3 locale: en/vi/ja) — đủ key `createNew/createTitle/editTitle/fieldKey/fieldName/fieldDescription/fieldCategory/fieldPrice/fieldIconKey/iconKeyHintTitle/iconKeyHintColor/keyLockedHint/columnStatus/statusActive/statusDeleted/deleteConfirmTitle/deleteConfirmDescription`.
-- [x] **Verify**: `npx tsc -b` + `npm run lint` (client) sạch — chỉ 1 warning `react-hooks/set-state-in-effect` giống hệt pattern có sẵn ở `contest-form-dialog.tsx` (không phải lỗi mới). QA qua Chrome (đăng nhập `admin@algominds.dev`): tạo item mới → toast "Đã tạo vật phẩm", xuất hiện đúng trong bảng → edit `price` → toast "Đã cập nhật vật phẩm", giá trị đổi đúng → xoá → toast "Đã xoá vật phẩm", dot chuyển đỏ "Deleted", nút Edit/Delete disable → tạo lại với `key` trùng (đã xoá) → toast lỗi đúng "Mã vật phẩm (key) đã tồn tại" (409 từ backend). Không có lỗi console (chỉ warning React DialogDescription có sẵn từ trước, không phải regression). **Lưu ý**: không verify được responsive ~390px qua `resize_window` trong phiên này (giới hạn tool, screenshot không phản ánh đúng kích thước đã resize) — dialog dùng `max-w-lg` giống hệt `ContestFormDialog` đã ship nên rủi ro thấp, nhưng chưa xác nhận trực quan. Item test đã xoá thẳng khỏi DB sau khi verify (chưa có `UserItem` nào tham chiếu).
-
-## 🟡 P1 — Career: CRUD UI cho `CareerTrack` — ✅ ĐÃ XONG
-
-**Restore**: **có** — `PATCH /career/tracks/:id` nhận `isActive: true` để bật lại track đã tắt. Khác Store — Edit vẫn phải mở được kể cả khi track đang inactive.
-
-- [x] `types/index.ts`: `AdminCareerTrack`, `CareerTrackFormPayload` (thêm cùng đợt với P0).
-  📍 `client/src/features/admin/types/index.ts`.
-- [x] `admin-api.ts`: `getCareerTracks()`, `createCareerTrack(payload)`, `updateCareerTrack(id, payload)`, `deleteCareerTrack(id)`.
-  📍 `client/src/features/admin/api/admin-api.ts`.
-- [x] Hooks: `use-admin-career-tracks.ts`, `use-create-career-track.ts`, `use-update-career-track.ts`, `use-delete-career-track.ts`.
-  📍 `client/src/features/admin/hooks/`.
-- [x] `career-track-form-dialog.tsx`: `key`, `name`, `description`, `companyId` (Select dùng `useCompanies()` có sẵn, option đầu "Chung"), `isActive` (Checkbox, chỉ hiện khi edit).
-  📍 `client/src/features/admin/components/career-track-form-dialog.tsx`.
-- [x] `admin-career-table.tsx`: đổi sang `useAdminCareerTracks()`; cột Actions (Edit luôn enable, Delete `disabled={!track.isActive}`).
-  📍 `client/src/features/admin/components/admin-career-table.tsx`.
-- [x] `admin-career-page.tsx`: nút "New Track" + state dialog.
-  📍 `client/src/features/admin/pages/admin-career-page.tsx`.
-- [x] i18n (`career.*`, 3 locale) đủ key.
-- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (chỉ warning giống pattern có sẵn). QA qua Chrome: tạo track với company "Apple" (dropdown load đúng từ `useCompanies()`) → xuất hiện đúng tên công ty → xoá (soft) → toast "Đã tắt career track", status → "Inactive", nút Delete disable (click không mở dialog), **Edit vẫn mở được** → tick lại checkbox `isActive` → Save → status quay lại "Active" (restore hoạt động đúng). Không có lỗi console. Track test đã xoá thẳng khỏi DB sau khi verify (chưa có `CareerJourney` nào tham chiếu).
-
-## 🟡 P2 — Quest: CRUD UI cho `BugSnippet` — ✅ ĐÃ XONG
-
-**Restore**: **có**, cùng cơ chế Career (`PATCH .../isActive`). Áp dụng y hệt logic Edit-luôn-enable / Delete-disable-khi-đã-inactive ở P1.
-
-- [x] `types/index.ts`: `BugSnippetFormPayload` (thêm cùng đợt với P0). `buggyLine` xác nhận **0-indexed** — khớp `code.split("\n").map((line, index) => ...)` ở `bug-whacker-board.tsx` phía user, không cần đọc thêm `quest.service.ts` vì logic so sánh chỉ là `selectedLine === snippet.buggyLine`, không có arithmetic index nào khác.
-  📍 `client/src/features/admin/types/index.ts`.
-- [x] `admin-api.ts`: `createBugSnippet(payload)`, `updateBugSnippet(id, payload)`, `deleteBugSnippet(id)`.
-  📍 `client/src/features/admin/api/admin-api.ts`.
-- [x] Hooks: `use-create-bug-snippet.ts`, `use-update-bug-snippet.ts`, `use-delete-bug-snippet.ts` (invalidate `["admin-quests"]`).
-  📍 `client/src/features/admin/hooks/`.
-- [x] `bug-snippet-form-dialog.tsx`: `language` (Input, placeholder "javascript"), `difficulty` (Select), `code` (Textarea `font-mono`), `buggyLine` (Input number, label ghi rõ "0-indexed"), `explanation` (Textarea optional), `isActive` (Checkbox, chỉ hiện khi edit).
-  📍 `client/src/features/admin/components/bug-snippet-form-dialog.tsx`.
-- [x] `admin-quests-table.tsx`: cột Actions (Edit luôn enable, Delete `disabled={!quest.isActive}`).
-  📍 `client/src/features/admin/components/admin-quests-table.tsx`.
-- [x] `admin-quests-page.tsx`: nút "New Snippet" + state dialog.
-  📍 `client/src/features/admin/pages/admin-quests-page.tsx`.
-- [x] i18n (`quests.*`, 3 locale) đủ key.
-- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (0 error, warning giống pattern có sẵn). QA qua Chrome: tạo snippet (difficulty Easy, buggyLine 0) → xuất hiện đúng dot teal; edit đổi difficulty → Medium → dot vàng cập nhật đúng; xoá (soft) → toast "Đã tắt bug snippet", status "Inactive", Delete disable, Edit vẫn mở được. Không lỗi console. Snippet test đã xoá thẳng khỏi DB sau khi verify (`QuestAttempt` không có FK tới `BugSnippet`, an toàn hard-delete). **Lưu ý QA**: gõ code nhiều dòng qua tool test bằng ký tự `\n` khiến nút Save tạm thời trông "kẹt" (không gửi request) — xác nhận đây là hạn chế của cách tool gõ phím vào Textarea trong môi trường test, không phải bug trong `isValid`/`handleSubmit`; test lại với code 1 dòng xác nhận flow hoạt động đúng.
-
-## 🟡 P3 — Discuss: UI ban comment — ✅ ĐÃ XONG
-
-**Restore**: **không có** — `DELETE /discuss/:postId/comments/:commentId` chỉ set `deletedAt`, không có endpoint gỡ ban. 1 chiều, giống Store.
-
-- [x] `types/index.ts`: `AdminDiscussComment` (thêm cùng đợt với P0).
-  📍 `client/src/features/admin/types/index.ts`.
-- [x] `admin-api.ts`: `getDiscussComments(postId)`, `banDiscussComment(postId, commentId)`.
-  📍 `client/src/features/admin/api/admin-api.ts`.
-- [x] Hooks: `use-admin-discuss-comments.ts` (queryKey `["admin-discuss-comments", postId]`, `enabled: !!postId`), `use-ban-discuss-comment.ts` (invalidate cả `["admin-discuss-comments", postId]` lẫn `["discuss-posts"]` — xác nhận queryKey thật của `useDiscussPosts()` là `["discuss-posts", filters]`, TanStack Query invalidate theo prefix nên `["discuss-posts"]` khớp đúng).
-  📍 `client/src/features/admin/hooks/`.
-- [x] `discuss-comments-dialog.tsx`: Dialog `max-w-2xl`, nhận `postId | null`. List comment avatar+tên+nội dung (`whitespace-pre-wrap`)+thời gian, badge "Hidden" (dot đỏ) nếu `deletedAt`, nút Ban (icon `Ban`) `disabled={!!comment.deletedAt}`.
-  📍 `client/src/features/admin/components/discuss-comments-dialog.tsx`.
-- [x] `admin-discuss-table.tsx`: nút icon `MessageSquare` cạnh `Trash2`, state `viewingCommentsPostId`.
-  📍 `client/src/features/admin/components/admin-discuss-table.tsx`.
-- [x] i18n (`discuss.*`, 3 locale) đủ key.
-- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (0 error). QA qua Chrome: mở dialog 1 bài có sẵn 2 comment thật trong DB dev → hiện đúng danh sách kèm avatar/tên/nội dung → ban 1 comment (đã là dữ liệu test cũ, an toàn) → toast "Đã ẩn comment", badge "Hidden" hiện, nút Ban disable → đóng dialog → cột "Comments" ở bảng ngoài giảm đúng 2→1 (xác nhận invalidate cache `discuss-posts` hoạt động). Không lỗi console. **Phát hiện phụ ngoài phạm vi**: 1 user thật có tên hiển thị lỗi "Nguyễn Viết Minh Khoa undefined" (có vẻ bug cũ ở registration/OAuth ghép tên) — đã báo lại, không sửa vì ngoài phạm vi P3.
-
-## 🟢 P4 — Peer Interview: UI force-abandon — ✅ ĐÃ XONG
-
-**Restore**: n/a — hành động đã là "chuyển về trạng thái cuối", không có khái niệm hoàn tác.
-
-- [x] `admin-api.ts`: `forceAbandonPeerInterview(id)` (`PATCH /peer-interviews/:id/status`, body cố định `{ status: "ABANDONED" }`).
-  📍 `client/src/features/admin/api/admin-api.ts`.
-- [x] Hook: `use-force-abandon-peer-interview.ts` (invalidate `["admin-peer-interviews"]`).
-  📍 `client/src/features/admin/hooks/`.
-- [x] `admin-peer-interview-table.tsx`: cột Actions — nút icon `OctagonX` mở `ConfirmDialog`, `disabled` khi `status` là `COMPLETED`/`ABANDONED`.
-  📍 `client/src/features/admin/components/admin-peer-interview-table.tsx`.
-- [x] i18n (`peerInterview.*`, 3 locale) đủ key.
-- [x] **Verify**: `npx tsc -b` + `npm run lint` sạch (0 error). QA qua Chrome: tạo 1 session `WAITING_FOR_PEER` thật qua API (`POST /peer-interviews`) → thấy đúng trong bảng, nút enable → confirm force-abandon → toast "Đã buộc huỷ phiên phỏng vấn chéo", status chuyển "Abandoned" → nút tự disable ngay (click lại không mở dialog). Không lỗi console. Session + user test đã xoá thẳng khỏi DB sau khi verify.
+### 🟢 P2 — Domain, network, chạy deploy pipeline
+- [ ] Trỏ DNS domain về IP public Oracle instance.
+  📍 DNS provider (ngoài repo).
+- [ ] Mở port 80/443 ở **cả 2 lớp**: Oracle Security List/NSG (network) và firewall OS (`iptables`/`ufw` tuỳ image) — gotcha phổ biến nhất khi domain không vào được dù Caddy đã đúng cấu hình.
+  📍 Oracle Cloud Console (Security List), instance OS.
+- [ ] Tạo `.env.prod` trên instance từ `.env.prod.example`, điền secrets thật (JWT, Google OAuth, Gemini, Caddy ACME email, domain).
+  📍 `.env.prod.example` (template), instance Oracle (`.env.prod` thật, không commit).
+- [ ] Set GitHub Secrets `VPS_HOST`/`VPS_USER`/`VPS_SSH_KEY` trỏ về Oracle instance (đổi từ giá trị VPS cũ nếu đã set thử).
+  📍 GitHub repo Settings → Secrets (ngoài repo), dùng bởi `.github/workflows/deploy.yml`.
+- [ ] Chạy `deploy.sh` thủ công lần đầu trên instance, verify toàn bộ stack `docker compose -f docker-compose.prod.yml ps` healthy (postgres/redis/piston/server/client/caddy).
+  📍 `deploy.sh`, instance Oracle.
+- [ ] Test end-to-end thật: tạo tài khoản, chạy 1 session phỏng vấn, `POST /judge/submit` với code thật qua image Piston arm64 tự build, xác nhận chấm điểm đúng (không chỉ container healthy — phải verify chức năng chấm code hoạt động đúng trên kiến trúc mới).
+  📍 Ứng dụng thật qua domain đã trỏ.
 
 ---
-
-## File cần đụng khi thực thi (tổng hợp, không phải lượt này)
-- `client/src/features/admin/types/index.ts` — thêm `AdminShopItem`, `ShopItemFormPayload`, `AdminCareerTrack`, `CareerTrackFormPayload`, `BugSnippetFormPayload`, `AdminDiscussComment`.
-- `client/src/features/admin/api/admin-api.ts` — thêm 11 hàm (`getStoreItems`, `createShopItem`, `updateShopItem`, `deleteShopItem`, `getCareerTracks`, `createCareerTrack`, `updateCareerTrack`, `deleteCareerTrack`, `createBugSnippet`, `updateBugSnippet`, `deleteBugSnippet`, `getDiscussComments`, `banDiscussComment`, `forceAbandonPeerInterview` — 14 thực ra, đếm lại lúc code).
-- `client/src/features/admin/hooks/` — 13 file hook mới (3 store + 3 career + 3 quest + 2 discuss + 1 peer-interview, cộng 1 list hook mới cho store/career).
-- `client/src/features/admin/components/` — 4 dialog mới (`shop-item-form-dialog.tsx`, `career-track-form-dialog.tsx`, `bug-snippet-form-dialog.tsx`, `discuss-comments-dialog.tsx`) + sửa 5 table hiện có.
-- `client/src/features/admin/pages/` — sửa `admin-store-page.tsx`, `admin-career-page.tsx`, `admin-quests-page.tsx` (thêm nút Create + state dialog); `admin-discuss-page.tsx`/`admin-peer-interview-page.tsx` không cần sửa (logic dialog nằm trong table).
-- `client/src/lib/i18n/locales/{en,vi,ja}/admin.json` — thêm key cho cả 5 domain, 3 locale.
-- **Không đụng**: `features/store`, `features/career`, `features/quest`, `features/discuss` (hook/type công khai giữ nguyên, chỉ admin đọc qua endpoint riêng); backend (đã xong, ngoài phạm vi lần này).
 
 ## Việc cần làm ngay lượt này
-Chỉ ghi kế hoạch trên vào `ROADMAP.md` — **không viết code**. Sau khi user review xong, chỉ thực thi khi được yêu cầu rõ (vd "làm P0", "tiếp tục", "thực hiện roadmap").
+Chỉ ghi kế hoạch trên vào `ROADMAP.md` — **không thực thi**. User đã chọn hướng (Oracle A1 + tự build Piston arm64) nhưng theo quy trình roadmap-first, chỉ bắt đầu code/thao tác khi được yêu cầu rõ (vd "làm P0", "tiếp tục roadmap").
 
 ## Verification (áp dụng khi thực thi, không phải lượt này)
-- `npx tsc -b` (client, qua `npm run build` hoặc chạy `tsc -b` trực tiếp) + `npm run lint` (client) sạch sau mỗi phase.
-- QA qua Chrome tool bắt buộc theo `design.md` — golden path + edge case + responsive ~390px cho dialog mới.
-- 1 task (checkbox) = 1 commit, tick `- [ ]` → `- [x]` ngay khi xong kèm ghi chú nếu phát hiện lệch so với kế hoạch (vd buggyLine 0-indexed hay 1-indexed, tên queryKey thực tế của `useDiscussPosts()`).
-- Không tự ý `git push`/mở PR nếu chưa được yêu cầu rõ.
-- Thứ tự P0→P4 không bắt buộc tuần tự cứng — 5 domain độc lập nhau hoàn toàn (khác Store P0 ở bản backend từng là điều kiện tiên quyết vì cần migration) — có thể làm theo thứ tự user chỉ định.
+- P0/P1 phần lớn thao tác ngoài repo (Oracle Console, GHCR, instance shell) — không có `tsc`/test suite để chạy, verify bằng cách chạy lệnh thật và quan sát kết quả (`docker pull`, `docker run`, `curl .../api/v2/runtimes`).
+- P2: verify bằng cách chạy app thật qua domain, không chỉ tin container "healthy" — đặc biệt bước judge/Piston vì đây là lý do chính của toàn bộ roadmap này.
+- 1 task = 1 commit cho các thay đổi trong repo (`docker-compose.prod.yml`); các bước ngoài repo (Oracle Console, DNS, GitHub Secrets) không tạo commit, chỉ tick checkbox sau khi xác nhận xong.
